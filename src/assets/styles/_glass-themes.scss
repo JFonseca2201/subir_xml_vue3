@@ -1,17 +1,16 @@
 /* ==========================================================================
-   SISTEMA DE TEMAS GLASSMORPHISM / TRASLÚCIDOS PARA LUXURY EVYS
-   Temas:
-     1. Oscuro Transparente Espectacular (dark-glass)
-     2. Medio Transparente Oscuro (semi-dark-glass)
-     3. Transparente Claro (light-glass)
-   ========================================================================== */
-
+SISTEMA DE TEMAS GLASSMORPHISM / TRASLÚCIDOS PARA LUXURY EVYS
+Temas:
+1. Oscuro Transparente Espectacular (dark-glass)
+2. Medio Transparente Oscuro (semi-dark-glass)
+3. Transparente Claro (light-glass)
+4. Tema Oficial del Taller (taller) - Rojo Vino / Blanco / Slate
+========================================================================== */
 // --------------------------------------------------------------------------
 // 1. MAPA Y VARIABLES SCSS DE TEMAS
 // --------------------------------------------------------------------------
 $glass-themes: (
-  'dark-glass': (
-    'name': 'dark-glass',
+  'dark-glass': ('name': 'dark-glass',
     'is-dark': true,
     'bg-app': "radial-gradient(ellipse at 25% 15%, rgba(99, 102, 241, 0.18) 0%, transparent 60%), radial-gradient(ellipse at 80% 85%, rgba(168, 85, 247, 0.14) 0%, transparent 60%), #090a10",
     'bg-surface': rgba(255, 255, 255, 0.04),
@@ -43,8 +42,7 @@ $glass-themes: (
     'dialog-avatar-border': rgba(115, 103, 240, 0.35),
     'dialog-avatar-shadow': "0 6px 18px rgba(0, 0, 0, 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.2)",
   ),
-  'semi-dark-glass': (
-    'name': 'semi-dark-glass',
+  'semi-dark-glass': ('name': 'semi-dark-glass',
     'is-dark': true,
     'bg-app': "radial-gradient(ellipse at 50% 10%, rgba(67, 56, 202, 0.25) 0%, transparent 65%), radial-gradient(ellipse at 90% 90%, rgba(14, 165, 233, 0.16) 0%, transparent 60%), #0f172a",
     'bg-surface': rgba(255, 255, 255, 0.06),
@@ -76,8 +74,7 @@ $glass-themes: (
     'dialog-avatar-border': rgba(129, 140, 248, 0.35),
     'dialog-avatar-shadow': "0 6px 18px rgba(0, 0, 0, 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.2)",
   ),
-  'light-glass': (
-    'name': 'light-glass',
+  'light-glass': ('name': 'light-glass',
     'is-dark': false,
     'bg-app': "radial-gradient(circle at 10% 20%, rgba(199, 210, 254, 0.75) 0%, transparent 50%), radial-gradient(circle at 90% 80%, rgba(243, 232, 255, 0.75) 0%, transparent 50%), radial-gradient(circle at 50% 50%, rgba(224, 231, 255, 0.5) 0%, transparent 60%), #e2e8f0",
     'bg-surface': rgba(255, 255, 255, 0.65),
@@ -109,14 +106,13 @@ $glass-themes: (
     'dialog-avatar-border': rgba(255, 255, 255, 0.35),
     'dialog-avatar-shadow': "0 8px 20px rgba(0, 0, 0, 0.12), inset 0 1px 0 rgba(255, 255, 255, 0.4)",
   ),
-  'taller': (
-    'name': 'taller',
+  'taller': ('name': 'taller',
     'is-dark': false,
     'bg-app': #f8fafc,
-    'bg-surface': #f1f5f9,
+    'bg-surface': #ffffff,
     'bg-sidebar': "linear-gradient(180deg, #8A1538 0%, #6B0E27 60%, #58081C 100%)",
     'bg-header': "linear-gradient(135deg, #8A1538 0%, #6B0E27 60%, #58081C 100%)",
-    'bg-dialog': #f1f5f9,
+    'bg-dialog': #ffffff,
     'bg-active-item': #ffffff,
     'bg-hover-item': rgba(255, 255, 255, 0.16),
     'border-active': rgba(255, 255, 255, 0.90),
@@ -125,7 +121,7 @@ $glass-themes: (
     'text-secondary': #334155,
     'text-muted': #64748b,
     'icon-color': #ffffff,
-    'border-glass': rgba(0, 0, 0, 0.08),
+    'border-glass': rgba(226, 232, 240, 0.8),
     'input-bg': #ffffff,
     'input-border': #cbd5e1,
     'table-header-bg': #f8fafc,
@@ -142,9 +138,8 @@ $glass-themes: (
     'dialog-avatar-border': rgba(255, 255, 255, 0.40),
     'dialog-avatar-shadow': "0 8px 20px rgba(0, 0, 0, 0.15), inset 0 1px 0 rgba(255, 255, 255, 0.4)",
   ),
-);
+); // --------------------------------------------------------------------------
 
-// --------------------------------------------------------------------------
 // 2. MIXIN DE VARIABLES CSS POR TEMA
 // --------------------------------------------------------------------------
 @mixin define-glass-variables($theme) {
@@ -182,7 +177,8 @@ $glass-themes: (
 // --------------------------------------------------------------------------
 // 3. INYECCIÓN DE VARIABLES EN SELECTORES RAÍZ Y ATRIBUTOS
 // --------------------------------------------------------------------------
-@each $theme-name, $theme in $glass-themes {
+@each $theme-name, $theme in$glass-themes {
+
   [data-theme="#{$theme-name}"],
   html[data-theme="#{$theme-name}"],
   body[data-theme="#{$theme-name}"],
@@ -197,9 +193,8 @@ $glass-themes: (
 // --------------------------------------------------------------------------
 @mixin apply-glass-theme-rules($theme) {
   $is-dark: map-get($theme, 'is-dark');
-  $theme-name: map-get($theme, 'name');
+  $theme-name: map-get($theme, 'name'); // A. FONDO GENERAL DE LA APLICACIÓN
 
-  // A. FONDO GENERAL DE LA APLICACIÓN
   html,
   body,
   .v-application {
@@ -217,7 +212,6 @@ $glass-themes: (
   }
 
   // B. NAVEGACIÓN GENERAL: SIDEBAR Y HEADER
-  // Respetar estrictamente maquetación original: top: 0, height: 100vh / 100%, position: fixed
   .layout-vertical-nav,
   .v-navigation-drawer,
   .sidebar,
@@ -241,51 +235,49 @@ $glass-themes: (
       border-bottom: 1px solid var(--border-glass) !important;
 
       .app-logo-title {
-        color: var(--text-primary) !important;
+        color: if($theme-name =='taller', #ffffff, var(--text-primary)) !important;
       }
     }
 
     .nav-section-title {
       .title-text {
-        color: var(--text-muted) !important;
+        color: if($theme-name =='taller', #ffffff, var(--text-muted)) !important;
         text-shadow: none !important;
 
         &::before,
         &::after {
-          border-color: var(--border-glass) !important;
+          border-color: if($theme-name =='taller', rgba(255, 255, 255, 0.45), var(--border-glass)) !important;
         }
       }
     }
 
     .nav-link a,
     .nav-group-label {
-      color: if($theme-name == 'taller', #ffffff, var(--text-secondary)) !important;
+      color: if($theme-name =='taller', #ffffff, var(--text-secondary)) !important;
       background: transparent !important;
       transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
 
       .nav-item-icon,
       .nav-item-title,
       .nav-group-arrow {
-        color: if($theme-name == 'taller', #ffffff, var(--text-secondary)) !important;
-        fill: if($theme-name == 'taller', #ffffff, currentColor) !important;
+        color: if($theme-name =='taller', #ffffff, var(--text-secondary)) !important;
+        fill: if($theme-name =='taller', #ffffff, currentColor) !important;
       }
 
-      // Hover no seleccionado
       &:not(.router-link-active):not(.router-link-exact-active):hover {
         background: var(--bg-hover-item) !important;
-        color: var(--text-primary) !important;
+        color: if($theme-name =='taller', #ffffff, var(--text-primary)) !important;
         transform: translateX(3px);
 
         .nav-item-icon,
         .nav-item-title,
         .nav-group-arrow {
-          color: var(--text-primary) !important;
+          color: if($theme-name =='taller', #ffffff, var(--text-primary)) !important;
+          fill: if($theme-name =='taller', #ffffff, currentColor) !important;
         }
       }
     }
 
-    // REGLA CRÍTICA: PESTAÑAS Y OPCIONES ACTIVAS TRASLÚCIDAS (SIN FONDOS SÓLIDOS NI RECUADROS BLANCOS)
-    // El contenedor de grupo nunca debe tener borde ni fondo activo envolvente
     .nav-group {
       background: transparent !important;
       border: none !important;
@@ -301,19 +293,19 @@ $glass-themes: (
         box-shadow: none !important;
         transform: none !important;
 
-        > .nav-group-label {
+        >.nav-group-label {
           background: transparent !important;
           border: none !important;
           box-shadow: none !important;
           transform: none !important;
-          color: var(--text-primary) !important;
+          color: if($theme-name =='taller', #ffffff, var(--text-primary)) !important;
 
           &,
           .nav-item-icon,
           .nav-item-title,
           .nav-group-arrow {
-            color: var(--text-primary) !important;
-            fill: var(--text-primary) !important;
+            color: if($theme-name =='taller', #ffffff, var(--text-primary)) !important;
+            fill: if($theme-name =='taller', #ffffff, var(--text-primary)) !important;
             font-weight: 700 !important;
           }
 
@@ -330,14 +322,14 @@ $glass-themes: (
             .nav-item-icon,
             .nav-item-title,
             .nav-group-arrow {
-              color: var(--text-primary) !important;
-              fill: var(--text-primary) !important;
+              color: if($theme-name =='taller', #ffffff, var(--text-primary)) !important;
+              fill: if($theme-name =='taller', #ffffff, var(--text-primary)) !important;
             }
           }
         }
       }
 
-      > .nav-group-label {
+      >.nav-group-label {
         background: transparent !important;
         border: none !important;
         box-shadow: none !important;
@@ -355,11 +347,11 @@ $glass-themes: (
       }
     }
 
-    // ÚNICAMENTE el enlace individual de la viñeta / opción activa lleva la pastilla destacada
-    .nav-link > a.router-link-active,
-    .nav-link > a.router-link-exact-active,
-    .nav-link.router-link-active > a,
-    .nav-link.router-link-exact-active > a,
+    // OPCIÓN ACTIVA
+    .nav-link>a.router-link-active,
+    .nav-link>a.router-link-exact-active,
+    .nav-link.router-link-active>a,
+    .nav-link.router-link-exact-active>a,
     .v-list-item--active {
       background: var(--bg-active-item) !important;
       border: 1px solid var(--border-active) !important;
@@ -376,7 +368,7 @@ $glass-themes: (
 
       .nav-item-icon {
         color: var(--text-active) !important;
-        filter: drop-shadow(0 0 6px var(--border-active));
+        filter: if($theme-name =='taller', none, drop-shadow(0 0 6px var(--border-active)));
       }
 
       .nav-item-title {
@@ -391,7 +383,7 @@ $glass-themes: (
     }
 
     .nav-group-children {
-      border-left: 1.5px solid var(--border-glass) !important;
+      border-left: 1.5px solid if($theme-name =='taller', rgba(255, 255, 255, 0.35), var(--border-glass)) !important;
       background: transparent !important;
       border-top: none !important;
       border-right: none !important;
@@ -401,7 +393,6 @@ $glass-themes: (
   }
 
   // CABECERA / HEADER
-  // Respetar posición fija en la parte superior compartiendo fondo traslúcido y difuminado con el sidebar
   .layout-navbar,
   .v-app-bar,
   .header,
@@ -419,7 +410,6 @@ $glass-themes: (
       box-shadow: none !important;
     }
 
-    // Botones e iconos en la cabecera siempre visibles y con color dinámico de alto contraste
     .v-icon,
     .v-btn,
     .v-btn__content,
@@ -469,7 +459,7 @@ $glass-themes: (
     }
   }
 
-  // C. CONTENEDORES, TARJETAS (.card, .v-card) Y PANELES (ESTÁNDAR CONCILIACIÓN)
+  // C. CONTENEDORES, TARJETAS (.card, .v-card)
   .v-card,
   .card {
     background: var(--bg-surface) !important;
@@ -492,8 +482,15 @@ $glass-themes: (
 
   .v-card-title,
   .card-title,
-  h1, h2, h3, h4, h5, h6,
-  .text-h4, .text-h5, .text-h6 {
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6,
+  .text-h4,
+  .text-h5,
+  .text-h6 {
     color: var(--text-primary) !important;
   }
 
@@ -504,7 +501,6 @@ $glass-themes: (
     color: var(--text-secondary);
   }
 
-  // Spans generales de texto (excluyendo badges, chips, botones y estados para evitar colisión de contraste)
   span:not([class*="status"]):not([class*="badge"]):not([class*="chip"]):not(.v-chip *):not(.status-pill-clean *):not(.v-btn *):not(.kardex-plate-badge *):not(.doc-type-badge-mini *) {
     color: var(--text-secondary);
   }
@@ -513,55 +509,7 @@ $glass-themes: (
     color: var(--text-muted) !important;
   }
 
-  // C.1 TARJETAS MÓVILES RESPONSIVE (PRODUCTOS Y REGISTROS)
-  .mobile-product-card,
-  [class*="mobile-"][class*="-card"] {
-    background: var(--bg-surface) !important;
-    background-color: var(--bg-surface) !important;
-    backdrop-filter: var(--blur-glass) !important;
-    -webkit-backdrop-filter: var(--blur-glass) !important;
-    border: 1px solid var(--border-glass) !important;
-    color: var(--text-primary) !important;
-
-    .mobile-card-title,
-    .card-title,
-    .title-text {
-      color: var(--text-primary) !important;
-    }
-
-    .mobile-card-meta {
-      color: var(--text-secondary) !important;
-    }
-
-    .mobile-card-stats-grid,
-    .stats-box,
-    .info-box {
-      background: var(--bg-hover-item) !important;
-      background-color: var(--bg-hover-item) !important;
-      border: 1px solid var(--border-glass) !important;
-
-      .stat-label,
-      .label-text {
-        color: var(--text-muted) !important;
-      }
-
-      .stat-val,
-      .value-text {
-        color: var(--text-primary) !important;
-      }
-    }
-
-    .mobile-card-thumb {
-      border-color: var(--border-glass) !important;
-      background: var(--bg-hover-item) !important;
-
-      .mobile-card-thumb-placeholder {
-        background: var(--bg-hover-item) !important;
-      }
-    }
-  }
-
-  // D. LISTADOS Y TABLAS DE DATOS (INGRESOS, VENTAS, KARDEX)
+  // D. TABLAS
   .v-data-table,
   .v-table,
   .table {
@@ -575,7 +523,9 @@ $glass-themes: (
       background: transparent !important;
     }
 
-    thead, thead tr, thead th,
+    thead,
+    thead tr,
+    thead th,
     .v-data-table__th {
       background: var(--table-header-bg) !important;
       color: var(--text-primary) !important;
@@ -591,7 +541,8 @@ $glass-themes: (
       background: transparent;
       transition: background 0.2s ease;
 
-      td, .v-data-table__td {
+      td,
+      .v-data-table__td {
         border-bottom: 1px solid var(--border-glass) !important;
         color: var(--text-primary) !important;
       }
@@ -615,6 +566,7 @@ $glass-themes: (
 
   // Paginadores
   .v-pagination {
+
     .v-pagination__item,
     .v-pagination__prev,
     .v-pagination__next {
@@ -636,13 +588,11 @@ $glass-themes: (
     }
   }
 
-  // E. FORMULARIOS E INPUTS (ESTÁNDAR CONCILIACIÓN)
+  // E. FORMULARIOS
   .v-field,
   .v-field--variant-outlined,
   .v-field--variant-filled {
     background-color: var(--input-bg) !important;
-    backdrop-filter: blur(10px) !important;
-    -webkit-backdrop-filter: blur(10px) !important;
     border: 1px solid var(--input-border) !important;
     border-radius: 8px !important;
     color: var(--text-primary) !important;
@@ -675,7 +625,7 @@ $glass-themes: (
 
     .v-field__prepend-inner .v-icon,
     .v-field__append-inner .v-icon {
-      color: var(--icon-color) !important;
+      color: if($theme-name =='taller', #64748b, var(--icon-color)) !important;
       opacity: 0.85 !important;
     }
 
@@ -685,7 +635,6 @@ $glass-themes: (
     }
   }
 
-  // Labels y etiquetas de formularios en alto contraste (Estándar Conciliación)
   label,
   .v-label,
   .text-label,
@@ -707,18 +656,16 @@ $glass-themes: (
     opacity: 0.9 !important;
   }
 
-  // BOTONES (ESTÁNDAR CONCILIACIÓN)
+  // BOTONES
   .v-btn {
     border-radius: 8px !important;
     font-weight: 600 !important;
     letter-spacing: 0.3px !important;
     transition: all 0.2s ease !important;
-
-    // Botones primarios
-    $btn-primary-bg: if(map-get($theme, 'name') == 'taller', linear-gradient(135deg, #8A1538 0%, #600A1F 100%), linear-gradient(135deg, #7367F0 0%, #5E50EE 100%));
-    $btn-primary-shadow: if(map-get($theme, 'name') == 'taller', 0 4px 16px rgba(138, 21, 56, 0.45), 0 4px 16px rgba(115, 103, 240, 0.4));
-    $btn-primary-hover-bg: if(map-get($theme, 'name') == 'taller', linear-gradient(135deg, #A31842 0%, #720C25 100%), linear-gradient(135deg, #8176f2 0%, #685cf0 100%));
-    $btn-primary-hover-shadow: if(map-get($theme, 'name') == 'taller', 0 6px 20px rgba(138, 21, 56, 0.6), 0 6px 20px rgba(115, 103, 240, 0.55));
+    $btn-primary-bg: if($theme-name =='taller', linear-gradient(135deg, #8A1538 0%, #600A1F 100%), linear-gradient(135deg, #7367F0 0%, #5E50EE 100%));
+    $btn-primary-shadow: if($theme-name =='taller', 0 4px 16px rgba(138, 21, 56, 0.45), 0 4px 16px rgba(115, 103, 240, 0.4));
+    $btn-primary-hover-bg: if($theme-name =='taller', linear-gradient(135deg, #A31842 0%, #720C25 100%), linear-gradient(135deg, #8176f2 0%, #685cf0 100%));
+    $btn-primary-hover-shadow: if($theme-name =='taller', 0 6px 20px rgba(138, 21, 56, 0.6), 0 6px 20px rgba(115, 103, 240, 0.55));
 
     &.bg-primary,
     &.v-btn--variant-elevated.v-btn--color-primary,
@@ -740,7 +687,6 @@ $glass-themes: (
       }
     }
 
-    // Botones secundarios / suavizados (tonal y outlined sin parches blancos)
     &.v-btn--variant-tonal {
       background: rgba(255, 255, 255, 0.08) !important;
       color: var(--text-primary) !important;
@@ -770,15 +716,7 @@ $glass-themes: (
     }
   }
 
-  .v-checkbox,
-  .v-switch,
-  .v-radio {
-    .v-label {
-      color: var(--text-primary) !important;
-    }
-  }
-
-  // F. PESTAÑAS (TABS), EXPANSION PANELS Y CHIPS
+  // F. PESTAÑAS (TABS)
   .v-tabs {
     background: transparent !important;
     border-bottom: 1px solid var(--border-glass) !important;
@@ -802,18 +740,7 @@ $glass-themes: (
     }
   }
 
-  .v-expansion-panel {
-    background: var(--bg-surface) !important;
-    backdrop-filter: var(--blur-glass) !important;
-    -webkit-backdrop-filter: var(--blur-glass) !important;
-    border: 1px solid var(--border-glass) !important;
-
-    .v-expansion-panel-title {
-      color: var(--text-primary) !important;
-    }
-  }
-
-  // ETIQUETAS, BADGES, STATUS PILLS Y V-CHIP CON CONTRASTE 100% GARANTIZADO
+  // STATUS PILLS Y CHIPS
   .v-chip {
     backdrop-filter: blur(8px) !important;
     -webkit-backdrop-filter: blur(8px) !important;
@@ -823,20 +750,22 @@ $glass-themes: (
       opacity: 0.10 !important;
     }
 
-    // Variantes por defecto / neutras
     &:not([class*="text-"]):not([class*="bg-"]):not([class*="success"]):not([class*="error"]):not([class*="warning"]):not([class*="info"]):not([class*="primary"]) {
       background: var(--input-bg) !important;
       border: 1px solid var(--border-glass) !important;
       color: var(--text-primary) !important;
 
-      &, span, .v-chip__content, .v-icon, * {
+      &,
+      span,
+      .v-chip__content,
+      .v-icon,
+      * {
         color: var(--text-primary) !important;
         font-weight: 700 !important;
       }
     }
   }
 
-  // Status pills generales con punto indicador (Vehículos, Usuarios, Kardex, Pedidos, Ventas, Cotizaciones)
   .status-pill-clean,
   .status-pill {
     display: inline-flex !important;
@@ -862,12 +791,7 @@ $glass-themes: (
   }
 
   @if $is-dark {
-    // ====================================================================
-    // TEMAS OSCUROS TRASLÚCIDOS (dark-glass / semi-dark-glass) - REGLA A:
-    // Fondo semitransparente oscuro + texto brillante de alta visibilidad
-    // ====================================================================
 
-    // Éxito / Activo / Pagado (verde brillante)
     .status-paid,
     .status-success,
     .v-chip.text-success,
@@ -877,7 +801,11 @@ $glass-themes: (
       border: 1px solid rgba(34, 197, 94, 0.40) !important;
       color: #22c55e !important;
 
-      &, span, .v-chip__content, .v-icon, * {
+      &,
+      span,
+      .v-chip__content,
+      .v-icon,
+      * {
         color: #22c55e !important;
         font-weight: 700 !important;
       }
@@ -888,7 +816,6 @@ $glass-themes: (
       }
     }
 
-    // Error / Anulado / Cancelado / Inactivo / Pendiente de Pago (rojo coral brillante)
     .status-pending,
     .status-error,
     .status-canceled,
@@ -899,7 +826,11 @@ $glass-themes: (
       border: 1px solid rgba(239, 68, 68, 0.40) !important;
       color: #f87171 !important;
 
-      &, span, .v-chip__content, .v-icon, * {
+      &,
+      span,
+      .v-chip__content,
+      .v-icon,
+      * {
         color: #f87171 !important;
         font-weight: 700 !important;
       }
@@ -910,7 +841,6 @@ $glass-themes: (
       }
     }
 
-    // Alerta / Pendiente / En Proceso / Parcial (ámbar brillante)
     .status-partial,
     .status-warning,
     .v-chip.text-warning,
@@ -920,7 +850,11 @@ $glass-themes: (
       border: 1px solid rgba(245, 158, 11, 0.40) !important;
       color: #fbbf24 !important;
 
-      &, span, .v-chip__content, .v-icon, * {
+      &,
+      span,
+      .v-chip__content,
+      .v-icon,
+      * {
         color: #fbbf24 !important;
         font-weight: 700 !important;
       }
@@ -931,7 +865,6 @@ $glass-themes: (
       }
     }
 
-    // Info / Transferencia / Despacho / Azul (azul cielo brillante)
     .status-transfer,
     .status-info,
     .v-chip.text-info,
@@ -941,7 +874,11 @@ $glass-themes: (
       border: 1px solid rgba(59, 130, 246, 0.40) !important;
       color: #38bdf8 !important;
 
-      &, span, .v-chip__content, .v-icon, * {
+      &,
+      span,
+      .v-chip__content,
+      .v-icon,
+      * {
         color: #38bdf8 !important;
         font-weight: 700 !important;
       }
@@ -952,7 +889,6 @@ $glass-themes: (
       }
     }
 
-    // Primary / Primario (violeta traslúcido con texto violeta brillante)
     .status-primary,
     .v-chip.text-primary,
     .v-chip.bg-primary,
@@ -961,7 +897,11 @@ $glass-themes: (
       border: 1px solid rgba(115, 103, 240, 0.45) !important;
       color: #a78bfa !important;
 
-      &, span, .v-chip__content, .v-icon, * {
+      &,
+      span,
+      .v-chip__content,
+      .v-icon,
+      * {
         color: #a78bfa !important;
         font-weight: 700 !important;
       }
@@ -972,7 +912,6 @@ $glass-themes: (
       }
     }
 
-    // Secondary (gris traslúcido)
     .status-secondary,
     .v-chip.text-secondary,
     .v-chip.bg-secondary,
@@ -981,7 +920,11 @@ $glass-themes: (
       border: 1px solid rgba(148, 163, 184, 0.35) !important;
       color: #cbd5e1 !important;
 
-      &, span, .v-chip__content, .v-icon, * {
+      &,
+      span,
+      .v-chip__content,
+      .v-icon,
+      * {
         color: #cbd5e1 !important;
         font-weight: 700 !important;
       }
@@ -991,91 +934,21 @@ $glass-themes: (
       }
     }
 
-    // ====================================================================
-    // FORMULARIOS, EDICIONES (add.vue, edit/[id].vue) Y FONDOS BLANCOS
-    // SUPRESIÓN TOTAL DE ESPACIOS Y RECUADROS BLANCOS EN MODO OSCURO
-    // ====================================================================
-
-    // 1. Tarjetas internas y secciones de v-card
-    .v-card {
-      .v-card-item,
-      .v-card-text,
-      .v-card-actions {
-        &.bg-white,
-        &.bg-slate-50,
-        &.bg-slate-100,
-        &.bg-grey-lighten-5,
-        &.bg-grey-lighten-4,
-        &.bg-grey-lighten-3,
-        &.bg-surface {
-          background: transparent !important;
-          background-color: transparent !important;
-          color: var(--text-primary) !important;
-        }
-      }
-    }
-
-    // 2. Supresión universal de clases de utilidad claras en todo el sistema oscuro
     .bg-white:not(.v-btn):not(.v-chip.bg-white):not(.status-pill-clean.bg-white):not(.status-pill.bg-white):not(.badge.bg-white):not(.kardex-plate-badge):not(.doc-type-badge-mini),
     .bg-slate-50,
     .bg-slate-100,
-    .bg-slate-200,
     .bg-grey-lighten-5,
     .bg-grey-lighten-4,
-    .bg-grey-lighten-3,
-    .bg-grey-lighten-2,
-    .bg-grey-lighten-1 {
+    .bg-grey-lighten-3 {
       background: var(--bg-surface) !important;
       background-color: var(--bg-surface) !important;
       color: var(--text-primary) !important;
       border-color: var(--border-glass) !important;
     }
 
-    // 3. Contenedores anidados, cajas de resumen, totales y paneles de datos
-    .v-card .v-card,
-    .total-cash-panel,
-    .quick-edit-section,
-    .quick-stock-stepper-box,
-    .category-section,
-    .ot-import-card,
-    .ot-empty-state-box,
-    .product-lookup-card,
-    .doc-type-card {
-      background: rgba(255, 255, 255, 0.04) !important;
-      background-color: rgba(255, 255, 255, 0.04) !important;
-      border: 1px solid var(--border-glass) !important;
-      color: var(--text-primary) !important;
-    }
-
-    .ot-items-box {
-      background: rgba(0, 0, 0, 0.28) !important;
-      background-color: rgba(0, 0, 0, 0.28) !important;
-      border: 1px solid rgba(255, 255, 255, 0.1) !important;
-      color: var(--text-primary) !important;
-
-      .ot-items-title {
-        color: rgba(255, 255, 255, 0.85) !important;
-      }
-
-      .ot-item-qty {
-        background: rgba(255, 255, 255, 0.12) !important;
-        color: #ffffff !important;
-        border: 1px solid rgba(255, 255, 255, 0.18) !important;
-      }
-
-      .ot-item-name {
-        color: rgba(255, 255, 255, 0.92) !important;
-      }
-
-      .ot-item-price {
-        color: #ffffff !important;
-      }
-    }
-
     .account-balance-pill {
       &.is-positive {
-        background: rgba(16, 185, 129, 0.14) !important;
-        background-color: rgba(16, 185, 129, 0.14) !important;
+        background: rgba(16, 185, 129, 0.15) !important;
         border: 1px solid rgba(16, 185, 129, 0.35) !important;
         color: #34d399 !important;
 
@@ -1086,8 +959,7 @@ $glass-themes: (
       }
 
       &.is-negative {
-        background: rgba(239, 68, 68, 0.14) !important;
-        background-color: rgba(239, 68, 68, 0.14) !important;
+        background: rgba(239, 68, 68, 0.15) !important;
         border: 1px solid rgba(239, 68, 68, 0.35) !important;
         color: #f87171 !important;
 
@@ -1098,864 +970,34 @@ $glass-themes: (
       }
     }
 
-    // 4. Estados vacíos y zonas de carga / dropzone de imágenes (border-dashed)
-    .border-dashed,
-    .border-2.border-dashed,
-    div[class*="border-dashed"] {
-      background: rgba(255, 255, 255, 0.02) !important;
-      background-color: rgba(255, 255, 255, 0.02) !important;
-      border-color: rgba(255, 255, 255, 0.18) !important;
-      color: var(--text-secondary) !important;
-
-      .v-icon,
-      i {
-        color: var(--text-secondary) !important;
-        opacity: 0.8;
-      }
-
-      &:hover {
-        background: rgba(255, 255, 255, 0.05) !important;
-        border-color: var(--border-active) !important;
-      }
-    }
-
-    // 5. Selector de tipo de documento (Factura SRI / Nota de Venta / Cotización)
-    .doc-type-card {
-      background: rgba(255, 255, 255, 0.04) !important;
-      background-color: rgba(255, 255, 255, 0.04) !important;
-      background-image: none !important;
-      border: 1.5px solid var(--border-glass) !important;
-      color: var(--text-primary) !important;
-
-      .doc-type-title {
-        color: #ffffff !important;
-      }
-
-      .doc-type-desc {
-        color: var(--text-secondary) !important;
-      }
-
-      .doc-type-badge {
-        &.badge-sri {
-          background-color: rgba(99, 102, 241, 0.25) !important;
-          color: #ffffff !important;
-          border: 1px solid rgba(129, 140, 248, 0.45) !important;
-        }
-
-        &.badge-internal {
-          background-color: rgba(255, 255, 255, 0.1) !important;
-          color: #ffffff !important;
-          border: 1px solid rgba(255, 255, 255, 0.22) !important;
-        }
-      }
-
-      &:hover {
-        background: rgba(255, 255, 255, 0.08) !important;
-        background-image: none !important;
-        border-color: var(--border-active) !important;
-        transform: translateY(-2px);
-      }
-
-      &.active-invoice {
-        background: rgba(99, 102, 241, 0.22) !important;
-        background-color: rgba(99, 102, 241, 0.22) !important;
-        background-image: none !important;
-        border-color: #818cf8 !important;
-        box-shadow: 0 4px 16px -2px rgba(99, 102, 241, 0.35) !important;
-
-        .invoice-icon {
-          background-color: #6366f1 !important;
-          color: #ffffff !important;
-        }
-
-        .doc-type-title {
-          color: #ffffff !important;
-        }
-
-        .radio-active-invoice {
-          color: #818cf8 !important;
-        }
-
-        .doc-type-badge.badge-sri {
-          background-color: rgba(99, 102, 241, 0.35) !important;
-          color: #ffffff !important;
-          border: 1px solid rgba(129, 140, 248, 0.6) !important;
-        }
-      }
-
-      &.active-sale-note {
-        background: rgba(16, 185, 129, 0.22) !important;
-        background-color: rgba(16, 185, 129, 0.22) !important;
-        background-image: none !important;
-        border-color: #34d399 !important;
-        box-shadow: 0 4px 16px -2px rgba(16, 185, 129, 0.35) !important;
-
-        .note-icon {
-          background-color: #10b981 !important;
-          color: #ffffff !important;
-        }
-
-        .doc-type-title {
-          color: #ffffff !important;
-        }
-
-        .radio-active-note {
-          color: #34d399 !important;
-        }
-
-        .doc-type-badge.badge-internal {
-          background-color: rgba(16, 185, 129, 0.35) !important;
-          color: #ffffff !important;
-          border: 1px solid rgba(16, 185, 129, 0.6) !important;
-        }
-      }
-
-      &.active-quote {
-        background: rgba(2, 132, 199, 0.22) !important;
-        background-color: rgba(2, 132, 199, 0.22) !important;
-        background-image: none !important;
-        border-color: #38bdf8 !important;
-        box-shadow: 0 4px 16px -2px rgba(2, 132, 199, 0.35) !important;
-
-        .quote-icon {
-          background-color: #0284c7 !important;
-          color: #ffffff !important;
-        }
-
-        .doc-type-title {
-          color: #ffffff !important;
-        }
-      }
-    }
-
-    // 5.1. Selector de Modalidad de Pago (Al Contado vs A Crédito)
-    .payment-mode-card {
-      background: rgba(255, 255, 255, 0.04) !important;
-      background-color: rgba(255, 255, 255, 0.04) !important;
-      background-image: none !important;
-      border: 1.5px solid var(--border-glass) !important;
-      color: #ffffff !important;
-
-      .mode-title {
-        color: #ffffff !important;
-      }
-
-      .mode-subtitle {
-        color: var(--text-secondary) !important;
-      }
-
-      .mode-icon-circle {
-        background: rgba(255, 255, 255, 0.1) !important;
-        color: #ffffff !important;
-      }
-
-      &:hover {
-        background: rgba(255, 255, 255, 0.08) !important;
-        border-color: var(--border-active) !important;
-      }
-
-      &.active-contado {
-        background: rgba(115, 103, 240, 0.24) !important;
-        border-color: #7367f0 !important;
-
-        .mode-title {
-          color: #ffffff !important;
-        }
-
-        .mode-icon-circle {
-          background: #7367f0 !important;
-          color: #ffffff !important;
-        }
-      }
-
-      &.active-credito {
-        background: rgba(245, 158, 11, 0.24) !important;
-        border-color: #f59e0b !important;
-
-        .mode-title {
-          color: #ffffff !important;
-        }
-
-        .mode-icon-circle {
-          background: #f59e0b !important;
-          color: #ffffff !important;
-        }
-      }
-    }
-
-    // 5.2. Pastillas de método de pago (Efectivo / Transferencia / Otros)
-    .payment-dist-card {
-      background: rgba(255, 255, 255, 0.03) !important;
-      border: 1px solid var(--border-glass) !important;
-      color: #ffffff !important;
-
-      &:hover {
-        background: rgba(255, 255, 255, 0.06) !important;
-        border-color: var(--border-active) !important;
-      }
-    }
-
-    .payment-method-pill {
-      background: rgba(255, 255, 255, 0.06) !important;
-      border: 1.5px solid var(--border-glass) !important;
-      color: var(--text-secondary) !important;
-
-      &:hover {
-        background: rgba(255, 255, 255, 0.12) !important;
-        color: #ffffff !important;
-      }
-
-      &.active-cash {
-        background: #10b981 !important;
-        border-color: #10b981 !important;
-        color: #ffffff !important;
-      }
-
-      &.active-transfer {
-        background: #0ea5e9 !important;
-        border-color: #0ea5e9 !important;
-        color: #ffffff !important;
-      }
-
-      &.active-other {
-        background: #7367f0 !important;
-        border-color: #7367f0 !important;
-        color: #ffffff !important;
-      }
-    }
-
-    // 5.3. Paneles unificados de resumen (Cliente, Vehículo, Distribuidor, Totales)
-    .rounded-xl.border.bg-slate-50,
-    .border.rounded-xl.bg-slate-50,
-    div[class*="bg-slate-50"] {
-      background: rgba(255, 255, 255, 0.04) !important;
-      background-color: rgba(255, 255, 255, 0.04) !important;
-      border-color: var(--border-glass) !important;
-      color: #ffffff !important;
-
-      span, div, p, strong {
-        color: #ffffff;
-      }
-    }
-
-    // 6. Selector de Tipo de Ítem (Producto / Servicio / Herramienta en product/add y edit)
-    .border-light.bg-white.text-slate-700 {
-      background: rgba(255, 255, 255, 0.04) !important;
-      border-color: var(--border-glass) !important;
-      color: var(--text-primary) !important;
-    }
-
-    .border-primary.bg-slate-50.text-primary {
-      background: rgba(115, 103, 240, 0.18) !important;
-      border-color: #8176f2 !important;
-      color: #c4b5fd !important;
-    }
-
-    .border-success.bg-slate-50.text-success {
-      background: rgba(34, 197, 94, 0.18) !important;
-      border-color: #34d399 !important;
-      color: #86efac !important;
-    }
-
-    .border-warning.bg-slate-50.text-warning {
-      background: rgba(245, 158, 11, 0.18) !important;
-      border-color: #fbbf24 !important;
-      color: #fde68a !important;
-    }
-
-    // 7. Tablas compactas de items en Órdenes de Trabajo y Ventas
-    .custom-sales-items-table,
-    .custom-items-table {
-      background-color: transparent !important;
-      background: transparent !important;
-      color: var(--text-primary) !important;
-
-      thead,
-      thead tr,
-      thead tr th {
-        background: var(--table-header-bg) !important;
-        background-color: var(--table-header-bg) !important;
-        color: var(--text-primary) !important;
-        border-bottom: 1px solid var(--border-glass) !important;
-      }
-
-      tbody tr {
-        border-bottom: 1px solid var(--border-glass) !important;
-
-        &:hover {
-          background-color: var(--table-row-hover-bg) !important;
-        }
-
-        td {
-          border-bottom: 1px solid var(--border-glass) !important;
-          color: var(--text-primary) !important;
-        }
-      }
-
-      .qty-mini-val,
-      .wo-qty-val {
-        color: #ffffff !important;
-      }
-
-      .qty-stepper-mini,
-      .wo-qty-box {
-        background: rgba(255, 255, 255, 0.08) !important;
-        background-color: rgba(255, 255, 255, 0.08) !important;
-        border: 1px solid rgba(255, 255, 255, 0.2) !important;
-
-        .qty-mini-btn,
-        .wo-qty-btn {
-          color: rgba(255, 255, 255, 0.85) !important;
-
-          &:hover:not(:disabled) {
-            background-color: rgba(255, 255, 255, 0.18) !important;
-            color: #ffffff !important;
-          }
-
-          &:disabled {
-            opacity: 0.3 !important;
-          }
-        }
-      }
-
-      .cell-input-wrapper,
-      .wo-compact-input-wrap {
-        background: rgba(255, 255, 255, 0.08) !important;
-        background-color: rgba(255, 255, 255, 0.08) !important;
-        border: 1px solid rgba(255, 255, 255, 0.2) !important;
-        color: #ffffff !important;
-
-        &:focus-within {
-          border-color: var(--border-active) !important;
-          background-color: rgba(255, 255, 255, 0.14) !important;
-          box-shadow: 0 0 0 1px var(--border-active) !important;
-        }
-
-        .cell-prefix,
-        .wo-currency {
-          color: rgba(255, 255, 255, 0.65) !important;
-        }
-
-        input,
-        .cell-number-input,
-        .wo-compact-input {
-          color: #ffffff !important;
-
-          &.text-slate-800,
-          &.text-slate-900 {
-            color: #ffffff !important;
-          }
-        }
-      }
-
-      .item-title-input,
-      .wo-item-desc-input {
-        color: #ffffff !important;
-
-        &:focus {
-          background-color: rgba(255, 255, 255, 0.08) !important;
-          color: #ffffff !important;
-        }
-      }
-
-      .meta-stock,
-      .stock-tag {
-        background-color: rgba(255, 255, 255, 0.08) !important;
-        color: rgba(255, 255, 255, 0.85) !important;
-        border: 1px solid rgba(255, 255, 255, 0.15) !important;
-      }
-
-      .meta-sku {
-        color: rgba(255, 255, 255, 0.6) !important;
-      }
-
-      span.bg-slate-100 {
-        background-color: rgba(255, 255, 255, 0.08) !important;
-        border-color: rgba(255, 255, 255, 0.2) !important;
-        color: #ffffff !important;
-
-        * {
-          color: #ffffff !important;
-        }
-      }
-    }
-
-    // Reglas independientes fuera de tablas para inputs y steppers
-    .qty-stepper-mini,
-    .wo-qty-box {
-      background: rgba(255, 255, 255, 0.08) !important;
-      background-color: rgba(255, 255, 255, 0.08) !important;
-      border: 1px solid rgba(255, 255, 255, 0.2) !important;
-
-      .qty-mini-btn,
-      .wo-qty-btn {
-        color: rgba(255, 255, 255, 0.85) !important;
-
-        &:hover:not(:disabled) {
-          background-color: rgba(255, 255, 255, 0.18) !important;
-          color: #ffffff !important;
-        }
-
-        &:disabled {
-          opacity: 0.3 !important;
-        }
-      }
-
-      .qty-mini-val,
-      .wo-qty-val {
-        color: #ffffff !important;
-      }
-    }
-
-    .cell-input-wrapper,
-    .wo-compact-input-wrap {
-      background: rgba(255, 255, 255, 0.08) !important;
-      background-color: rgba(255, 255, 255, 0.08) !important;
-      border: 1px solid rgba(255, 255, 255, 0.2) !important;
-      color: #ffffff !important;
-
-      &:focus-within {
-        border-color: var(--border-active) !important;
-        background-color: rgba(255, 255, 255, 0.14) !important;
-        box-shadow: 0 0 0 1px var(--border-active) !important;
-      }
-
-      .cell-prefix,
-      .wo-currency {
-        color: rgba(255, 255, 255, 0.65) !important;
-      }
-
-      input,
-      .cell-number-input,
-      .wo-compact-input {
-        color: #ffffff !important;
-
-        &.text-slate-800,
-        &.text-slate-900 {
-          color: #ffffff !important;
-        }
-      }
-    }
-
-    .item-title-input,
-    .wo-item-desc-input {
-      color: #ffffff !important;
-
-      &:focus {
-        background-color: rgba(255, 255, 255, 0.08) !important;
-        color: #ffffff !important;
-      }
-    }
-
-    // 8. Corrección de Imagen 1: Gestión de Repuestos (inforepuestos)
-    .vehicle-block-card {
-      background: var(--bg-surface) !important;
-      border: 1px solid var(--border-glass) !important;
-    }
-
-    .vehicle-block-header {
-      background-color: var(--table-header-bg) !important;
-      border-bottom: 1px solid var(--border-glass) !important;
-      color: var(--text-primary) !important;
-
-      .brand-badge {
-        background-color: rgba(115, 103, 240, 0.2) !important;
-        border-color: rgba(115, 103, 240, 0.4) !important;
-        color: #a78bfa !important;
-      }
-
-      .vehicle-title,
-      span,
-      div {
-        color: var(--text-primary) !important;
-      }
-    }
-
-    // 9. Corrección de Imagen 2: Gestión de Operaciones
-    .operations-date-header {
-      background: rgba(255, 255, 255, 0.05) !important;
-      background-color: rgba(255, 255, 255, 0.05) !important;
-      border: 1px solid var(--border-glass) !important;
-      color: var(--text-primary) !important;
-
-      .date-title-text {
-        color: var(--text-primary) !important;
-      }
-    }
-
     .operations-movement-item {
       background: var(--bg-surface) !important;
-      background-color: var(--bg-surface) !important;
       border: 1px solid var(--border-glass) !important;
       color: var(--text-primary) !important;
 
-      h1, h2, h3, h4, h5, h6,
-      .font-weight-bold,
+      h1,
+      h2,
+      h3,
+      h4,
+      h5,
+      h6,
       .text-slate-900,
-      .text-slate-800 {
+      .text-slate-800,
+      strong {
         color: var(--text-primary) !important;
       }
 
       p,
       .text-slate-600,
-      .text-slate-500 {
+      .text-slate-500,
+      span {
         color: var(--text-secondary) !important;
       }
-
-      .movement-client-row {
-        color: var(--text-secondary) !important;
-
-        span {
-          color: var(--text-secondary) !important;
-        }
-
-        .v-icon {
-          color: var(--text-muted) !important;
-        }
-      }
     }
+  }
 
-    .movements-scroll-container {
-      background: transparent !important;
-      background-color: transparent !important;
-    }
+  @else if ($theme-name =='light-glass') {
 
-    // Filtros de Movimientos (Pills)
-    .movement-filter-pills {
-      background-color: rgba(255, 255, 255, 0.06) !important;
-      border: 1px solid rgba(255, 255, 255, 0.12) !important;
-
-      .filter-pill-btn {
-        color: rgba(255, 255, 255, 0.7) !important;
-
-        &:hover:not(.active) {
-          color: #ffffff !important;
-          background-color: rgba(255, 255, 255, 0.08) !important;
-        }
-
-        &.active {
-          background-color: rgba(255, 255, 255, 0.16) !important;
-          color: #ffffff !important;
-          border: 1px solid rgba(255, 255, 255, 0.28) !important;
-          box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3) !important;
-        }
-      }
-    }
-
-    // Badges en Movimientos de Operaciones
-    .ot-chip-badge {
-      background: rgba(139, 92, 246, 0.22) !important;
-      background-color: rgba(139, 92, 246, 0.22) !important;
-      color: #ffffff !important;
-      border: 1px solid rgba(167, 139, 250, 0.45) !important;
-
-      &, span, .v-icon, * {
-        color: #ffffff !important;
-      }
-    }
-
-    .license-plate-badge,
-    .kardex-plate-badge {
-      background: rgba(255, 255, 255, 0.08) !important;
-      background-color: rgba(255, 255, 255, 0.08) !important;
-      color: #ffffff !important;
-      border: 1px solid rgba(255, 255, 255, 0.22) !important;
-
-      &, span, * {
-        color: #ffffff !important;
-        font-weight: 700 !important;
-      }
-    }
-
-    .payment-method-chip {
-      color: #ffffff !important;
-
-      &.method-badge-cash {
-        background: rgba(16, 185, 129, 0.2) !important;
-        background-color: rgba(16, 185, 129, 0.2) !important;
-        color: #ffffff !important;
-        border: 1px solid rgba(52, 211, 153, 0.45) !important;
-      }
-
-      &.method-badge-pichincha {
-        background: rgba(234, 179, 8, 0.2) !important;
-        background-color: rgba(234, 179, 8, 0.2) !important;
-        color: #ffffff !important;
-        border: 1px solid rgba(250, 204, 21, 0.45) !important;
-      }
-
-      &.method-badge-guayaquil {
-        background: rgba(236, 72, 153, 0.2) !important;
-        background-color: rgba(236, 72, 153, 0.2) !important;
-        color: #ffffff !important;
-        border: 1px solid rgba(244, 114, 182, 0.45) !important;
-      }
-
-      &.method-badge-transfer {
-        background: rgba(59, 130, 246, 0.2) !important;
-        background-color: rgba(59, 130, 246, 0.2) !important;
-        color: #ffffff !important;
-        border: 1px solid rgba(96, 165, 250, 0.45) !important;
-      }
-
-      &, span, .v-icon, * {
-        color: #ffffff !important;
-      }
-    }
-
-    // Avatares de dirección de movimiento (Ingreso, Egreso, Transferencia)
-    .movement-direction-avatar {
-      &.avatar-income {
-        background-color: rgba(34, 197, 94, 0.18) !important;
-        color: #4ade80 !important;
-        border: 1px solid rgba(34, 197, 94, 0.35) !important;
-
-        .v-icon {
-          color: #4ade80 !important;
-        }
-      }
-
-      &.avatar-expense {
-        background-color: rgba(239, 68, 68, 0.18) !important;
-        color: #f87171 !important;
-        border: 1px solid rgba(239, 68, 68, 0.35) !important;
-
-        .v-icon {
-          color: #f87171 !important;
-        }
-      }
-
-      &.avatar-transfer {
-        background-color: rgba(56, 189, 248, 0.18) !important;
-        color: #38bdf8 !important;
-        border: 1px solid rgba(56, 189, 248, 0.35) !important;
-
-        .v-icon {
-          color: #38bdf8 !important;
-        }
-      }
-    }
-
-    // KPI Badges y Widgets en Operaciones
-    .kpi-icon-badge {
-      &.kpi-icon-income {
-        background-color: rgba(16, 185, 129, 0.2) !important;
-        color: #34d399 !important;
-        border: 1px solid rgba(16, 185, 129, 0.4) !important;
-      }
-      &.kpi-icon-expense {
-        background-color: rgba(239, 68, 68, 0.2) !important;
-        color: #f87171 !important;
-        border: 1px solid rgba(239, 68, 68, 0.4) !important;
-      }
-      &.kpi-icon-balance {
-        background-color: rgba(59, 130, 246, 0.2) !important;
-        color: #60a5fa !important;
-        border: 1px solid rgba(59, 130, 246, 0.4) !important;
-      }
-      &.kpi-icon-ot {
-        background-color: rgba(139, 92, 246, 0.2) !important;
-        color: #a78bfa !important;
-        border: 1px solid rgba(139, 92, 246, 0.4) !important;
-      }
-    }
-
-    .ot-badge-mini {
-      &.ot-badge-progress {
-        background-color: rgba(245, 158, 11, 0.2) !important;
-        color: #fde68a !important;
-        border: 1px solid rgba(245, 158, 11, 0.4) !important;
-      }
-      &.ot-badge-ready {
-        background-color: rgba(16, 185, 129, 0.2) !important;
-        color: #a7f3d0 !important;
-        border: 1px solid rgba(16, 185, 129, 0.4) !important;
-      }
-    }
-
-    .section-icon-box,
-    .ot-widget-icon,
-    .account-widget-icon {
-      background-color: rgba(255, 255, 255, 0.08) !important;
-      color: #ffffff !important;
-    }
-
-    .badge-count {
-      background-color: rgba(255, 255, 255, 0.08) !important;
-      color: #ffffff !important;
-      border-color: rgba(255, 255, 255, 0.18) !important;
-    }
-
-    // 10. Corrección de Imágenes 3 y 4: Aportes de Capital y Transferencias
-    .transfer-table,
-    table {
-      tbody {
-        tr.transfer-date-header-row {
-          background: var(--table-header-bg) !important;
-
-          td {
-            background: linear-gradient(90deg, rgba(255, 255, 255, 0.06) 0%, rgba(255, 255, 255, 0.03) 50%, rgba(255, 255, 255, 0.01) 100%) !important;
-            border-top: 1px solid var(--border-glass) !important;
-            border-bottom: 1px solid var(--border-glass) !important;
-            border-left: 4px solid rgb(var(--v-theme-primary)) !important;
-            color: var(--text-primary) !important;
-          }
-
-          &:hover td {
-            background: linear-gradient(90deg, rgba(255, 255, 255, 0.09) 0%, rgba(255, 255, 255, 0.05) 50%, rgba(255, 255, 255, 0.02) 100%) !important;
-          }
-
-          .date-header-title,
-          .text-slate-900 {
-            color: var(--text-primary) !important;
-          }
-        }
-
-        tr.transfer-row {
-          background-color: transparent !important;
-
-          td {
-            border-bottom: 1px solid var(--border-glass) !important;
-            color: var(--text-primary) !important;
-          }
-
-          &:hover td {
-            background-color: var(--table-row-hover-bg) !important;
-          }
-
-          .text-slate-900,
-          .text-slate-800 {
-            color: var(--text-primary) !important;
-          }
-
-          .text-slate-600,
-          .text-slate-500 {
-            color: var(--text-secondary) !important;
-          }
-        }
-      }
-    }
-
-    // 11. Corrección de Imagen 5: Arqueo de Caja (finanzas/arqueo)
-    .cash-stepper {
-      background: rgba(255, 255, 255, 0.05) !important;
-      border: 1.5px solid var(--border-glass) !important;
-
-      &:hover {
-        background: rgba(255, 255, 255, 0.08) !important;
-        border-color: var(--border-active) !important;
-      }
-
-      &:focus-within {
-        background: rgba(255, 255, 255, 0.1) !important;
-        border-color: var(--border-active) !important;
-      }
-
-      &.has-qty {
-        background: rgba(115, 103, 240, 0.15) !important;
-        border-color: rgba(115, 103, 240, 0.5) !important;
-      }
-
-      &.coin-stepper.has-qty {
-        background: rgba(245, 158, 11, 0.15) !important;
-        border-color: #f59e0b !important;
-      }
-
-      .stepper-btn {
-        color: var(--text-secondary) !important;
-
-        &:hover:not(:disabled) {
-          background: rgba(255, 255, 255, 0.1) !important;
-          color: #ffffff !important;
-        }
-      }
-
-      .stepper-input {
-        color: #ffffff !important;
-      }
-    }
-
-    .bill-badge {
-      background: linear-gradient(135deg, rgba(115, 103, 240, 0.25) 0%, rgba(115, 103, 240, 0.1) 100%) !important;
-      color: #c4b5fd !important;
-      border: 1px solid rgba(115, 103, 240, 0.4) !important;
-    }
-
-    .coin-badge {
-      background: linear-gradient(135deg, rgba(245, 158, 11, 0.25) 0%, rgba(245, 158, 11, 0.1) 100%) !important;
-      color: #fde68a !important;
-      border: 1px solid rgba(245, 158, 11, 0.4) !important;
-    }
-
-    .cash-row {
-      border-bottom: 1px solid var(--border-glass) !important;
-
-      &:hover {
-        background-color: rgba(255, 255, 255, 0.04) !important;
-      }
-
-      &.row-active {
-        background-color: rgba(115, 103, 240, 0.08) !important;
-      }
-    }
-
-    .table-cash {
-      thead th {
-        color: var(--text-muted) !important;
-        border-bottom: 1px solid var(--border-glass) !important;
-      }
-    }
-
-    // 12. Animación de Carga Shimmer Unificada (Sin parches ni colores desiguales)
-    .shimmer-line,
-    .shimmer-circle,
-    .shimmer-avatar,
-    .shimmer-chip,
-    .shimmer-button,
-    .shimmer-card,
-    .shimmer-box,
-    .shimmer-item,
-    .skeleton-box,
-    .skeleton-loader {
-      background: var(--skeleton-gradient) !important;
-      background-size: 200% 100% !important;
-      animation: loading-shimmer 1.5s infinite ease-in-out !important;
-      border-color: transparent !important;
-    }
-
-    .shimmer-row,
-    .skeleton-row {
-      background: transparent !important;
-      background-color: transparent !important;
-
-      td {
-        border-bottom: 1px solid var(--border-glass) !important;
-      }
-    }
-
-    // 13. Texto de Alto Contraste en todo Modo Oscuro
-    .text-slate-900,
-    .text-slate-800,
-    .text-slate-700,
-    .text-grey-darken-4,
-    .text-grey-darken-3,
-    .text-grey-darken-2,
-    .text-high-emphasis {
-      color: var(--text-primary) !important;
-    }
-
-    .text-slate-600,
-    .text-slate-500,
-    .text-grey-darken-1 {
-      color: var(--text-secondary) !important;
-    }
-  } @else if ($theme-name == 'light-glass') {
-    // ====================================================================
-    // TEMA CLARO TRASLÚCIDO (light-glass):
-    // Fondo pastel suave con texto oscuro/fuerte de alto contraste
-    // ====================================================================
-
-    // Éxito / Activo / Pagado (verde esmeralda oscuro)
     .status-paid,
     .status-success,
     .v-chip.text-success,
@@ -1965,7 +1007,11 @@ $glass-themes: (
       border: 1px solid #a7f3d0 !important;
       color: #065f46 !important;
 
-      &, span, .v-chip__content, .v-icon, * {
+      &,
+      span,
+      .v-chip__content,
+      .v-icon,
+      * {
         color: #065f46 !important;
         font-weight: 700 !important;
       }
@@ -1975,7 +1021,6 @@ $glass-themes: (
       }
     }
 
-    // Error / Anulado / Cancelado / Inactivo (rojo carmesí oscuro)
     .status-pending,
     .status-error,
     .status-canceled,
@@ -1986,7 +1031,11 @@ $glass-themes: (
       border: 1px solid #fecaca !important;
       color: #991b1b !important;
 
-      &, span, .v-chip__content, .v-icon, * {
+      &,
+      span,
+      .v-chip__content,
+      .v-icon,
+      * {
         color: #991b1b !important;
         font-weight: 700 !important;
       }
@@ -1996,7 +1045,6 @@ $glass-themes: (
       }
     }
 
-    // Alerta / Pendiente / Parcial (ámbar tostado)
     .status-partial,
     .status-warning,
     .v-chip.text-warning,
@@ -2006,7 +1054,11 @@ $glass-themes: (
       border: 1px solid #fde68a !important;
       color: #92400e !important;
 
-      &, span, .v-chip__content, .v-icon, * {
+      &,
+      span,
+      .v-chip__content,
+      .v-icon,
+      * {
         color: #92400e !important;
         font-weight: 700 !important;
       }
@@ -2016,7 +1068,6 @@ $glass-themes: (
       }
     }
 
-    // Info / Transferencia / Azul (azul zafiro profundo)
     .status-transfer,
     .status-info,
     .v-chip.text-info,
@@ -2026,7 +1077,11 @@ $glass-themes: (
       border: 1px solid #bfdbfe !important;
       color: #1e40af !important;
 
-      &, span, .v-chip__content, .v-icon, * {
+      &,
+      span,
+      .v-chip__content,
+      .v-icon,
+      * {
         color: #1e40af !important;
         font-weight: 700 !important;
       }
@@ -2036,7 +1091,6 @@ $glass-themes: (
       }
     }
 
-    // Primary (morado/violeta profundo)
     .status-primary,
     .v-chip.text-primary,
     .v-chip.bg-primary,
@@ -2045,7 +1099,11 @@ $glass-themes: (
       border: 1px solid #ddd6fe !important;
       color: #5e50ee !important;
 
-      &, span, .v-chip__content, .v-icon, * {
+      &,
+      span,
+      .v-chip__content,
+      .v-icon,
+      * {
         color: #5e50ee !important;
         font-weight: 700 !important;
       }
@@ -2055,7 +1113,6 @@ $glass-themes: (
       }
     }
 
-    // Secondary (gris carbón)
     .status-secondary,
     .v-chip.text-secondary,
     .v-chip.bg-secondary,
@@ -2064,7 +1121,11 @@ $glass-themes: (
       border: 1px solid #cbd5e1 !important;
       color: #334155 !important;
 
-      &, span, .v-chip__content, .v-icon, * {
+      &,
+      span,
+      .v-chip__content,
+      .v-icon,
+      * {
         color: #334155 !important;
         font-weight: 700 !important;
       }
@@ -2074,51 +1135,6 @@ $glass-themes: (
       }
     }
 
-    // ====================================================================
-    // REGLA MAESTRA TEMA TRANSPARENTE CLARO (light-glass):
-    // "no se ven iconos, las letras e iconos en este tema deben ser de color negro"
-    // ====================================================================
-
-    // 1. Textos Generales, Títulos, Subtítulos y Contenidos
-    h1, h2, h3, h4, h5, h6,
-    .text-h1, .text-h2, .text-h3, .text-h4, .text-h5, .text-h6,
-    .text-subtitle-1, .text-subtitle-2, .text-title,
-    .v-card-title, .card-title,
-    .v-card-subtitle, .card-subtitle {
-      color: #000000 !important;
-    }
-
-    p,
-    .text-body-1,
-    .text-body-2,
-    .text-caption,
-    .text-medium-emphasis,
-    .text-high-emphasis,
-    .text-disabled,
-    label,
-    .v-label {
-      color: #000000 !important;
-    }
-
-    // Clases utilitarias de texto que suelen ser grises
-    .text-slate-900,
-    .text-slate-800,
-    .text-slate-700,
-    .text-slate-600,
-    .text-slate-500,
-    .text-slate-400,
-    .text-grey-darken-1,
-    .text-grey-darken-2,
-    .text-grey-darken-3,
-    .text-grey-darken-4,
-    .text-grey-600,
-    .text-grey-700,
-    .text-grey-800,
-    .text-grey-900 {
-      color: #000000 !important;
-    }
-
-    // 2. Iconos Globales en Tema Transparente Claro (100% color negro y visibles)
     .v-icon,
     i.v-icon,
     svg.v-icon,
@@ -2129,384 +1145,9 @@ $glass-themes: (
       opacity: 1 !important;
       visibility: visible !important;
     }
-
-    // Excepciones de iconos: Botones con fondo sólido / gradiente oscuro
-    .v-btn.bg-primary .v-icon,
-    .v-btn--variant-elevated.bg-primary .v-icon,
-    .v-btn[style*="linear-gradient"] .v-icon,
-    .v-btn[style*="background: linear-gradient"] .v-icon,
-    .v-btn.bg-error .v-icon,
-    .v-btn.bg-success .v-icon,
-    .v-btn.bg-info .v-icon,
-    .v-btn.bg-warning .v-icon {
-      color: #ffffff !important;
-      fill: #ffffff !important;
-    }
-
-    // 3. Tarjetas KPI de Dashboard (.pepa-kpi-card)
-    .pepa-kpi-card {
-      background: rgba(255, 255, 255, 0.78) !important;
-      background-color: rgba(255, 255, 255, 0.78) !important;
-      border: 1px solid rgba(0, 0, 0, 0.12) !important;
-      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.06) !important;
-      color: #000000 !important;
-
-      // Desactivar overlays oscuros de Vuetify en tarjetas interactivas con click
-      .v-card__overlay,
-      .v-card__underlay {
-        display: none !important;
-        opacity: 0 !important;
-        background: transparent !important;
-      }
-
-      &::before,
-      &::after {
-        opacity: 0.12;
-      }
-
-      // Obligar a que todos los textos blancos sean negros
-      .text-white,
-      [class*="text-white"],
-      .text-caption,
-      .text-h4,
-      p,
-      div:not(.v-card__overlay):not(.v-card__underlay),
-      span:not(.v-card__overlay):not(.v-card__underlay) {
-        color: #000000 !important;
-      }
-
-      // Iconos en las tarjetas KPI (los que estaban invisibles con color="white")
-      .v-icon,
-      .v-icon[style*="white"],
-      .v-icon[style*="#fff"],
-      .v-icon[style*="#FFF"],
-      .v-icon.text-white {
-        color: #000000 !important;
-        fill: #000000 !important;
-        opacity: 1 !important;
-        visibility: visible !important;
-      }
-
-      .kpi-icon-bubble {
-        background: rgba(0, 0, 0, 0.06) !important;
-        background-color: rgba(0, 0, 0, 0.06) !important;
-        border: 1px solid rgba(0, 0, 0, 0.12) !important;
-        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04) !important;
-
-        .v-icon, i, svg {
-          color: #000000 !important;
-          fill: #000000 !important;
-          opacity: 1 !important;
-          visibility: visible !important;
-        }
-      }
-
-      .kpi-badge-pill {
-        background: rgba(0, 0, 0, 0.06) !important;
-        background-color: rgba(0, 0, 0, 0.06) !important;
-        border: 1px solid rgba(0, 0, 0, 0.12) !important;
-        color: #000000 !important;
-
-        .v-icon, i, svg, * {
-          color: #000000 !important;
-          fill: #000000 !important;
-          opacity: 1 !important;
-        }
-      }
-
-      .border-t {
-        border-color: rgba(0, 0, 0, 0.1) !important;
-      }
-    }
-
-    // 4. Tarjetas de Gráficos y Avatares de Cabecera (.mock-card)
-    .mock-card {
-      background: rgba(255, 255, 255, 0.78) !important;
-      background-color: rgba(255, 255, 255, 0.78) !important;
-      border: 1px solid rgba(0, 0, 0, 0.1) !important;
-      color: #000000 !important;
-
-      h3, p, span, div {
-        color: #000000 !important;
-      }
-
-      .v-avatar {
-        background-color: rgba(0, 0, 0, 0.06) !important;
-        border: 1px solid rgba(0, 0, 0, 0.1) !important;
-
-        .v-icon, i, svg {
-          color: #000000 !important;
-          fill: #000000 !important;
-          opacity: 1 !important;
-        }
-      }
-    }
-
-    // Apexcharts en gráficos de Dashboard
-    .apexcharts-text,
-    .apexcharts-legend-text,
-    .apexcharts-yaxis-label,
-    .apexcharts-xaxis-label {
-      fill: #000000 !important;
-      color: #000000 !important;
-      font-weight: 600 !important;
-    }
-
-    // 5. Barra Segmentada de Módulos (Pestañas / Luxury Tabs)
-    .luxury-tabs-nav {
-      background-color: rgba(255, 255, 255, 0.8) !important;
-      border: 1px solid rgba(0, 0, 0, 0.1) !important;
-
-      .luxury-tab-btn {
-        color: #000000 !important;
-
-        .tab-title {
-          color: #000000 !important;
-          font-weight: 700 !important;
-        }
-
-        .tab-icon-wrap .v-icon {
-          color: #000000 !important;
-          fill: #000000 !important;
-          opacity: 1 !important;
-        }
-
-        &.active,
-        &.active-tab {
-          color: #ffffff !important;
-
-          .tab-title {
-            color: #ffffff !important;
-          }
-
-          .tab-icon-wrap .v-icon {
-            color: #ffffff !important;
-            fill: #ffffff !important;
-          }
-        }
-      }
-    }
-
-    // 6. Barra Lateral de Navegación (Sidebar / Navigation Drawer)
-    .layout-vertical-nav,
-    .v-navigation-drawer,
-    .sidebar {
-      background: var(--bg-sidebar) !important;
-      border-right: 1px solid rgba(0, 0, 0, 0.1) !important;
-
-      .nav-header .app-logo-title {
-        color: #000000 !important;
-        font-weight: 800 !important;
-      }
-
-      .nav-section-title .title-text {
-        color: #000000 !important;
-        font-weight: 800 !important;
-        letter-spacing: 0.5px;
-      }
-
-      .nav-link a,
-      .nav-group-label {
-        color: #000000 !important;
-
-        .nav-item-icon,
-        .nav-item-title,
-        .nav-group-arrow,
-        .v-icon {
-          color: #000000 !important;
-          fill: #000000 !important;
-          opacity: 1 !important;
-        }
-
-        &:hover {
-          color: #000000 !important;
-
-          .nav-item-icon,
-          .nav-item-title,
-          .nav-group-arrow,
-          .v-icon {
-            color: #000000 !important;
-            fill: #000000 !important;
-          }
-        }
-      }
-
-      // GRUPOS ACTIVOS Y ABIERTOS (Viñetas seleccionadas / desplegadas como Ordenes de trabajo, Operaciones, etc.)
-      .nav-group.active > .nav-group-label,
-      .nav-group.open > .nav-group-label,
-      .nav-group.active.open > .nav-group-label,
-      .nav-group > .nav-group-label {
-        color: #000000 !important;
-
-        &,
-        .nav-item-icon,
-        .nav-item-title,
-        .nav-group-arrow,
-        .v-icon {
-          color: #000000 !important;
-          fill: #000000 !important;
-          opacity: 1 !important;
-          font-weight: 700 !important;
-        }
-
-        &:hover {
-          color: #000000 !important;
-
-          &,
-          .nav-item-icon,
-          .nav-item-title,
-          .nav-group-arrow,
-          .v-icon {
-            color: #000000 !important;
-            fill: #000000 !important;
-          }
-        }
-      }
-
-      // Hijos dentro de grupos desplegados (.nav-group-children)
-      .nav-group-children {
-        border-left: 1.5px solid rgba(0, 0, 0, 0.15) !important;
-
-        .nav-link a {
-          color: #000000 !important;
-
-          .nav-item-icon,
-          .nav-item-title {
-            color: #000000 !important;
-            fill: #000000 !important;
-          }
-        }
-      }
-
-      // Enlace activo
-      .nav-link > a.router-link-active,
-      .nav-link > a.router-link-exact-active,
-      .nav-link.router-link-active > a,
-      .nav-link.router-link-exact-active > a,
-      .v-list-item--active {
-        color: var(--text-active) !important;
-
-        .nav-item-icon,
-        .nav-item-title {
-          color: var(--text-active) !important;
-          fill: var(--text-active) !important;
-        }
-      }
-    }
-
-    // 7. Cabecera / Header Superior y Theme Switcher
-    .layout-navbar,
-    .v-app-bar {
-      border-bottom: 1px solid rgba(0, 0, 0, 0.1) !important;
-
-      .v-icon,
-      .v-btn,
-      i, svg {
-        color: #000000 !important;
-        fill: #000000 !important;
-        opacity: 1 !important;
-      }
-
-      .theme-switcher-btn {
-        background: rgba(0, 0, 0, 0.06) !important;
-        border: 1px solid rgba(0, 0, 0, 0.12) !important;
-
-        .v-icon {
-          color: #000000 !important;
-          fill: #000000 !important;
-          opacity: 1 !important;
-        }
-      }
-    }
-
-    // 8. Buscador y Campos de Texto
-    .search-field,
-    .v-text-field,
-    .v-input {
-      input,
-      .v-field__input {
-        color: #000000 !important;
-
-        &::placeholder {
-          color: rgba(0, 0, 0, 0.65) !important;
-          opacity: 1 !important;
-        }
-      }
-
-      .v-field__prepend-inner .v-icon,
-      .v-field__append-inner .v-icon {
-        color: #000000 !important;
-        fill: #000000 !important;
-        opacity: 0.85 !important;
-      }
-    }
-
-    // 9. Tablas, Diálogos y Menús Flotantes
-    .v-table,
-    .v-data-table,
-    table {
-      color: #000000 !important;
-
-      thead th,
-      .v-data-table__th {
-        color: #000000 !important;
-        font-weight: 700 !important;
-      }
-
-      tbody td,
-      .v-data-table__td {
-        color: #000000 !important;
-
-        span, div, a {
-          color: #000000;
-        }
-
-        .v-icon {
-          color: #000000 !important;
-          fill: #000000 !important;
-        }
-      }
-    }
-
-    .v-overlay,
-    .v-menu,
-    .v-list {
-      .v-list-item-title,
-      .v-list-item-subtitle,
-      .v-list-item,
-      .v-list-item__prepend .v-icon {
-        color: #000000 !important;
-        fill: #000000 !important;
-      }
-    }
-
-    // 10. Cajas de Iconos en Operaciones, Taller y Finanzas
-    .section-icon-box,
-    .ot-widget-icon,
-    .account-widget-icon,
-    .kpi-icon-badge {
-      background-color: rgba(0, 0, 0, 0.06) !important;
-      border: 1px solid rgba(0, 0, 0, 0.12) !important;
-
-      .v-icon, i, svg {
-        color: #000000 !important;
-        fill: #000000 !important;
-      }
-    }
-
-    .badge-count {
-      background-color: rgba(0, 0, 0, 0.06) !important;
-      color: #000000 !important;
-      border: 1px solid rgba(0, 0, 0, 0.14) !important;
-      font-weight: 700 !important;
-    }
   }
 
-  // ====================================================================
-  // REGLA UNIVERSAL SKELETON LOADERS:
-  // Garantiza que TODOS los skeletons del sistema tengan exactamente
-  // el mismo color y brillo según el tema seleccionado (Claro u Oscuro).
-  // ====================================================================
+  // SKELETON LOADERS
   .shimmer-line,
   .shimmer-circle,
   .shimmer-avatar,
@@ -2522,586 +1163,38 @@ $glass-themes: (
     animation: loading-shimmer 1.5s infinite ease-in-out !important;
     border-color: transparent !important;
   }
-
-  .shimmer-row,
-  .skeleton-row {
-    background: transparent !important;
-    background-color: transparent !important;
-
-    td {
-      border-bottom: 1px solid var(--border-glass, rgba(148, 163, 184, 0.12)) !important;
-    }
-  }
-
-  // ====================================================================
-  // REGLA B UNIVERSAL (APLICA A TODOS LOS TEMAS):
-  // Si cualquier chip, badge o celda conserva un fondo claro o pastel
-  // (verde claro, amarillo claro, blanco, gris claro), FORZAR el color
-  // del texto a oscuro (#0f172a !important) para garantizar legibilidad del 100%.
-  // NUNCA permitir texto blanco sobre fondos claros o blancos.
-  // ====================================================================
-  .v-chip,
-  .status-pill-clean,
-  .status-pill,
-  .badge,
-  .kardex-plate-badge,
-  .doc-type-badge-mini {
-    &.bg-white,
-    &.bg-grey-lighten-4,
-    &.bg-grey-lighten-3,
-    &.bg-grey-lighten-5,
-    &[class*="lighten-3"],
-    &[class*="lighten-4"],
-    &[class*="lighten-5"],
-    &[style*="background-color: #ffffff"],
-    &[style*="background-color: #fff"],
-    &[style*="background-color:#ffffff"],
-    &[style*="background-color:#fff"],
-    &[style*="background: #ffffff"],
-    &[style*="background: #fff"],
-    &[style*="background:#ffffff"],
-    &[style*="background:#fff"],
-    &[style*="background-color: rgb(2"],
-    &[style*="background: rgb(2"],
-    &[style*="background-color: rgb(24"],
-    &[style*="background-color: rgb(25"] {
-      color: #0f172a !important;
-
-      &, span, .v-chip__content, .v-icon, * {
-        color: #0f172a !important;
-        font-weight: 800 !important;
-      }
-    }
-  }
-
-  // Corrección estricta para modales/diálogos con estilos inline fijos de color blanco en tema claro
-  @if not $is-dark {
-    // Placas de vehículos en listados (tema claro)
-    .kardex-plate-badge {
-      background-color: #f8fafc !important;
-      color: #0f172a !important;
-      border: 1.5px solid #cbd5e1 !important;
-
-      &, span, * {
-        color: #0f172a !important;
-        font-weight: 800 !important;
-      }
-    }
-
-    .v-chip[style*="color: #ffffff"],
-    .v-chip[style*="color:#ffffff"],
-    .v-chip[style*="color: #fff"],
-    .v-chip[style*="color:#fff"],
-    .v-chip[style*="rgba(255, 255, 255"],
-    [style*="color: #ffffff"]:not(.v-btn):not(.bg-primary *):not([class*="v-btn"]) {
-      color: #0f172a !important;
-
-      &, span, .v-chip__content, .v-icon, * {
-        color: #0f172a !important;
-      }
-    }
-  }
-
-
 }
 
 // --------------------------------------------------------------------------
-// 5. REGLAS GLOBALES PARA DIÁLOGOS, POPUPS, MENÚS Y TELEPORTED OVERLAYS
+// 5. REGLAS GLOBALES PARA DIÁLOGOS Y POPUPS (MIXIN)
 // --------------------------------------------------------------------------
 @mixin apply-glass-dialog-rules($theme) {
   $is-dark: map-get($theme, 'is-dark');
-  // Asegurar que overlays INACTIVOS sean 100% transparentes sin filtros ni cajas que tapen la pantalla
-  .v-overlay:not(.v-overlay--active) {
-    background: transparent !important;
-    backdrop-filter: none !important;
-    -webkit-backdrop-filter: none !important;
-    border: none !important;
-    box-shadow: none !important;
+  $theme-name: map-get($theme, 'name');
 
-    .v-overlay__content {
-      background: transparent !important;
-      backdrop-filter: none !important;
-      -webkit-backdrop-filter: none !important;
-      border: none !important;
-      box-shadow: none !important;
-    }
-  }
+  @if $theme-name !='taller' {
 
-  // Diálogos y modales ACTIVOS
-  .v-overlay--active.v-dialog > .v-overlay__content,
-  .v-overlay--active.v-dialog > .v-overlay__content > .v-card,
-  .v-overlay--active .v-dialog > .v-card,
-  .v-overlay--active .v-card.modal-glass,
-  .v-overlay--active.v-dialog .v-card,
-  .v-dialog.v-overlay--active .v-card,
-  .v-dialog .v-card,
-  .v-dialog .custom-dialog-card,
-  .custom-dialog-card {
-    background: var(--bg-dialog) !important;
-    backdrop-filter: var(--blur-glass) !important;
-    -webkit-backdrop-filter: var(--blur-glass) !important;
-    border: 1px solid var(--border-glass) !important;
-    box-shadow: 0 24px 60px rgba(0, 0, 0, 0.55), var(--shadow-glow) !important;
-    color: var(--text-primary) !important;
-
-    &.bg-white,
-    &.bg-slate-50,
-    &.bg-slate-100 {
+    .v-overlay--active.v-dialog>.v-overlay__content,
+    .v-overlay--active.v-dialog>.v-overlay__content>.v-card,
+    .v-overlay--active .v-dialog>.v-card,
+    .v-overlay--active .v-card.modal-glass,
+    .v-dialog .v-card,
+    .custom-dialog-card {
       background: var(--bg-dialog) !important;
-      background-color: var(--bg-dialog) !important;
-    }
-
-    .v-card-title,
-    .v-card-text,
-    .v-card-item {
-      background: transparent !important;
-      background-color: transparent !important;
-      border-color: var(--border-glass) !important;
-      box-shadow: none !important;
-      color: var(--text-primary) !important;
-
-      &.bg-white,
-      &.bg-slate-50,
-      &.bg-slate-100,
-      &.bg-grey-lighten-5,
-      &.bg-grey-lighten-4,
-      &.bg-grey-lighten-3 {
-        background: transparent !important;
-        background-color: transparent !important;
-      }
-    }
-
-    .v-card-actions,
-    .sticky-dialog-footer {
-      background: var(--bg-dialog) !important;
-      background-color: var(--bg-dialog) !important;
-      border-top: 1px solid var(--border-glass) !important;
-      box-shadow: none !important;
-      color: var(--text-primary) !important;
-
-      &.bg-white,
-      &[class*="bg-white"],
-      &[class*="bg-grey-lighten"],
-      &[class*="bg-slate-"],
-      &.bg-surface {
-        background: var(--bg-dialog) !important;
-        background-color: var(--bg-dialog) !important;
-      }
-    }
-
-    @if $is-dark {
-      .bg-white:not(.v-btn--elevated):not(.v-btn--flat):not(.v-chip--color):not(.status-pill):not(.badge),
-      .bg-slate-50,
-      .bg-slate-100,
-      .bg-slate-200,
-      .bg-grey-lighten-5,
-      .bg-grey-lighten-4,
-      .bg-grey-lighten-3,
-      .bg-grey-100,
-      .bg-gray-50,
-      .bg-gray-100,
-      .bg-gray-200,
-      .bg-purple-lighten-5,
-      [class*="bg-purple-lighten"],
-      [class*="bg-indigo-lighten"],
-      [class*="bg-teal-lighten"],
-      [class*="bg-blue-lighten"],
-      .bg-blue-50,
-      .info-card-flat,
-      .stat-glass-card,
-      .modern-section-panel,
-      .totals-summary-card,
-      .spec-badge-card,
-      .spec-item,
-      .dialog-body-content,
-      .ot-empty-state-box,
-      .movements-scroll-container,
-      .operations-date-header,
-      .operations-movement-item {
-        background: rgba(255, 255, 255, 0.05) !important;
-        background-color: rgba(255, 255, 255, 0.05) !important;
-        border-color: var(--border-glass) !important;
-        color: var(--text-primary) !important;
-      }
-
-      .ot-items-box {
-        background: rgba(0, 0, 0, 0.32) !important;
-        background-color: rgba(0, 0, 0, 0.32) !important;
-        border: 1px solid rgba(255, 255, 255, 0.1) !important;
-        color: var(--text-primary) !important;
-
-        .ot-items-title {
-          color: rgba(255, 255, 255, 0.85) !important;
-        }
-
-        .ot-item-qty {
-          background: rgba(255, 255, 255, 0.12) !important;
-          color: #ffffff !important;
-          border: 1px solid rgba(255, 255, 255, 0.18) !important;
-        }
-
-        .ot-item-name {
-          color: rgba(255, 255, 255, 0.92) !important;
-        }
-
-        .ot-item-price {
-          color: #ffffff !important;
-        }
-      }
-
-      .plate-chip {
-        background: rgba(255, 255, 255, 0.08) !important;
-        color: #ffffff !important;
-        border-color: rgba(255, 255, 255, 0.25) !important;
-      }
-
-      [style*="background-color: #ffffff"],
-      [style*="background-color: #fff"],
-      [style*="background: white"],
-      [style*="background-color: white"],
-      [style*="background-color: #f8fafc"],
-      [style*="background-color: #fafafa"],
-      [style*="background-color: #fbfbfb"],
-      [style*="background-color: #f1f5f9"],
-      [style*="background-color: #f0fdf4"],
-      [style*="background-color: #f0f1ff"],
-      [style*="linear-gradient(135deg, #f8fafc"],
-      [style*="linear-gradient(135deg, #f0fdf4"] {
-        background: rgba(255, 255, 255, 0.05) !important;
-        background-color: rgba(255, 255, 255, 0.05) !important;
-        border-color: var(--border-glass) !important;
-        color: var(--text-primary) !important;
-      }
-
-      table, .v-table {
-        background: transparent !important;
-        background-color: transparent !important;
-        color: var(--text-primary) !important;
-
-        thead, thead tr, thead th, thead[class*="bg-"], tr[class*="bg-"], tr[class*="bg-slate"], tr[class*="bg-grey"] {
-          background: rgba(255, 255, 255, 0.06) !important;
-          background-color: rgba(255, 255, 255, 0.06) !important;
-          color: var(--text-primary) !important;
-          border-color: var(--border-glass) !important;
-        }
-
-        tbody tr, tbody td {
-          background: transparent !important;
-          color: var(--text-primary) !important;
-          border-color: rgba(255, 255, 255, 0.08) !important;
-        }
-
-        tbody tr:hover td {
-          background: rgba(255, 255, 255, 0.04) !important;
-        }
-      }
-
-      .v-field.bg-white,
-      .v-field--variant-outlined.bg-white,
-      .v-input.bg-white,
-      .v-field[class*="bg-"] {
-        background: rgba(255, 255, 255, 0.06) !important;
-        background-color: rgba(255, 255, 255, 0.06) !important;
-        border-color: var(--border-glass) !important;
-        color: var(--text-primary) !important;
-      }
-
-      .bg-emerald-50, [class*="bg-emerald-50"] {
-        background: rgba(16, 185, 129, 0.15) !important;
-        border-color: rgba(16, 185, 129, 0.3) !important;
-        color: #34d399 !important;
-      }
-
-      .bg-amber-50, [class*="bg-amber-50"], .bg-yellow-50, [class*="bg-yellow-50"] {
-        background: rgba(245, 158, 11, 0.15) !important;
-        border-color: rgba(245, 158, 11, 0.3) !important;
-        color: #fbbf24 !important;
-      }
-
-      .bg-red-50, [class*="bg-red-50"] {
-        background: rgba(239, 68, 68, 0.15) !important;
-        border-color: rgba(239, 68, 68, 0.3) !important;
-        color: #f87171 !important;
-      }
-
-      [class*="border-purple-lighten"],
-      [class*="border-indigo-lighten"],
-      [class*="border-teal-lighten"],
-      [class*="border-slate-"],
-      [class*="border-grey-"] {
-        border-color: var(--border-glass) !important;
-      }
-
-      [class*="text-indigo-darken"],
-      [class*="text-purple-darken"],
-      [class*="text-blue-darken"],
-      .text-slate-900,
-      .text-slate-800,
-      .text-slate-700,
-      .text-grey-darken-4,
-      .text-grey-darken-3,
-      .module-name,
-      .detail-value {
-        color: var(--text-primary) !important;
-      }
-
-      .text-slate-600,
-      .text-slate-500,
-      .text-grey-darken-2,
-      .text-grey-darken-1,
-      .module-subtitle,
-      .detail-label {
-        color: var(--text-secondary) !important;
-      }
-
-      .sku-badge,
-      .quantity-circle {
-        background: rgba(255, 255, 255, 0.10) !important;
-        color: var(--text-primary) !important;
-      }
-
-      .sri-security-ribbon {
-        background: linear-gradient(135deg, rgba(16, 185, 129, 0.15) 0%, rgba(14, 165, 233, 0.15) 100%) !important;
-        border: 1.5px solid rgba(14, 165, 233, 0.3) !important;
-
-        .sri-shield-avatar {
-          background: rgba(255, 255, 255, 0.08) !important;
-          border: 1px solid rgba(255, 255, 255, 0.15) !important;
-        }
-      }
-
-      .v-card {
-        background: rgba(255, 255, 255, 0.04) !important;
-        border: 1px solid var(--border-glass) !important;
-      }
-
-      // ==================================================================
-      // UNIFICACIÓN DE CABECERAS DE VDIALOGS EN TEMAS OSCUROS GLASS
-      // ==================================================================
-      .custom-dialog-header-primary,
-      .custom-dialog-header,
-      .custom-dialog-header-danger,
-      .custom-dialog-header-error,
-      .custom-dialog-header-warning,
-      .custom-dialog-header-info,
-      .custom-dialog-header-success,
-      .custom-dialog-header-secondary,
-      .dialog-header-banner,
-      .sale-dialog-header-banner,
-      .product-quick-header,
-      .sri-progress-header,
-      .v-card-title.bg-primary,
-      .v-card-item.bg-primary,
-      & > .bg-primary:first-child,
-      & > div:first-child[class*="custom-dialog-header"],
-      & > div:first-child[class*="dialog-header"] {
-        background: var(--bg-dialog-header) !important;
-        border-bottom: 1px solid var(--border-dialog-header, var(--border-glass)) !important;
-        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4) !important;
-        color: #ffffff !important;
-
-        &::before {
-          background: var(--dialog-header-glow) !important;
-        }
-
-        .custom-dialog-avatar,
-        .header-avatar-badge,
-        .v-avatar:not(.v-avatar--image):not([class*="bg-white"]) {
-          background: var(--dialog-avatar-bg) !important;
-          border: 1.5px solid var(--dialog-avatar-border) !important;
-          box-shadow: var(--dialog-avatar-shadow) !important;
-
-          .v-icon {
-            color: #ffffff !important;
-            filter: drop-shadow(0 2px 5px rgba(0, 0, 0, 0.35)) !important;
-          }
-        }
-
-        .custom-dialog-title,
-        .dialog-title,
-        h3, h2, h4,
-        .v-card-title {
-          color: #ffffff !important;
-          text-shadow: 0 2px 4px rgba(0, 0, 0, 0.6) !important;
-        }
-
-        .custom-dialog-subtitle,
-        .dialog-subtitle,
-        p,
-        .text-caption {
-          color: var(--text-secondary) !important;
-          opacity: 0.9 !important;
-        }
-
-        .custom-dialog-close-btn,
-        .v-dialog-close-btn {
-          background: rgba(255, 255, 255, 0.08) !important;
-          border: 1px solid rgba(255, 255, 255, 0.16) !important;
-          color: #ffffff !important;
-
-          &:hover {
-            background: rgba(255, 255, 255, 0.20) !important;
-            border-color: rgba(255, 255, 255, 0.35) !important;
-            color: #ffffff !important;
-          }
-        }
-      }
-    }
-  }
-
-  // Reglas globales para cabeceras de diálogos y overlays activos (para dialogs con selectores anidados o directos)
-  @if $is-dark {
-    .custom-dialog-header-primary,
-    .custom-dialog-header,
-    .custom-dialog-header-danger,
-    .custom-dialog-header-error,
-    .custom-dialog-header-warning,
-    .custom-dialog-header-info,
-    .custom-dialog-header-success,
-    .custom-dialog-header-secondary,
-    .dialog-header-banner,
-    .sale-dialog-header-banner,
-    .product-quick-header,
-    .sri-progress-header,
-    .v-dialog .v-card-title.bg-primary,
-    .v-dialog .v-card-item.bg-primary,
-    .custom-dialog-card .v-card-title.bg-primary,
-    .custom-dialog-card .v-card-item.bg-primary,
-    .v-dialog .v-card > .bg-primary:first-child,
-    .custom-dialog-card > .bg-primary:first-child {
-      background: var(--bg-dialog-header) !important;
-      border-bottom: 1px solid var(--border-dialog-header, var(--border-glass)) !important;
-      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4) !important;
-      color: #ffffff !important;
-
-      &::before {
-        background: var(--dialog-header-glow) !important;
-      }
-
-      .custom-dialog-avatar,
-      .header-avatar-badge,
-      .v-avatar:not(.v-avatar--image):not([class*="bg-white"]) {
-        background: var(--dialog-avatar-bg) !important;
-        border: 1.5px solid var(--dialog-avatar-border) !important;
-        box-shadow: var(--dialog-avatar-shadow) !important;
-
-        .v-icon {
-          color: #ffffff !important;
-          filter: drop-shadow(0 2px 5px rgba(0, 0, 0, 0.35)) !important;
-        }
-      }
-
-      .custom-dialog-title,
-      .dialog-title,
-      h3, h2, h4,
-      .v-card-title {
-        color: #ffffff !important;
-        text-shadow: 0 2px 4px rgba(0, 0, 0, 0.6) !important;
-      }
-
-      .custom-dialog-subtitle,
-      .dialog-subtitle,
-      p,
-      .text-caption {
-        color: var(--text-secondary) !important;
-        opacity: 0.9 !important;
-      }
-
-      .custom-dialog-close-btn,
-      .v-dialog-close-btn {
-        background: rgba(255, 255, 255, 0.08) !important;
-        border: 1px solid rgba(255, 255, 255, 0.16) !important;
-        color: #ffffff !important;
-
-        &:hover {
-          background: rgba(255, 255, 255, 0.20) !important;
-          border-color: rgba(255, 255, 255, 0.35) !important;
-          color: #ffffff !important;
-        }
-      }
-    }
-  }
-
-  // Telón de fondo (scrim) de modales activos
-  .v-overlay--active > .v-overlay__scrim {
-    background: rgba(0, 0, 0, 0.45) !important;
-    backdrop-filter: blur(4px) !important;
-    -webkit-backdrop-filter: blur(4px) !important;
-  }
-
-  // Videodiálogos y reproductores multimedia
-  .v-dialog video,
-  .v-dialog iframe,
-  .video-dialog,
-  .media-dialog {
-    border-radius: 16px;
-    border: 1px solid var(--border-glass);
-    background: rgba(0, 0, 0, 0.45) !important;
-    box-shadow: 0 16px 40px rgba(0, 0, 0, 0.6);
-  }
-
-  // Menús desplegables y dropdowns (solo cuando el menú está activo)
-  .v-overlay--active.v-menu > .v-overlay__content,
-  .v-overlay--active .v-list,
-  .v-menu > .v-overlay__content > .v-list,
-  .v-select__content,
-  .v-autocomplete__content {
-    background: var(--bg-dialog) !important;
-    backdrop-filter: var(--blur-glass) !important;
-    -webkit-backdrop-filter: var(--blur-glass) !important;
-    border: 1px solid var(--border-glass) !important;
-    box-shadow: var(--shadow-glass) !important;
-    color: var(--text-primary) !important;
-
-    .v-list-item {
-      color: var(--text-primary) !important;
-
-      &:hover {
-        background: var(--bg-hover-item) !important;
-      }
-
-      &.v-list-item--active {
-        background: var(--bg-active-item) !important;
-        border: 1px solid var(--border-active) !important;
-        color: var(--text-active) !important;
-
-        * {
-          color: var(--text-active) !important;
-        }
-      }
-    }
-  }
-
-  // Popups SweetAlert2
-  .swal2-popup {
-    background: var(--bg-dialog) !important;
-    backdrop-filter: var(--blur-glass) !important;
-    -webkit-backdrop-filter: var(--blur-glass) !important;
-    border: 1px solid var(--border-glass) !important;
-    box-shadow: 0 24px 60px rgba(0, 0, 0, 0.6) !important;
-    color: var(--text-primary) !important;
-
-    .swal2-title,
-    .swal2-html-container {
+      backdrop-filter: var(--blur-glass) !important;
+      -webkit-backdrop-filter: var(--blur-glass) !important;
+      border: 1px solid var(--border-glass) !important;
+      box-shadow: 0 24px 60px rgba(0, 0, 0, 0.55), var(--shadow-glow) !important;
       color: var(--text-primary) !important;
     }
-  }
-
-  // Tooltips
-  .v-tooltip .v-overlay__content {
-    background: var(--bg-dialog) !important;
-    backdrop-filter: blur(14px) !important;
-    -webkit-backdrop-filter: blur(14px) !important;
-    border: 1px solid var(--border-glass) !important;
-    color: var(--text-primary) !important;
   }
 }
 
 // --------------------------------------------------------------------------
-// 6. APLICACIÓN DE REGLAS GLOBALES PARA CADA TEMA GLASSMORPHISM
+// 6. APLICACIÓN DE REGLAS GLOBALES POR TEMA
 // --------------------------------------------------------------------------
 @each $theme-name, $theme in $glass-themes {
-  // Aplicar dentro del contexto del tema
+
   [data-theme="#{$theme-name}"],
   html[data-theme="#{$theme-name}"],
   body[data-theme="#{$theme-name}"],
@@ -3110,18 +1203,13 @@ $glass-themes: (
     @include apply-glass-theme-rules($theme);
   }
 
-  // Aplicar a diálogos y overlays (teleportados fuera de #app directamente en body)
   body[data-theme="#{$theme-name}"] {
-    @include apply-glass-dialog-rules($theme);
-  }
-
-  .v-theme--#{$theme-name}.v-overlay {
     @include apply-glass-dialog-rules($theme);
   }
 }
 
 // --------------------------------------------------------------------------
-// 7. CABECERAS DE DIÁLOGOS PARA EL TEMA OSCURO ESTÁNDAR (dark)
+// 7. TEMA OSCURO ESTÁNDAR (dark)
 // --------------------------------------------------------------------------
 [data-theme="dark"],
 body[data-theme="dark"],
@@ -3133,688 +1221,35 @@ body[data-theme="dark"],
   --text-secondary: rgba(234, 234, 255, 0.72);
   --bg-dialog-header: linear-gradient(180deg, rgba(255, 255, 255, 0.04) 0%, rgba(255, 255, 255, 0) 100%), #2F3349;
   --border-dialog-header: rgba(234, 234, 255, 0.12);
-
-  .v-overlay--active.v-dialog > .v-overlay__content,
-  .v-overlay--active.v-dialog > .v-overlay__content > .v-card,
-  .v-overlay--active .v-dialog > .v-card,
-  .v-overlay--active .v-card.modal-glass,
-  .v-overlay--active.v-dialog .v-card,
-  .v-dialog.v-overlay--active .v-card,
-  .v-dialog .v-card,
-  .v-dialog .custom-dialog-card,
-  .custom-dialog-card {
-    background: #2F3349 !important;
-    background-color: #2F3349 !important;
-    border: 1px solid rgba(234, 234, 255, 0.12) !important;
-    color: #ffffff !important;
-
-    &.bg-white,
-    &.bg-slate-50,
-    &.bg-slate-100 {
-      background: #2F3349 !important;
-      background-color: #2F3349 !important;
-    }
-
-    .v-card-title,
-    .v-card-text,
-    .v-card-item {
-      background: transparent !important;
-      background-color: transparent !important;
-      border-color: rgba(234, 234, 255, 0.12) !important;
-      box-shadow: none !important;
-      color: #ffffff !important;
-
-      &.bg-white,
-      &.bg-slate-50,
-      &.bg-slate-100,
-      &.bg-grey-lighten-5,
-      &.bg-grey-lighten-4,
-      &.bg-grey-lighten-3 {
-        background: transparent !important;
-        background-color: transparent !important;
-      }
-    }
-
-    .v-card-actions,
-    .sticky-dialog-footer {
-      background: #2F3349 !important;
-      background-color: #2F3349 !important;
-      border-top: 1px solid rgba(234, 234, 255, 0.12) !important;
-      box-shadow: none !important;
-      color: #ffffff !important;
-
-      &.bg-white,
-      &[class*="bg-white"],
-      &[class*="bg-grey-lighten"],
-      &[class*="bg-slate-"],
-      &.bg-surface {
-        background: #2F3349 !important;
-        background-color: #2F3349 !important;
-      }
-    }
-
-    .bg-white:not(.v-btn--elevated):not(.v-btn--flat):not(.v-chip--color):not(.status-pill):not(.badge),
-    .bg-slate-50,
-    .bg-slate-100,
-    .bg-slate-200,
-    .bg-grey-lighten-5,
-    .bg-grey-lighten-4,
-    .bg-grey-lighten-3,
-    .bg-grey-100,
-    .bg-gray-50,
-    .bg-gray-100,
-    .bg-gray-200,
-    .bg-purple-lighten-5,
-    .bg-blue-50,
-    .info-card-flat,
-    .stat-glass-card,
-    .modern-section-panel,
-    .totals-summary-card,
-    .spec-badge-card,
-    .spec-item,
-    .dialog-body-content,
-    .movements-scroll-container,
-    .operations-date-header,
-    .operations-movement-item {
-      background: rgba(255, 255, 255, 0.05) !important;
-      background-color: rgba(255, 255, 255, 0.05) !important;
-      border-color: rgba(234, 234, 255, 0.12) !important;
-      color: #ffffff !important;
-    }
-
-    [style*="background-color: #ffffff"],
-    [style*="background-color: #fff"],
-    [style*="background: white"],
-    [style*="background-color: white"],
-    [style*="background-color: #f8fafc"],
-    [style*="background-color: #fafafa"],
-    [style*="background-color: #fbfbfb"],
-    [style*="background-color: #f1f5f9"],
-    [style*="background-color: #f0fdf4"],
-    [style*="background-color: #f0f1ff"],
-    [style*="linear-gradient(135deg, #f8fafc"],
-    [style*="linear-gradient(135deg, #f0fdf4"] {
-      background: rgba(255, 255, 255, 0.05) !important;
-      background-color: rgba(255, 255, 255, 0.05) !important;
-      border-color: rgba(234, 234, 255, 0.12) !important;
-      color: #ffffff !important;
-    }
-
-    table, .v-table {
-      background: transparent !important;
-      background-color: transparent !important;
-      color: #ffffff !important;
-
-      thead, thead tr, thead th, thead[class*="bg-"], tr[class*="bg-"], tr[class*="bg-slate"], tr[class*="bg-grey"] {
-        background: rgba(255, 255, 255, 0.06) !important;
-        background-color: rgba(255, 255, 255, 0.06) !important;
-        color: #ffffff !important;
-        border-color: rgba(234, 234, 255, 0.12) !important;
-      }
-
-      tbody tr, tbody td {
-        background: transparent !important;
-        color: #ffffff !important;
-        border-color: rgba(234, 234, 255, 0.08) !important;
-      }
-
-      tbody tr:hover td {
-        background: rgba(255, 255, 255, 0.04) !important;
-      }
-    }
-
-    .v-field.bg-white,
-    .v-field--variant-outlined.bg-white,
-    .v-input.bg-white,
-    .v-field[class*="bg-"] {
-      background: rgba(255, 255, 255, 0.06) !important;
-      background-color: rgba(255, 255, 255, 0.06) !important;
-      border-color: rgba(234, 234, 255, 0.14) !important;
-      color: #ffffff !important;
-    }
-
-    .bg-emerald-50, [class*="bg-emerald-50"] {
-      background: rgba(16, 185, 129, 0.15) !important;
-      border-color: rgba(16, 185, 129, 0.3) !important;
-      color: #34d399 !important;
-    }
-
-    .bg-amber-50, [class*="bg-amber-50"], .bg-yellow-50, [class*="bg-yellow-50"] {
-      background: rgba(245, 158, 11, 0.15) !important;
-      border-color: rgba(245, 158, 11, 0.3) !important;
-      color: #fbbf24 !important;
-    }
-
-    .bg-red-50, [class*="bg-red-50"] {
-      background: rgba(239, 68, 68, 0.15) !important;
-      border-color: rgba(239, 68, 68, 0.3) !important;
-      color: #f87171 !important;
-    }
-
-    [class*="border-purple-lighten"],
-    [class*="border-indigo-lighten"],
-    [class*="border-teal-lighten"],
-    [class*="border-slate-"],
-    [class*="border-grey-"] {
-      border-color: rgba(234, 234, 255, 0.12) !important;
-    }
-
-    [class*="text-indigo-darken"],
-    [class*="text-purple-darken"],
-    [class*="text-blue-darken"],
-    .text-slate-900,
-    .text-slate-800,
-    .text-slate-700,
-    .text-grey-darken-4,
-    .text-grey-darken-3,
-    .module-name,
-    .detail-value {
-      color: #ffffff !important;
-    }
-
-    .text-slate-600,
-    .text-slate-500,
-    .text-grey-darken-2,
-    .text-grey-darken-1,
-    .module-subtitle,
-    .detail-label {
-      color: rgba(234, 234, 255, 0.72) !important;
-    }
-
-    .sku-badge,
-    .quantity-circle {
-      background: rgba(255, 255, 255, 0.10) !important;
-      color: #ffffff !important;
-    }
-
-    .sri-security-ribbon {
-      background: linear-gradient(135deg, rgba(16, 185, 129, 0.15) 0%, rgba(14, 165, 233, 0.15) 100%) !important;
-      border: 1.5px solid rgba(14, 165, 233, 0.3) !important;
-
-      .sri-shield-avatar {
-        background: rgba(255, 255, 255, 0.08) !important;
-        border: 1px solid rgba(255, 255, 255, 0.15) !important;
-      }
-    }
-
-    .v-card {
-      background: rgba(255, 255, 255, 0.04) !important;
-      border: 1px solid rgba(234, 234, 255, 0.12) !important;
-      color: #ffffff !important;
-    }
-  }
-  .custom-dialog-header-primary,
-  .custom-dialog-header,
-  .custom-dialog-header-danger,
-  .custom-dialog-header-error,
-  .custom-dialog-header-warning,
-  .custom-dialog-header-info,
-  .custom-dialog-header-success,
-  .custom-dialog-header-secondary,
-  .dialog-header-banner,
-  .sale-dialog-header-banner,
-  .product-quick-header,
-  .sri-progress-header,
-  .v-dialog .v-card-title.bg-primary,
-  .v-dialog .v-card-item.bg-primary,
-  .custom-dialog-card .v-card-title.bg-primary,
-  .custom-dialog-card .v-card-item.bg-primary,
-  .v-dialog .v-card > .bg-primary:first-child,
-  .custom-dialog-card > .bg-primary:first-child,
-  .v-dialog .v-card > div:first-child[class*="custom-dialog-header"],
-  .v-dialog .v-card > div:first-child[class*="dialog-header"] {
-    background: linear-gradient(180deg, rgba(255, 255, 255, 0.04) 0%, rgba(255, 255, 255, 0) 100%), #2F3349 !important;
-    border-bottom: 1px solid rgba(234, 234, 255, 0.12) !important;
-    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.35) !important;
-    color: #ffffff !important;
-
-    &::before {
-      background: radial-gradient(circle, rgba(102, 108, 255, 0.16) 0%, transparent 70%) !important;
-    }
-
-    .custom-dialog-avatar,
-    .header-avatar-badge,
-    .v-avatar:not(.v-avatar--image):not([class*="bg-white"]) {
-      background: rgba(102, 108, 255, 0.16) !important;
-      border: 1.5px solid rgba(102, 108, 255, 0.35) !important;
-      box-shadow: 0 6px 18px rgba(0, 0, 0, 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.2) !important;
-
-      .v-icon {
-        color: #ffffff !important;
-        filter: drop-shadow(0 2px 5px rgba(0, 0, 0, 0.35)) !important;
-      }
-    }
-
-    .custom-dialog-title,
-    .dialog-title,
-    h3, h2, h4,
-    .v-card-title {
-      color: #ffffff !important;
-      text-shadow: 0 2px 4px rgba(0, 0, 0, 0.6) !important;
-    }
-
-    .custom-dialog-subtitle,
-    .dialog-subtitle,
-    p,
-    .text-caption {
-      color: rgba(234, 234, 255, 0.72) !important;
-      opacity: 0.9 !important;
-    }
-
-    .custom-dialog-close-btn,
-    .v-dialog-close-btn {
-      background: rgba(255, 255, 255, 0.08) !important;
-      border: 1px solid rgba(255, 255, 255, 0.16) !important;
-      color: #ffffff !important;
-
-      &:hover {
-        background: rgba(255, 255, 255, 0.20) !important;
-        border-color: rgba(255, 255, 255, 0.35) !important;
-        color: #ffffff !important;
-      }
-    }
-  }
 }
 
 // --------------------------------------------------------------------------
-// 8. AJUSTES PARA TEMAS OSCUROS (EDICIÓN RÁPIDA, ESTADOS SRI, ETC.)
-// --------------------------------------------------------------------------
-.v-theme--dark,
-[data-theme="dark"],
-.v-theme--dark-glass,
-[data-theme="dark-glass"],
-.v-theme--semi-dark-glass,
-[data-theme="semi-dark-glass"],
-body[data-theme="dark"],
-body[data-theme="dark-glass"],
-body[data-theme="semi-dark-glass"],
-.v-overlay.v-theme--dark,
-.v-overlay.v-theme--dark-glass,
-.v-overlay.v-theme--semi-dark-glass,
-.v-overlay[class*="v-theme--dark"],
-.v-overlay[class*="semi-dark-glass"] {
-
-  // --- A. SRI STATUS TAGS (Listado de Ventas) ---
-  .sri-status-tag {
-    &.sri-tag-creada {
-      background-color: rgba(59, 130, 246, 0.18) !important;
-      color: #93c5fd !important;
-      border-color: rgba(59, 130, 246, 0.35) !important;
-
-      .sri-tag-text {
-        color: #93c5fd !important;
-      }
-
-      .v-icon {
-        color: #60a5fa !important;
-      }
-
-      &.is-interactive:hover {
-        background-color: rgba(59, 130, 246, 0.28) !important;
-        border-color: rgba(59, 130, 246, 0.55) !important;
-      }
-    }
-
-    &.sri-tag-autorizada {
-      background-color: rgba(16, 185, 129, 0.18) !important;
-      color: #6ee7b7 !important;
-      border-color: rgba(16, 185, 129, 0.35) !important;
-
-      .sri-tag-text {
-        color: #6ee7b7 !important;
-      }
-
-      .v-icon {
-        color: #34d399 !important;
-      }
-
-      &.is-interactive:hover {
-        background-color: rgba(16, 185, 129, 0.28) !important;
-        border-color: rgba(16, 185, 129, 0.55) !important;
-      }
-    }
-
-    &.sri-tag-enviada {
-      background-color: rgba(14, 165, 233, 0.18) !important;
-      color: #7dd3fc !important;
-      border-color: rgba(14, 165, 233, 0.35) !important;
-
-      .sri-tag-text {
-        color: #7dd3fc !important;
-      }
-
-      .v-icon {
-        color: #38bdf8 !important;
-      }
-
-      &.is-interactive:hover {
-        background-color: rgba(14, 165, 233, 0.28) !important;
-        border-color: rgba(14, 165, 233, 0.55) !important;
-      }
-    }
-
-    &.sri-tag-firmada {
-      background-color: rgba(124, 58, 237, 0.18) !important;
-      color: #c4b5fd !important;
-      border-color: rgba(124, 58, 237, 0.35) !important;
-
-      .sri-tag-text {
-        color: #c4b5fd !important;
-      }
-
-      .v-icon {
-        color: #a78bfa !important;
-      }
-
-      &.is-interactive:hover {
-        background-color: rgba(124, 58, 237, 0.28) !important;
-        border-color: rgba(124, 58, 237, 0.55) !important;
-      }
-    }
-
-    &.sri-tag-devuelta {
-      background-color: rgba(245, 158, 11, 0.18) !important;
-      color: #fde047 !important;
-      border-color: rgba(245, 158, 11, 0.35) !important;
-
-      .sri-tag-text {
-        color: #fde047 !important;
-      }
-
-      .v-icon {
-        color: #fbbf24 !important;
-      }
-
-      &.is-interactive:hover {
-        background-color: rgba(245, 158, 11, 0.28) !important;
-        border-color: rgba(245, 158, 11, 0.55) !important;
-      }
-    }
-
-    &.sri-tag-rechazada {
-      background-color: rgba(239, 68, 68, 0.18) !important;
-      color: #fca5a5 !important;
-      border-color: rgba(239, 68, 68, 0.35) !important;
-
-      .sri-tag-text {
-        color: #fca5a5 !important;
-      }
-
-      .v-icon {
-        color: #f87171 !important;
-      }
-
-      &.is-interactive:hover {
-        background-color: rgba(239, 68, 68, 0.28) !important;
-        border-color: rgba(239, 68, 68, 0.55) !important;
-      }
-    }
-  }
-
-  // --- B. EDICIÓN RÁPIDA DE PRODUCTO (ProductQuickEditDialog) ---
-  .quick-edit-nav-pills {
-    background-color: rgba(255, 255, 255, 0.06) !important;
-    border: 1px solid rgba(255, 255, 255, 0.08) !important;
-
-    .nav-pill-item {
-      color: rgba(255, 255, 255, 0.70) !important;
-
-      &:hover {
-        color: #ffffff !important;
-        background-color: rgba(255, 255, 255, 0.10) !important;
-      }
-
-      &.active {
-        background-color: var(--v-theme-primary, #7367f0) !important;
-        background: var(--v-theme-primary, #7367f0) !important;
-        color: #ffffff !important;
-        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.35) !important;
-
-        .v-icon,
-        span {
-          color: #ffffff !important;
-        }
-      }
-    }
-  }
-
-  .quick-edit-section {
-    background-color: rgba(255, 255, 255, 0.03) !important;
-    border: 1px solid rgba(255, 255, 255, 0.08) !important;
-    color: #ffffff !important;
-
-    &:hover {
-      border-color: rgba(255, 255, 255, 0.16) !important;
-      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2) !important;
-    }
-
-    .section-header {
-      .section-title-text {
-        color: #ffffff !important;
-      }
-    }
-  }
-
-  .quick-stock-stepper-box {
-    background: rgba(255, 255, 255, 0.02) !important;
-    border: 1px solid rgba(255, 255, 255, 0.08) !important;
-
-    &:hover {
-      border-color: rgba(255, 255, 255, 0.16) !important;
-    }
-  }
-
-  .quick-adjustment-chips {
-    .adj-chip.adj-minus {
-      background-color: rgba(239, 68, 68, 0.18) !important;
-      color: #fca5a5 !important;
-      border-color: rgba(239, 68, 68, 0.35) !important;
-
-      &:hover {
-        background-color: rgba(239, 68, 68, 0.28) !important;
-        color: #ffffff !important;
-      }
-    }
-
-    .adj-chip.adj-plus {
-      background-color: rgba(16, 185, 129, 0.18) !important;
-      color: #6ee7b7 !important;
-      border-color: rgba(16, 185, 129, 0.35) !important;
-
-      &:hover {
-        background-color: rgba(16, 185, 129, 0.28) !important;
-        color: #ffffff !important;
-      }
-    }
-  }
-
-  .price-calc-summary-box {
-    background: rgba(255, 255, 255, 0.04) !important;
-    border: 1px solid rgba(255, 255, 255, 0.10) !important;
-
-    .calc-row {
-      color: rgba(255, 255, 255, 0.72) !important;
-
-      strong {
-        color: #ffffff !important;
-      }
-
-      &.calc-highlight {
-        border-top: 1px dashed rgba(255, 255, 255, 0.15) !important;
-        color: #ffffff !important;
-
-        .calc-final-price {
-          color: #4ade80 !important;
-        }
-      }
-    }
-  }
-
-  // --- C. FACTURACIÓN ELECTRÓNICA & DIÁLOGOS DE EMISIÓN SRI ---
-  .sri-progress-dialog-card {
-    background: rgb(var(--v-theme-surface)) !important;
-  }
-
-  .sri-progress-bar-container {
-    background: rgba(var(--v-theme-surface), 0.95) !important;
-    border-color: rgba(var(--v-border-color), 0.18) !important;
-
-    .progress-track-wrapper {
-      background: rgba(255, 255, 255, 0.08) !important;
-    }
-  }
-
-  .sri-step-item {
-    background: rgba(var(--v-theme-surface), 0.85) !important;
-    border-color: rgba(var(--v-border-color), 0.15) !important;
-
-    &.sri-step-pending {
-      background: rgba(255, 255, 255, 0.02) !important;
-      border-color: rgba(255, 255, 255, 0.06) !important;
-
-      .sri-step-icon-badge {
-        background: rgba(255, 255, 255, 0.08) !important;
-        color: rgba(255, 255, 255, 0.5) !important;
-      }
-    }
-
-    &.sri-step-active {
-      background: rgba(var(--v-theme-surface), 1) !important;
-      border-color: rgb(var(--v-theme-primary)) !important;
-
-      .sri-step-title {
-        color: rgb(var(--v-theme-primary)) !important;
-      }
-    }
-
-    &.sri-step-completed {
-      background: rgba(var(--v-theme-success), 0.14) !important;
-      border-color: rgba(var(--v-theme-success), 0.4) !important;
-
-      .sri-step-title {
-        color: rgb(var(--v-theme-success)) !important;
-      }
-
-      .sri-step-desc {
-        color: rgba(var(--v-theme-on-surface), 0.75) !important;
-      }
-    }
-
-    .sri-step-title {
-      color: rgba(var(--v-theme-on-surface), 0.95) !important;
-    }
-
-    .sri-step-desc {
-      color: rgba(var(--v-theme-on-surface), 0.65) !important;
-    }
-  }
-
-  .doc-type-card {
-    background-color: rgba(var(--v-theme-surface), 0.7) !important;
-    border-color: rgba(var(--v-border-color), 0.15) !important;
-    color: rgba(var(--v-theme-on-surface), 0.9) !important;
-
-    &:hover {
-      background-color: rgba(var(--v-theme-surface), 0.9) !important;
-      border-color: rgba(var(--v-border-color), 0.3) !important;
-    }
-
-    &.active-invoice {
-      background: rgba(var(--v-theme-primary), 0.14) !important;
-      border-color: rgb(var(--v-theme-primary)) !important;
-
-      .doc-type-title {
-        color: rgb(var(--v-theme-primary)) !important;
-      }
-    }
-
-    &.active-sale-note {
-      background: rgba(var(--v-theme-success), 0.14) !important;
-      border-color: rgb(var(--v-theme-success)) !important;
-
-      .doc-type-title {
-        color: rgb(var(--v-theme-success)) !important;
-      }
-    }
-
-    &.active-quote {
-      background: rgba(var(--v-theme-warning), 0.14) !important;
-      border-color: rgb(var(--v-theme-warning)) !important;
-
-      .doc-type-title {
-        color: rgb(var(--v-theme-warning)) !important;
-      }
-    }
-  }
-}
-
-// --------------------------------------------------------------------------
-// 9. TEMA OFICIAL DEL TALLER (taller) - LUXURY EVYS
-// Colores del taller: Rojo Vino (#8A1538), Blanco (#FFFFFF) y Gris Medio Azulado (#475569 / #E2E8F0)
-// Arquitectura gemela al tema por defecto del sistema (Light), cambiando el azul por Rojo Vino:
-//   - Barra superior (Navbar): Rojo vino (#8A1538 / #58081C) con textos e iconos blancos
-//   - Barra lateral (Sidebar): Rojo vino (#8A1538 / #58081C) con textos e iconos blancos
-//   - Ítem de navegación activo: Píldora blanca pura (#FFFFFF) con letras e icono rojo vino (#7A102B)
-//   - Fondo del área de trabajo: Claro y luminoso (#F8FAFC)
-//   - Tarjetas y modales: Gris claro (#F1F5F9) con bordes sutiles
-//   - Textos en tarjetas y tablas: Negro / Slate carbón (#0F172A) con contraste absoluto y nitidez total
-//   - Botones primarios: Rojo vino con texto blanco
-//   - Botones secundarios / outlined: Contorno rojo vino con texto rojo vino
-// Optimizado para 3 escalas: Laptops, Tablets y Celulares pequeños
+// 8. TEMA DEL TALLER (taller) - REDISEÑADO Y BLINDADO
 // --------------------------------------------------------------------------
 .v-theme--taller,
 [data-theme="taller"],
 body[data-theme="taller"],
 .theme-taller {
-  // Variables maestras del tema Taller
   --theme-wine: #8A1538;
   --theme-wine-dark: #58081C;
-  --theme-wine-glow: rgba(138, 21, 56, 0.35);
-  --theme-slate-border: #E2E8F0;
-  --theme-white: #FFFFFF;
-  --theme-black: #0F172A;
-
-  // ⚡ TOKENS DE COLOR VUETIFY - Sobrescritura del color primario a rojo vino
-  // Esto hace que TODOS los componentes Vuetify con color="primary" usen el rojo vino
+  --theme-wine-glow: rgba(138, 21, 56, 0.25);
+  --theme-slate-border: #e2e8f0;
+  --theme-white: #ffffff;
+  --theme-black: #0f172a;
   --v-theme-primary: 138, 21, 56;
   --v-theme-on-primary: 255, 255, 255;
   --v-theme-primary-darken-1: 107, 14, 39;
-
-  // Fondo luminoso y claro del área de trabajo (no oscuro)
   background: #f8fafc !important;
-  color: #0f172a !important;
+  color: #0f172a !important; // 1. NAVBAR SUPERIOR
 
-  // 1. TOP NAVBAR SUPERIOR: ROJO VINO SÓLIDO (Idéntico a la barra azul del tema predeterminado)
   .layout-navbar,
   .v-app-bar {
     background: linear-gradient(135deg, #8A1538 0%, #6B0E27 60%, #58081C 100%) !important;
     border-bottom: 1px solid rgba(255, 255, 255, 0.15) !important;
     box-shadow: 0 4px 20px rgba(138, 21, 56, 0.28) !important;
 
-    .navbar-brand-title {
-      color: #ffffff !important;
-      font-weight: 900 !important;
-      letter-spacing: 0.05em !important;
-    }
-
-    .navbar-brand-subtitle {
-      color: rgba(255, 255, 255, 0.90) !important;
-    }
-
-    .navbar-hamburger-btn {
-      background: rgba(255, 255, 255, 0.12) !important;
-      border: 1px solid rgba(255, 255, 255, 0.25) !important;
-      color: #ffffff !important;
-
-      .v-icon {
-        color: #ffffff !important;
-      }
-
-      &:hover {
-        background: rgba(255, 255, 255, 0.25) !important;
-      }
-    }
-
+    .navbar-brand-title,
+    .navbar-brand-subtitle,
     .v-icon,
     .v-btn,
     .v-btn__content,
@@ -3823,7 +1258,8 @@ body[data-theme="taller"],
     button {
       color: #ffffff !important;
 
-      i, svg {
+      i,
+      svg {
         color: #ffffff !important;
         fill: #ffffff !important;
       }
@@ -3834,18 +1270,16 @@ body[data-theme="taller"],
       border: 1px solid rgba(255, 255, 255, 0.22) !important;
       color: #ffffff !important;
 
-      .v-icon, i, svg {
+      .v-icon,
+      i,
+      svg {
         color: #ffffff !important;
         fill: #ffffff !important;
-      }
-
-      &:hover {
-        background: rgba(255, 255, 255, 0.22) !important;
       }
     }
   }
 
-  // 2. BARRA LATERAL (SIDEBAR): ROJO VINO SÓLIDO (Idéntica a la barra azul del tema predeterminado)
+  // 2. SIDEBAR / DRAWER
   .layout-vertical-nav,
   .v-navigation-drawer,
   .sidebar {
@@ -3853,91 +1287,49 @@ body[data-theme="taller"],
     border-right: 1px solid rgba(255, 255, 255, 0.12) !important;
     box-shadow: 4px 0 28px rgba(138, 21, 56, 0.25) !important;
 
-    // Encabezados de sección (COMERCIAL, FINANZAS, SERVICIOS, INVENTARIO, ADMINISTRACIÓN)
-    .nav-section-title {
-      .title-text {
-        color: #ffffff !important;
-        font-weight: 900 !important;
-        letter-spacing: 1.5px !important;
-        text-transform: uppercase !important;
-        font-size: 0.92rem !important;
-        text-shadow: 0 1px 3px rgba(0, 0, 0, 0.5);
-        opacity: 1 !important;
+    .nav-section-title .title-text {
+      color: #ffffff !important;
+      font-weight: 800 !important;
+      letter-spacing: 1.5px !important;
+      text-transform: uppercase !important;
+      opacity: 1 !important;
 
-        &::before,
-        &::after {
-          border-block-end: 2px solid rgba(255, 255, 255, 0.55) !important;
-          content: "";
-        }
+      &::before,
+      &::after {
+        border-color: rgba(255, 255, 255, 0.45) !important;
       }
     }
 
-    // Enlaces normales y grupos en el sidebar (blanco puro de alta visibilidad)
-    .nav-items .nav-link a,
-    .nav-items .nav-link > a,
-    .nav-items .nav-link .nav-item-icon,
-    .nav-items .nav-link .nav-item-title,
     .nav-link a,
-    .nav-link > a,
-    .nav-group-label,
-    .nav-group > .nav-group-label,
-    .nav-group.active > .nav-group-label,
-    .nav-group.open > .nav-group-label,
-    .nav-group.active.open > .nav-group-label,
-    .nav-group-children .nav-link a {
+    .nav-group-label {
       color: #ffffff !important;
-      opacity: 1 !important;
 
-      &,
       .nav-item-icon,
       .nav-item-title,
       .nav-group-arrow,
       .v-icon,
       i,
-      svg,
-      span {
+      svg {
         color: #ffffff !important;
         fill: #ffffff !important;
-        opacity: 1 !important;
       }
 
       &:hover {
         background: rgba(255, 255, 255, 0.18) !important;
         color: #ffffff !important;
-        transform: translateX(3px);
-
-        * {
-          color: #ffffff !important;
-          fill: #ffffff !important;
-        }
       }
     }
 
-    // Submenús desplegados
-    .nav-group-children {
-      border-left: 1.5px solid rgba(255, 255, 255, 0.35) !important;
-
-      .nav-link a {
-        color: #ffffff !important;
-
-        .nav-item-icon,
-        .nav-item-title {
-          color: #ffffff !important;
-        }
-      }
-    }
-
-    // 🌟 ÍTEM SELECCIONADO / ACTIVO: PÍLDORA BLANCA NÍTIDA CON TEXTO E ÍCONO ROJO VINO
-    .nav-link > a.router-link-active,
-    .nav-link > a.router-link-exact-active,
-    .nav-link.router-link-active > a,
-    .nav-link.router-link-exact-active > a {
+    .nav-link>a.router-link-active,
+    .nav-link>a.router-link-exact-active,
+    .nav-link.router-link-active>a,
+    .nav-link.router-link-exact-active>a,
+    .v-list-item--active {
       background: #ffffff !important;
       color: #7A102B !important;
       font-weight: 700 !important;
       box-shadow: 0 4px 14px rgba(0, 0, 0, 0.18) !important;
       border-radius: 8px !important;
-      transform: translateX(3px);
 
       &,
       * {
@@ -3950,172 +1342,58 @@ body[data-theme="taller"],
       svg {
         color: #7A102B !important;
         fill: #7A102B !important;
-        font-size: 1.35rem;
       }
 
       .nav-item-title {
         color: #7A102B !important;
-        font-weight: 700 !important;
-        font-size: 0.95rem;
-        letter-spacing: 0.15px;
-      }
-
-      .nav-item-badge {
-        background-color: #7A102B !important;
-        color: #ffffff !important;
-      }
-    }
-
-    // Pie de barra lateral (botón colapsar)
-    .sidebar-collapse-footer {
-      border-top: 1px solid rgba(255, 255, 255, 0.12) !important;
-
-      .sidebar-footer-toggle-btn {
-        color: rgba(255, 255, 255, 0.70) !important;
-
-        &:hover {
-          color: #ffffff !important;
-          background: rgba(255, 255, 255, 0.15) !important;
-        }
       }
     }
   }
 
-  // 3. TARJETAS, PANELES Y CONTENEDORES: GRIS CLARO (#F1F5F9) Y TEXTO OSCURO
+  // 3. TARJETAS Y CONTENEDORES
   .v-card:not(.v-navigation-drawer):not(.layout-vertical-nav),
   .card,
-  .bg-surface,
-  .white-card,
   .v-sheet:not(.v-navigation-drawer):not(.layout-vertical-nav) {
-    background: #f1f5f9 !important;
-    background-color: #f1f5f9 !important;
-    border: 1px solid rgba(0, 0, 0, 0.08) !important;
+    background: #ffffff !important;
+    background-color: #ffffff !important;
+    border: 1px solid #e2e8f0 !important;
     border-radius: 12px !important;
-    box-shadow: 0 2px 8px rgba(15, 23, 42, 0.05) !important;
+    box-shadow: 0 2px 10px rgba(15, 23, 42, 0.04) !important;
     color: #0f172a !important;
 
-    h1, h2, h3, h4, h5, h6,
-    p, span, label, div:not([class*="bg-primary"]):not(.v-btn *):not(.v-chip *),
-    strong, b,
-    .text-h1, .text-h2, .text-h3, .text-h4, .text-h5, .text-h6,
-    .text-body-1, .text-body-2, .text-caption, .text-subtitle-1, .text-subtitle-2,
-    .text-high-emphasis,
-    .text-slate-900, .text-slate-800, .text-slate-700 {
-      color: #0f172a !important;
-    }
-
-    .text-medium-emphasis,
-    .text-slate-600, .text-slate-500 {
-      color: #334155 !important;
-    }
-
-    .text-disabled,
-    .text-slate-400 {
-      color: #64748b !important;
-    }
-
-    // Iconos en contenedores blancos
-    .v-icon:not(.v-btn[style*="linear-gradient"] .v-icon):not(.v-btn.bg-primary .v-icon):not(.v-btn.bg-error .v-icon):not(.v-btn.bg-success .v-icon):not(.v-chip[class*="bg-"] .v-icon):not(.text-primary):not(.text-error):not(.text-success):not(.text-warning):not(.text-info):not(.custom-dialog-header-primary .v-icon):not(.custom-dialog-header .v-icon):not(.dialog-header-banner .v-icon):not(.dialog-header-workshop .v-icon) {
-      color: #0f172a !important;
-      fill: #0f172a !important;
-      opacity: 1 !important;
-    }
-  }
-
-  // 4. TARJETAS KPI Y ESTADÍSTICAS DEL WORKSPACE
-  .kpi-stat-card,
-  .pepa-kpi-card,
-  .stat-glass-card,
-  .info-card-flat {
-    background: #f1f5f9 !important;
-    background-color: #f1f5f9 !important;
-    border: 1px solid rgba(0, 0, 0, 0.08) !important;
-    border-radius: 12px !important;
-    box-shadow: 0 2px 10px rgba(15, 23, 42, 0.05) !important;
-    color: #0f172a !important;
-
-    .v-card__overlay,
-    .v-card__underlay {
-      display: none !important;
-      opacity: 0 !important;
-    }
-
+    h1,
+    h2,
+    h3,
+    h4,
+    h5,
+    h6,
     .text-h4,
     .text-h5,
     .text-h6,
-    h2, h3, h4 {
+    .text-slate-900,
+    .text-slate-800 {
       color: #0f172a !important;
-      font-weight: 800 !important;
     }
 
-    .text-caption,
-    .text-body-2 {
-      color: #475569 !important;
+    p,
+    .text-slate-600,
+    .text-slate-500 {
+      color: #334155 !important;
     }
 
-    .kpi-icon-bubble,
-    .kpi-icon-badge,
-    .section-icon-box {
-      background: rgba(138, 21, 56, 0.08) !important;
-      border: 1px solid rgba(138, 21, 56, 0.18) !important;
-
-      .v-icon, i, svg {
-        color: #8A1538 !important;
-        fill: #8A1538 !important;
-      }
-    }
-
-    &:hover {
-      border-color: rgba(138, 21, 56, 0.40) !important;
-      box-shadow: 0 6px 18px rgba(138, 21, 56, 0.12) !important;
+    .v-icon:not(.v-btn.bg-primary .v-icon):not(.v-chip *):not(.badge *) {
+      color: #334155 !important;
     }
   }
 
-  // 5. INPUTS, SELECTORES Y BUSCADOR
-  .v-field {
-    background: #ffffff !important;
-    border: 1px solid #cbd5e1 !important;
-    border-radius: 8px !important;
-    color: #0f172a !important;
-
-    input, textarea {
-      color: #0f172a !important;
-      font-weight: 500 !important;
-      &::placeholder {
-        color: #64748b !important;
-      }
-    }
-
-    .v-field__prepend-inner .v-icon,
-    .v-field__append-inner .v-icon {
-      color: #64748b !important;
-    }
-
-    &.v-field--focused {
-      border-color: #8A1538 !important;
-      box-shadow: 0 0 0 3px rgba(138, 21, 56, 0.15) !important;
-
-      .v-field__prepend-inner .v-icon,
-      .v-field__append-inner .v-icon {
-        color: #8A1538 !important;
-      }
-    }
-  }
-
-  // 6. BOTONES PRIMARIOS Y SECUNDARIOS
-  // Botones primarios (Rojo vino sólido con gradiente de taller)
+  // 4. BOTONES PRIMARIOS Y OUTLINED
   .v-btn.bg-primary,
   .v-btn.v-btn--color-primary:not(.v-btn--variant-outlined),
   .v-btn--variant-elevated.v-btn--color-primary,
-  .v-btn--variant-flat.v-btn--color-primary,
-  .v-btn--variant-elevated.bg-primary,
-  .v-btn--variant-flat.bg-primary,
-  .btn-primary-workshop {
+  .v-btn--variant-flat.v-btn--color-primary {
     background: linear-gradient(135deg, #8A1538 0%, #600A1F 100%) !important;
     color: #ffffff !important;
-    border: 1px solid rgba(255, 255, 255, 0.15) !important;
     box-shadow: 0 4px 14px rgba(138, 21, 56, 0.35) !important;
-    font-weight: 600 !important;
 
     * {
       color: #ffffff !important;
@@ -4124,13 +1402,10 @@ body[data-theme="taller"],
     &:hover {
       background: linear-gradient(135deg, #A31842 0%, #720C25 100%) !important;
       box-shadow: 0 6px 20px rgba(138, 21, 56, 0.45) !important;
-      transform: translateY(-1px);
     }
   }
 
-  // Botón Outlined primario (Contorno rojo vino y texto rojo vino sobre fondo blanco)
-  .v-btn.v-btn--variant-outlined.v-btn--color-primary,
-  .v-btn.v-btn--variant-outlined[class*="primary"] {
+  .v-btn.v-btn--variant-outlined.v-btn--color-primary {
     border: 1.5px solid #8A1538 !important;
     color: #8A1538 !important;
     background: transparent !important;
@@ -4141,12 +1416,10 @@ body[data-theme="taller"],
 
     &:hover {
       background: rgba(138, 21, 56, 0.08) !important;
-      border-color: #A31842 !important;
-      color: #8A1538 !important;
     }
   }
 
-  // 7. TABLAS DE DATOS
+  // 5. TABLAS DE DATOS
   .v-table,
   .v-data-table {
     background: #ffffff !important;
@@ -4157,13 +1430,11 @@ body[data-theme="taller"],
       color: #334155 !important;
       font-weight: 700 !important;
       border-bottom: 2px solid #8A1538 !important;
-      text-transform: uppercase;
-      font-size: 0.75rem;
-      letter-spacing: 0.05em;
 
-      span, div, .v-data-table-header__content {
+      span,
+      div,
+      .v-data-table-header__content {
         color: #334155 !important;
-        font-weight: 700 !important;
       }
     }
 
@@ -4175,448 +1446,139 @@ body[data-theme="taller"],
       td {
         color: #0f172a !important;
         border-bottom: 1px solid #e2e8f0 !important;
-
-        .v-icon {
-          color: #475569 !important;
-        }
       }
     }
   }
 
-  // 8. CABECERAS DE PÁGINAS (Encabezado principal con título + avatar icono + botones de acción)
-  // Aplica a todas las páginas: clientes, vehículos, ventas, kardex, etc.
+  // 6. PAGINADOR
+  .v-pagination {
 
-  // Encabezado principal de página: barra lateral vino tinto translúcida
-  .page-title-bar,
-  .crud-page-header {
-    background: linear-gradient(135deg, rgba(138, 21, 56, 0.06) 0%, rgba(138, 21, 56, 0.02) 100%) !important;
-    border-left: 4px solid #8A1538 !important;
-    border-radius: 0 12px 12px 0 !important;
-    padding: 12px 18px !important;
-  }
-
-  // Avatar/icono principal del encabezado de página (color primario → rojo vino)
-  // El VAvatar con color="primary" variant="tonal" en el h1 de las páginas
-  // Vuetify usa ::before para el fondo tonal y rgb(var(--v-theme-primary)) para iconos
-  h1 .v-avatar,
-  h2 .v-avatar,
-  .v-avatar.v-avatar--variant-tonal.v-avatar--color-primary,
-  .v-avatar.v-avatar--variant-tonal[class*="primary"],
-  .page-icon-avatar {
-    // Vuetify tonal usa un pseudo-elemento ::before para el fondo
-    &::before {
-      background: rgba(138, 21, 56, 0.12) !important;
-    }
-
-    // También sobrescribir el underlay que algunos temas de Vuetify usan
-    .v-avatar__underlay {
-      background: rgba(138, 21, 56, 0.12) !important;
-    }
-
-    // Icono dentro del avatar
-    .v-icon,
-    i,
-    svg {
-      color: #8A1538 !important;
-      fill: #8A1538 !important;
-    }
-  }
-
-  // KPI Stat cards: avatares con color="primary", "info", "warning" en modo tonal
-  // (los que aparecen debajo del título principal: Total, Naturales, Empresas)
-  .kpi-stat-card .v-avatar.v-avatar--variant-tonal,
-  .kpi-stat-card .v-avatar.v-avatar--variant-tonal.v-avatar--color-primary {
-    &::before {
-      background: rgba(138, 21, 56, 0.10) !important;
-    }
-
-    .v-icon {
-      color: #8A1538 !important;
-    }
-  }
-
-  // Texto del título h1 en encabezados de página
-  h1.text-h4,
-  h1.text-h5,
-  h2.text-h4,
-  h2.text-h5,
-  .page-main-title {
-    color: #0f172a !important;
-    font-weight: 800 !important;
-  }
-
-  // Breadcrumbs y subtítulos de encabezado de página
-  .page-subtitle,
-  .text-medium-emphasis.mb-0,
-  .v-breadcrumbs,
-  .v-breadcrumbs-item {
-    color: #475569 !important;
-
-    .v-breadcrumbs-item--disabled {
-      color: #8A1538 !important;
-      font-weight: 600 !important;
-    }
-  }
-
-  // Botones de acción en el encabezado de página (área CRUD superior)
-  .crud-header-actions {
-    .v-btn.bg-primary,
-    .v-btn--variant-elevated.v-btn--color-primary,
-    .v-btn--variant-flat.v-btn--color-primary {
+    .v-pagination__item--is-active,
+    .v-btn.v-pagination__item--is-active {
       background: linear-gradient(135deg, #8A1538 0%, #600A1F 100%) !important;
       color: #ffffff !important;
-      box-shadow: 0 4px 14px rgba(138, 21, 56, 0.32) !important;
-      border: 1px solid rgba(255, 255, 255, 0.15) !important;
       font-weight: 700 !important;
 
-      * { color: #ffffff !important; }
-
-      &:hover {
-        background: linear-gradient(135deg, #A31842 0%, #720C25 100%) !important;
-        box-shadow: 0 6px 20px rgba(138, 21, 56, 0.45) !important;
-        transform: translateY(-1px);
+      * {
+        color: #ffffff !important;
       }
     }
+  }
+}
 
-    .v-btn--variant-outlined.v-btn--color-primary,
-    .v-btn--variant-outlined[class*="primary"] {
-      border: 1.5px solid #8A1538 !important;
-      color: #8A1538 !important;
+// --------------------------------------------------------------------------
+// 9. OVERRIDES DE NIVEL SUPERIOR (BODY LEVEL) PARA DIÁLOGOS Y POPUPS EN TALLER
+// --------------------------------------------------------------------------
+body[data-theme="taller"] {
+
+  // CORRECCIÓN CRÍTICA DE CAPAS FANTASMAS
+  .v-overlay:not(.v-overlay--active) {
+    display: none !important;
+    background: transparent !important;
+    opacity: 0 !important;
+    pointer-events: none !important;
+  }
+
+  .v-overlay--active.v-menu,
+  .v-overlay--active.v-select,
+  .v-overlay--active.v-autocomplete {
+    background: transparent !important;
+
+    // SCRIM / TELÓN DE FONDO TRANSLÚCIDO
+    .v-overlay--active .v-overlay__scrim,
+    .v-overlay--active.v-dialog .v-overlay__scrim,
+    .v-overlay--active.v-dialog>.v-overlay__scrim {
+      display: block !important;
+      background: rgba(15, 23, 42, 0.40) !important;
+      background-color: rgba(15, 23, 42, 0.40) !important;
+      backdrop-filter: blur(4px) !important;
+      -webkit-backdrop-filter: blur(4px) !important;
+      opacity: 1 !important;
+    }
+
+    // Quitar cualquier fondo sólido que Vuetify le ponga al overlay completo
+    .v-overlay--active.v-dialog {
       background: transparent !important;
-      font-weight: 600 !important;
-
-      * { color: #8A1538 !important; }
-
-      &:hover {
-        background: rgba(138, 21, 56, 0.08) !important;
-        border-color: #A31842 !important;
-      }
-    }
-
-    .v-btn--variant-tonal.v-btn--color-secondary,
-    .v-btn--variant-tonal[class*="secondary"] {
-      background: rgba(138, 21, 56, 0.08) !important;
-      color: #8A1538 !important;
-      border: 1px solid rgba(138, 21, 56, 0.18) !important;
-      font-weight: 600 !important;
-
-      * { color: #8A1538 !important; }
-
-      &:hover {
-        background: rgba(138, 21, 56, 0.14) !important;
-      }
+      background-color: transparent !important;
     }
   }
 
-  // Sección de filtros de búsqueda: borde izquierdo vino y fondo muy sutil
-  .v-card.rounded-xl.bg-surface {
-    > .v-card-text {
-      // Etiqueta "Filtros de Búsqueda" dentro de las tarjetas de filtro
-      .text-subtitle-2.font-weight-bold {
-        color: #0f172a !important;
-
-        .v-icon[color="primary"] {
-          color: #8A1538 !important;
-          fill: #8A1538 !important;
-        }
-      }
-    }
-  }
-
-  // 9. OVERLAY / SCRIM - Fondo semitransparente al abrir diálogos
-  // Evita que la página "desaparezca" completamente al abrir un VDialog
-  .v-overlay__scrim {
+  // SCRIM / TELÓN DE FONDO LIMPIO
+  .v-overlay--active.v-dialog>.v-overlay__scrim {
     background-color: rgba(15, 23, 42, 0.45) !important;
     backdrop-filter: blur(4px) !important;
     -webkit-backdrop-filter: blur(4px) !important;
     opacity: 1 !important;
   }
 
-  // 9.5. DIÁLOGOS - Desactivar glassmorphism para tema taller
+  // MODALES Y TARJETAS EN TALLER
+  .v-overlay--active.v-dialog>.v-overlay__content>.v-card,
+  .v-overlay--active.v-dialog .v-card,
   .v-dialog .v-card,
   [role="dialog"] .v-card {
+    background: #ffffff !important;
+    background-color: #ffffff !important;
     backdrop-filter: none !important;
     -webkit-backdrop-filter: none !important;
-  }
-
-  .user-profile-menu-list {
-    background: #f1f5f9 !important;
-    border: 1px solid rgba(0, 0, 0, 0.08) !important;
-    color: #1f2937 !important;
-
-    .user-profile-header {
-      background: #f1f5f9 !important;
-      color: #1f2937 !important;
-    }
-
-    .v-icon,
-    i,
-    svg {
-      color: #1f2937 !important;
-      fill: #1f2937 !important;
-    }
-  }
-
-  // 10. CABECERAS DE DIÁLOGOS Y MODALES (todas las variantes del sistema)
-  // Selectores específicos para VDialog - NO afecta menús, tooltips ni dropdowns
-  .custom-dialog-header,
-  .dialog-header-workshop,
-  // VCard con bg-primary explícito en el título (patrón común del sistema)
-  .v-card-title.bg-primary,
-  .v-card-item.bg-primary,
-  // bg-dialog-header generado por los temas glass (patrón custom-dialog-header)
-  [class*="bg-dialog-header"],
-  // Cabeceras estándar dentro de VDialog (el wrapper tiene role=dialog)
-  [role="dialog"] .v-card > .v-card-title:first-child,
-  [role="dialog"] .v-card > .v-card-item:first-child,
-  // Selectores directos de VDialog de Vuetify
-  .v-dialog .v-card-title,
-  .v-dialog .v-card > .v-card-item:first-child {
-    background: linear-gradient(135deg, #8A1538 0%, #600A1F 100%) !important;
-    color: #ffffff !important;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.15) !important;
-
-    h1, h2, h3, h4, h5, h6,
-    .text-h5, .text-h6, .custom-dialog-title,
-    p, span, div, .custom-dialog-subtitle,
-    .v-card-title,
-    .v-card-subtitle {
-      color: #ffffff !important;
-    }
-
-    .v-icon,
-    i,
-    svg {
-      color: rgba(255, 255, 255, 0.90) !important;
-      fill: rgba(255, 255, 255, 0.90) !important;
-    }
-
-    .custom-dialog-close-btn,
-    .v-btn {
-      color: #ffffff !important;
-      background: rgba(255, 255, 255, 0.15) !important;
-      border: 1px solid rgba(255, 255, 255, 0.25) !important;
-
-      * { color: #ffffff !important; }
-
-      &:hover {
-        background: rgba(255, 255, 255, 0.28) !important;
-      }
-    }
-  }
-
-  // Cuerpo de diálogos: fondo gris claro y texto oscuro
-  .v-dialog .v-card,
-  [role="dialog"] .v-card {
-    background: #f1f5f9 !important;
+    border: 1px solid #e2e8f0 !important;
+    border-radius: 16px !important;
+    box-shadow: 0 20px 60px rgba(15, 23, 42, 0.18) !important;
     color: #0f172a !important;
   }
 
-  // 11. PESTAÑAS (TABS)
-  .v-tab.v-tab--selected,
-  .v-tab--active,
-  .luxury-tab-btn.active,
-  .luxury-tab-btn.active-tab {
-    background: linear-gradient(135deg, #8A1538 0%, #600A1F 100%) !important;
-    color: #ffffff !important;
-    box-shadow: 0 4px 12px rgba(138, 21, 56, 0.35) !important;
-
-    * {
-      color: #ffffff !important;
-    }
-  }
-
-  // 12. PAGINACIÓN - Ítem activo con fondo rojo vino y TEXTO BLANCO
-  .v-pagination {
-    // Ítem de página ACTIVO (el número seleccionado)
-    .v-pagination__item--is-active,
-    .v-btn.v-pagination__item--is-active,
-    .v-pagination__item.v-pagination__item--is-active {
-      background: linear-gradient(135deg, #8A1538 0%, #600A1F 100%) !important;
-      background-color: #8A1538 !important;
-      color: #ffffff !important;
-      border: 1px solid rgba(255, 255, 255, 0.20) !important;
-      box-shadow: 0 4px 12px rgba(138, 21, 56, 0.40) !important;
-      font-weight: 700 !important;
-
-      // FORZAR texto blanco en TODOS los elementos hijos
-      *,
-      span,
-      .v-btn__content,
-      .v-pagination__item-content {
-        color: #ffffff !important;
-        font-weight: 700 !important;
-      }
-
-      // El botón Vuetify envuelto
-      .v-btn__overlay,
-      .v-btn__ripple {
-        opacity: 0 !important;
-      }
-    }
-
-    // Ítems de página normales (no activos)
-    .v-pagination__item:not(.v-pagination__item--is-active),
-    .v-btn.v-pagination__item:not(.v-pagination__item--is-active) {
-      background: #ffffff !important;
-      color: #334155 !important;
-      border: 1px solid #e2e8f0 !important;
-      font-weight: 500 !important;
-
-      &:hover {
-        background: rgba(138, 21, 56, 0.06) !important;
-        border-color: rgba(138, 21, 56, 0.30) !important;
-        color: #8A1538 !important;
-      }
-    }
-
-    // Botones prev/next de paginación
-    .v-pagination__prev,
-    .v-pagination__next,
-    .v-btn.v-pagination__prev,
-    .v-btn.v-pagination__next {
-      background: #ffffff !important;
-      color: #334155 !important;
-      border: 1px solid #e2e8f0 !important;
-
-      .v-icon {
-        color: #334155 !important;
-      }
-
-      &:hover {
-        background: rgba(138, 21, 56, 0.06) !important;
-        border-color: rgba(138, 21, 56, 0.30) !important;
-
-        .v-icon { color: #8A1538 !important; }
-      }
-    }
-  }
-
-  // 10. RESPONSIVIDAD EN LAS 3 ESCALAS: LAPTOPS, TABLETS Y CELULARES PEQUEÑOS
-  // ESCALA 1: LAPTOPS Y PANTALLAS GRANDES (>= 1025px)
-  @media (min-width: 1025px) {
-    .kpi-stat-card {
-      padding: 1.25rem !important;
-    }
-
-    .v-dialog > .v-overlay__content {
-      max-width: 900px;
-    }
-  }
-
-  // ESCALA 2: TABLETS (600px - 1024px)
-  @media (min-width: 600px) and (max-width: 1024px) {
-    .kpi-stat-card {
-      padding: 1rem !important;
-      .text-h6 {
-        font-size: 1.1rem !important;
-      }
-    }
-
-    .v-dialog > .v-overlay__content {
-      width: 92% !important;
-      max-width: 720px !important;
-    }
-
-    .v-table {
-      font-size: 0.85rem;
-    }
-  }
-
-  // ESCALA 3: CELULARES PEQUEÑOS (< 600px y hasta 320px)
-  @media (max-width: 599px) {
-    .kpi-stat-card {
-      padding: 0.75rem !important;
-      border-radius: 12px !important;
-
-      .text-h6 {
-        font-size: 1rem !important;
-      }
-
-      .text-caption {
-        font-size: 0.75rem !important;
-      }
-    }
-
-    // Asegurar que en móviles las tarjetas no desborden
-    .v-card {
-      border-radius: 12px !important;
-    }
-
-    // Diálogos en móviles: casi ancho completo con scroll suave
-    .v-dialog > .v-overlay__content {
-      width: 96% !important;
-      margin: 8px !important;
-      max-height: 94vh !important;
-    }
-
-    // Botones táctiles cómodos con alto contraste
-    .v-btn {
-      min-height: 40px !important;
-    }
-
-    // Tablas scrollables con cabecera fija
-    .v-table__wrapper {
-      overflow-x: auto !important;
-      -webkit-overflow-scrolling: touch;
-    }
-  }
-
-  // 10. TELÓN DE FONDO (SCRIM) DE DIÁLOGOS - AJUSTE PARA TEMA TALLER
-  // Para que el contenido detrás del diálogo sea visible y no se quede en blanco
-  .v-overlay--active > .v-overlay__scrim {
-    background-color: rgba(15, 23, 42, 0.45) !important;
-    backdrop-filter: blur(4px) !important;
-    -webkit-backdrop-filter: blur(4px) !important;
-    opacity: 1 !important;
-  }
-
-  // Asegurar que el contenido detrás del diálogo mantenga su fondo visible
-  .layout-wrapper,
-  .layout-content-wrapper,
-  .v-main {
-    background: transparent !important;
-  }
-
-  // Cuando hay un overlay activo, asegurar que el body no se vuelva blanco
-  // El contenedor principal debe mantener su fondo
-  .v-application,
-  .v-application__wrap {
-    background: #f8fafc !important;
-  }
-
-  // 11. CABECERAS DE DIÁLOGOS - USAR COLOR DEL TEMA (ROJO VINO)
+  // =========================================================================
+  // BLINDAJE ABSOLUTO DE CABECERA DE VDIALOG EN TEMA TALLER
+  // (Soluciona textos oscuros/azules y botones casi invisibles sobre rojo vino)
+  // =========================================================================
   .v-dialog .v-card-title.bg-primary,
   .v-dialog .v-card-item.bg-primary,
-  .custom-dialog-card .v-card-title.bg-primary,
-  .custom-dialog-card .v-card-item.bg-primary,
-  .v-dialog .v-card > .bg-primary:first-child,
-  .custom-dialog-card > .bg-primary:first-child,
-  .v-dialog .v-card > div:first-child[class*="custom-dialog-header"],
-  .v-dialog .v-card > div:first-child[class*="dialog-header"],
+  .v-dialog .custom-dialog-header,
+  .v-dialog .custom-dialog-header-primary,
+  .v-dialog .dialog-header-banner,
+  .v-dialog .dialog-header-workshop,
+  .v-dialog .v-card>.bg-primary:first-child,
+  .v-dialog .v-card>.v-card-title:first-child,
+  .v-overlay--active.v-dialog>.v-overlay__content .v-card-title.bg-primary,
+  .v-overlay--active.v-dialog>.v-overlay__content .v-card-item.bg-primary,
+  .v-overlay--active.v-dialog>.v-overlay__content>.v-card>div:first-child,
   .custom-dialog-header-primary,
-  .custom-dialog-header,
-  .dialog-header-banner {
+  .custom-dialog-header {
     background: linear-gradient(135deg, #8A1538 0%, #600A1F 100%) !important;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.20) !important;
     color: #ffffff !important;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.20) !important;
+    border-radius: 16px 16px 0 0 !important; // 1. TÍTULOS Y SUBTÍTULOS EN BLANCO PURO
 
+    *,
+    h1,
+    h2,
+    h3,
+    h4,
+    h5,
+    h6,
     .v-card-title,
     .v-card-subtitle,
-    .v-card-item,
-    .title-text,
-    .text-subtitle-1,
-    .text-subtitle-2,
-    .text-caption,
+    .custom-dialog-title,
+    .custom-dialog-subtitle,
+    .dialog-title,
+    .dialog-subtitle,
     p,
     span,
     label,
-    strong,
-    b,
-    h1, h2, h3, h4, h5, h6 {
+    div {
       color: #ffffff !important;
+      -webkit-text-fill-color: #ffffff !important;
     }
 
+    // Subtítulo con ligera opacidad pero totalmente blanco y legible
+    .custom-dialog-subtitle,
+    .dialog-subtitle,
+    .v-card-subtitle,
+    p {
+      color: rgba(255, 255, 255, 0.90) !important;
+      -webkit-text-fill-color: rgba(255, 255, 255, 0.90) !important;
+    }
+
+    // 2. ICONOS DE CABECERA
     .v-icon,
     i,
     svg {
@@ -4625,63 +1587,102 @@ body[data-theme="taller"],
       opacity: 1 !important;
     }
 
-    .custom-dialog-close-btn,
-    .v-dialog-close-btn {
-      background: rgba(255, 255, 255, 0.15) !important;
-      border: 1px solid rgba(255, 255, 255, 0.30) !important;
-      color: #ffffff !important;
+    // 3. AVATAR / ICONO CENTRAL
+    .custom-dialog-avatar,
+    .header-avatar-badge,
+    .v-avatar {
+      background: rgba(255, 255, 255, 0.18) !important;
+      border: 1.5px solid rgba(255, 255, 255, 0.35) !important;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25) !important;
 
       .v-icon,
       i,
       svg {
         color: #ffffff !important;
         fill: #ffffff !important;
+        opacity: 1 !important;
+      }
+    }
+
+    // 4. BOTÓN DE CERRAR (X) EN LA CABECERA
+    .v-btn,
+    .custom-dialog-close-btn,
+    .v-dialog-close-btn,
+    .v-btn--icon {
+      color: #ffffff !important;
+      background: rgba(255, 255, 255, 0.18) !important;
+      border: 1px solid rgba(255, 255, 255, 0.35) !important;
+      opacity: 1 !important;
+
+      *,
+      .v-icon,
+      i,
+      svg {
+        color: #ffffff !important;
+        fill: #ffffff !important;
+        opacity: 1 !important;
       }
 
       &:hover {
-        background: rgba(255, 255, 255, 0.25) !important;
+        background: rgba(255, 255, 255, 0.30) !important;
+        border-color: rgba(255, 255, 255, 0.50) !important;
       }
     }
   }
 
-  // 12. ICONOS EN DIÁLOGOS Y CONTENEDORES - MEJORAR VISIBILIDAD
-  .v-dialog .v-card,
-  .custom-dialog-card {
-    .v-icon:not(.v-btn[style*="linear-gradient"] .v-icon):not(.v-btn.bg-primary .v-icon):not(.v-btn.bg-error .v-icon):not(.v-btn.bg-success .v-icon):not(.v-chip[class*="bg-"] .v-icon):not(.text-primary):not(.text-error):not(.text-success):not(.text-warning):not(.text-info):not(.custom-dialog-header-primary .v-icon):not(.custom-dialog-header .v-icon):not(.dialog-header-banner .v-icon):not(.dialog-header-workshop .v-icon),
-    i:not(.v-btn[style*="linear-gradient"] i):not(.v-btn.bg-primary i):not(.v-btn.bg-error i):not(.v-btn.bg-success i):not(.v-chip[class*="bg-"] i):not(.custom-dialog-header-primary i):not(.custom-dialog-header i):not(.dialog-header-banner i):not(.dialog-header-workshop i) {
+  // ESTILOS PARA EL CONTENIDO INTERNO DEL FORMULARIO DEL DIÁLOGO
+  .v-dialog .v-card-text,
+  [role="dialog"] .v-card-text {
+
+    // Encabezados de sección dentro del formulario (ej. 1. IDENTIFICACIÓN TRIBUTARIA)
+    .text-subtitle-2,
+    .font-weight-bold,
+    h6 {
       color: #0f172a !important;
-      fill: #0f172a !important;
-      opacity: 1 !important;
     }
 
-    // Iconos en cabeceras con bg-primary deben ser blancos
-    .bg-primary .v-icon,
-    .bg-primary i,
-    .bg-primary svg {
-      color: #ffffff !important;
-      fill: #ffffff !important;
-      opacity: 1 !important;
+    // Badges / iconos de las secciones (recuadros grises pequeños de números)
+    .v-avatar.v-avatar--variant-tonal,
+    .section-num-badge {
+      background: #f1f5f9 !important;
+      color: #8A1538 !important;
+      border: 1px solid #e2e8f0 !important;
+
+      .v-icon {
+        color: #8A1538 !important;
+        fill: #8A1538 !important;
+      }
+    }
+
+    // Campos de texto dentro del modal
+    .v-field {
+      background: #ffffff !important;
+      border: 1px solid #cbd5e1 !important;
+
+      .v-field__input {
+        color: #0f172a !important;
+      }
+
+      .v-label {
+        color: #475569 !important;
+      }
+
+      &.v-field--focused {
+        border-color: #8A1538 !important;
+      }
     }
   }
 
-  // 13. MENÚS Y DROPDOWNS - FONDO BLANCO CON ICONOS VISIBLES
-  .v-menu > .v-overlay__content > .v-list,
+  // MENÚS DESPLEGABLES TELEPORTADOS
+  .v-overlay--active.v-menu>.v-overlay__content>.v-list,
   .v-select__content,
   .v-autocomplete__content {
-    background: #f1f5f9 !important;
-    border: 1px solid rgba(0, 0, 0, 0.08) !important;
+    background: #ffffff !important;
+    border: 1px solid #e2e8f0 !important;
     color: #0f172a !important;
 
     .v-list-item {
       color: #0f172a !important;
-
-      .v-icon,
-      i,
-      svg {
-        color: #0f172a !important;
-        fill: #0f172a !important;
-        opacity: 1 !important;
-      }
 
       &:hover {
         background: rgba(138, 21, 56, 0.08) !important;
@@ -4689,191 +1690,12 @@ body[data-theme="taller"],
 
       &.v-list-item--active {
         background: rgba(138, 21, 56, 0.12) !important;
-        color: #7A102B !important;
-        border: 1px solid rgba(138, 21, 56, 0.25) !important;
+        color: #8A1538 !important;
 
         * {
-          color: #7A102B !important;
-        }
-
-        .v-icon,
-        i,
-        svg {
-          color: #7A102B !important;
-          fill: #7A102B !important;
+          color: #8A1538 !important;
         }
       }
     }
   }
-
-  // 14. ICONOS GLOBALES - MEJORAR VISIBILIDAD EN TODO EL SISTEMA
-  // Iconos en general (no en botones con colores específicos, chips, badges, etc.)
-  .v-icon:not(.v-btn.bg-primary .v-icon):not(.v-btn.bg-error .v-icon):not(.v-btn.bg-success .v-icon):not(.v-btn.bg-warning .v-icon):not(.v-btn.bg-info .v-icon):not(.v-chip[class*="bg-"] .v-icon):not(.text-primary):not(.text-error):not(.text-success):not(.text-warning):not(.text-info):not([class*="status-"] .v-icon):not(.v-avatar .v-icon):not(.custom-dialog-header-primary .v-icon):not(.custom-dialog-header .v-icon):not(.dialog-header-banner .v-icon):not(.dialog-header-workshop .v-icon),
-  i:not(.v-btn.bg-primary i):not(.v-btn.bg-error i):not(.v-btn.bg-success i):not(.v-btn.bg-warning i):not(.v-btn.bg-info i):not(.v-chip[class*="bg-"] i):not([class*="status-"] i):not(.v-avatar i):not(.custom-dialog-header-primary i):not(.custom-dialog-header i):not(.dialog-header-banner i):not(.dialog-header-workshop i) {
-    color: #0f172a !important;
-    fill: #0f172a !important;
-    opacity: 1 !important;
-  }
-
-  // Iconos en tarjetas y paneles
-  .v-card:not(.v-navigation-drawer):not(.layout-vertical-nav) .v-icon:not(.v-btn.bg-primary .v-icon):not(.v-btn.bg-error .v-icon):not(.v-btn.bg-success .v-icon):not(.v-chip[class*="bg-"] .v-icon):not(.text-primary):not(.text-error):not(.text-success):not(.text-warning):not(.text-info):not(.custom-dialog-header-primary .v-icon):not(.custom-dialog-header .v-icon):not(.dialog-header-banner .v-icon):not(.dialog-header-workshop .v-icon),
-  .card .v-icon:not(.v-btn.bg-primary .v-icon):not(.v-btn.bg-error .v-icon):not(.v-btn.bg-success .v-icon):not(.v-chip[class*="bg-"] .v-icon):not(.text-primary):not(.text-error):not(.text-success):not(.text-warning):not(.text-info):not(.custom-dialog-header-primary .v-icon):not(.custom-dialog-header .v-icon):not(.dialog-header-banner .v-icon):not(.dialog-header-workshop .v-icon) {
-    color: #0f172a !important;
-    fill: #0f172a !important;
-    opacity: 1 !important;
-  }
-
-  // Iconos en botones outlined/tonal sin color específico
-  .v-btn.variant-outlined .v-icon,
-  .v-btn.variant-tonal .v-icon,
-  .v-btn:not(.bg-primary):not(.bg-error):not(.bg-success):not(.bg-warning):not(.bg-info) .v-icon:not(.custom-dialog-header-primary .v-icon):not(.custom-dialog-header .v-icon):not(.dialog-header-banner .v-icon):not(.dialog-header-workshop .v-icon) {
-    color: #7A102B !important;
-    fill: #7A102B !important;
-    opacity: 1 !important;
-  }
-
-  // Iconos en tablas
-  .v-data-table .v-icon:not(.v-btn.bg-primary .v-icon):not(.v-btn.bg-error .v-icon):not(.v-btn.bg-success .v-icon):not(.v-chip[class*="bg-"] .v-icon):not(.text-primary):not(.text-error):not(.text-success):not(.text-warning):not(.text-info),
-  .v-table .v-icon:not(.v-btn.bg-primary .v-icon):not(.v-btn.bg-error .v-icon):not(.v-btn.bg-success .v-icon):not(.v-chip[class*="bg-"] .v-icon):not(.text-primary):not(.text-error):not(.text-success):not(.text-warning):not(.text-info) {
-    color: #0f172a !important;
-    fill: #0f172a !important;
-    opacity: 1 !important;
-  }
-}
-
-// Overrides finales del tema Taller: el scrim y los menús se teletransportan a body,
-// por lo que estas reglas deben resolver la cascada fuera de los contenedores de VApp.
-body[data-theme="taller"] .v-overlay--active > .v-overlay__scrim {
-  background: rgba(15, 23, 42, 0.45) !important;
-  backdrop-filter: blur(4px) !important;
-  -webkit-backdrop-filter: blur(4px) !important;
-  opacity: 1 !important;
-}
-
-body[data-theme="taller"] .layout-wrapper,
-body[data-theme="taller"] .layout-content-wrapper,
-body[data-theme="taller"] .layout-page-content,
-body[data-theme="taller"] .page-content-container,
-body[data-theme="taller"] .v-main {
-  background: transparent !important;
-}
-
-body[data-theme="taller"] .v-overlay--active.v-menu,
-body[data-theme="taller"] .v-overlay--active.v-menu > .v-overlay__content {
-  background: transparent !important;
-  box-shadow: none !important;
-}
-
-body[data-theme="taller"] .v-overlay--active.v-dialog > .v-overlay__content .v-card-title.bg-primary,
-body[data-theme="taller"] .v-overlay--active.v-dialog > .v-overlay__content .v-card-item.bg-primary,
-body[data-theme="taller"] .v-dialog .custom-dialog-header,
-body[data-theme="taller"] .v-dialog .custom-dialog-header-primary,
-body[data-theme="taller"] .v-dialog .dialog-header-banner,
-body[data-theme="taller"] .v-dialog .dialog-header-workshop {
-  background: linear-gradient(135deg, #8A1538 0%, #600A1F 100%) !important;
-  color: #FFFFFF !important;
-
-  .v-card-title,
-  .v-card-subtitle,
-  .v-card-item,
-  .text-subtitle-1,
-  .text-subtitle-2,
-  .text-caption,
-  h1, h2, h3, h4, h5, h6,
-  p, span, label, strong, b,
-  .v-icon,
-  i,
-  svg {
-    color: #FFFFFF !important;
-    fill: #FFFFFF !important;
-    opacity: 1 !important;
-  }
-}
-
-body[data-theme="taller"] .v-overlay--active.v-dialog > .v-overlay__content .v-card-title.bg-primary *,
-body[data-theme="taller"] .v-overlay--active.v-dialog > .v-overlay__content .v-card-item.bg-primary * {
-  color: #FFFFFF !important;
-  fill: #FFFFFF !important;
-  opacity: 1 !important;
-}
-
-body[data-theme="taller"] .v-overlay--active.v-dialog > .v-overlay__content > .v-card > .custom-dialog-header-primary *,
-body[data-theme="taller"] .v-overlay--active.v-dialog > .v-overlay__content > .v-card > .custom-dialog-header *,
-body[data-theme="taller"] .v-overlay--active.v-dialog > .v-overlay__content > .v-card > .dialog-header-banner *,
-body[data-theme="taller"] .v-overlay--active.v-dialog > .v-overlay__content > .v-card > .dialog-header-workshop * {
-  color: #FFFFFF !important;
-  fill: #FFFFFF !important;
-  opacity: 1 !important;
-}
-
-body[data-theme="taller"] .v-card-title.bg-primary,
-body[data-theme="taller"] .v-card-item.bg-primary,
-body[data-theme="taller"] .v-toolbar.bg-primary,
-body[data-theme="taller"] .v-dialog .custom-dialog-header-primary,
-body[data-theme="taller"] .v-dialog .custom-dialog-header,
-body[data-theme="taller"] .v-dialog .dialog-header-banner,
-body[data-theme="taller"] .v-dialog .dialog-header-workshop {
-  background: linear-gradient(135deg, #8A1538 0%, #600A1F 100%) !important;
-  color: #FFFFFF !important;
-
-  *,
-  .v-toolbar-title,
-  .v-card-title,
-  .v-card-subtitle,
-  .text-subtitle-1,
-  .text-subtitle-2,
-  .text-caption,
-  .v-icon,
-  i,
-  svg {
-    color: #FFFFFF !important;
-    fill: #FFFFFF !important;
-    opacity: 1 !important;
-  }
-}
-
-body[data-theme="taller"] .v-overlay--active.v-menu .user-profile-menu-list {
-  background: #F1F5F9 !important;
-  border: 1px solid rgba(0, 0, 0, 0.08) !important;
-  color: #1F2937 !important;
-
-  .user-profile-header {
-    background: #F1F5F9 !important;
-    color: #1F2937 !important;
-  }
-
-  .v-list-item:not(.v-list-item--active),
-  .v-list-item-title,
-  .v-list-item-subtitle,
-  .v-icon,
-  i,
-  svg {
-    color: #1F2937 !important;
-    fill: #1F2937 !important;
-  }
-
-  .v-list-item--active,
-  .v-list-item--active .v-icon {
-    color: #8A1538 !important;
-  }
-}
-
-body[data-theme="taller"] .luxury-tabs-nav .luxury-tab-btn.is-active {
-  background: linear-gradient(135deg, #8A1538 0%, #600A1F 100%) !important;
-  box-shadow: 0 4px 16px rgba(138, 21, 56, 0.32) !important;
-  color: #FFFFFF !important;
-
-  .tab-icon-wrap,
-  .tab-title,
-  .v-icon,
-  .active-dot {
-    color: #FFFFFF !important;
-  }
-}
-
-body[data-theme="taller"] .gradient-title {
-  background-image: linear-gradient(135deg, #8A1538 0%, #600A1F 100%) !important;
-  -webkit-background-clip: text !important;
-  background-clip: text !important;
-  -webkit-text-fill-color: transparent !important;
 }
