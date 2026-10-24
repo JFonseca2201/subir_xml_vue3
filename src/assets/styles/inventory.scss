@@ -6387,10 +6387,19 @@
 // Soporte para Modo Oscuro y Temas Glassmorphism Oscuros
 .v-theme--dark,
 [data-theme="dark"],
+html[data-theme="dark"],
+body[data-theme="dark"],
+.theme-dark,
 .v-theme--dark-glass,
 [data-theme="dark-glass"],
+html[data-theme="dark-glass"],
+body[data-theme="dark-glass"],
+.theme-dark-glass,
 .v-theme--semi-dark-glass,
-[data-theme="semi-dark-glass"] {
+[data-theme="semi-dark-glass"],
+html[data-theme="semi-dark-glass"],
+body[data-theme="semi-dark-glass"],
+.theme-semi-dark-glass {
   // Clases específicas de modales y tarjetas planas en temas oscuros
   .info-card-flat,
   .stat-glass-card,
@@ -6407,6 +6416,25 @@
     background-color: var(--bg-surface, rgba(255, 255, 255, 0.05)) !important;
     border-color: var(--border-glass, rgba(234, 234, 255, 0.12)) !important;
     color: #ffffff !important;
+  }
+
+  // Reseteo general de secciones de VCard en páginas y diálogos para evitar recuadros blancos
+  .v-card-item,
+  .v-card-text,
+  .v-card-actions {
+    &.bg-white,
+    &[class*="bg-white"],
+    &.bg-slate-50,
+    &.bg-slate-100,
+    &.bg-grey-lighten-5,
+    &.bg-grey-lighten-4,
+    &.bg-grey-lighten-3,
+    &.bg-grey-50,
+    &.bg-grey-100 {
+      background: transparent !important;
+      background-color: transparent !important;
+      color: #ffffff !important;
+    }
   }
 
   // Tarjetas de diálogo completas
@@ -7023,6 +7051,184 @@
       background-color: rgba(255, 255, 255, 0.1) !important;
       color: #ffffff !important;
       border: 1px solid rgba(255, 255, 255, 0.22) !important;
+    }
+  }
+
+  // Tarjetas selectoras de tipo de comprobante (Factura / Nota de Venta / Cotización)
+  .doc-type-card {
+    background-color: rgba(255, 255, 255, 0.05) !important;
+    background: rgba(255, 255, 255, 0.05) !important;
+    border-color: rgba(255, 255, 255, 0.12) !important;
+    color: #ffffff !important;
+    box-shadow: none !important;
+
+    &:hover {
+      background-color: rgba(255, 255, 255, 0.08) !important;
+      background: rgba(255, 255, 255, 0.08) !important;
+      border-color: rgba(255, 255, 255, 0.22) !important;
+    }
+
+    &.active-invoice {
+      background: linear-gradient(135deg, rgba(99, 102, 241, 0.22) 0%, rgba(99, 102, 241, 0.08) 100%) !important;
+      border-color: #818cf8 !important;
+      box-shadow: 0 4px 16px -2px rgba(99, 102, 241, 0.35) !important;
+
+      .doc-type-title {
+        color: #a5b4fc !important;
+      }
+
+      .invoice-icon {
+        background-color: #6366f1 !important;
+        color: #ffffff !important;
+      }
+    }
+
+    &.active-sale-note {
+      background: linear-gradient(135deg, rgba(16, 185, 129, 0.22) 0%, rgba(16, 185, 129, 0.08) 100%) !important;
+      border-color: #34d399 !important;
+      box-shadow: 0 4px 16px -2px rgba(16, 185, 129, 0.35) !important;
+
+      .doc-type-title {
+        color: #6ee7b7 !important;
+      }
+
+      .note-icon {
+        background-color: #10b981 !important;
+        color: #ffffff !important;
+      }
+    }
+
+    &.active-quote {
+      background: linear-gradient(135deg, rgba(2, 132, 199, 0.22) 0%, rgba(2, 132, 199, 0.08) 100%) !important;
+      border-color: #38bdf8 !important;
+      box-shadow: 0 4px 16px -2px rgba(2, 132, 199, 0.35) !important;
+
+      .doc-type-title {
+        color: #7dd3fc !important;
+      }
+
+      .quote-icon {
+        background-color: #0284c7 !important;
+        color: #ffffff !important;
+      }
+    }
+
+    .doc-type-icon-wrapper {
+      background-color: rgba(255, 255, 255, 0.1) !important;
+      color: #ffffff !important;
+    }
+
+    .doc-type-title {
+      color: #ffffff !important;
+    }
+
+    .doc-type-desc {
+      color: rgba(234, 234, 255, 0.70) !important;
+    }
+  }
+
+  // Tarjetas y pastillas de pago (Contado / Crédito / Métodos)
+  .payment-mode-card {
+    background: rgba(255, 255, 255, 0.05) !important;
+    border-color: rgba(255, 255, 255, 0.12) !important;
+    color: #ffffff !important;
+
+    .mode-icon-circle {
+      background: rgba(255, 255, 255, 0.1) !important;
+      color: #ffffff !important;
+    }
+
+    .mode-title {
+      color: #ffffff !important;
+    }
+
+    .mode-subtitle {
+      color: rgba(234, 234, 255, 0.70) !important;
+    }
+
+    &:hover {
+      background: rgba(255, 255, 255, 0.08) !important;
+      border-color: rgba(255, 255, 255, 0.22) !important;
+    }
+
+    &.active-contado {
+      border-color: #818cf8 !important;
+      background: linear-gradient(135deg, rgba(99, 102, 241, 0.25) 0%, rgba(99, 102, 241, 0.1) 100%) !important;
+      box-shadow: 0 4px 14px -2px rgba(99, 102, 241, 0.35) !important;
+
+      .mode-icon-circle {
+        background: #6366f1 !important;
+        color: #ffffff !important;
+      }
+
+      .mode-title {
+        color: #a5b4fc !important;
+      }
+    }
+
+    &.active-credito {
+      border-color: #fbbf24 !important;
+      background: linear-gradient(135deg, rgba(245, 158, 11, 0.25) 0%, rgba(245, 158, 11, 0.1) 100%) !important;
+      box-shadow: 0 4px 14px -2px rgba(245, 158, 11, 0.35) !important;
+
+      .mode-icon-circle {
+        background: #f59e0b !important;
+        color: #ffffff !important;
+      }
+
+      .mode-title {
+        color: #fde68a !important;
+      }
+    }
+  }
+
+  .payment-dist-card {
+    background: rgba(255, 255, 255, 0.04) !important;
+    border-color: rgba(255, 255, 255, 0.12) !important;
+    color: #ffffff !important;
+
+    &:hover {
+      background: rgba(255, 255, 255, 0.06) !important;
+      border-color: rgba(255, 255, 255, 0.2) !important;
+    }
+
+    .payment-amount-row {
+      .text-slate-700 {
+        color: #ffffff !important;
+      }
+    }
+  }
+
+  .payment-method-pill {
+    background: rgba(255, 255, 255, 0.07) !important;
+    border-color: rgba(255, 255, 255, 0.15) !important;
+    color: rgba(234, 234, 255, 0.9) !important;
+
+    &:hover {
+      background: rgba(255, 255, 255, 0.12) !important;
+      border-color: rgba(255, 255, 255, 0.25) !important;
+      color: #ffffff !important;
+    }
+
+    &.active-cash {
+      background: #10b981 !important;
+      border-color: #10b981 !important;
+      color: #ffffff !important;
+      box-shadow: 0 2px 8px rgba(16, 185, 129, 0.35) !important;
+    }
+
+    &.active-transfer {
+      background: #0ea5e9 !important;
+      border-color: #0ea5e9 !important;
+      color: #ffffff !important;
+      box-shadow: 0 2px 8px rgba(14, 165, 233, 0.35) !important;
+    }
+
+    &.active-other {
+      background: #6366f1 !important;
+      border-color: #6366f1 !important;
+      color: #ffffff !important;
+      box-shadow: 0 2px 8px rgba(99, 102, 241, 0.35) !important;
     }
   }
 

@@ -382,7 +382,13 @@ const viewDetails = workOrder => {
 }
 
 const goToSale = workOrderId => {
-  router.push({ path: '/sales/add', query: { work_order_id: workOrderId } })
+  showTimelineDialog.value = false
+  showDetailsDialog.value = false
+  showAdvanceDialog.value = false
+  isPdfPreviewDialogVisible.value = false
+  selectedTimelineOrder.value = null
+  selectedWorkOrder.value = null
+  router.push({ path: '/sales/add', query: { work_order_id: workOrderId, doc_type: 'invoice' } })
 }
 
 const goToEdit = (workOrderId, workOrder = null) => {
@@ -1169,7 +1175,7 @@ watch(() => route.query.search, newSearch => {
           <!-- Tarjetas Resumen de Cliente y Vehículo -->
           <VRow dense class="mb-4">
             <VCol cols="12" sm="6">
-              <div class="pa-3 rounded-xl border info-card-flat h-100" style="background-color: #f8fafc;">
+              <div class="pa-3 rounded-xl border info-card-flat h-100">
                 <div class="d-flex align-center gap-2 mb-1.5">
                   <VIcon icon="ri-user-3-line" size="18" color="primary" />
                   <span class="text-caption font-weight-bold text-uppercase text-medium-emphasis">Cliente</span>
@@ -1184,7 +1190,7 @@ watch(() => route.query.search, newSearch => {
               </div>
             </VCol>
             <VCol cols="12" sm="6">
-              <div class="pa-3 rounded-xl border info-card-flat h-100" style="background-color: #f8fafc;">
+              <div class="pa-3 rounded-xl border info-card-flat h-100">
                 <div class="d-flex align-center justify-space-between mb-1.5">
                   <div class="d-flex align-center gap-2">
                     <VIcon icon="ri-car-line" size="18" color="primary" />
@@ -1341,8 +1347,7 @@ watch(() => route.query.search, newSearch => {
               </p>
 
               <!-- Detalles en Card Plana -->
-              <div class="pa-3 rounded-xl border d-flex flex-column gap-2 text-start info-card-flat"
-                style="background-color: #f8fafc;">
+              <div class="pa-3 rounded-xl border d-flex flex-column gap-2 text-start info-card-flat">
                 <div v-if="workOrderToDelete.client" class="d-flex justify-space-between align-center">
                   <span class="text-caption text-medium-emphasis">Cliente:</span>
                   <span class="text-caption font-weight-bold text-slate-900 text-truncate" style="max-width: 220px;">

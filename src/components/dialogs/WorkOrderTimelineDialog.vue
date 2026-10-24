@@ -1,5 +1,5 @@
 <script setup>
-import { ref, watch, computed } from 'vue'
+import { ref, watch, computed, nextTick } from 'vue'
 import { getBrandNameById } from '@/data/vehicleBrands'
 
 const props = defineProps({
@@ -50,12 +50,18 @@ const dialog = computed({
 // Cerrar el modal de forma controlada
 const handleClose = () => {
   dialog.value = false
+  emit('update:isDialogVisible', false)
+  emit('update:modelValue', false)
+  emit('update:isOpen', false)
+  emit('close')
 }
 
 // Cerrar el modal antes de iniciar la facturación
 const handleGenerateSale = () => {
   handleClose()
-  emit('generate-sale')
+  nextTick(() => {
+    emit('generate-sale')
+  })
 }
 
 // Objeto de la orden unificado
@@ -208,7 +214,7 @@ const timelineSteps = computed(() => {
       </div>
 
       <!-- CUERPO DEL MODAL (LÍNEA DE TIEMPO) -->
-      <VCardText class="pa-6 custom-scrollbar bg-grey-lighten-5" style="background-color: #fafafa; max-height: 60vh;">
+      <VCardText class="pa-6 custom-scrollbar" style="max-height: 60vh;">
         <div class="timeline-container">
           <div v-for="(step, index) in timelineSteps" :key="step.id" class="timeline-item"
             :class="`state-${step.status}`">
@@ -253,7 +259,7 @@ const timelineSteps = computed(() => {
       <VDivider />
 
       <!-- PIE DEL MODAL -->
-      <VCardActions class="pa-4 bg-white d-flex justify-end align-center gap-3"
+      <VCardActions class="pa-4 d-flex justify-end align-center gap-3 border-t"
         style="position: sticky; bottom: 0; z-index: 2;">
         <VBtn color="secondary" variant="outlined" prepend-icon="ri-close-line"
           class="rounded-lg px-6 font-weight-medium" height="40" @click="handleClose">
@@ -326,17 +332,17 @@ const timelineSteps = computed(() => {
 }
 
 .timeline-title {
-  color: #1f2937;
+  color: var(--text-primary, #1f2937);
   letter-spacing: 0.5px;
 }
 
 .timeline-description {
-  color: #6b7280;
+  color: var(--text-secondary, #6b7280);
   line-height: 1.5;
 }
 
 .timeline-date {
-  color: #9ca3af;
+  color: var(--text-muted, #9ca3af);
   font-weight: 500;
 }
 
@@ -376,12 +382,9 @@ const timelineSteps = computed(() => {
 
 /* 3. Estado: PENDIENTE (Futuro) */
 .state-pending .timeline-icon-container {
-  background-color: #f1f5f9;
-  /* Gris fondo */
-  color: #94a3b8;
-  /* Icono opaco */
-  border: 2px solid #e2e8f0;
-  /* Borde sutil */
+  background-color: rgba(255, 255, 255, 0.08);
+  color: var(--text-muted, #94a3b8);
+  border: 1px solid var(--border-glass, #e2e8f0);
 }
 
 .state-pending .timeline-content {
