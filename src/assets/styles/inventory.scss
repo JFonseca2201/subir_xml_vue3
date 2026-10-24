@@ -1976,6 +1976,50 @@
     cursor: default;
     visibility: hidden;
   }
+
+  &.has-pending-reminder {
+    border: 1.5px solid #F59E0B !important;
+    background-color: rgba(245, 158, 11, 0.14) !important;
+    color: #D97706 !important;
+    font-weight: 700;
+  }
+
+  &.has-notified-reminder {
+    border: 1.5px solid #10B981 !important;
+    background-color: rgba(16, 185, 129, 0.14) !important;
+    color: #059669 !important;
+    font-weight: 700;
+  }
+
+  .calendar-event-indicator {
+    bottom: -3px;
+    right: -3px;
+    z-index: 2;
+  }
+
+  .day-pill-pending {
+    width: 14px;
+    height: 14px;
+    border-radius: 50%;
+    background: #F59E0B;
+    color: #ffffff;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 1px 4px rgba(245, 158, 11, 0.5);
+  }
+
+  .day-pill-notified {
+    width: 14px;
+    height: 14px;
+    border-radius: 50%;
+    background: #10B981;
+    color: #ffffff;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 1px 4px rgba(16, 185, 129, 0.5);
+  }
 }
 
 /* Ranking Badges & Supplier Rows PRO */

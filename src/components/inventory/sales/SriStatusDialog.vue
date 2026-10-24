@@ -236,7 +236,7 @@ watch(
               </div>
               <div class="min-w-0 flex-grow-1">
                 <div class="d-flex align-center justify-space-between flex-wrap gap-1 mb-1">
-                  <span class="text-subtitle-1 font-weight-bold text-uppercase letter-spacing-05">
+                  <span class="status-title text-subtitle-1 font-weight-bold text-uppercase letter-spacing-05">
                     {{
                       globalStatus === 'OPERATIVO'
                         ? 'Servicios SRI Operativos'
@@ -249,12 +249,12 @@ watch(
                   </span>
                   <span
                     v-if="lastCheckedAt"
-                    class="text-xxs opacity-80 font-mono"
+                    class="status-time text-xxs font-mono"
                   >
                     Último chequeo: {{ lastCheckedAt }}
                   </span>
                 </div>
-                <p class="text-body-2 mb-0 opacity-95">
+                <p class="status-desc text-body-2 mb-0">
                   {{ checkResult.message }}
                 </p>
               </div>
@@ -534,42 +534,86 @@ watch(
   transition: all 0.25s ease;
 
   &.status-theme-success {
-    background: linear-gradient(135deg, #ecfdf5 0%, #f0fdf4 100%);
-    color: #065f46;
-    border: 1.5px solid #a7f3d0;
+    background: rgba(16, 185, 129, 0.12) !important;
+    border: 1.5px solid rgba(16, 185, 129, 0.35) !important;
 
     .status-icon-circle {
-      color: #10b981;
+      color: #10b981 !important;
+    }
+
+    .status-title {
+      color: #10b981 !important;
+    }
+
+    .status-desc {
+      color: rgba(var(--v-theme-on-surface), 0.92) !important;
+    }
+
+    .status-time {
+      color: rgba(var(--v-theme-on-surface), 0.70) !important;
     }
   }
 
   &.status-theme-warning {
-    background: linear-gradient(135deg, #fffbeb 0%, #fef3c7 100%);
-    color: #92400e;
-    border: 1.5px solid #fde68a;
+    background: rgba(245, 158, 11, 0.12) !important;
+    border: 1.5px solid rgba(245, 158, 11, 0.35) !important;
 
     .status-icon-circle {
-      color: #f59e0b;
+      color: #f59e0b !important;
+    }
+
+    .status-title {
+      color: #f59e0b !important;
+    }
+
+    .status-desc {
+      color: rgba(var(--v-theme-on-surface), 0.92) !important;
+    }
+
+    .status-time {
+      color: rgba(var(--v-theme-on-surface), 0.70) !important;
     }
   }
 
   &.status-theme-amber-darken-3 {
-    background: linear-gradient(135deg, #fff7ed 0%, #ffedd5 100%);
-    color: #9a3412;
-    border: 1.5px solid #fed7aa;
+    background: rgba(234, 88, 12, 0.12) !important;
+    border: 1.5px solid rgba(234, 88, 12, 0.35) !important;
 
     .status-icon-circle {
-      color: #ea580c;
+      color: #ea580c !important;
+    }
+
+    .status-title {
+      color: #ea580c !important;
+    }
+
+    .status-desc {
+      color: rgba(var(--v-theme-on-surface), 0.92) !important;
+    }
+
+    .status-time {
+      color: rgba(var(--v-theme-on-surface), 0.70) !important;
     }
   }
 
   &.status-theme-error {
-    background: linear-gradient(135deg, #fef2f2 0%, #fee2e2 100%);
-    color: #991b1b;
-    border: 1.5px solid #fecaca;
+    background: rgba(239, 68, 68, 0.12) !important;
+    border: 1.5px solid rgba(239, 68, 68, 0.35) !important;
 
     .status-icon-circle {
-      color: #ef4444;
+      color: #ef4444 !important;
+    }
+
+    .status-title {
+      color: #ef4444 !important;
+    }
+
+    .status-desc {
+      color: rgba(var(--v-theme-on-surface), 0.92) !important;
+    }
+
+    .status-time {
+      color: rgba(var(--v-theme-on-surface), 0.70) !important;
     }
   }
 }

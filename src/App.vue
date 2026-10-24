@@ -70,4 +70,22 @@ onMounted(() => {
 .v-field__input {
   text-transform: uppercase !important;
 }
+
+/* Excepciones para campos que deben conservar minúsculas o formato natural (ej: correos y asuntos) */
+input[type="email"],
+.v-field__input input[type="email"],
+.no-uppercase,
+.no-uppercase .v-field__input,
+.no-uppercase input,
+.email-clean-input .v-field__input,
+.email-clean-input input,
+.subject-clean-input .v-field__input,
+.subject-clean-input input {
+  text-transform: none !important;
+}
+
+.email-clean-input .v-field__input,
+.email-clean-input input {
+  text-transform: lowercase !important;
+}
 </style>

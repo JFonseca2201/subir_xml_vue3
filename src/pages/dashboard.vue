@@ -141,6 +141,13 @@ const isLoadingEvents = ref(false)
 const selectedReminder = ref(null)
 const isReminderDetailsOpen = ref(false)
 const isSendingAction = ref(false)
+const sendingReminderId = ref(null)
+
+// Vista toggle: 'calendar' (cuadrícula mensual) vs 'upcoming' (próximos a vencer)
+const calendarViewMode = ref('calendar')
+const calendarMeta = ref({})
+const upcomingEvents = ref([])
+const isLoadingUpcoming = ref(false)
 
 const prevMonth = () => {
   calendarDate.value = new Date(calendarDate.value.getFullYear(), calendarDate.value.getMonth() - 1, 1)
@@ -148,6 +155,21 @@ const prevMonth = () => {
 
 const nextMonth = () => {
   calendarDate.value = new Date(calendarDate.value.getFullYear(), calendarDate.value.getMonth() + 1, 1)
+}
+
+const goToToday = () => {
+  const now = new Date()
+  calendarDate.value = new Date(now.getFullYear(), now.getMonth(), 1)
+  selectedDay.value = now.getDate()
+  selectedMonth.value = now.getMonth()
+  selectedYear.value = now.getFullYear()
+}
+
+const goToMonth = (targetYear, targetMonth) => {
+  calendarDate.value = new Date(targetYear, targetMonth - 1, 1)
+  selectedDay.value = 1
+  selectedMonth.value = targetMonth - 1
+  selectedYear.value = targetYear
 }
 
 const currentMonthName = computed(() => {
@@ -168,10 +190,26 @@ const fetchCalendarEvents = async () => {
     })
 
     maintenanceEvents.value = res.data || []
+    calendarMeta.value = res.meta || {}
   } catch (err) {
     console.error('Error al cargar recordatorios de mantenimiento:', err)
   } finally {
     isLoadingEvents.value = false
+  }
+}
+
+const fetchUpcomingEvents = async () => {
+  try {
+    isLoadingUpcoming.value = true
+    const res = await $api('/maintenance-reminders/upcoming', {
+      params: { limit: 15 },
+    })
+
+    upcomingEvents.value = res.data || []
+  } catch (err) {
+    console.error('Error al cargar próximos mantenimientos:', err)
+  } finally {
+    isLoadingUpcoming.value = false
   }
 }
 
@@ -187,7 +225,7 @@ const calendarDays = computed(() => {
 
   // Padding for previous month days
   for (let i = 0; i < firstDayIndex; i++) {
-    days.push({ day: '', isToday: false, isSelected: false, hasEvents: false, events: [] })
+    days.push({ day: '', isToday: false, isSelected: false, hasEvents: false, events: [], pendingCount: 0, notifiedCount: 0, allNotified: false })
   }
 
   // Current month days
@@ -203,12 +241,22 @@ const calendarDays = computed(() => {
     const formattedDate = `${year}-${String(month + 1).padStart(2, '0')}-${String(i).padStart(2, '0')}`
     const dayEvents = maintenanceEvents.value.filter(evt => evt.scheduled_date === formattedDate)
 
+    const pendingCount = dayEvents.filter(e => e.status === 'pending').length
+    const notifiedCount = dayEvents.filter(e => e.status === 'notified').length
+    const scheduledCount = dayEvents.filter(e => e.status === 'scheduled').length
+    const hasEvents = dayEvents.length > 0
+    const allNotified = hasEvents && pendingCount === 0
+
     days.push({
       day: i,
       isToday,
       isSelected,
-      hasEvents: dayEvents.length > 0,
+      hasEvents,
       events: dayEvents,
+      pendingCount,
+      notifiedCount,
+      scheduledCount,
+      allNotified,
     })
   }
 
@@ -222,7 +270,8 @@ const selectDayObj = dayObj => {
   selectedYear.value = calendarDate.value.getFullYear()
 
   if (dayObj.events && dayObj.events.length > 0) {
-    showNotification(`Mostrando ${dayObj.events.length} mantenimientos estimados para el ${dayObj.day} de este mes`, 'info')
+    const pendingText = dayObj.pendingCount > 0 ? ` (${dayObj.pendingCount} pendientes de correo)` : ' (todos notificados)'
+    showNotification(`Mostrando ${dayObj.events.length} servicio(s) para el ${dayObj.day} de ${currentMonthName.value}${pendingText}`, 'info')
   }
 }
 
@@ -252,8 +301,13 @@ const sendWhatsAppNotification = async reminder => {
         method: 'POST',
         body: { channel: 'whatsapp' },
       })
+      reminder.status = 'notified'
+      reminder.notified_at = new Date().toISOString()
       showNotification('WhatsApp abierto y notificación registrada', 'success')
       fetchCalendarEvents()
+      if (calendarViewMode.value === 'upcoming') {
+        fetchUpcomingEvents()
+      }
     } catch (e) {
       console.error('Error al registrar notificación de WhatsApp:', e)
     }
@@ -262,27 +316,70 @@ const sendWhatsAppNotification = async reminder => {
   }
 }
 
-// Trigger Email Notification
-const sendEmailNotification = async reminder => {
+// Dialog para Enviar Correo Manual
+const isEmailDialogVisible = ref(false)
+const emailReminderTarget = ref(null)
+const emailForm = ref({
+  email: '',
+  subject: '',
+})
+
+// Abrir el VDialog de confirmación para envío manual de correo
+const openEmailDialog = reminder => {
   if (!reminder) return
-  if (!reminder.client?.email) {
-    showNotification('El cliente no posee un correo electrónico registrado', 'warning')
-    
+  emailReminderTarget.value = reminder
+
+  const plate = reminder.vehicle?.license_plate || 'Vehículo'
+  const intervalKm = Number(reminder.interval_km || 10000).toLocaleString()
+
+  emailForm.value = {
+    email: (reminder.client?.email || '').toLowerCase().trim(),
+    subject: `Mantenimiento Preventivo (${intervalKm} KM Cumplidos) - Placa ${plate}`,
+  }
+
+  isEmailDialogVisible.value = true
+}
+
+// Confirmar y realizar el envío desde el VDialog
+const confirmSendEmail = async () => {
+  if (!emailReminderTarget.value) return
+  const reminder = emailReminderTarget.value
+  const targetEmail = (emailForm.value.email || '').trim()
+
+  if (!targetEmail) {
+    showNotification('Por favor ingrese un correo electrónico destinatario', 'warning')
     return
   }
 
   try {
     isSendingAction.value = true
+    sendingReminderId.value = reminder.id
+
     await $api(`/maintenance-reminders/${reminder.id}/notify`, {
       method: 'POST',
-      body: { channel: 'email' },
+      body: {
+        channel: 'email',
+        custom_email: targetEmail,
+      },
     })
-    showNotification(`Correo electrónico de recordatorio enviado a ${reminder.client.email}`, 'success')
+
+    reminder.status = 'notified'
+    reminder.notified_at = new Date().toISOString()
+    if (reminder.client) {
+      reminder.client.email = targetEmail
+    }
+
+    showNotification(`Correo de recordatorio enviado exitosamente a ${targetEmail}`, 'success')
+    isEmailDialogVisible.value = false
     fetchCalendarEvents()
+    if (calendarViewMode.value === 'upcoming') {
+      fetchUpcomingEvents()
+    }
   } catch (e) {
-    console.error('Error al enviar correo de recordatorio:', e)
-    showNotification('No se pudo enviar el correo de recordatorio', 'error')
+    console.error('Error al enviar correo:', e)
+    showNotification(e.data?.message || 'Error al enviar el correo de recordatorio', 'error')
   } finally {
+    sendingReminderId.value = null
     isSendingAction.value = false
   }
 }
@@ -304,6 +401,9 @@ const updateReminderStatus = async (reminder, newStatus) => {
     showNotification(`Estado actualizado a: ${newStatus}`, 'success')
     isReminderDetailsOpen.value = false
     fetchCalendarEvents()
+    if (calendarViewMode.value === 'upcoming') {
+      fetchUpcomingEvents()
+    }
   } catch (e) {
     console.error('Error al actualizar estado:', e)
     showNotification('Error al actualizar estado del recordatorio', 'error')
@@ -314,6 +414,14 @@ const updateReminderStatus = async (reminder, newStatus) => {
 
 watch(calendarDate, () => {
   fetchCalendarEvents()
+})
+
+watch(calendarViewMode, newMode => {
+  if (newMode === 'upcoming') {
+    fetchUpcomingEvents()
+  } else {
+    fetchCalendarEvents()
+  }
 })
 
 // Progress Meters Calculations
@@ -380,6 +488,7 @@ const fetchDashboardData = async () => {
 onMounted(() => {
   fetchDashboardData()
   fetchCalendarEvents()
+  fetchUpcomingEvents()
 })
 
 // Formatting Helpers
@@ -1484,149 +1593,405 @@ const tecnicosOptions = computed(() => {
               class="pa-4 pa-sm-5 mock-card h-100 d-flex flex-column"
             >
               <div
-                class="d-flex align-center justify-space-between mb-3 border-b pb-3"
+                class="mb-3 border-b pb-3"
                 style="border-color: rgba(var(--v-theme-on-surface), 0.08) !important;"
               >
-                <div class="d-flex align-center gap-2">
-                  <VAvatar color="primary" variant="tonal" size="32" rounded="lg">
-                    <VIcon icon="ri-calendar-todo-line" size="18" />
-                  </VAvatar>
-                  <div>
-                    <h3 class="text-subtitle-1 font-weight-bold text-high-emphasis mb-0">
-                      Mantenimiento Preventivo
-                    </h3>
-                    <p class="text-caption text-medium-emphasis mb-0">
-                      Calendario de servicios proyectados
-                    </p>
+                <!-- Fila de Título y Loader -->
+                <div class="d-flex align-center justify-space-between mb-2.5">
+                  <div class="d-flex align-center gap-2">
+                    <VAvatar color="primary" variant="tonal" size="32" rounded="lg">
+                      <VIcon icon="ri-calendar-todo-line" size="18" />
+                    </VAvatar>
+                    <div>
+                      <h3 class="text-subtitle-1 font-weight-bold text-high-emphasis mb-0">
+                        Mantenimiento Preventivo
+                      </h3>
+                      <p class="text-caption text-medium-emphasis mb-0">
+                        Ciclos de 10.000 KM y recordatorios
+                      </p>
+                    </div>
                   </div>
+
+                  <VProgressCircular
+                    v-if="isLoadingEvents || isLoadingUpcoming"
+                    indeterminate
+                    size="18"
+                    width="2"
+                    color="primary"
+                  />
                 </div>
-                <VProgressCircular
-                  v-if="isLoadingEvents"
-                  indeterminate
-                  size="16"
-                  width="2"
-                  color="primary"
-                />
+
+                <!-- Selector de Vistas Estilo Pill (Sin solapamiento) -->
+                <div class="maintenance-pill-toggle">
+                  <button
+                    type="button"
+                    class="maintenance-pill-tab"
+                    :class="{ active: calendarViewMode === 'calendar' }"
+                    @click="calendarViewMode = 'calendar'"
+                  >
+                    <VIcon icon="ri-calendar-line" size="14" class="me-1.5" />
+                    <span>Vista Mensual</span>
+                  </button>
+                  <button
+                    type="button"
+                    class="maintenance-pill-tab"
+                    :class="{ active: calendarViewMode === 'upcoming' }"
+                    @click="calendarViewMode = 'upcoming'"
+                  >
+                    <VIcon icon="ri-list-check-2" size="14" class="me-1.5" />
+                    <span>Próximos Vencimientos</span>
+                    <span v-if="upcomingEvents.length > 0" class="maintenance-pill-badge ms-1.5">
+                      {{ upcomingEvents.length }}
+                    </span>
+                  </button>
+                </div>
               </div>
 
-              <div class="calendar-widget">
-                <div class="d-flex justify-space-between align-center mb-3">
-                  <VIcon
-                    icon="ri-arrow-left-s-line"
-                    class="cursor-pointer text-primary"
-                    @click="prevMonth"
-                  />
-                  <span class="font-weight-bold text-primary text-uppercase text-caption">{{ currentMonthName }}</span>
-                  <VIcon
-                    icon="ri-arrow-right-s-line"
-                    class="cursor-pointer text-primary"
-                    @click="nextMonth"
-                  />
+              <!-- VISTA 1: CALENDARIO MENSUAL -->
+              <div v-if="calendarViewMode === 'calendar'" class="d-flex flex-column flex-grow-1">
+                <div class="calendar-widget">
+                  <div class="d-flex justify-space-between align-center mb-2">
+                    <VIcon
+                      icon="ri-arrow-left-s-line"
+                      class="cursor-pointer text-primary"
+                      @click="prevMonth"
+                    />
+                    <div class="d-flex align-center gap-1">
+                      <span class="font-weight-bold text-primary text-uppercase text-caption">{{ currentMonthName }}</span>
+                      <VChip
+                        v-if="maintenanceEvents.length > 0"
+                        size="x-small"
+                        color="primary"
+                        variant="tonal"
+                        class="font-weight-bold ms-1"
+                      >
+                        {{ maintenanceEvents.length }}
+                      </VChip>
+                      <VBtn
+                        size="x-small"
+                        variant="text"
+                        color="secondary"
+                        class="px-1 text-caption"
+                        title="Ir al mes y día actual"
+                        @click="goToToday"
+                      >
+                        Hoy
+                      </VBtn>
+                    </div>
+                    <VIcon
+                      icon="ri-arrow-right-s-line"
+                      class="cursor-pointer text-primary"
+                      @click="nextMonth"
+                    />
+                  </div>
+
+                  <!-- Cuadrícula del Calendario -->
+                  <div class="calendar-grid">
+                    <div
+                      v-for="w in daysOfWeek"
+                      :key="w"
+                      class="calendar-header-day"
+                    >
+                      {{ w }}
+                    </div>
+                    <div
+                      v-for="(dayObj, idx) in calendarDays"
+                      :key="idx"
+                      class="calendar-day position-relative"
+                      :class="{
+                        'is-today': dayObj.isToday,
+                        'is-selected': dayObj.isSelected && !dayObj.isToday,
+                        'is-empty': !dayObj.day,
+                        'has-pending-reminder': dayObj.hasEvents && dayObj.pendingCount > 0,
+                        'has-notified-reminder': dayObj.hasEvents && dayObj.allNotified,
+                      }"
+                      @click="selectDayObj(dayObj)"
+                    >
+                      <span>{{ dayObj.day }}</span>
+
+                      <!-- Indicador claro de estado en el día -->
+                      <div
+                        v-if="dayObj.hasEvents"
+                        class="calendar-event-indicator d-flex align-center justify-center position-absolute"
+                      >
+                        <span
+                          v-if="dayObj.pendingCount > 0"
+                          class="day-pill-pending"
+                          :title="`${dayObj.pendingCount} pendiente(s) de envío de correo`"
+                        >
+                          <VIcon icon="ri-mail-send-fill" size="8" />
+                        </span>
+                        <span
+                          v-else-if="dayObj.allNotified"
+                          class="day-pill-notified"
+                          :title="`${dayObj.notifiedCount} correo(s) ya enviado(s)`"
+                        >
+                          <VIcon icon="ri-check-line" size="9" />
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+
+                  <!-- Leyenda explicativa visible -->
+                  <div class="d-flex align-center justify-center gap-3 mt-2 pt-1 border-t" style="font-size: 0.68rem; border-color: rgba(var(--v-theme-on-surface), 0.05) !important;">
+                    <span class="d-flex align-center gap-1 text-medium-emphasis">
+                      <span class="day-pill-pending" style="width: 10px; height: 10px;"><VIcon icon="ri-mail-send-fill" size="6" /></span>
+                      Correo pendiente
+                    </span>
+                    <span class="d-flex align-center gap-1 text-medium-emphasis">
+                      <span class="day-pill-notified" style="width: 10px; height: 10px;"><VIcon icon="ri-check-line" size="7" /></span>
+                      Correo ya enviado
+                    </span>
+                  </div>
                 </div>
-                <div class="calendar-grid">
-                  <div
-                    v-for="w in daysOfWeek"
-                    :key="w"
-                    class="calendar-header-day"
+
+                <!-- Banner si el mes completo no tiene recordatorios -->
+                <div
+                  v-if="maintenanceEvents.length === 0"
+                  class="pa-3 rounded-lg text-center my-3"
+                  style="background: rgba(var(--v-theme-surface), 0.7); border: 1px dashed rgba(var(--v-theme-on-surface), 0.15);"
+                >
+                  <VIcon icon="ri-calendar-event-line" size="26" color="primary" class="mb-1" />
+                  <div class="text-caption font-weight-bold text-high-emphasis">Sin vencimientos en {{ currentMonthName }}</div>
+                  <p v-if="calendarMeta.next_event" class="text-caption text-medium-emphasis mb-2">
+                    Próximo ciclo de 10.000 KM: <strong>{{ calendarMeta.next_event.month_name }} {{ calendarMeta.next_event.year }}</strong>
+                  </p>
+                  <VBtn
+                    v-if="calendarMeta.next_event"
+                    size="x-small"
+                    color="primary"
+                    variant="elevated"
+                    prepend-icon="ri-arrow-right-line"
+                    @click="goToMonth(calendarMeta.next_event.year, calendarMeta.next_event.month)"
                   >
-                    {{ w }}
+                    Ver {{ calendarMeta.next_event.month_name }}
+                  </VBtn>
+                </div>
+
+                <!-- Agenda Feed del día seleccionado -->
+                <div
+                  class="mt-3 pt-2 border-t flex-grow-1"
+                  style="border-color: rgba(var(--v-theme-on-surface), 0.08) !important;"
+                >
+                  <div class="d-flex justify-space-between align-center mb-2">
+                    <span class="text-caption font-weight-bold text-primary text-uppercase">
+                      Agenda: {{ formattedSelectedDate }}
+                    </span>
+                    <VChip
+                      v-if="activeEvents.length > 0"
+                      size="x-small"
+                      color="primary"
+                      class="font-weight-black"
+                    >
+                      {{ activeEvents.length }} servicio{{ activeEvents.length > 1 ? 's' : '' }}
+                    </VChip>
+                  </div>
+
+                  <div
+                    v-if="activeEvents.length === 0"
+                    class="text-caption text-medium-emphasis text-center py-4 d-flex flex-column align-center justify-center"
+                  >
+                    <VIcon
+                      icon="ri-calendar-check-line"
+                      size="24"
+                      color="grey"
+                      class="mb-1"
+                    />
+                    <span>Sin servicios proyectados para este día</span>
+                    <VBtn
+                      v-if="maintenanceEvents.length > 0"
+                      size="x-small"
+                      variant="text"
+                      color="primary"
+                      class="mt-1"
+                      @click="selectDayObj(calendarDays.find(d => d.hasEvents))"
+                    >
+                      Ver primer día con servicios del mes
+                    </VBtn>
                   </div>
                   <div
-                    v-for="(dayObj, idx) in calendarDays"
-                    :key="idx"
-                    class="calendar-day position-relative"
-                    :class="{
-                      'is-today': dayObj.isToday,
-                      'is-selected': dayObj.isSelected && !dayObj.isToday,
-                      'is-empty': !dayObj.day
-                    }"
-                    @click="selectDayObj(dayObj)"
+                    v-else
+                    class="d-flex flex-column gap-2"
+                    style="max-height: 220px; overflow-y: auto;"
                   >
-                    <span>{{ dayObj.day }}</span>
                     <div
-                      v-if="dayObj.hasEvents"
-                      class="d-flex justify-center gap-1 position-absolute"
-                      style="bottom: 2px; left: 0; right: 0;"
+                      v-for="evt in activeEvents"
+                      :key="evt.id"
+                      class="d-flex justify-space-between align-center pa-2.5 rounded-lg elevation-1"
+                      style="background-color: rgba(var(--v-theme-surface), 1); border: 1px solid rgba(var(--v-theme-on-surface), 0.08); border-left: 4px solid;"
+                      :style="{ borderLeftColor: evt.category_color === 'error' ? '#EF4444' : (evt.category_color === 'warning' ? '#F59E0B' : (evt.category_color === 'success' ? '#10B981' : chartThemes.primaryColor)) }"
                     >
-                      <span
-                        v-for="(evt, eIdx) in dayObj.events.slice(0, 3)"
-                        :key="eIdx"
-                        class="rounded-circle"
-                        :style="{
-                          width: '4px',
-                          height: '4px',
-                          backgroundColor: evt.category_color === 'error' ? '#EF4444' :
-                            (evt.category_color === 'warning' ? '#F59E0B' :
-                              (evt.category_color === 'success' ? '#10B981' :
-                                (evt.category_color === 'info' ? '#0EA5E9' : chartThemes.primaryColor)))
-                        }"
-                      />
+                      <div
+                        class="overflow-hidden cursor-pointer flex-grow-1 me-2"
+                        @click="openReminderDetails(evt)"
+                      >
+                        <div class="d-flex align-center gap-1 mb-1 flex-wrap">
+                          <VIcon
+                            :icon="evt.category_icon"
+                            size="14"
+                            :color="evt.category_color"
+                          />
+                          <span class="font-weight-bold text-caption text-high-emphasis text-truncate">
+                            {{ evt.vehicle?.license_plate || 'Vehículo' }}
+                          </span>
+                          <span class="text-caption text-medium-emphasis" style="font-size: 0.65rem;">
+                            {{ getBrandNameById(evt.vehicle?.brand) || evt.vehicle?.brand_name || evt.vehicle?.brand }} {{ evt.vehicle?.model }}
+                          </span>
+
+                          <!-- Badge de estado de notificación -->
+                          <VChip
+                            v-if="evt.status === 'notified'"
+                            size="x-small"
+                            color="success"
+                            variant="flat"
+                            class="font-weight-bold"
+                            style="font-size: 0.62rem; height: 18px;"
+                          >
+                            <VIcon start icon="ri-check-line" size="10" />
+                            Enviado
+                          </VChip>
+                          <VChip
+                            v-else-if="evt.status === 'pending'"
+                            size="x-small"
+                            color="warning"
+                            variant="flat"
+                            class="font-weight-bold"
+                            style="font-size: 0.62rem; height: 18px;"
+                          >
+                            <VIcon start icon="ri-time-line" size="10" />
+                            Pendiente
+                          </VChip>
+                          <VChip
+                            v-else-if="evt.status === 'scheduled'"
+                            size="x-small"
+                            color="info"
+                            variant="flat"
+                            class="font-weight-bold"
+                            style="font-size: 0.62rem; height: 18px;"
+                          >
+                            <VIcon start icon="ri-calendar-check-line" size="10" />
+                            Agendado
+                          </VChip>
+                        </div>
+
+                        <div
+                          class="text-medium-emphasis text-truncate"
+                          style="font-size: 0.68rem;"
+                        >
+                          <span class="font-weight-bold text-primary">{{ Number(evt.target_mileage || 0).toLocaleString() }} KM</span>
+                          - {{ evt.client?.full_name || 'Cliente' }}
+                        </div>
+                        <div
+                          v-if="evt.client?.email"
+                          class="text-medium-emphasis text-truncate"
+                          style="font-size: 0.64rem;"
+                        >
+                          <VIcon icon="ri-mail-line" size="11" class="me-1 text-primary" />{{ evt.client.email }}
+                        </div>
+                      </div>
+
+                      <div class="d-flex align-center gap-1">
+                        <VBtn
+                          icon="ri-whatsapp-line"
+                          size="x-small"
+                          color="success"
+                          variant="tonal"
+                          title="Contactar por WhatsApp"
+                          @click.stop="sendWhatsAppNotification(evt)"
+                        />
+                        <VBtn
+                          :icon="evt.status === 'notified' ? 'ri-mail-check-line' : 'ri-mail-send-line'"
+                          size="x-small"
+                          :color="evt.status === 'notified' ? 'success' : 'primary'"
+                          :variant="evt.status === 'notified' ? 'tonal' : 'elevated'"
+                          :title="evt.status === 'notified' ? 'Reenviar correo' : 'Enviar correo ahora'"
+                          @click.stop="openEmailDialog(evt)"
+                        />
+                      </div>
                     </div>
                   </div>
                 </div>
               </div>
 
-              <!-- Agenda Feed -->
-              <div
-                class="mt-4 pt-3 border-t flex-grow-1"
-                style="border-color: rgba(var(--v-theme-on-surface), 0.08) !important;"
-              >
+              <!-- VISTA 2: LISTADO DE PRÓXIMOS MANTENIMIENTOS (A VENCER) -->
+              <div v-else class="d-flex flex-column flex-grow-1">
                 <div class="d-flex justify-space-between align-center mb-2">
                   <span class="text-caption font-weight-bold text-primary text-uppercase">
-                    Agenda: {{ formattedSelectedDate }}
+                    Próximos a cumplir 10.000 KM
                   </span>
-                  <VChip
-                    v-if="activeEvents.length > 0"
+                  <VBtn
                     size="x-small"
+                    variant="text"
                     color="primary"
-                    class="font-weight-black"
+                    prepend-icon="ri-refresh-line"
+                    @click="fetchUpcomingEvents"
                   >
-                    {{ activeEvents.length }} servicio{{ activeEvents.length > 1 ? 's' : '' }}
-                  </VChip>
+                    Actualizar
+                  </VBtn>
                 </div>
 
                 <div
-                  v-if="activeEvents.length === 0"
-                  class="text-caption text-medium-emphasis text-center py-4 d-flex flex-column align-center justify-center"
+                  v-if="upcomingEvents.length === 0"
+                  class="text-caption text-medium-emphasis text-center py-6 d-flex flex-column align-center justify-center"
                 >
-                  <VIcon
-                    icon="ri-calendar-check-line"
-                    size="26"
-                    color="grey"
-                    class="mb-1"
-                  />
-                  <span>Sin servicios proyectados para este día</span>
+                  <VIcon icon="ri-calendar-check-line" size="30" color="grey" class="mb-2" />
+                  <span>No hay mantenimientos pendientes registrados</span>
                 </div>
                 <div
                   v-else
                   class="d-flex flex-column gap-2"
-                  style="max-height: 200px; overflow-y: auto;"
+                  style="max-height: 380px; overflow-y: auto;"
                 >
                   <div
-                    v-for="evt in activeEvents"
-                    :key="evt.id"
+                    v-for="item in upcomingEvents"
+                    :key="item.id"
                     class="d-flex justify-space-between align-center pa-2.5 rounded-lg elevation-1"
                     style="background-color: rgba(var(--v-theme-surface), 1); border: 1px solid rgba(var(--v-theme-on-surface), 0.08); border-left: 4px solid;"
-                    :style="{ borderLeftColor: evt.category_color === 'error' ? '#EF4444' : (evt.category_color === 'warning' ? '#F59E0B' : (evt.category_color === 'success' ? '#10B981' : chartThemes.primaryColor)) }"
+                    :style="{ borderLeftColor: item.category_color === 'error' ? '#EF4444' : (item.category_color === 'warning' ? '#F59E0B' : (item.category_color === 'success' ? '#10B981' : chartThemes.primaryColor)) }"
                   >
                     <div
-                      class="overflow-hidden cursor-pointer"
-                      style="max-width: 60%;"
-                      @click="openReminderDetails(evt)"
+                      class="overflow-hidden cursor-pointer flex-grow-1 me-2"
+                      @click="openReminderDetails(item)"
                     >
-                      <div class="font-weight-bold text-caption text-high-emphasis d-flex align-center gap-1 text-truncate">
-                        <VIcon
-                          :icon="evt.category_icon"
-                          size="14"
-                          :color="evt.category_color"
-                        />
-                        <span class="text-truncate">{{ evt.vehicle?.license_plate || 'Vehículo' }}</span>
+                      <div class="d-flex align-center gap-1 mb-1 flex-wrap">
+                        <VIcon :icon="item.category_icon" size="14" :color="item.category_color" />
+                        <span class="font-weight-bold text-caption text-high-emphasis">
+                          {{ item.vehicle?.license_plate || 'Vehículo' }}
+                        </span>
+                        <span class="text-caption text-medium-emphasis" style="font-size: 0.65rem;">
+                          {{ getBrandNameById(item.vehicle?.brand) || item.vehicle?.brand_name || item.vehicle?.brand }} {{ item.vehicle?.model }}
+                        </span>
+                        <VChip
+                          v-if="item.status === 'notified'"
+                          size="x-small"
+                          color="success"
+                          variant="flat"
+                          style="font-size: 0.62rem; height: 18px;"
+                        >
+                          <VIcon start icon="ri-check-line" size="10" />
+                          Enviado
+                        </VChip>
+                        <VChip
+                          v-else-if="item.status === 'pending'"
+                          size="x-small"
+                          color="warning"
+                          variant="flat"
+                          style="font-size: 0.62rem; height: 18px;"
+                        >
+                          <VIcon start icon="ri-time-line" size="10" />
+                          Pendiente
+                        </VChip>
                       </div>
-                      <div
-                        class="text-medium-emphasis text-truncate"
-                        style="font-size: 0.68rem;"
-                      >
-                        <span class="font-weight-bold text-primary">{{ Number(evt.target_mileage || 0).toLocaleString() }} KM</span> - {{ evt.client?.full_name || 'Cliente' }}
+
+                      <div class="text-medium-emphasis text-truncate" style="font-size: 0.68rem;">
+                        <span class="font-weight-bold text-primary">{{ Number(item.target_mileage || 0).toLocaleString() }} KM</span>
+                        - Fecha: <strong>{{ item.scheduled_date }}</strong>
+                        <span v-if="item.days_until !== null" class="text-caption ms-1" :class="item.days_until <= 0 ? 'text-error font-weight-bold' : 'text-primary'">
+                          ({{ item.days_until === 0 ? 'Hoy' : (item.days_until < 0 ? 'Hace ' + Math.abs(item.days_until) + ' d' : 'En ' + item.days_until + ' d') }})
+                        </span>
+                      </div>
+                      <div class="text-caption text-medium-emphasis text-truncate" style="font-size: 0.64rem;">
+                        {{ item.client?.full_name || 'Cliente' }} ({{ item.client?.email || 'Sin correo' }})
                       </div>
                     </div>
 
@@ -1636,17 +2001,16 @@ const tecnicosOptions = computed(() => {
                         size="x-small"
                         color="success"
                         variant="tonal"
-                        title="Contactar WhatsApp"
-                        @click.stop="sendWhatsAppNotification(evt)"
+                        title="Contactar por WhatsApp"
+                        @click.stop="sendWhatsAppNotification(item)"
                       />
                       <VBtn
-                        icon="ri-mail-send-line"
+                        :icon="item.status === 'notified' ? 'ri-mail-check-line' : 'ri-mail-send-line'"
                         size="x-small"
-                        color="primary"
-                        variant="tonal"
-                        :loading="isSendingAction"
-                        title="Enviar Correo"
-                        @click.stop="sendEmailNotification(evt)"
+                        :color="item.status === 'notified' ? 'success' : 'primary'"
+                        :variant="item.status === 'notified' ? 'tonal' : 'elevated'"
+                        :title="item.status === 'notified' ? 'Reenviar correo' : 'Enviar correo ahora'"
+                        @click.stop="openEmailDialog(item)"
                       />
                     </div>
                   </div>
@@ -2212,8 +2576,7 @@ const tecnicosOptions = computed(() => {
               variant="elevated"
               size="small"
               prepend-icon="ri-mail-send-line"
-              :loading="isSendingAction"
-              @click="sendEmailNotification(selectedReminder)"
+              @click="openEmailDialog(selectedReminder)"
             >
               Correo
             </VBtn>
@@ -2242,5 +2605,228 @@ const tecnicosOptions = computed(() => {
         </VCardActions>
       </VCard>
     </VDialog>
+
+    <!-- VDialog para Envío Manual de Correo Electrónico -->
+    <VDialog
+      v-model="isEmailDialogVisible"
+      max-width="560"
+      persistent
+    >
+      <VCard
+        v-if="emailReminderTarget"
+        class="custom-dialog-card elevation-24 rounded-xl overflow-hidden"
+      >
+        <!-- Header Banner Primary acorde al diseño global del sistema -->
+        <div class="custom-dialog-header-primary">
+          <VBtn
+            icon="ri-close-line"
+            variant="text"
+            size="small"
+            class="custom-dialog-close-btn"
+            :disabled="isSendingAction"
+            @click="isEmailDialogVisible = false"
+          />
+          <div class="custom-dialog-avatar">
+            <VIcon
+              icon="ri-mail-send-line"
+              size="26"
+            />
+          </div>
+          <h3 class="custom-dialog-title">
+            Enviar Correo de Mantenimiento
+          </h3>
+          <p class="custom-dialog-subtitle">
+            Confirmación y vista previa de notificación al cliente
+          </p>
+        </div>
+
+        <VCardText class="pa-5">
+          <!-- Resumen del Vehículo y Kilometraje Cumplido -->
+          <div
+            class="pa-3 rounded-lg mb-4 d-flex justify-space-between align-center"
+            style="background-color: rgba(var(--v-theme-primary), 0.08); border: 1px dashed rgba(var(--v-theme-primary), 0.35);"
+          >
+            <div>
+              <div class="font-weight-bold text-body-2 text-high-emphasis d-flex align-center gap-1">
+                <VIcon
+                  icon="ri-car-line"
+                  size="18"
+                  color="primary"
+                />
+                {{ emailReminderTarget.vehicle?.license_plate }} - {{ getBrandNameById(emailReminderTarget.vehicle?.brand) || emailReminderTarget.vehicle?.brand_name || emailReminderTarget.vehicle?.brand }} {{ emailReminderTarget.vehicle?.model }}
+              </div>
+              <div class="text-caption text-medium-emphasis mt-1">
+                Cliente: <strong>{{ emailReminderTarget.client?.full_name || 'Sin nombre' }}</strong>
+              </div>
+            </div>
+            <div class="text-right">
+              <VChip
+                size="small"
+                color="primary"
+                variant="flat"
+                class="font-weight-bold"
+              >
+                {{ Number(emailReminderTarget.target_mileage).toLocaleString() }} KM
+              </VChip>
+              <div class="text-caption text-medium-emphasis mt-1">
+                +{{ Number(emailReminderTarget.interval_km || 10000).toLocaleString() }} KM cumplidos
+              </div>
+            </div>
+          </div>
+
+          <!-- Formulario de Envío -->
+          <div class="d-flex flex-column gap-3">
+            <div>
+              <label class="text-caption font-weight-bold text-high-emphasis mb-1 d-block">
+                Correo Electrónico Destinatario *
+              </label>
+              <VTextField
+                v-model="emailForm.email"
+                placeholder="correo@ejemplo.com"
+                type="email"
+                density="comfortable"
+                prepend-inner-icon="ri-mail-line"
+                class="email-clean-input"
+                hint="Puedes editar o ingresar el correo al que se enviará la notificación."
+                persistent-hint
+                :disabled="isSendingAction"
+              />
+            </div>
+
+            <div>
+              <label class="text-caption font-weight-bold text-high-emphasis mb-1 d-block">
+                Asunto del Correo
+              </label>
+              <VTextField
+                v-model="emailForm.subject"
+                density="comfortable"
+                prepend-inner-icon="ri-mail-star-line"
+                class="subject-clean-input"
+              />
+            </div>
+
+            <!-- Vista previa del mensaje -->
+            <div
+              class="pa-3 rounded-lg"
+              style="background-color: rgba(var(--v-theme-surface), 1); border: 1px solid rgba(var(--v-theme-on-surface), 0.1); font-size: 0.75rem;"
+            >
+              <div class="font-weight-bold text-caption text-primary mb-1 d-flex align-center gap-1">
+                <VIcon
+                  icon="ri-file-text-line"
+                  size="14"
+                />
+                Mensaje que recibirá el cliente:
+              </div>
+              <p class="mb-1 text-medium-emphasis">
+                ¡Hola, <strong>{{ emailReminderTarget.client?.full_name || 'Estimado cliente' }}</strong>!
+              </p>
+              <p class="mb-1 text-medium-emphasis">
+                De acuerdo a nuestro registro de control, tu vehículo <strong>{{ getBrandNameById(emailReminderTarget.vehicle?.brand) || emailReminderTarget.vehicle?.brand_name || emailReminderTarget.vehicle?.brand }} {{ emailReminderTarget.vehicle?.model }} (Placa: {{ emailReminderTarget.vehicle?.license_plate }})</strong> ya ha cumplido el ciclo de los <strong>{{ Number(emailReminderTarget.interval_km || 10000).toLocaleString() }} KM</strong> desde su último mantenimiento, alcanzando los <strong>{{ Number(emailReminderTarget.target_mileage).toLocaleString() }} KM</strong>.
+              </p>
+              <p class="mb-0 text-medium-emphasis">
+                Servicio preventivo: <strong>{{ emailReminderTarget.title }}</strong>.
+              </p>
+            </div>
+
+            <VAlert
+              v-if="emailReminderTarget.status === 'notified'"
+              type="info"
+              variant="tonal"
+              density="compact"
+              class="text-caption mb-0"
+            >
+              Este vehículo ya fue notificado previamente el {{ emailReminderTarget.notified_at }}. Al enviar nuevamente, se registrará como un reenvío.
+            </VAlert>
+          </div>
+        </VCardText>
+
+        <VDivider />
+
+        <VCardActions class="pa-4 d-flex justify-end gap-2">
+          <VBtn
+            variant="tonal"
+            color="secondary"
+            :disabled="isSendingAction"
+            @click="isEmailDialogVisible = false"
+          >
+            Cancelar
+          </VBtn>
+          <VBtn
+            color="primary"
+            variant="elevated"
+            prepend-icon="ri-send-plane-fill"
+            :loading="isSendingAction"
+            @click="confirmSendEmail"
+          >
+            {{ emailReminderTarget.status === 'notified' ? 'Reenviar Correo' : 'Enviar Correo Ahora' }}
+          </VBtn>
+        </VCardActions>
+      </VCard>
+    </VDialog>
   </div>
 </template>
+
+<style scoped lang="scss">
+.maintenance-pill-toggle {
+  display: flex;
+  background: rgba(var(--v-theme-on-surface), 0.05);
+  border-radius: 10px;
+  padding: 3px;
+  gap: 4px;
+  border: 1px solid rgba(var(--v-theme-on-surface), 0.08);
+
+  .maintenance-pill-tab {
+    flex: 1;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 6px 10px;
+    font-size: 0.76rem;
+    font-weight: 600;
+    border: none;
+    border-radius: 8px;
+    background: transparent;
+    color: rgba(var(--v-theme-on-surface), 0.7);
+    cursor: pointer;
+    transition: all 0.2s ease;
+    white-space: nowrap;
+
+    &:hover:not(.active) {
+      color: rgba(var(--v-theme-on-surface), 0.95);
+      background: rgba(var(--v-theme-on-surface), 0.05);
+    }
+
+    &.active {
+      background: rgb(var(--v-theme-primary));
+      color: #ffffff;
+      box-shadow: 0 2px 8px rgba(var(--v-theme-primary), 0.35);
+    }
+  }
+
+  .maintenance-pill-badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 1px 6px;
+    font-size: 0.65rem;
+    font-weight: 700;
+    border-radius: 9999px;
+    background: rgba(255, 255, 255, 0.25);
+    color: #ffffff;
+    line-height: 1.2;
+  }
+}
+
+.email-clean-input {
+  :deep(input) {
+    text-transform: lowercase !important;
+  }
+}
+
+.subject-clean-input {
+  :deep(input) {
+    text-transform: none !important;
+    font-size: 0.84rem;
+  }
+}
+</style>
