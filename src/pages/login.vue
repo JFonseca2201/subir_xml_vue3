@@ -7,6 +7,7 @@ import authV2LoginIllustrationBorderedLight from "@images/pages/auth-v2-login-il
 import authV2LoginIllustrationDark from "@images/pages/auth-v2-login-illustration-dark.png"
 import authV2LoginIllustrationLight from "@images/pages/auth-v2-login-illustration-light.png"
 import authV2LoginIllustrationMechanic from "@images/pages/auth-v2-login-illustration-mechanic.jpg"
+import loginWorkshopBg from "@images/pages/login-workshop-bg.png"
 import authV2LoginMaskDark from "@images/pages/auth-v2-login-mask-dark.png"
 import authV2LoginMaskLight from "@images/pages/auth-v2-login-mask-light.png"
 import { VNodeRenderer } from "@layouts/components/VNodeRenderer"
@@ -62,20 +63,32 @@ onMounted(() => {
   loadPublicSucursal()
 })
 
+const isTallerTheme = computed(() => activeTheme.value === 'taller')
+const submitBtnTextColor = computed(() => isTallerTheme.value ? '#8A1538' : '#545BEE')
+
 const loginBgRootStyle = computed(() => {
+  const bg = loginBgUrl.value || loginWorkshopBg
+  return {
+    backgroundImage: `url("${bg}")`,
+    backgroundSize: 'cover',
+    backgroundPosition: 'center center',
+    backgroundRepeat: 'no-repeat',
+    backgroundAttachment: 'fixed',
+  }
+})
+
+const showcaseCardStyle = computed(() => {
   if (loginBgUrl.value) {
     return {
       backgroundImage: `url(${loginBgUrl.value})`,
       backgroundSize: 'cover',
       backgroundPosition: 'center center',
       backgroundRepeat: 'no-repeat',
-      backgroundAttachment: 'fixed',
     }
   }
 
   return {}
 })
-
 
 const login = async () => {
   loader.start()
@@ -143,33 +156,72 @@ const appBrandName = computed(() => {
     :class="[`theme-${activeTheme}`, `v-theme--${activeTheme}`]"
     :style="loginBgRootStyle"
   >
-    <!-- Floating Theme Switcher (Top-Right) -->
-    <div class="auth-theme-switcher-floating">
-      <NavbarThemeSwitcher />
-    </div>
-
-    <!-- Desktop Top Left Brand Badge -->
-    <RouterLink to="/" class="auth-brand-floating d-none d-lg-flex align-center gap-3">
-      <div class="brand-logo-container">
-        <VNodeRenderer :nodes="themeConfig.app.logo" />
-      </div>
-      <div class="d-flex flex-column">
-        <span class="text-h6 font-weight-bold brand-name-text">
-          {{ appBrandName }}
-        </span>
-        <span class="text-caption auth-brand-subtitle">
-          Gestión Automotriz & Facturación
-        </span>
-      </div>
-    </RouterLink>
-
-
     <VRow no-gutters class="auth-wrapper">
-      <!-- LEFT COLUMN: Open space allowing full-screen background image to be visible -->
-      <VCol lg="7" xl="8" class="d-none d-lg-flex position-relative align-center justify-center" />
+      <!-- LEFT COLUMN: 8 Columnas con foto de fondo libre y transparente -->
+      <VCol
+        lg="8"
+        class="d-none d-lg-flex position-relative align-center justify-center auth-showcase-column pa-8"
+      >
+        <!-- Floating Feature Badges -->
+        <div class="showcase-floating-badge badge-top-right elevation-6">
+          <div class="badge-icon-box badge-icon-sri">
+            <VIcon
+              icon="ri-shield-check-line"
+              size="24"
+            />
+          </div>
+          <div>
+            <div class="badge-caption">
+              FACTURACIÓN SRI
+            </div>
+            <div class="badge-title">
+              XML Homologado 100%
+            </div>
+          </div>
+        </div>
 
-      <!-- RIGHT COLUMN: Container for Icons & Text Fields -->
-      <VCol cols="12" lg="5" xl="4" class="auth-primary-sidebar d-flex align-center justify-center pa-4 pa-sm-8">
+        <div class="showcase-floating-badge badge-bottom-left elevation-6">
+          <div class="badge-icon-box badge-icon-taller">
+            <VIcon
+              icon="ri-tools-line"
+              size="24"
+            />
+          </div>
+          <div>
+            <div class="badge-caption">
+              CONTROL EN VIVO
+            </div>
+            <div class="badge-title">
+              Taller, OTs & Kardex
+            </div>
+          </div>
+        </div>
+
+        <!-- Center Showcase Card Informativo -->
+        <div class="showcase-center-card z-index-2 pa-8 rounded-2xl elevation-8 text-center mx-6">
+          <div class="d-flex align-center justify-center gap-3 mb-3">
+            <div class="showcase-center-icon">
+              <VIcon
+                icon="ri-tools-fill"
+                size="36"
+              />
+            </div>
+            <h2 class="text-h4 font-weight-black showcase-center-title mb-0">
+              Gestión Integral de Taller
+            </h2>
+          </div>
+          <p class="text-body-1 showcase-center-subtitle mb-0">
+            Control de Órdenes de Trabajo, Mantenimientos Preventivos, Kardex de Repuestos y Facturación SRI
+          </p>
+        </div>
+      </VCol>
+
+      <!-- RIGHT COLUMN: Container for Login Form (4 Columnas) -->
+      <VCol
+        cols="12"
+        lg="4"
+        class="auth-primary-sidebar d-flex align-center justify-center pa-4 pa-sm-6 pa-md-8"
+      >
         <!-- Ambient Glow Orbs en el Sidebar -->
         <div class="sidebar-glow-orb orb-1" />
         <div class="sidebar-glow-orb orb-2" />
@@ -206,9 +258,16 @@ const appBrandName = computed(() => {
                     CORREO ELECTRÓNICO
                   </span>
                 </div>
-                <VTextField v-model="form.email" autofocus placeholder="ejemplo@luxuryevys.com" variant="solo"
-                  density="comfortable" prepend-inner-icon="ri-user-3-line" class="auth-input rounded-xl"
-                  hide-details="auto" />
+                <VTextField
+                  v-model="form.email"
+                  autofocus
+                  placeholder="ejemplo@luxuryevys.com"
+                  variant="solo"
+                  density="comfortable"
+                  prepend-inner-icon="ri-user-3-line"
+                  class="auth-input rounded-xl"
+                  hide-details="auto"
+                />
               </VCol>
 
               <!-- Password Input -->
@@ -222,40 +281,84 @@ const appBrandName = computed(() => {
                     ¿Olvidaste tu contraseña?
                   </a>
                 </div>
-                <VTextField v-model="form.password" placeholder="••••••••••••" variant="solo" density="comfortable"
-                  prepend-inner-icon="ri-key-2-line" :type="isPasswordVisible ? 'text' : 'password'"
+                <VTextField
+                  v-model="form.password"
+                  placeholder="••••••••••••"
+                  variant="solo"
+                  density="comfortable"
+                  prepend-inner-icon="ri-key-2-line"
+                  :type="isPasswordVisible ? 'text' : 'password'"
                   :append-inner-icon="isPasswordVisible ? 'ri-eye-off-line' : 'ri-eye-line'"
-                  class="auth-input rounded-xl" hide-details="auto"
-                  @click:append-inner="isPasswordVisible = !isPasswordVisible" />
+                  class="auth-input rounded-xl"
+                  hide-details="auto"
+                  @click:append-inner="isPasswordVisible = !isPasswordVisible"
+                />
               </VCol>
 
               <!-- Remember Me -->
               <VCol cols="12" class="pt-1">
-                <VCheckbox v-model="form.remember" label="Mantener sesión iniciada" color="primary"
-                  true-icon="ri-checkbox-fill" false-icon="ri-checkbox-blank-line" density="compact" hide-details
-                  class="auth-checkbox" />
+                <VCheckbox
+                  v-model="form.remember"
+                  label="Mantener sesión iniciada"
+                  color="white"
+                  true-icon="ri-checkbox-fill"
+                  false-icon="ri-checkbox-blank-line"
+                  density="compact"
+                  hide-details
+                  class="auth-checkbox"
+                />
               </VCol>
 
               <!-- Alerts -->
               <VCol v-if="success_login" cols="12">
-                <VAlert type="success" color="success" variant="elevated" closable
-                  class="rounded-xl shadow-sm text-white">
+                <VAlert
+                  type="success"
+                  color="success"
+                  variant="elevated"
+                  closable
+                  class="rounded-xl shadow-sm text-white"
+                >
                   {{ success_login }}
                 </VAlert>
               </VCol>
 
               <VCol v-if="error_login" cols="12">
-                <VAlert type="error" color="error" variant="elevated" closable class="rounded-xl shadow-sm text-white">
+                <VAlert
+                  type="error"
+                  color="error"
+                  variant="elevated"
+                  closable
+                  class="rounded-xl shadow-sm text-white"
+                >
                   {{ error_login }}
                 </VAlert>
               </VCol>
 
               <!-- Submit Button -->
               <VCol cols="12" class="pt-3">
-                <VBtn block size="x-large" type="submit" class="auth-submit-btn rounded-xl" :loading="loader.loading"
-                  :disabled="loader.loading">
-                  <span>INGRESAR AL SISTEMA</span>
-                  <VIcon icon="ri-arrow-right-line" class="ms-2" />
+                <VBtn
+                  block
+                  size="x-large"
+                  type="submit"
+                  class="auth-submit-btn auth-submit-btn-white rounded-xl"
+                  :style="{
+                    backgroundColor: '#ffffff !important',
+                    background: '#ffffff !important',
+                    color: `${submitBtnTextColor} !important`,
+                    border: 'none !important',
+                    boxShadow: '0 8px 24px rgba(0, 0, 0, 0.35) !important'
+                  }"
+                  :loading="loader.loading"
+                  :disabled="loader.loading"
+                >
+                  <span :style="{ color: `${submitBtnTextColor} !important`, fontWeight: '900 !important' }">
+                    INGRESAR AL SISTEMA
+                  </span>
+                  <VIcon
+                    icon="ri-arrow-right-line"
+                    class="ms-2"
+                    :style="{ color: `${submitBtnTextColor} !important` }"
+                  />
                 </VBtn>
               </VCol>
 

@@ -15,10 +15,11 @@
 .auth-page-root {
   min-height: 100vh;
   position: relative;
-  background-size: cover;
-  background-position: center center;
-  background-repeat: no-repeat;
-  background-attachment: fixed;
+  background-image: url('../images/pages/login-workshop-bg.png');
+  background-size: cover !important;
+  background-position: center center !important;
+  background-repeat: no-repeat !important;
+  background-attachment: fixed !important;
   overflow-x: hidden;
   transition: background-color 0.35s ease;
 
@@ -28,6 +29,7 @@
     inset: 0;
     pointer-events: none;
     z-index: 0;
+    background: rgba(0, 0, 0, 0.15) !important;
     transition: background 0.35s ease;
   }
 }
@@ -38,82 +40,96 @@
   z-index: 1;
 }
 
+/* Columna Derecha: 4 columnas con capa semi-transparente oscurita */
 .auth-primary-sidebar {
   min-height: 100vh;
-  background: transparent !important;
-  position: relative;
-  overflow: hidden;
-}
-
-/* Floating Brand Badge (Desktop Top-Left) */
-.auth-brand-floating {
-  position: absolute;
-  top: 1.75rem;
-  left: 2rem;
-  z-index: 40;
-  text-decoration: none;
-  padding: 8px 16px;
-  border-radius: 16px;
+  background: rgba(15, 23, 42, 0.65) !important;
   backdrop-filter: blur(16px);
   -webkit-backdrop-filter: blur(16px);
-  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
-
-  &:hover {
-    transform: translateY(-2px);
-  }
-}
-
-.brand-logo-container {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 38px;
-  height: 38px;
-  border-radius: 10px;
-  background: linear-gradient(135deg, #7367F0 0%, #9E95F5 100%);
-  color: #ffffff;
-  box-shadow: 0 4px 12px rgba(115, 103, 240, 0.35);
+  border-left: 1px solid rgba(255, 255, 255, 0.12);
+  position: relative;
+  overflow: hidden;
 }
 
 .brand-logo-container-mobile {
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 42px;
-  height: 42px;
+  width: 44px;
+  height: 44px;
   border-radius: 12px;
   transition: all 0.3s ease;
 }
 
-.brand-name-text {
-  letter-spacing: -0.02em;
-  font-weight: 800;
+/* ----------------------------------------------------
+   SHOWCASE COLUMN (8 Columnas Libres, Foto de Fondo Completa)
+   ---------------------------------------------------- */
+.auth-showcase-column {
+  min-height: 100vh;
+  background: rgba(15, 23, 42, 0.12); // Un poquito opaco nada más, fondo totalmente visible
+  position: relative;
+  z-index: 2;
 }
 
-/* Floating Theme Switcher (Top-Right) */
-.auth-theme-switcher-floating {
+.showcase-floating-badge {
   position: absolute;
-  top: 1.75rem;
-  right: 2rem;
-  z-index: 50;
-  padding: 4px;
-  border-radius: 14px;
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
+  z-index: 3;
   display: flex;
   align-items: center;
-  justify-content: center;
-  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+  gap: 12px;
+  padding: 12px 20px;
+  border-radius: 20px;
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.35);
+  transition: transform 0.25s ease;
 
   &:hover {
     transform: translateY(-2px);
   }
 
-  @media (max-width: 600px) {
-    top: 1rem;
-    right: 1rem;
+  &.badge-top-right {
+    top: 2.5rem;
+    right: 2.5rem;
+  }
+
+  &.badge-bottom-left {
+    bottom: 2.5rem;
+    left: 2.5rem;
+  }
+
+  .badge-icon-box {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 46px;
+    height: 46px;
+    border-radius: 14px;
+  }
+
+  .badge-caption {
+    font-size: 0.72rem;
+    font-weight: 800;
+    letter-spacing: 0.05em;
+    opacity: 0.85;
+  }
+
+  .badge-title {
+    font-size: 0.95rem;
+    font-weight: 800;
   }
 }
+
+.showcase-center-card {
+  max-width: 560px;
+  border-radius: 24px;
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+  z-index: 2;
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.40);
+  border: 1.5px solid rgba(255, 255, 255, 0.22);
+}
+
 
 /* Sidebar Ambient Glow Orbs */
 .sidebar-glow-orb {
@@ -228,38 +244,16 @@
    B. DEFAULT FALLBACK THEME (Workshop / Taller)
    ---------------------------------------------------- */
 .auth-page-root {
-  background-color: #f8fafc;
-  background-image: url('@images/pages/login-workshop-bg.png');
+  background-color: transparent !important;
+  background-image: url('../images/pages/login-workshop-bg.png');
+  background-size: cover !important;
+  background-position: center center !important;
+  background-repeat: no-repeat !important;
+  background-attachment: fixed !important;
 
+  // Foto de fondo totalmente nítida y visible en las 12 columnas
   &::before {
-    background: radial-gradient(circle at 15% 15%, rgba(138, 21, 56, 0.12) 0%, transparent 60%),
-      radial-gradient(circle at 85% 85%, rgba(107, 14, 39, 0.10) 0%, transparent 60%),
-      rgba(248, 250, 252, 0.88);
-  }
-}
-
-.auth-brand-floating {
-  background: linear-gradient(135deg, #8A1538 0%, #6B0E27 60%, #58081C 100%) !important;
-  border: 1px solid rgba(255, 255, 255, 0.20) !important;
-  box-shadow: 0 4px 20px rgba(138, 21, 56, 0.28) !important;
-
-  .brand-name-text {
-    color: #ffffff !important;
-  }
-
-  .auth-brand-subtitle {
-    color: rgba(255, 255, 255, 0.85) !important;
-  }
-}
-
-.auth-theme-switcher-floating {
-  background: linear-gradient(135deg, #8A1538 0%, #6B0E27 60%, #58081C 100%) !important;
-  border: 1px solid rgba(255, 255, 255, 0.22) !important;
-  box-shadow: 0 4px 16px rgba(138, 21, 56, 0.25) !important;
-  color: #ffffff;
-
-  .theme-switcher-btn {
-    color: #ffffff !important;
+    background: rgba(0, 0, 0, 0.15) !important;
   }
 }
 
@@ -269,113 +263,187 @@
   color: #ffffff;
 }
 
+.auth-showcase-column {
+  background: rgba(15, 23, 42, 0.08) !important; // Libre y transparente
+}
+
+.showcase-floating-badge {
+  background: rgba(15, 23, 42, 0.85) !important;
+  border: 1px solid rgba(255, 255, 255, 0.20) !important;
+  color: #ffffff !important;
+
+  .badge-icon-sri {
+    background: rgba(34, 197, 94, 0.20) !important;
+    color: #4ade80 !important;
+  }
+
+  .badge-icon-taller {
+    background: rgba(138, 21, 56, 0.35) !important;
+    color: #ff859d !important;
+  }
+
+  .badge-caption {
+    color: rgba(255, 255, 255, 0.75) !important;
+  }
+
+  .badge-title {
+    color: #ffffff !important;
+  }
+}
+
+.showcase-center-card {
+  background: rgba(15, 23, 42, 0.82) !important;
+  border: 1.5px solid rgba(255, 255, 255, 0.22) !important;
+  box-shadow: 0 25px 50px rgba(0, 0, 0, 0.50) !important;
+
+  .showcase-center-icon {
+    color: #ff859d !important;
+  }
+
+  .showcase-center-title {
+    color: #ffffff !important;
+  }
+
+  .showcase-center-subtitle {
+    color: rgba(255, 255, 255, 0.88) !important;
+  }
+}
+
 .sidebar-glow-orb.orb-1 {
-  background: radial-gradient(circle, rgba(138, 21, 56, 0.20) 0%, transparent 70%);
+  background: radial-gradient(circle, rgba(138, 21, 56, 0.28) 0%, transparent 70%);
 }
 
 .sidebar-glow-orb.orb-2 {
-  background: radial-gradient(circle, rgba(71, 85, 105, 0.15) 0%, transparent 70%);
+  background: radial-gradient(circle, rgba(71, 85, 105, 0.20) 0%, transparent 70%);
 }
 
+// Contenedor Rojo Vino Oficial de Alto Impacto
 .auth-form-container {
-  background: #ffffff !important;
-  border: 1.5px solid #e2e8f0 !important;
-  border-top: 4px solid #8A1538 !important;
-  box-shadow: 0 20px 45px rgba(15, 23, 42, 0.08), 0 0 35px rgba(138, 21, 56, 0.10) !important;
+  background: linear-gradient(135deg, #8A1538 0%, #6B0E27 60%, #58081C 100%) !important;
+  border: 1.5px solid rgba(255, 255, 255, 0.25) !important;
+  box-shadow: 0 25px 60px rgba(0, 0, 0, 0.45), 0 0 40px rgba(138, 21, 56, 0.35) !important;
 }
 
 .auth-title {
-  color: #0f172a !important;
-  font-weight: 800 !important;
+  color: #ffffff !important;
+  font-weight: 900 !important;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
 }
 
 .auth-subtitle {
-  color: #475569 !important;
+  color: rgba(255, 255, 255, 0.90) !important;
 }
 
 .auth-field-label {
-  color: #0f172a !important;
-  font-weight: 700 !important;
+  color: #ffffff !important;
+  font-weight: 800 !important;
+  letter-spacing: 0.05em;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
 }
 
 .auth-forgot-link {
-  color: #8A1538 !important;
-  font-weight: 600;
-  text-decoration: underline;
+  color: #ffffff !important;
+  font-weight: 700 !important;
+  text-decoration: underline !important;
+  opacity: 0.95;
 
   &:hover {
-    color: #600A1F !important;
+    color: #fce7f3 !important;
+    opacity: 1;
   }
 }
 
-.auth-checkbox .v-label {
-  color: #334155 !important;
+.auth-checkbox {
+  .v-label {
+    color: #ffffff !important;
+    font-weight: 600 !important;
+  }
+
+  .v-selection-control__input .v-icon {
+    color: #ffffff !important;
+  }
 }
 
-.auth-checkbox .v-selection-control__input .v-icon {
-  color: #8A1538 !important;
+.auth-footer-text,
+.auth-footer-text * {
+  color: rgba(255, 255, 255, 0.90) !important;
 }
 
-.auth-footer-text {
-  color: #64748b !important;
-}
-
+// Cajas de texto (inputs) en Blanco Nítido con texto oscuro
 .auth-input,
 .auth-text-field {
   .v-field {
-    background-color: #f8fafc !important;
-    border: 1.5px solid #cbd5e1 !important;
-    box-shadow: 0 2px 6px rgba(15, 23, 42, 0.04) !important;
-    color: #0f172a !important;
+    background: #ffffff !important;
+    background-color: #ffffff !important;
+    border: 1.5px solid rgba(255, 255, 255, 0.8) !important;
+    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.15) !important;
 
     &:hover {
       background-color: #ffffff !important;
-      border-color: #94a3b8 !important;
+      border-color: #ffffff !important;
+      box-shadow: 0 6px 18px rgba(0, 0, 0, 0.2) !important;
     }
-  }
 
-  .v-field--focused {
-    background-color: #ffffff !important;
-    border-color: #8A1538 !important;
-    box-shadow: 0 0 0 3px rgba(138, 21, 56, 0.20) !important;
-  }
-
-  .v-field__input {
-    color: #0f172a !important;
-
-    &::placeholder {
-      color: #94a3b8 !important;
+    &.v-field--focused {
+      background-color: #ffffff !important;
+      border-color: #ffffff !important;
+      box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.5), 0 8px 24px rgba(0, 0, 0, 0.25) !important;
     }
-  }
 
-  .v-field__prepend-inner .v-icon,
-  .v-field__append-inner .v-icon {
-    color: #8A1538 !important;
+    .v-field__input {
+      color: #0f172a !important;
+      font-weight: 600 !important;
+
+      &::placeholder {
+        color: #64748b !important;
+      }
+    }
+
+    .v-field__prepend-inner .v-icon,
+    .v-field__append-inner .v-icon {
+      color: #8A1538 !important;
+    }
   }
 }
 
+// Botón Blanco Sólido con texto e ícono en Rojo Vino
+.auth-submit-btn-white,
 .auth-submit-btn,
+.v-btn.auth-submit-btn-white,
 .v-btn.auth-submit-btn,
+.auth-page-root .auth-submit-btn,
 .auth-page-root .auth-submit-btn.v-btn {
-  background: linear-gradient(135deg, #8A1538 0%, #600A1F 100%) !important;
-  background-color: #8A1538 !important;
-  color: #ffffff !important;
-  border: 1px solid rgba(255, 255, 255, 0.20) !important;
-  box-shadow: 0 8px 24px rgba(138, 21, 56, 0.40) !important;
+  background: #ffffff !important;
+  background-color: #ffffff !important;
+  color: #8A1538 !important;
+  border: none !important;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.35) !important;
 
   .v-btn__content,
+  .v-btn__content span,
+  .v-btn__content .v-icon,
   .v-icon,
   span,
   * {
-    color: #ffffff !important;
+    color: #8A1538 !important;
     font-weight: 900 !important;
     letter-spacing: 0.05em !important;
   }
 
   &:hover {
-    background: linear-gradient(135deg, #A31842 0%, #720C25 100%) !important;
-    box-shadow: 0 10px 28px rgba(138, 21, 56, 0.55) !important;
+    background: #f8fafc !important;
+    background-color: #f8fafc !important;
+    box-shadow: 0 12px 28px rgba(0, 0, 0, 0.45) !important;
     transform: translateY(-2px);
+
+    .v-btn__content,
+    .v-btn__content span,
+    .v-btn__content .v-icon,
+    .v-icon,
+    span,
+    * {
+      color: #600A1F !important;
+    }
   }
 }
 
@@ -392,7 +460,7 @@ body[data-theme="dark-glass"],
   &.auth-page-root,
   .auth-page-root {
     background-color: #090a10;
-    background-image: url('@images/pages/login-workshop-bg.png');
+    background-image: url('../images/pages/login-workshop-bg.png');
     background-size: cover;
     background-position: center center;
 
@@ -575,7 +643,7 @@ body[data-theme="semi-dark-glass"],
   &.auth-page-root,
   .auth-page-root {
     background-color: #0f172a;
-    background-image: url('@images/pages/login-workshop-bg.png');
+    background-image: url('../images/pages/login-workshop-bg.png');
     background-size: cover;
     background-position: center center;
 
@@ -757,7 +825,7 @@ body[data-theme="dark"],
   &.auth-page-root,
   .auth-page-root {
     background-color: #282A42;
-    background-image: url('@images/pages/login-workshop-bg.png');
+    background-image: url('../images/pages/login-workshop-bg.png');
     background-size: cover;
     background-position: center center;
 
@@ -915,7 +983,7 @@ body[data-theme="dark"],
 
 
 /* ----------------------------------------------------
-   4. TEMA: LIGHT (Claro Estándar)
+   4. TEMA: LIGHT (Claro Estándar / Azul Primario)
    ---------------------------------------------------- */
 [data-theme="light"],
 html[data-theme="light"],
@@ -925,169 +993,198 @@ body[data-theme="light"],
 
   &.auth-page-root,
   .auth-page-root {
-    background-color: #F7F7F9;
-    background-image: url('@images/pages/login-workshop-bg.png');
+    background-color: #0f172a;
+    background-image: url('../images/pages/login-workshop-bg.png');
     background-size: cover;
     background-position: center center;
 
+    // Foto de fondo totalmente nítida y visible en las 12 columnas
     &::before {
-      background: linear-gradient(135deg, rgba(247, 247, 249, 0.88) 0%, rgba(240, 240, 244, 0.92) 100%);
-    }
-  }
-
-  .auth-brand-floating {
-    background-color: #FFFFFF;
-    border: 1px solid rgba(38, 43, 67, 0.12);
-    box-shadow: 0 4px 16px rgba(38, 43, 67, 0.08);
-
-    .brand-name-text {
-      color: #262B43 !important;
-    }
-
-    .auth-brand-subtitle {
-      color: #6D788D !important;
-    }
-
-    &:hover {
-      box-shadow: 0 8px 24px rgba(102, 108, 255, 0.18);
-      border-color: rgba(102, 108, 255, 0.4);
-    }
-  }
-
-  .auth-theme-switcher-floating {
-    background-color: #FFFFFF;
-    border: 1px solid rgba(38, 43, 67, 0.12);
-    box-shadow: 0 4px 16px rgba(38, 43, 67, 0.08);
-    color: #262B43;
-
-    .theme-switcher-btn {
-      color: #262B43 !important;
-    }
-
-    &:hover {
-      border-color: rgba(102, 108, 255, 0.4);
-      box-shadow: 0 8px 20px rgba(102, 108, 255, 0.18);
+      background: rgba(0, 0, 0, 0.15) !important;
     }
   }
 
   .brand-logo-container-mobile {
-    background: linear-gradient(135deg, #666CFF 0%, #5C61E6 100%);
-    border: none;
+    background: linear-gradient(135deg, #666CFF 0%, #545BEE 100%);
+    border: 1px solid rgba(255, 255, 255, 0.25);
     color: #ffffff;
   }
 
+  .auth-showcase-column {
+    background: rgba(15, 23, 42, 0.08) !important; // Libre y transparente
+  }
+
+  .showcase-floating-badge {
+    background: rgba(15, 23, 42, 0.85) !important;
+    border: 1px solid rgba(255, 255, 255, 0.20) !important;
+    color: #ffffff !important;
+
+    .badge-icon-sri {
+      background: rgba(34, 197, 94, 0.20) !important;
+      color: #4ade80 !important;
+    }
+
+    .badge-icon-taller {
+      background: rgba(99, 102, 241, 0.35) !important;
+      color: #a5b4fc !important;
+    }
+
+    .badge-caption {
+      color: rgba(255, 255, 255, 0.75) !important;
+    }
+
+    .badge-title {
+      color: #ffffff !important;
+    }
+  }
+
+  .showcase-center-card {
+    background: rgba(15, 23, 42, 0.82) !important;
+    border: 1.5px solid rgba(255, 255, 255, 0.22) !important;
+    box-shadow: 0 25px 50px rgba(0, 0, 0, 0.50) !important;
+
+    .showcase-center-icon {
+      color: #818cf8 !important;
+    }
+
+    .showcase-center-title {
+      color: #ffffff !important;
+    }
+
+    .showcase-center-subtitle {
+      color: rgba(255, 255, 255, 0.88) !important;
+    }
+  }
+
   .sidebar-glow-orb.orb-1 {
-    background: radial-gradient(circle, rgba(102, 108, 255, 0.12) 0%, transparent 70%);
+    background: radial-gradient(circle, rgba(102, 108, 255, 0.30) 0%, transparent 70%);
   }
 
   .sidebar-glow-orb.orb-2 {
-    background: radial-gradient(circle, rgba(38, 198, 249, 0.10) 0%, transparent 70%);
+    background: radial-gradient(circle, rgba(38, 198, 249, 0.22) 0%, transparent 70%);
   }
 
+  // Contenedor Azul Vibrante
   .auth-form-container {
-    background: #FFFFFF !important;
-    border: 1.5px solid rgba(38, 43, 67, 0.12) !important;
-    border-top: 3.5px solid #666CFF !important;
-    box-shadow: 0 20px 45px rgba(38, 43, 67, 0.08), 0 0 35px rgba(102, 108, 255, 0.08) !important;
+    background: linear-gradient(135deg, #666CFF 0%, #545BEE 60%, #4349DE 100%) !important;
+    border: 1.5px solid rgba(255, 255, 255, 0.25) !important;
+    box-shadow: 0 25px 60px rgba(0, 0, 0, 0.45), 0 0 40px rgba(102, 108, 255, 0.35) !important;
   }
 
   .auth-title {
-    color: #262B43 !important;
+    color: #ffffff !important;
+    font-weight: 900 !important;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
   }
 
   .auth-subtitle {
-    color: #6D788D !important;
+    color: rgba(255, 255, 255, 0.90) !important;
   }
 
   .auth-field-label {
-    color: #262B43 !important;
-    font-weight: 700 !important;
+    color: #ffffff !important;
+    font-weight: 800 !important;
+    letter-spacing: 0.05em;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
   }
 
   .auth-forgot-link {
-    color: #666CFF !important;
-    text-decoration: underline;
-    opacity: 0.92;
+    color: #ffffff !important;
+    font-weight: 700 !important;
+    text-decoration: underline !important;
+    opacity: 0.95;
 
     &:hover {
+      color: #e0e7ff !important;
       opacity: 1;
-      color: #5C61E6 !important;
     }
   }
 
   .auth-checkbox {
     .v-label {
-      color: #262B43 !important;
+      color: #ffffff !important;
       font-weight: 600 !important;
     }
 
     .v-selection-control__input .v-icon,
     .v-selection-control--dirty .v-icon {
-      color: #666CFF !important;
+      color: #ffffff !important;
     }
   }
 
   .auth-footer-text {
-    color: #6D788D !important;
+    color: rgba(255, 255, 255, 0.85) !important;
   }
 
+  // Cajas de texto (inputs) en Blanco Nítido con texto oscuro
   .auth-input,
   .auth-text-field {
     .v-field {
-      background-color: #FAFAFD !important;
-      border: 1.5px solid rgba(38, 43, 67, 0.2) !important;
-      box-shadow: 0 2px 6px rgba(38, 43, 67, 0.04) !important;
-      color: #262B43 !important;
+      background: #ffffff !important;
+      background-color: #ffffff !important;
+      border: 1.5px solid rgba(255, 255, 255, 0.8) !important;
+      box-shadow: 0 4px 14px rgba(0, 0, 0, 0.15) !important;
 
       &:hover {
         background-color: #ffffff !important;
-        border-color: rgba(38, 43, 67, 0.35) !important;
+        border-color: #ffffff !important;
+        box-shadow: 0 6px 18px rgba(0, 0, 0, 0.2) !important;
       }
 
       &.v-field--focused {
         background-color: #ffffff !important;
-        border-color: #666CFF !important;
-        box-shadow: 0 0 0 3px rgba(102, 108, 255, 0.20) !important;
+        border-color: #ffffff !important;
+        box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.5), 0 8px 24px rgba(0, 0, 0, 0.25) !important;
       }
     }
 
     .v-field__input {
-      color: #262B43 !important;
+      color: #0f172a !important;
+      font-weight: 600 !important;
 
       &::placeholder {
-        color: #9E9E9E !important;
+        color: #64748b !important;
       }
     }
 
     .v-field__prepend-inner .v-icon,
     .v-field__append-inner .v-icon {
-      color: #666CFF !important;
+      color: #545BEE !important;
     }
   }
 
+  // Botón Blanco Sólido con texto e ícono en Azul
   .auth-submit-btn,
   .v-btn.auth-submit-btn,
   &.auth-page-root .auth-submit-btn.v-btn,
   .auth-page-root .auth-submit-btn.v-btn {
-    background: linear-gradient(135deg, #666CFF 0%, #5C61E6 100%) !important;
-    background-color: #666CFF !important;
-    color: #ffffff !important;
-    border: 1px solid rgba(255, 255, 255, 0.20) !important;
-    box-shadow: 0 8px 24px rgba(102, 108, 255, 0.35) !important;
+    background: #ffffff !important;
+    background-color: #ffffff !important;
+    color: #545BEE !important;
+    border: none !important;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.35) !important;
 
     .v-btn__content,
     .v-icon,
     span,
     * {
-      color: #ffffff !important;
+      color: #545BEE !important;
       font-weight: 900 !important;
       letter-spacing: 0.05em !important;
     }
 
     &:hover {
-      background: linear-gradient(135deg, #787dff 0%, #686de8 100%) !important;
-      box-shadow: 0 10px 28px rgba(102, 108, 255, 0.45) !important;
+      background: #f8fafc !important;
+      background-color: #f8fafc !important;
+      box-shadow: 0 12px 28px rgba(0, 0, 0, 0.45) !important;
       transform: translateY(-2px);
+
+      .v-btn__content,
+      .v-icon,
+      span,
+      * {
+        color: #4349DE !important;
+      }
     }
   }
 }
@@ -1105,7 +1202,7 @@ body[data-theme="light-glass"],
   &.auth-page-root,
   .auth-page-root {
     background-color: #e2e8f0;
-    background-image: url('@images/pages/login-workshop-bg.png');
+    background-image: url('../images/pages/login-workshop-bg.png');
     background-size: cover;
     background-position: center center;
 
@@ -1293,50 +1390,16 @@ body[data-theme="taller"],
 
   &.auth-page-root,
   .auth-page-root {
-    background-color: #f8fafc;
-    background-image: url('@images/pages/login-workshop-bg.png');
-    background-size: cover;
-    background-position: center center;
+    background-color: transparent !important;
+    background-image: url('../images/pages/login-workshop-bg.png');
+    background-size: cover !important;
+    background-position: center center !important;
+    background-repeat: no-repeat !important;
+    background-attachment: fixed !important;
 
+    // Foto de fondo totalmente nítida y visible en las 12 columnas
     &::before {
-      background: radial-gradient(circle at 15% 15%, rgba(138, 21, 56, 0.12) 0%, transparent 60%),
-        radial-gradient(circle at 85% 85%, rgba(107, 14, 39, 0.10) 0%, transparent 60%),
-        rgba(248, 250, 252, 0.88);
-    }
-  }
-
-  .auth-brand-floating {
-    background: linear-gradient(135deg, #8A1538 0%, #6B0E27 60%, #58081C 100%) !important;
-    border: 1px solid rgba(255, 255, 255, 0.20) !important;
-    box-shadow: 0 4px 20px rgba(138, 21, 56, 0.28) !important;
-
-    .brand-name-text {
-      color: #ffffff !important;
-    }
-
-    .auth-brand-subtitle {
-      color: rgba(255, 255, 255, 0.85) !important;
-    }
-
-    &:hover {
-      box-shadow: 0 6px 24px rgba(138, 21, 56, 0.40) !important;
-      transform: translateY(-2px);
-    }
-  }
-
-  .auth-theme-switcher-floating {
-    background: linear-gradient(135deg, #8A1538 0%, #6B0E27 60%, #58081C 100%) !important;
-    border: 1px solid rgba(255, 255, 255, 0.22) !important;
-    box-shadow: 0 4px 16px rgba(138, 21, 56, 0.25) !important;
-    color: #ffffff;
-
-    .theme-switcher-btn {
-      color: #ffffff !important;
-    }
-
-    &:hover {
-      box-shadow: 0 6px 20px rgba(138, 21, 56, 0.35) !important;
-      transform: translateY(-2px);
+      background: rgba(0, 0, 0, 0.15) !important;
     }
   }
 
@@ -1346,72 +1409,130 @@ body[data-theme="taller"],
     color: #ffffff;
   }
 
-  .sidebar-glow-orb.orb-1 {
-    background: radial-gradient(circle, rgba(138, 21, 56, 0.20) 0%, transparent 70%);
+  .auth-showcase-column {
+    background: rgba(15, 23, 42, 0.08) !important; // Libre y transparente
   }
 
-  .sidebar-glow-orb.orb-2 {
-    background: radial-gradient(circle, rgba(71, 85, 105, 0.15) 0%, transparent 70%);
-  }
+  .showcase-floating-badge {
+    background: rgba(15, 23, 42, 0.85) !important;
+    border: 1px solid rgba(255, 255, 255, 0.20) !important;
+    color: #ffffff !important;
 
-  .auth-form-container {
-    background: #ffffff !important;
-    border: 1.5px solid #e2e8f0 !important;
-    border-top: 4px solid #8A1538 !important;
-    box-shadow: 0 20px 45px rgba(15, 23, 42, 0.08), 0 0 35px rgba(138, 21, 56, 0.10) !important;
-  }
+    .badge-icon-sri {
+      background: rgba(34, 197, 94, 0.20) !important;
+      color: #4ade80 !important;
+    }
 
-  .auth-title {
-    color: #0f172a !important;
-    font-weight: 800 !important;
-  }
+    .badge-icon-taller {
+      background: rgba(138, 21, 56, 0.35) !important;
+      color: #ff859d !important;
+    }
 
-  .auth-subtitle {
-    color: #475569 !important;
-  }
+    .badge-caption {
+      color: rgba(255, 255, 255, 0.75) !important;
+    }
 
-  .auth-field-label {
-    color: #0f172a !important;
-    font-weight: 700 !important;
-  }
-
-  .auth-forgot-link {
-    color: #8A1538 !important;
-    font-weight: 600;
-    text-decoration: underline;
-    opacity: 0.95;
-
-    &:hover {
-      opacity: 1;
-      color: #600A1F !important;
+    .badge-title {
+      color: #ffffff !important;
     }
   }
 
-  .auth-checkbox .v-label {
-    color: #334155 !important;
+  .showcase-center-card {
+    background: rgba(15, 23, 42, 0.82) !important;
+    border: 1.5px solid rgba(255, 255, 255, 0.22) !important;
+    box-shadow: 0 25px 50px rgba(0, 0, 0, 0.50) !important;
+
+    .showcase-center-icon {
+      color: #ff859d !important;
+    }
+
+    .showcase-center-title {
+      color: #ffffff !important;
+    }
+
+    .showcase-center-subtitle {
+      color: rgba(255, 255, 255, 0.88) !important;
+    }
   }
 
-  .auth-checkbox .v-selection-control__input .v-icon {
-    color: #8A1538 !important;
+  .sidebar-glow-orb.orb-1 {
+    background: radial-gradient(circle, rgba(138, 21, 56, 0.28) 0%, transparent 70%);
+  }
+
+  .sidebar-glow-orb.orb-2 {
+    background: radial-gradient(circle, rgba(71, 85, 105, 0.20) 0%, transparent 70%);
+  }
+
+  // Contenedor Rojo Vino Oficial
+  .auth-form-container {
+    background: linear-gradient(135deg, #8A1538 0%, #6B0E27 60%, #58081C 100%) !important;
+    border: 1.5px solid rgba(255, 255, 255, 0.25) !important;
+    box-shadow: 0 25px 60px rgba(0, 0, 0, 0.45), 0 0 40px rgba(138, 21, 56, 0.35) !important;
+  }
+
+  .auth-title {
+    color: #ffffff !important;
+    font-weight: 900 !important;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+  }
+
+  .auth-subtitle {
+    color: rgba(255, 255, 255, 0.90) !important;
+  }
+
+  .auth-field-label {
+    color: #ffffff !important;
+    font-weight: 800 !important;
+    letter-spacing: 0.05em;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+  }
+
+  .auth-forgot-link {
+    color: #ffffff !important;
+    font-weight: 700 !important;
+    text-decoration: underline !important;
+    opacity: 0.95;
+
+    &:hover {
+      color: #fce7f3 !important;
+      opacity: 1;
+    }
+  }
+
+  .auth-checkbox {
+    .v-label {
+      color: #ffffff !important;
+      font-weight: 600 !important;
+    }
+
+    .v-selection-control__input .v-icon {
+      color: #ffffff !important;
+    }
   }
 
   .auth-footer-text {
-    color: #64748b !important;
+    color: rgba(255, 255, 255, 0.85) !important;
   }
 
-  // Inputs con fondo limpio y bordes nítidos
+  // Inputs con fondo blanco nítido y texto oscuro
   .auth-text-field,
   .auth-input {
     .v-field {
-      background: #f8fafc !important;
-      background-color: #f8fafc !important;
-      border: 1.5px solid #cbd5e1 !important;
-      box-shadow: 0 2px 6px rgba(15, 23, 42, 0.04) !important;
+      background: #ffffff !important;
+      background-color: #ffffff !important;
+      border: 1.5px solid rgba(255, 255, 255, 0.8) !important;
+      box-shadow: 0 4px 14px rgba(0, 0, 0, 0.15) !important;
+
+      &:hover {
+        background-color: #ffffff !important;
+        border-color: #ffffff !important;
+        box-shadow: 0 6px 18px rgba(0, 0, 0, 0.2) !important;
+      }
 
       &.v-field--focused {
         background: #ffffff !important;
-        border-color: #8A1538 !important;
-        box-shadow: 0 0 0 3px rgba(138, 21, 56, 0.20) !important;
+        border-color: #ffffff !important;
+        box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.5), 0 8px 24px rgba(0, 0, 0, 0.25) !important;
       }
 
       input {
@@ -1419,7 +1540,7 @@ body[data-theme="taller"],
         font-weight: 600 !important;
 
         &::placeholder {
-          color: #94a3b8 !important;
+          color: #64748b !important;
         }
       }
 
@@ -1430,31 +1551,38 @@ body[data-theme="taller"],
     }
   }
 
-  // Botón de ingresar Rojo Vino Oficial con texto blanco nítido
+  // Botón Blanco Sólido con texto e ícono en Rojo Vino
   .auth-submit-btn,
   .v-btn.auth-submit-btn,
   &.auth-page-root .auth-submit-btn.v-btn,
   .auth-page-root .auth-submit-btn.v-btn {
-    background: linear-gradient(135deg, #8A1538 0%, #600A1F 100%) !important;
-    background-color: #8A1538 !important;
-    color: #ffffff !important;
-    border: 1px solid rgba(255, 255, 255, 0.20) !important;
-    box-shadow: 0 8px 24px rgba(138, 21, 56, 0.40) !important;
+    background: #ffffff !important;
+    background-color: #ffffff !important;
+    color: #8A1538 !important;
+    border: none !important;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.35) !important;
 
     .v-btn__content,
     .v-icon,
     span,
     * {
-      color: #ffffff !important;
+      color: #8A1538 !important;
       font-weight: 900 !important;
       letter-spacing: 0.05em !important;
     }
 
     &:hover {
-      background: linear-gradient(135deg, #A31842 0%, #720C25 100%) !important;
-      background-color: #A31842 !important;
-      box-shadow: 0 10px 28px rgba(138, 21, 56, 0.55) !important;
+      background: #f8fafc !important;
+      background-color: #f8fafc !important;
+      box-shadow: 0 12px 28px rgba(0, 0, 0, 0.45) !important;
       transform: translateY(-2px);
+
+      .v-btn__content,
+      .v-icon,
+      span,
+      * {
+        color: #600A1F !important;
+      }
     }
   }
 }
