@@ -14,7 +14,28 @@ export const useConfigStore = defineStore('config', () => {
       cookieColorScheme.value = val
   }, { immediate: true })
 
-  const theme = cookieRef('theme', themeConfig.app.theme)
+  // Read saved theme with fallback: localStorage -> themeConfig default
+  const getInitialTheme = () => {
+    if (typeof window !== 'undefined') {
+      try {
+        const fromLocal = localStorage.getItem('app_theme') || localStorage.getItem('theme')
+        if (fromLocal) return fromLocal
+      } catch (e) {}
+    }
+    return themeConfig.app.theme
+  }
+
+  const theme = cookieRef('theme', getInitialTheme())
+
+  // Ensure theme syncs to localStorage whenever changed
+  watch(theme, newTheme => {
+    if (typeof window !== 'undefined' && newTheme) {
+      try {
+        localStorage.setItem('app_theme', newTheme)
+        localStorage.setItem('theme', newTheme)
+      } catch (e) {}
+    }
+  }, { immediate: true })
 
   // 👉 isVerticalNavSemiDark
   const isVerticalNavSemiDark = cookieRef('isVerticalNavSemiDark', themeConfig.verticalNav.isVerticalNavSemiDark)
@@ -48,13 +69,31 @@ export const initConfigStore = () => {
   const vuetifyTheme = useTheme()
   const configStore = useConfigStore()
 
+  // Make sure theme matches localStorage if present
+  if (typeof window !== 'undefined') {
+    try {
+      const savedTheme = localStorage.getItem('app_theme') || localStorage.getItem('theme')
+      if (savedTheme && configStore.theme !== savedTheme) {
+        configStore.theme = savedTheme
+      }
+    } catch (e) {}
+  }
+
   watch([() => configStore.theme, userPreferredColorScheme], () => {
-    vuetifyTheme.global.name.value = configStore.theme === 'system'
+    const targetTheme = configStore.theme === 'system'
       ? userPreferredColorScheme.value === 'dark'
         ? 'dark'
         : 'light'
       : configStore.theme
-  })
+
+    vuetifyTheme.global.name.value = targetTheme
+
+    if (typeof document !== 'undefined') {
+      document.documentElement.setAttribute('data-theme', targetTheme)
+      document.body.setAttribute('data-theme', targetTheme)
+    }
+  }, { immediate: true })
+
   onMounted(() => {
     if (configStore.theme === 'system')
       vuetifyTheme.global.name.value = userPreferredColorScheme.value

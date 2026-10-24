@@ -14,11 +14,17 @@ import { themeConfig } from "@themeConfig"
 import { useLoaderStore } from '@/stores/loader'
 import { refreshPermissionsUser } from '@/composables/usePermissions'
 import { $api, getStorageUrl } from '@/utils/api'
+import NavbarThemeSwitcher from '@/layouts/components/NavbarThemeSwitcher.vue'
+import { useTheme } from 'vuetify'
+import { useConfigStore } from '@core/stores/config'
 
 definePage({ meta: { layout: "blank", unauthenticatedOnly: true } })
 
 const route = useRoute()
 const router = useRouter()
+const vuetifyTheme = useTheme()
+const configStore = useConfigStore()
+const activeTheme = computed(() => vuetifyTheme.global.name.value || configStore.theme || 'taller')
 
 const form = ref({
   email: "laravest@gmail.com",
@@ -131,7 +137,17 @@ const appBrandName = computed(() => {
 </script>
 
 <template>
-  <div class="auth-page-root" :style="loginBgRootStyle">
+  <div
+    class="auth-page-root"
+    :data-theme="activeTheme"
+    :class="[`theme-${activeTheme}`, `v-theme--${activeTheme}`]"
+    :style="loginBgRootStyle"
+  >
+    <!-- Floating Theme Switcher (Top-Right) -->
+    <div class="auth-theme-switcher-floating">
+      <NavbarThemeSwitcher />
+    </div>
+
     <!-- Desktop Top Left Brand Badge -->
     <RouterLink to="/" class="auth-brand-floating d-none d-lg-flex align-center gap-3">
       <div class="brand-logo-container">
