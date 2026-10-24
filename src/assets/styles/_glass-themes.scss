@@ -1381,8 +1381,41 @@ body[data-theme="taller"],
       color: #334155 !important;
     }
 
-    .v-icon:not(.v-btn.bg-primary .v-icon):not(.v-chip *):not(.badge *) {
-      color: #334155 !important;
+    // Iconos en tarjetas del tema taller: Nítidos y con colores semánticos
+    .v-icon {
+      opacity: 1 !important;
+      visibility: visible !important;
+
+      &.text-primary,
+      &.v-icon--color-primary {
+        color: #8A1538 !important;
+        fill: #8A1538 !important;
+      }
+      &.text-info,
+      &.v-icon--color-info {
+        color: #0EA5E9 !important;
+        fill: #0EA5E9 !important;
+      }
+      &.text-success,
+      &.v-icon--color-success {
+        color: #10B981 !important;
+        fill: #10B981 !important;
+      }
+      &.text-warning,
+      &.v-icon--color-warning {
+        color: #F59E0B !important;
+        fill: #F59E0B !important;
+      }
+      &.text-error,
+      &.text-danger,
+      &.v-icon--color-error {
+        color: #EF4444 !important;
+        fill: #EF4444 !important;
+      }
+      &.text-white {
+        color: #ffffff !important;
+        fill: #ffffff !important;
+      }
     }
   }
 
@@ -1450,17 +1483,72 @@ body[data-theme="taller"],
     }
   }
 
-  // 6. PAGINADOR
+  // 6. PAGINADOR EN TEMA TALLER
   .v-pagination {
-
+    // Botón Activo: Fondo rojo vino con número blanco nítido y en negrita
+    .v-pagination__item .v-btn[aria-current="page"],
+    .v-pagination__item .v-btn[aria-label*="Current page"],
+    .v-pagination__item .v-btn[aria-label*="Página actual"],
+    .v-pagination__item .v-btn.v-btn--active,
     .v-pagination__item--is-active,
+    .v-pagination__item--is-active .v-btn,
     .v-btn.v-pagination__item--is-active {
       background: linear-gradient(135deg, #8A1538 0%, #600A1F 100%) !important;
+      background-color: #8A1538 !important;
       color: #ffffff !important;
-      font-weight: 700 !important;
+      border: 1px solid #8A1538 !important;
+      box-shadow: 0 4px 12px rgba(138, 21, 56, 0.35) !important;
+      opacity: 1 !important;
+
+      .v-btn__content {
+        color: #ffffff !important;
+        font-weight: 700 !important;
+        font-size: 0.95rem !important;
+        opacity: 1 !important;
+      }
 
       * {
         color: #ffffff !important;
+        opacity: 1 !important;
+      }
+    }
+
+    // Botones Inactivos: Fondo blanco limpio con números oscuros de alto contraste
+    .v-pagination__item .v-btn:not([aria-current="page"]):not([aria-label*="Current page"]):not([aria-label*="Página actual"]):not(.v-btn--active),
+    .v-pagination__prev .v-btn,
+    .v-pagination__next .v-btn {
+      background: #ffffff !important;
+      background-color: #ffffff !important;
+      border: 1px solid #e2e8f0 !important;
+      color: #1e293b !important;
+      opacity: 1 !important;
+
+      .v-btn__content {
+        color: #1e293b !important;
+        font-weight: 600 !important;
+        opacity: 1 !important;
+      }
+
+      .v-icon,
+      i,
+      svg {
+        color: #334155 !important;
+        fill: #334155 !important;
+        opacity: 1 !important;
+      }
+
+      &:hover {
+        background: #f8fafc !important;
+        border-color: #cbd5e1 !important;
+        color: #8A1538 !important;
+
+        .v-btn__content,
+        .v-icon,
+        i,
+        svg {
+          color: #8A1538 !important;
+          fill: #8A1538 !important;
+        }
       }
     }
   }
@@ -1469,7 +1557,9 @@ body[data-theme="taller"],
 // --------------------------------------------------------------------------
 // 9. OVERRIDES DE NIVEL SUPERIOR (BODY LEVEL) PARA DIÁLOGOS Y POPUPS EN TALLER
 // --------------------------------------------------------------------------
-body[data-theme="taller"] {
+body[data-theme="taller"],
+[data-theme="taller"],
+.v-theme--taller {
 
   // CORRECCIÓN CRÍTICA DE CAPAS FANTASMAS
   .v-overlay:not(.v-overlay--active) {
@@ -1479,40 +1569,37 @@ body[data-theme="taller"] {
     pointer-events: none !important;
   }
 
+  // Quitar cualquier fondo sólido que Vuetify o el tema le ponga al overlay completo
+  .v-overlay--active.v-dialog,
   .v-overlay--active.v-menu,
   .v-overlay--active.v-select,
   .v-overlay--active.v-autocomplete {
     background: transparent !important;
-
-    // SCRIM / TELÓN DE FONDO TRANSLÚCIDO
-    .v-overlay--active .v-overlay__scrim,
-    .v-overlay--active.v-dialog .v-overlay__scrim,
-    .v-overlay--active.v-dialog>.v-overlay__scrim {
-      display: block !important;
-      background: rgba(15, 23, 42, 0.40) !important;
-      background-color: rgba(15, 23, 42, 0.40) !important;
-      backdrop-filter: blur(4px) !important;
-      -webkit-backdrop-filter: blur(4px) !important;
-      opacity: 1 !important;
-    }
-
-    // Quitar cualquier fondo sólido que Vuetify le ponga al overlay completo
-    .v-overlay--active.v-dialog {
-      background: transparent !important;
-      background-color: transparent !important;
-    }
+    background-color: transparent !important;
   }
 
-  // SCRIM / TELÓN DE FONDO LIMPIO
-  .v-overlay--active.v-dialog>.v-overlay__scrim {
-    background-color: rgba(15, 23, 42, 0.45) !important;
-    backdrop-filter: blur(4px) !important;
-    -webkit-backdrop-filter: blur(4px) !important;
+  // El contenedor de contenido del diálogo no debe tener fondo para no crear un recuadro gris
+  .v-overlay--active.v-dialog > .v-overlay__content {
+    background: transparent !important;
+    background-color: transparent !important;
+    box-shadow: none !important;
+  }
+
+  // SCRIM / TELÓN DE FONDO SUAVE Y TRANSLÚCIDO
+  // Permite ver los demás componentes de la página detrás del diálogo con total claridad
+  .v-overlay--active.v-dialog > .v-overlay__scrim,
+  .v-overlay--active > .v-overlay__scrim,
+  .v-overlay__scrim {
+    display: block !important;
+    background: rgba(15, 23, 42, 0.25) !important;
+    background-color: rgba(15, 23, 42, 0.25) !important;
+    backdrop-filter: blur(1.5px) !important;
+    -webkit-backdrop-filter: blur(1.5px) !important;
     opacity: 1 !important;
   }
 
   // MODALES Y TARJETAS EN TALLER
-  .v-overlay--active.v-dialog>.v-overlay__content>.v-card,
+  .v-overlay--active.v-dialog > .v-overlay__content > .v-card,
   .v-overlay--active.v-dialog .v-card,
   .v-dialog .v-card,
   [role="dialog"] .v-card {
@@ -1528,19 +1615,27 @@ body[data-theme="taller"] {
 
   // =========================================================================
   // BLINDAJE ABSOLUTO DE CABECERA DE VDIALOG EN TEMA TALLER
-  // (Soluciona textos oscuros/azules y botones casi invisibles sobre rojo vino)
+  // (Elimina fondos azules/violetas heredados y asegura rojo vino nítido)
   // =========================================================================
   .v-dialog .v-card-title.bg-primary,
   .v-dialog .v-card-item.bg-primary,
   .v-dialog .custom-dialog-header,
   .v-dialog .custom-dialog-header-primary,
+  .v-dialog .custom-dialog-header-info,
+  .v-dialog .custom-dialog-header-secondary,
   .v-dialog .dialog-header-banner,
   .v-dialog .dialog-header-workshop,
-  .v-dialog .v-card>.bg-primary:first-child,
-  .v-dialog .v-card>.v-card-title:first-child,
-  .v-overlay--active.v-dialog>.v-overlay__content .v-card-title.bg-primary,
-  .v-overlay--active.v-dialog>.v-overlay__content .v-card-item.bg-primary,
-  .v-overlay--active.v-dialog>.v-overlay__content>.v-card>div:first-child,
+  .v-dialog .sale-dialog-header-banner,
+  .v-dialog .product-quick-header,
+  .v-dialog .profile-header-banner,
+  .v-dialog [class*="dialog-header"],
+  .v-dialog [class*="header-primary"],
+  .v-dialog .v-card > div:first-child[class*="header"],
+  .v-dialog .v-card > div:first-child[class*="banner"],
+  .v-dialog .v-card > .bg-primary:first-child,
+  .v-dialog .v-card > .v-card-title:first-child,
+  .v-overlay--active.v-dialog > .v-overlay__content .v-card-title.bg-primary,
+  .v-overlay--active.v-dialog > .v-overlay__content .v-card-item.bg-primary,
   .custom-dialog-header-primary,
   .custom-dialog-header {
     background: linear-gradient(135deg, #8A1538 0%, #600A1F 100%) !important;
@@ -1605,14 +1700,40 @@ body[data-theme="taller"] {
     }
 
     // 4. BOTÓN DE CERRAR (X) EN LA CABECERA
-    .v-btn,
     .custom-dialog-close-btn,
-    .v-dialog-close-btn,
-    .v-btn--icon {
+    .v-dialog-close-btn {
+      position: absolute !important;
+      top: 14px !important;
+      right: 14px !important;
+      width: 34px !important;
+      height: 34px !important;
+      min-width: 34px !important;
       color: #ffffff !important;
-      background: rgba(255, 255, 255, 0.18) !important;
-      border: 1px solid rgba(255, 255, 255, 0.35) !important;
+      background: rgba(0, 0, 0, 0.25) !important;
+      border: 1px solid rgba(255, 255, 255, 0.3) !important;
+      border-radius: 8px !important;
       opacity: 1 !important;
+      display: inline-flex !important;
+      align-items: center !important;
+      justify-content: center !important;
+      backdrop-filter: none !important;
+      -webkit-backdrop-filter: none !important;
+      cursor: pointer !important;
+      z-index: 10 !important;
+      padding: 0 !important;
+      box-shadow: none !important;
+
+      .v-btn__overlay,
+      .v-btn__underlay {
+        display: none !important;
+      }
+
+      .v-btn__content {
+        color: #ffffff !important;
+        display: inline-flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+      }
 
       *,
       .v-icon,
@@ -1620,13 +1741,132 @@ body[data-theme="taller"] {
       svg {
         color: #ffffff !important;
         fill: #ffffff !important;
+        font-size: 1.25rem !important;
         opacity: 1 !important;
+        visibility: visible !important;
       }
 
       &:hover {
-        background: rgba(255, 255, 255, 0.30) !important;
-        border-color: rgba(255, 255, 255, 0.50) !important;
+        background: rgba(0, 0, 0, 0.45) !important;
+        border-color: rgba(255, 255, 255, 0.6) !important;
+        color: #ffffff !important;
+        transform: rotate(90deg) scale(1.05) !important;
       }
+    }
+  }
+
+  // 5. BOTÓN DE CERRAR (X) EN MODALES SOBRE FONDO BLANCO (DialogCloseBtn o modales sin banner)
+  .v-dialog .v-card > .v-dialog-close-btn,
+  .v-dialog .v-card > .custom-dialog-close-btn,
+  .v-dialog .v-card > div:not([class*="header"]):not([class*="banner"]) .v-dialog-close-btn,
+  .v-dialog .v-card > div:not([class*="header"]):not([class*="banner"]) .custom-dialog-close-btn,
+  .v-dialog-close-btn:not([class*="header"] *):not([class*="banner"] *),
+  .custom-dialog-close-btn:not([class*="header"] *):not([class*="banner"] *) {
+    position: absolute !important;
+    top: 14px !important;
+    right: 14px !important;
+    width: 34px !important;
+    height: 34px !important;
+    min-width: 34px !important;
+    background: #f1f5f9 !important;
+    background-color: #f1f5f9 !important;
+    border: 1px solid #cbd5e1 !important;
+    border-radius: 8px !important;
+    color: #1e293b !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    cursor: pointer !important;
+    z-index: 10 !important;
+    padding: 0 !important;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08) !important;
+
+    .v-btn__overlay,
+    .v-btn__underlay {
+      display: none !important;
+    }
+
+    .v-btn__content {
+      color: #1e293b !important;
+      display: inline-flex !important;
+      align-items: center !important;
+      justify-content: center !important;
+    }
+
+    *,
+    .v-icon,
+    i,
+    svg {
+      color: #1e293b !important;
+      fill: #1e293b !important;
+      font-size: 1.25rem !important;
+      opacity: 1 !important;
+      visibility: visible !important;
+    }
+
+    &:hover {
+      background: #e2e8f0 !important;
+      background-color: #e2e8f0 !important;
+      border-color: #94a3b8 !important;
+      color: #0f172a !important;
+      transform: rotate(90deg) scale(1.05) !important;
+
+      *,
+      .v-icon,
+      i,
+      svg {
+        color: #0f172a !important;
+        fill: #0f172a !important;
+      }
+    }
+  }
+
+  // 6. ICONOS NÍTIDOS EN TEMA TALLER (Nunca transparentes ni atenuados)
+  .v-icon,
+  i.v-icon,
+  svg.v-icon,
+  .v-icon__svg,
+  .v-icon__component {
+    opacity: 1 !important;
+    visibility: visible !important;
+  }
+
+  .text-medium-emphasis {
+    color: #475569 !important;
+    opacity: 1 !important;
+  }
+
+  // Botones de acción en tablas con tonal: mayor contraste en el icono
+  .v-btn--variant-tonal {
+    &.v-btn--color-info {
+      color: #0284c7 !important;
+      background: rgba(14, 165, 233, 0.15) !important;
+      .v-icon { color: #0284c7 !important; opacity: 1 !important; }
+    }
+    &.v-btn--color-secondary {
+      color: #334155 !important;
+      background: rgba(71, 85, 105, 0.15) !important;
+      .v-icon { color: #334155 !important; opacity: 1 !important; }
+    }
+    &.v-btn--color-primary {
+      color: #8A1538 !important;
+      background: rgba(138, 21, 56, 0.15) !important;
+      .v-icon { color: #8A1538 !important; opacity: 1 !important; }
+    }
+    &.v-btn--color-success {
+      color: #059669 !important;
+      background: rgba(16, 185, 129, 0.15) !important;
+      .v-icon { color: #059669 !important; opacity: 1 !important; }
+    }
+    &.v-btn--color-warning {
+      color: #d97706 !important;
+      background: rgba(245, 158, 11, 0.15) !important;
+      .v-icon { color: #d97706 !important; opacity: 1 !important; }
+    }
+    &.v-btn--color-error {
+      color: #dc2626 !important;
+      background: rgba(239, 68, 68, 0.15) !important;
+      .v-icon { color: #dc2626 !important; opacity: 1 !important; }
     }
   }
 

@@ -966,8 +966,6 @@
     right: 14px !important;
     color: #ffffff !important;
     background: rgba(255, 255, 255, 0.18) !important;
-    backdrop-filter: blur(8px) !important;
-    -webkit-backdrop-filter: blur(8px) !important;
     border: 1px solid rgba(255, 255, 255, 0.25) !important;
     border-radius: 10px !important;
     width: 34px !important;
@@ -3202,8 +3200,8 @@
       right: 14px !important;
       color: #ffffff !important;
       background: rgba(255, 255, 255, 0.18) !important;
-      backdrop-filter: blur(8px) !important;
-      -webkit-backdrop-filter: blur(8px) !important;
+      backdrop-filter: none !important;
+      -webkit-backdrop-filter: none !important;
       border: 1px solid rgba(255, 255, 255, 0.25) !important;
       border-radius: 10px !important;
       width: 34px !important;
@@ -7063,8 +7061,15 @@
 .v-theme--taller,
 [data-theme="taller"],
 body[data-theme="taller"] {
-  // VDialogs - Fondo blanco con bordes visibles
-  .v-overlay--active.v-dialog > .v-overlay__content,
+  // Quitar cualquier fondo al overlay contenedor completo para evitar recuadros opacos
+  .v-overlay--active.v-dialog,
+  .v-overlay--active.v-dialog > .v-overlay__content {
+    background: transparent !important;
+    background-color: transparent !important;
+    box-shadow: none !important;
+  }
+
+  // VDialogs - Fondo blanco con bordes visibles en la tarjeta interna
   .v-overlay--active.v-dialog > .v-overlay__content > .v-card,
   .v-overlay--active .v-dialog > .v-card,
   .v-overlay--active .v-card.modal-glass,
@@ -7096,7 +7101,7 @@ body[data-theme="taller"] {
     }
   }
 
-  // Cabeceras de dialogos con bg-primary - Rojo vino
+  // Cabeceras de dialogos con bg-primary o genéricas en tema taller: Rojo vino unificado
   .v-dialog .v-card-title.bg-primary,
   .v-dialog .v-card-item.bg-primary,
   .custom-dialog-card .v-card-title.bg-primary,
@@ -7105,9 +7110,18 @@ body[data-theme="taller"] {
   .custom-dialog-card > .bg-primary:first-child,
   .v-dialog .v-card > div:first-child[class*="custom-dialog-header"],
   .v-dialog .v-card > div:first-child[class*="dialog-header"],
+  .v-dialog .v-card > div:first-child[class*="header"],
+  .v-dialog .v-card > div:first-child[class*="banner"],
+  .v-dialog [class*="dialog-header"],
+  .v-dialog [class*="header-primary"],
   .custom-dialog-header-primary,
   .custom-dialog-header,
-  .dialog-header-banner {
+  .custom-dialog-header-info,
+  .custom-dialog-header-secondary,
+  .dialog-header-banner,
+  .sale-dialog-header-banner,
+  .product-quick-header,
+  .profile-header-banner {
     background: linear-gradient(135deg, #8A1538 0%, #600A1F 100%) !important;
     border-bottom: 1px solid rgba(255, 255, 255, 0.20) !important;
     color: #ffffff !important;
@@ -7125,52 +7139,195 @@ body[data-theme="taller"] {
       color: #ffffff !important;
       fill: #ffffff !important;
       opacity: 1 !important;
+      visibility: visible !important;
     }
 
     .custom-dialog-close-btn,
     .v-dialog-close-btn {
-      background: rgba(255, 255, 255, 0.15) !important;
-      border: 1px solid rgba(255, 255, 255, 0.30) !important;
+      position: absolute !important;
+      top: 14px !important;
+      right: 14px !important;
+      width: 34px !important;
+      height: 34px !important;
+      min-width: 34px !important;
+      border-radius: 8px !important;
+      background: rgba(0, 0, 0, 0.25) !important;
+      border: 1px solid rgba(255, 255, 255, 0.3) !important;
       color: #ffffff !important;
+      display: inline-flex !important;
+      align-items: center !important;
+      justify-content: center !important;
+      backdrop-filter: none !important;
+      -webkit-backdrop-filter: none !important;
+      cursor: pointer !important;
+      z-index: 10 !important;
+      padding: 0 !important;
+      box-shadow: none !important;
+
+      .v-btn__overlay,
+      .v-btn__underlay {
+        display: none !important;
+      }
+
+      .v-btn__content {
+        color: #ffffff !important;
+        display: inline-flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+      }
 
       .v-icon,
       i,
       svg {
         color: #ffffff !important;
         fill: #ffffff !important;
+        font-size: 1.25rem !important;
+        opacity: 1 !important;
+        visibility: visible !important;
       }
 
       &:hover {
-        background: rgba(255, 255, 255, 0.25) !important;
+        background: rgba(0, 0, 0, 0.45) !important;
+        border-color: rgba(255, 255, 255, 0.6) !important;
+        color: #ffffff !important;
+        transform: rotate(90deg) scale(1.05) !important;
       }
     }
   }
 
-  // Iconos en dialogos - Visibles en negro
+  // Botón de cerrar (X) en modales sobre fondo blanco (DialogCloseBtn o modales sin banner)
+  .v-dialog .v-card > .v-dialog-close-btn,
+  .v-dialog .v-card > .custom-dialog-close-btn,
+  .v-dialog .v-card > div:not([class*="header"]):not([class*="banner"]) .v-dialog-close-btn,
+  .v-dialog .v-card > div:not([class*="header"]):not([class*="banner"]) .custom-dialog-close-btn,
+  .v-dialog-close-btn:not([class*="header"] *):not([class*="banner"] *),
+  .custom-dialog-close-btn:not([class*="header"] *):not([class*="banner"] *) {
+    position: absolute !important;
+    top: 14px !important;
+    right: 14px !important;
+    width: 34px !important;
+    height: 34px !important;
+    min-width: 34px !important;
+    background: #f1f5f9 !important;
+    background-color: #f1f5f9 !important;
+    border: 1px solid #cbd5e1 !important;
+    border-radius: 8px !important;
+    color: #1e293b !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    cursor: pointer !important;
+    z-index: 10 !important;
+    padding: 0 !important;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08) !important;
+
+    .v-btn__overlay,
+    .v-btn__underlay {
+      display: none !important;
+    }
+
+    .v-btn__content {
+      color: #1e293b !important;
+      display: inline-flex !important;
+      align-items: center !important;
+      justify-content: center !important;
+    }
+
+    *,
+    .v-icon,
+    i,
+    svg {
+      color: #1e293b !important;
+      fill: #1e293b !important;
+      font-size: 1.25rem !important;
+      opacity: 1 !important;
+      visibility: visible !important;
+    }
+
+    &:hover {
+      background: #e2e8f0 !important;
+      background-color: #e2e8f0 !important;
+      border-color: #94a3b8 !important;
+      color: #0f172a !important;
+      transform: rotate(90deg) scale(1.05) !important;
+
+      *,
+      .v-icon,
+      i,
+      svg {
+        color: #0f172a !important;
+        fill: #0f172a !important;
+      }
+    }
+  }
+
+  // Iconos en dialogos y componentes: Nítidos y respetando colores semánticos
   .v-dialog .v-card,
   .custom-dialog-card {
-    .v-icon:not(.v-btn.bg-primary .v-icon):not(.v-btn.bg-error .v-icon):not(.v-btn.bg-success .v-icon):not(.v-chip[class*="bg-"] .v-icon):not(.text-primary):not(.text-error):not(.text-success):not(.text-warning):not(.text-info):not(.custom-dialog-header-primary .v-icon):not(.custom-dialog-header .v-icon):not(.dialog-header-banner .v-icon):not(.dialog-header-workshop .v-icon),
-    i:not(.v-btn.bg-primary i):not(.v-btn.bg-error i):not(.v-btn.bg-success i):not(.v-chip[class*="bg-"] i):not(.custom-dialog-header-primary i):not(.custom-dialog-header i):not(.dialog-header-banner i):not(.dialog-header-workshop i) {
-      color: #0f172a !important;
-      fill: #0f172a !important;
+    .v-icon,
+    i,
+    svg {
       opacity: 1 !important;
+      visibility: visible !important;
+    }
+
+    .text-primary,
+    .v-icon.text-primary,
+    .v-icon--color-primary {
+      color: #8A1538 !important;
+      fill: #8A1538 !important;
+    }
+
+    .text-info,
+    .v-icon.text-info,
+    .v-icon--color-info {
+      color: #0EA5E9 !important;
+      fill: #0EA5E9 !important;
+    }
+
+    .text-success,
+    .v-icon.text-success,
+    .v-icon--color-success {
+      color: #10B981 !important;
+      fill: #10B981 !important;
+    }
+
+    .text-warning,
+    .v-icon.text-warning,
+    .v-icon--color-warning {
+      color: #F59E0B !important;
+      fill: #F59E0B !important;
+    }
+
+    .text-error,
+    .text-danger,
+    .v-icon.text-error,
+    .v-icon--color-error {
+      color: #EF4444 !important;
+      fill: #EF4444 !important;
     }
 
     // Iconos en cabeceras con bg-primary deben ser blancos
     .bg-primary .v-icon,
     .bg-primary i,
-    .bg-primary svg {
+    .bg-primary svg,
+    .custom-dialog-header-primary .v-icon,
+    .custom-dialog-header .v-icon,
+    .dialog-header-banner .v-icon {
       color: #ffffff !important;
       fill: #ffffff !important;
       opacity: 1 !important;
     }
   }
 
-  // Scrim - Más transparente para ver el contenido detrás
-  .v-overlay--active > .v-overlay__scrim {
-    background: rgba(15, 23, 42, 0.45) !important;
-    backdrop-filter: blur(4px) !important;
-    -webkit-backdrop-filter: blur(4px) !important;
+  // Scrim - Suave y translúcido para que los componentes detrás de la página sean claramente visibles
+  .v-overlay--active > .v-overlay__scrim,
+  .v-overlay--active.v-dialog > .v-overlay__scrim,
+  .v-overlay__scrim {
+    background: rgba(15, 23, 42, 0.25) !important;
+    background-color: rgba(15, 23, 42, 0.25) !important;
+    backdrop-filter: blur(1.5px) !important;
+    -webkit-backdrop-filter: blur(1.5px) !important;
     opacity: 1 !important;
   }
 
