@@ -40,21 +40,21 @@
             @click="openImageDialog"
           >
             <VImg
-              v-if="product.imagen"
+              v-if="product.imagen && !imageError"
               :src="product.imagen"
               width="100%"
               height="100%"
               cover
+              @error="imageError = true"
             />
             <div
               v-else
-              class="d-flex align-center justify-center w-100 h-100 bg-grey-lighten-4"
+              class="d-flex align-center justify-center w-100 h-100"
+              style="background-color: rgba(var(--v-theme-primary), 0.1); color: rgb(var(--v-theme-primary));"
             >
-              <VIcon
-                icon="ri-image-line"
-                size="48"
-                color="grey-lighten-1"
-              />
+              <span class="text-h4 font-weight-black font-mono">
+                {{ getProductInitials(product.description || product.name) }}
+              </span>
             </div>
             <div
               class="image-overlay position-absolute top-0 left-0 w-100 h-100 d-flex flex-column align-center justify-center bg-black"
@@ -75,8 +75,18 @@
             >
               {{ product.description }}
             </h2>
-            <div class="text-subtitle-1 text-medium-emphasis mb-4">
-              SKU: <span class="font-weight-medium">{{ product.sku }}</span>
+            <div class="d-flex align-center gap-2 mb-4 justify-center justify-sm-start flex-wrap">
+              <span class="product-sku-pill">
+                <span class="pill-label">SKU:</span>
+                <span class="pill-value font-mono">{{ product.sku || 'S/C' }}</span>
+              </span>
+              <span
+                v-if="product.code_aux"
+                class="product-sku-pill"
+              >
+                <span class="pill-label">Cód. Aux:</span>
+                <span class="pill-value font-mono">{{ product.code_aux }}</span>
+              </span>
             </div>
             
             <div class="d-flex flex-wrap gap-2 justify-center justify-sm-start">
@@ -139,8 +149,7 @@
           >
             <VCard
               variant="outlined"
-              class="bg-white border text-center h-100 pa-4"
-              style="border-color: #e0e0e0 !important;"
+              class="bg-surface border text-center h-100 pa-4"
             >
               <div class="text-overline text-medium-emphasis mb-2">
                 Costo de Compra
@@ -244,7 +253,7 @@
           >
             <VCard
               variant="flat"
-              class="bg-white rounded-lg elevation-1 h-100"
+              class="bg-surface border rounded-lg elevation-1 h-100"
             >
               <VCardTitle class="text-subtitle-1 font-weight-bold border-b py-3">
                 <VIcon
@@ -255,7 +264,7 @@
                 /> Inventario
               </VCardTitle>
               <VCardText class="pa-4">
-                <div class="d-flex align-center justify-space-between mb-4 bg-grey-lighten-4 pa-3 rounded">
+                <div class="d-flex align-center justify-space-between mb-4 bg-surface border pa-3 rounded">
                   <span class="font-weight-medium">Stock Actual</span>
                   <span
                     class="text-h5 font-weight-black"
@@ -313,7 +322,7 @@
           >
             <VCard
               variant="flat"
-              class="bg-white rounded-lg elevation-1 h-100"
+              class="bg-surface border rounded-lg elevation-1 h-100"
             >
               <VCardTitle class="text-subtitle-1 font-weight-bold border-b py-3">
                 <VIcon
@@ -328,6 +337,17 @@
                   density="compact"
                   class="pa-0"
                 >
+                  <VListItem class="px-0 border-b">
+                    <template #prepend>
+                      <span
+                        class="text-body-2 text-medium-emphasis"
+                        style="width: 120px;"
+                      >SKU / Código</span>
+                    </template>
+                    <div class="text-body-2 font-weight-bold text-right font-mono text-primary">
+                      {{ product.sku || 'S/C' }}
+                    </div>
+                  </VListItem>
                   <VListItem class="px-0 border-b">
                     <template #prepend>
                       <span
@@ -386,7 +406,7 @@
           <VCol cols="12">
             <VCard
               variant="flat"
-              class="bg-white rounded-lg elevation-1"
+              class="bg-surface border rounded-lg elevation-1"
             >
               <VCardTitle class="text-subtitle-2 font-weight-bold border-b py-2">
                 Notas Adicionales
@@ -430,7 +450,7 @@
     content-class="image-dialog"
   >
     <VCard class="image-view-card">
-      <VCardTitle class="d-flex justify-space-between align-center pa-4 bg-grey-lighten-4 border-b">
+      <VCardTitle class="d-flex justify-space-between align-center pa-4 bg-surface border-b">
         <div class="d-flex align-center gap-3">
           <VAvatar
             color="info"
@@ -563,7 +583,18 @@ const emit = defineEmits(['update:dialog'])
 
 // Refs
 const imageDialog = ref(false)
+const imageError = ref(false)
 const zoomWrapper = ref(null)
+
+const getProductInitials = desc => {
+  if (!desc) return 'PR'
+  const clean = desc.trim()
+  const words = clean.split(/\s+/).filter(w => w.length > 0)
+  if (words.length >= 2) {
+    return (words[0][0] + words[1][0]).toUpperCase()
+  }
+  return clean.substring(0, 2).toUpperCase() || 'PR'
+}
 
 // Zoom state
 const zoomLevel = ref(1)
@@ -665,8 +696,34 @@ const resetZoom = () => {
 }
 </script>
 
-<style scoped>
+<style scoped lang="scss">
 .image-container:hover .image-overlay {
   opacity: 0.5 !important;
+}
+
+.product-sku-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 12px;
+  border-radius: 8px;
+  font-size: 0.84rem;
+  font-weight: 600;
+  background-color: rgba(var(--v-theme-primary), 0.1);
+  border: 1px solid rgba(var(--v-theme-primary), 0.28);
+  color: rgb(var(--v-theme-on-surface));
+
+  .pill-label {
+    color: rgb(var(--v-theme-primary));
+    font-weight: 700;
+    text-transform: uppercase;
+    font-size: 0.72rem;
+    letter-spacing: 0.04em;
+  }
+
+  .pill-value {
+    color: rgb(var(--v-theme-on-surface));
+    font-weight: 700;
+  }
 }
 </style>

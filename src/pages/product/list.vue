@@ -200,6 +200,43 @@ const decodeProductDescription = desc => {
     })
 }
 
+// Control de fallos de carga de imágenes e iniciales
+const failedImages = ref(new Set())
+
+const handleImageError = id => {
+  failedImages.value.add(id)
+}
+
+const hasValidImage = item => {
+  return !!item?.imagen && !failedImages.value.has(item.id)
+}
+
+// Obtener las dos primeras iniciales del producto/repuesto
+const getProductInitials = desc => {
+  if (!desc) return 'PR'
+  const clean = decodeProductDescription(desc).trim()
+  const words = clean.split(/\s+/).filter(w => w.length > 0)
+
+  if (words.length >= 2) {
+    return (words[0][0] + words[1][0]).toUpperCase()
+  }
+  if (words.length === 1 && words[0].length >= 2) {
+    return words[0].substring(0, 2).toUpperCase()
+  }
+  return clean.substring(0, 2).toUpperCase() || 'PR'
+}
+
+// Generar color armónico tonal para el avatar según el nombre
+const getProductAvatarColor = text => {
+  const colors = ['primary', 'info', 'success', 'warning', 'secondary', 'deep-purple']
+  if (!text) return 'primary'
+  let hash = 0
+  for (let i = 0; i < text.length; i++) {
+    hash = text.charCodeAt(i) + ((hash << 5) - hash)
+  }
+  return colors[Math.abs(hash) % colors.length]
+}
+
 const getStockColor = (stock, minStock) => {
   if (stock === 0) return 'error'
   if (stock <= minStock) return 'warning'
@@ -609,17 +646,33 @@ watch([() => searchForm.value.search, () => searchForm.value.categorie_id, () =>
             <!-- Fila superior: Imagen + Info básica + Estado -->
             <div class="mobile-card-top">
               <div class="mobile-card-thumb cursor-pointer" @click="viewProduct(item)">
-                <img v-if="item.imagen" :src="item.imagen" :alt="item.description" loading="lazy"
-                  style="width: 100%; height: 100%; object-fit: cover;">
-                <div v-else class="w-100 h-100 d-flex align-center justify-center mobile-card-thumb-placeholder">
-                  <VIcon icon="ri-box-3-line" color="primary" size="24" />
+                <img
+                  v-if="hasValidImage(item)"
+                  :src="item.imagen"
+                  :alt="decodeProductDescription(item.description)"
+                  loading="lazy"
+                  style="width: 100%; height: 100%; object-fit: cover;"
+                  @error="handleImageError(item.id)"
+                >
+                <div
+                  v-else
+                  class="w-100 h-100 d-flex align-center justify-center rounded-lg"
+                  :style="{
+                    backgroundColor: `rgba(var(--v-theme-${getProductAvatarColor(item.description)}), 0.14)`,
+                    color: `rgb(var(--v-theme-${getProductAvatarColor(item.description)}))`
+                  }"
+                  :title="decodeProductDescription(item.description)"
+                >
+                  <span class="font-weight-bold font-mono" style="font-size: 0.88rem; letter-spacing: 0.05em;">
+                    {{ getProductInitials(item.description) }}
+                  </span>
                 </div>
               </div>
 
               <div style="flex: 1; min-width: 0;">
                 <div class="d-flex align-center justify-space-between gap-1 mb-1">
-                  <span class="text-caption font-mono font-weight-semibold text-medium-emphasis">
-                    SKU: {{ item.sku || 'S/C' }}
+                  <span class="text-caption font-mono font-weight-bold text-medium-emphasis">
+                    SKU: <strong class="text-primary">{{ item.sku || 'S/C' }}</strong>
                   </span>
                   <div class="status-pill-clean" :class="parseInt(item.state) === 1 ? 'status-paid' : 'status-pending'">
                     <span class="status-dot" />
@@ -775,16 +828,37 @@ watch([() => searchForm.value.search, () => searchForm.value.categorie_id, () =>
             <!-- Filas reales de productos -->
             <template v-else>
               <tr v-for="item in products" :key="item.id" class="product-table-row">
-                <!-- Imagen -->
+                <!-- Imagen o Iniciales -->
                 <td class="text-center py-3">
-                  <VAvatar v-if="item.imagen" size="38" rounded="lg" class="cursor-pointer border overflow-hidden"
-                    @click="openProductDialog(item)">
-                    <img :src="item.imagen" :alt="item.description" loading="lazy" decoding="async" class="w-100 h-100"
-                      style="object-fit: cover;">
+                  <VAvatar
+                    v-if="hasValidImage(item)"
+                    size="38"
+                    rounded="lg"
+                    class="cursor-pointer border overflow-hidden"
+                    @click="openProductDialog(item)"
+                  >
+                    <img
+                      :src="item.imagen"
+                      :alt="decodeProductDescription(item.description)"
+                      loading="lazy"
+                      decoding="async"
+                      class="w-100 h-100"
+                      style="object-fit: cover;"
+                      @error="handleImageError(item.id)"
+                    >
                   </VAvatar>
-                  <VAvatar v-else color="primary" variant="tonal" size="38" rounded="lg" class="cursor-pointer"
-                    @click="openProductDialog(item)">
-                    <VIcon icon="ri-box-3-line" size="20" />
+                  <VAvatar
+                    v-else
+                    :color="getProductAvatarColor(item.description)"
+                    variant="tonal"
+                    size="38"
+                    rounded="lg"
+                    class="cursor-pointer font-weight-bold"
+                    style="font-size: 0.82rem; letter-spacing: 0.04em;"
+                    :title="decodeProductDescription(item.description)"
+                    @click="openProductDialog(item)"
+                  >
+                    <span class="font-mono">{{ getProductInitials(item.description) }}</span>
                   </VAvatar>
                 </td>
 
@@ -797,9 +871,9 @@ watch([() => searchForm.value.search, () => searchForm.value.categorie_id, () =>
                       @click="viewProduct(item)">
                       {{ decodeProductDescription(item.description) }}
                     </div>
-                    <div class="d-flex align-center gap-2 text-caption text-medium-emphasis font-mono">
-                      <span v-if="item.sku">Cód. P.: {{ item.sku }}</span>
-                      <span v-if="item.code_aux">• Cód. Aux.: {{ item.code_aux }}</span>
+                    <div class="d-flex align-center gap-2 text-caption font-mono">
+                      <span class="text-medium-emphasis">SKU: <strong class="text-primary font-weight-bold">{{ item.sku || 'S/C' }}</strong></span>
+                      <span v-if="item.code_aux" class="text-medium-emphasis">• Cód. Aux.: <strong class="text-high-emphasis">{{ item.code_aux }}</strong></span>
                     </div>
                   </div>
                 </td>
