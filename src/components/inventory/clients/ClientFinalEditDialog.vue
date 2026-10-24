@@ -44,7 +44,7 @@ const clientForm = ref({
   type_document: 1,
   n_document: '',
   birth_date: '',
-  user_id: 1,
+  user_id: userStore?.id || null,
   sucursale_id: 1,
   state: 1,
   gender: '',
@@ -227,7 +227,7 @@ const loadClientData = () => {
       ...props.clientData,
       name,
       surname,
-      user_id: userStore?.id || 1,
+      user_id: props.clientData.user_id || userStore?.id || null,
 
       // Convertir string a número para que el VSelect funcione correctamente
       type_client: parseInt(props.clientData.type_client) || 1,

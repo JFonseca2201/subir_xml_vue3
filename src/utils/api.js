@@ -39,6 +39,10 @@ export const getApiBaseUrl = () => {
     return envUrl.endsWith('/') ? envUrl : `${envUrl}/`
   }
   
+  if (typeof window !== 'undefined' && window.location && import.meta.env.PROD) {
+    return `${window.location.origin}/api/`
+  }
+
   return 'http://127.0.0.1:8000/api/'
 }
 
