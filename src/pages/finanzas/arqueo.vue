@@ -2242,3 +2242,41 @@ onActivated(() => {
 meta:
   navActiveLink: 'finanzas-arqueo'
 </route>
+
+<style scoped lang="scss">
+.coin-badge {
+  display: inline-flex;
+  align-items: center;
+  border-radius: 6px;
+  padding: 3px 8px;
+  font-family: 'Consolas', 'Monaco', 'Courier New', monospace;
+  font-weight: 800;
+  font-size: 0.82rem;
+  letter-spacing: 0.5px;
+
+  span,
+  .v-icon,
+  * {
+    font-weight: 900 !important;
+    opacity: 1 !important;
+  }
+}
+
+.bill-badge {
+  display: inline-flex;
+  align-items: center;
+  border-radius: 6px;
+  padding: 3px 8px;
+  font-family: 'Consolas', 'Monaco', 'Courier New', monospace;
+  font-weight: 800;
+  font-size: 0.82rem;
+  letter-spacing: 0.5px;
+
+  span,
+  .v-icon,
+  * {
+    font-weight: 900 !important;
+    opacity: 1 !important;
+  }
+}
+</style>

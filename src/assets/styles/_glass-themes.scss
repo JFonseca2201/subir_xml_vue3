@@ -3888,4 +3888,86 @@ body[data-theme="semi-dark-glass"] .user-profile-menu-list,
     background: #141724 !important;
     border-top: 1px solid rgba(255, 255, 255, 0.12) !important;
   }
+}
+
+// ==========================================================================
+// BADGES DE DENOMINACIONES DE EFECTIVO (Arqueo de Caja)
+// ==========================================================================
+[data-theme="dark"],
+html[data-theme="dark"],
+body[data-theme="dark"],
+[data-theme="dark-glass"],
+html[data-theme="dark-glass"],
+body[data-theme="dark-glass"],
+[data-theme="semi-dark-glass"],
+html[data-theme="semi-dark-glass"],
+body[data-theme="semi-dark-glass"] {
+  .coin-badge {
+    background: rgba(245, 158, 11, 0.18) !important;
+    border: 1.5px solid rgba(245, 158, 11, 0.45) !important;
+    box-shadow: 0 0 10px rgba(245, 158, 11, 0.15) !important;
+
+    span,
+    .v-icon,
+    * {
+      color: #fbbf24 !important;
+      fill: #fbbf24 !important;
+      -webkit-text-fill-color: #fbbf24 !important;
+      font-weight: 900 !important;
+      opacity: 1 !important;
+    }
+  }
+
+  .bill-badge {
+    background: rgba(102, 108, 255, 0.18) !important;
+    border: 1.5px solid rgba(102, 108, 255, 0.40) !important;
+    box-shadow: 0 0 10px rgba(102, 108, 255, 0.15) !important;
+
+    span,
+    .v-icon,
+    * {
+      color: #93c5fd !important;
+      fill: #93c5fd !important;
+      -webkit-text-fill-color: #93c5fd !important;
+      font-weight: 900 !important;
+      opacity: 1 !important;
+    }
+  }
+}
+
+[data-theme="light"],
+html[data-theme="light"],
+body[data-theme="light"],
+[data-theme="taller"],
+html[data-theme="taller"],
+body[data-theme="taller"] {
+  .coin-badge {
+    background: #fef3c7 !important;
+    border: 1px solid #fde68a !important;
+
+    span,
+    .v-icon,
+    * {
+      color: #92400e !important;
+      fill: #92400e !important;
+      -webkit-text-fill-color: #92400e !important;
+      font-weight: 800 !important;
+      opacity: 1 !important;
+    }
+  }
+
+  .bill-badge {
+    background: rgba(102, 108, 255, 0.10) !important;
+    border: 1px solid rgba(102, 108, 255, 0.28) !important;
+
+    span,
+    .v-icon,
+    * {
+      color: #3730a3 !important;
+      fill: #3730a3 !important;
+      -webkit-text-fill-color: #3730a3 !important;
+      font-weight: 800 !important;
+      opacity: 1 !important;
+    }
+  }
 }
