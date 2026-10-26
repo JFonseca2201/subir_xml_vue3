@@ -134,38 +134,38 @@ const closeDialog = () => {
         <div class="d-flex flex-wrap justify-center gap-2 mt-2">
           <div
             class="d-inline-flex align-center px-3 py-1 rounded-pill text-caption font-weight-bold"
-            :style="clientData?.state?.toString() === '1' ? 'background: rgba(16, 185, 129, 0.25); color: #ffffff; border: 1px solid rgba(16, 185, 129, 0.5);' : 'background: rgba(239, 68, 68, 0.25); color: #ffffff; border: 1px solid rgba(239, 68, 68, 0.5);'"
+            :style="clientData?.state?.toString() === '1' ? 'background: rgba(16, 185, 129, 0.35) !important; color: #ffffff !important; border: 1px solid rgba(16, 185, 129, 0.6) !important;' : 'background: rgba(239, 68, 68, 0.35) !important; color: #ffffff !important; border: 1px solid rgba(239, 68, 68, 0.6) !important;'"
           >
             <VIcon
               :icon="clientData?.state?.toString() === '1' ? 'ri-checkbox-circle-line' : 'ri-close-circle-line'"
               size="14"
-              class="me-1"
+              class="me-1 text-white"
             />
-            <span>{{ getStateLabel }}</span>
+            <span class="text-white">{{ getStateLabel }}</span>
           </div>
 
           <div
             class="d-inline-flex align-center px-3 py-1 rounded-pill text-caption font-weight-medium"
-            style="background: rgba(255, 255, 255, 0.18); color: #ffffff; border: 1px solid rgba(255, 255, 255, 0.28);"
+            style="background: rgba(255, 255, 255, 0.22) !important; color: #ffffff !important; border: 1px solid rgba(255, 255, 255, 0.38) !important;"
           >
             <VIcon
               icon="ri-id-card-line"
               size="14"
-              class="me-1"
+              class="me-1 text-white"
             />
-            <span><strong>{{ getDocumentTypeLabel }}:</strong> <span class="font-weight-bold ms-1">{{ clientData.n_document || '—' }}</span></span>
+            <span class="text-white"><strong class="text-white">{{ getDocumentTypeLabel }}:</strong> <span class="font-weight-bold ms-1 text-white">{{ clientData.n_document || '—' }}</span></span>
           </div>
 
           <div
             class="d-inline-flex align-center px-3 py-1 rounded-pill text-caption font-weight-medium"
-            style="background: rgba(255, 255, 255, 0.18); color: #ffffff; border: 1px solid rgba(255, 255, 255, 0.28);"
+            style="background: rgba(255, 255, 255, 0.22) !important; color: #ffffff !important; border: 1px solid rgba(255, 255, 255, 0.38) !important;"
           >
             <VIcon
               :icon="isCompanyClient ? 'ri-building-2-line' : 'ri-user-star-line'"
               size="14"
-              class="me-1"
+              class="me-1 text-white"
             />
-            <span>{{ getClientTypeLabel }}</span>
+            <span class="text-white">{{ getClientTypeLabel }}</span>
           </div>
         </div>
       </div>
@@ -404,14 +404,14 @@ const closeDialog = () => {
       <!-- Footer con botones -->
       <VDivider />
       <VCardActions
-        class="pa-4 d-flex justify-end align-center gap-3 bg-surface dialog-actions-responsive"
+        class="pa-4 d-flex justify-end align-center gap-3 bg-white dialog-actions-responsive"
         style="position: sticky; bottom: 0; z-index: 2;"
       >
         <VBtn
           color="secondary"
           variant="outlined"
           prepend-icon="ri-close-line"
-          class="rounded-lg px-6 font-weight-medium"
+          class="rounded-lg px-6 font-weight-bold btn-close-footer"
           height="40"
           @click="closeDialog"
         >

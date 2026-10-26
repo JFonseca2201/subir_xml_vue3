@@ -199,7 +199,7 @@ const filteredNavItems = computed(() => {
               </span>
               <div class="navbar-brand-subtitle d-flex align-center gap-1">
                 <span class="brand-status-dot" />
-                <span class="font-weight-medium">{{ sucursalName }}</span>
+                <span class="font-weight-medium text-white" style="color: #ffffff !important;">{{ sucursalName }}</span>
               </div>
             </div>
           </RouterLink>
@@ -365,10 +365,15 @@ const filteredNavItems = computed(() => {
 }
 
 .navbar-brand-subtitle {
-  color: rgba(255, 255, 255, 0.82);
-  font-size: 0.73rem;
+  color: #ffffff !important;
+  font-size: 0.74rem;
   line-height: 1.2;
   margin-top: 1px;
+
+  span,
+  * {
+    color: #ffffff !important;
+  }
 }
 
 .brand-status-dot {
@@ -440,8 +445,15 @@ const filteredNavItems = computed(() => {
   }
 }
 
-// Desactivar completamente la sombra/degradado azul flotante sobre los items del menú lateral
-.layout-vertical-nav {
+// Menú lateral izquierdo con el color exacto y degradado de la barra superior (Navbar)
+.layout-vertical-nav,
+.layout-nav-type-vertical .layout-vertical-nav,
+.v-navigation-drawer.layout-vertical-nav {
+  background: linear-gradient(180deg, #666CFF 0%, #5C61E6 60%, #4F54E5 100%) !important;
+  background-color: #666CFF !important;
+  border-right: 1px solid rgba(255, 255, 255, 0.15) !important;
+  box-shadow: 4px 0 25px rgba(102, 108, 255, 0.22) !important;
+
   .vertical-nav-items-shadow {
     display: none !important;
     opacity: 0 !important;
@@ -449,21 +461,161 @@ const filteredNavItems = computed(() => {
     pointer-events: none !important;
     height: 0 !important;
   }
+
+  .v-navigation-drawer__content,
+  .nav-items {
+    background: transparent !important;
+  }
+
+  .nav-header {
+    background: transparent !important;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.15) !important;
+
+    .app-logo-title {
+      color: #ffffff !important;
+    }
+  }
+
+  // Títulos de sección (COMERCIAL, FINANZAS, SERVICIOS, INVENTARIO, etc.)
+  .nav-section-title {
+    opacity: 1 !important;
+
+    .title-text {
+      color: #ffffff !important;
+      opacity: 0.92 !important;
+      font-weight: 800 !important;
+      text-shadow: 0 1px 2px rgba(0, 0, 0, 0.25) !important;
+      letter-spacing: 0.12em !important;
+      text-transform: uppercase !important;
+
+      &::before,
+      &::after {
+        border-color: rgba(255, 255, 255, 0.45) !important;
+        border-block-end-color: rgba(255, 255, 255, 0.45) !important;
+      }
+    }
+  }
+
+  // Enlaces de navegación e iconos
+  .nav-link a,
+  .nav-group-label {
+    color: #ffffff !important;
+
+    *,
+    span,
+    .nav-item-title,
+    .nav-item-icon,
+    .nav-group-arrow,
+    .v-icon {
+      color: #ffffff !important;
+      fill: #ffffff !important;
+      opacity: 1 !important;
+    }
+
+    &:hover {
+      background: rgba(255, 255, 255, 0.18) !important;
+      color: #ffffff !important;
+
+      *,
+      span,
+      .nav-item-title,
+      .nav-item-icon,
+      .nav-group-arrow,
+      .v-icon {
+        color: #ffffff !important;
+        fill: #ffffff !important;
+      }
+    }
+  }
+
+  // Submenús / Hijos de grupos
+  .nav-group.open > .nav-group-label {
+    background: rgba(255, 255, 255, 0.14) !important;
+    color: #ffffff !important;
+
+    *,
+    span,
+    .nav-item-title,
+    .nav-item-icon,
+    .nav-group-arrow,
+    .v-icon {
+      color: #ffffff !important;
+      fill: #ffffff !important;
+    }
+  }
+
+  .nav-group-children {
+    border-left: 1.5px solid rgba(255, 255, 255, 0.35) !important;
+
+    .nav-link a {
+      color: rgba(255, 255, 255, 0.92) !important;
+
+      *,
+      span,
+      .nav-item-icon,
+      .nav-item-title {
+        color: rgba(255, 255, 255, 0.92) !important;
+        fill: rgba(255, 255, 255, 0.92) !important;
+      }
+
+      &:hover {
+        background: rgba(255, 255, 255, 0.16) !important;
+        color: #ffffff !important;
+
+        *,
+        span,
+        .nav-item-icon,
+        .nav-item-title {
+          color: #ffffff !important;
+          fill: #ffffff !important;
+        }
+      }
+    }
+  }
+
+  // Elemento activo seleccionado (White pill con texto morado corporativo)
+  .nav-link > a.router-link-active,
+  .nav-link > a.router-link-exact-active,
+  .nav-link.router-link-active > a,
+  .nav-link.router-link-exact-active > a,
+  .v-list-item--active {
+    background: #ffffff !important;
+    color: #5C61E6 !important;
+    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.18) !important;
+    border: none !important;
+
+    *,
+    span,
+    .nav-item-icon,
+    .nav-item-title,
+    .v-icon {
+      color: #5C61E6 !important;
+      fill: #5C61E6 !important;
+      font-weight: 800 !important;
+      -webkit-text-fill-color: #5C61E6 !important;
+    }
+  }
 }
 
 .sidebar-collapse-footer {
-  border-top: 1px solid var(--border-glass, rgba(255, 255, 255, 0.08));
+  border-top: 1px solid rgba(255, 255, 255, 0.15) !important;
   margin-top: auto;
   min-height: 40px;
 }
 
 .sidebar-footer-toggle-btn {
-  color: rgba(255, 255, 255, 0.5) !important;
+  color: #ffffff !important;
+  background: rgba(255, 255, 255, 0.12) !important;
   transition: all 0.2s ease;
+
+  .v-icon {
+    color: #ffffff !important;
+    fill: #ffffff !important;
+  }
 
   &:hover {
     color: #ffffff !important;
-    background: rgba(255, 255, 255, 0.12) !important;
+    background: rgba(255, 255, 255, 0.22) !important;
   }
 }
 </style>

@@ -444,14 +444,14 @@ const closeDialog = () => {
       <!-- Footer con botones -->
       <VDivider />
       <VCardActions
-        class="pa-4 d-flex justify-end align-center gap-3 bg-surface dialog-actions-responsive"
+        class="pa-4 d-flex justify-end align-center gap-3 bg-white dialog-actions-responsive"
         style="position: sticky; bottom: 0; z-index: 2;"
       >
         <VBtn
           color="secondary"
           variant="outlined"
           prepend-icon="ri-close-line"
-          class="rounded-lg px-6 font-weight-medium"
+          class="rounded-lg px-6 font-weight-bold btn-close-footer"
           height="40"
           @click="closeDialog"
         >

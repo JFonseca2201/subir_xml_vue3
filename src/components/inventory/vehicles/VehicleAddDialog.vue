@@ -625,14 +625,14 @@ onMounted(() => {
       <VDivider />
 
       <VCardActions
-        class="pa-4 d-flex justify-end align-center gap-3 bg-surface dialog-actions-responsive"
+        class="pa-4 d-flex justify-end align-center gap-3 bg-white dialog-actions-responsive"
         style="position: sticky; bottom: 0; z-index: 2;"
       >
         <VBtn
           variant="outlined"
           color="secondary"
           prepend-icon="ri-close-line"
-          class="rounded-lg px-5 font-weight-medium"
+          class="rounded-lg px-5 font-weight-bold btn-close-footer"
           height="40"
           :disabled="loading"
           @click="closeDialog"

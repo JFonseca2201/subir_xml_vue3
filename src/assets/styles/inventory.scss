@@ -772,6 +772,8 @@
       max-height: calc(100dvh - 2.5rem) !important;
       border-radius: 20px !important;
       overflow: hidden !important;
+      clip-path: inset(0 round 20px) !important;
+      -webkit-clip-path: inset(0 round 20px) !important;
       box-shadow: 0 20px 60px rgba(0, 0, 0, 0.22), 0 0 0 1px rgba(var(--v-border-color), 0.08) !important;
       background-color: rgb(var(--v-theme-surface)) !important;
       width: 100% !important;
@@ -788,6 +790,8 @@
         border-top: 1px solid rgba(var(--v-border-color), 0.1) !important;
         background-color: rgb(var(--v-theme-surface)) !important;
         padding: 1rem 1.5rem !important;
+        border-bottom-left-radius: 20px !important;
+        border-bottom-right-radius: 20px !important;
         z-index: 2;
       }
     }
@@ -801,10 +805,16 @@
       min-width: 0 !important;
       margin: 0.6rem auto !important;
       max-height: calc(100dvh - 1.25rem) !important;
+      border-radius: 20px !important;
+      clip-path: inset(0 round 20px) !important;
+      -webkit-clip-path: inset(0 round 20px) !important;
 
       >.v-card {
         max-height: calc(100dvh - 1.25rem) !important;
-        border-radius: 16px !important;
+        border-radius: 20px !important;
+        overflow: hidden !important;
+        clip-path: inset(0 round 20px) !important;
+        -webkit-clip-path: inset(0 round 20px) !important;
         width: 100% !important;
         min-width: 0 !important;
 
@@ -819,6 +829,8 @@
           padding: 0.75rem 1rem !important;
           flex-wrap: wrap !important;
           gap: 0.5rem !important;
+          border-bottom-left-radius: 20px !important;
+          border-bottom-right-radius: 20px !important;
         }
       }
     }
@@ -837,9 +849,15 @@
       min-width: 0 !important;
       margin: 0.25rem auto !important;
       max-height: calc(100dvh - 0.5rem) !important;
+      border-radius: 20px !important;
+      clip-path: inset(0 round 20px) !important;
+      -webkit-clip-path: inset(0 round 20px) !important;
 
       >.v-card {
-        border-radius: 12px !important;
+        border-radius: 20px !important;
+        overflow: hidden !important;
+        clip-path: inset(0 round 20px) !important;
+        -webkit-clip-path: inset(0 round 20px) !important;
         max-height: calc(100dvh - 0.5rem) !important;
         width: 100% !important;
         min-width: 0 !important;
@@ -858,6 +876,8 @@
           justify-content: flex-end !important;
           align-items: center !important;
           gap: 0.5rem !important;
+          border-bottom-left-radius: 20px !important;
+          border-bottom-right-radius: 20px !important;
 
           .v-btn:not(.v-btn--icon):not(.v-btn--density-compact) {
             flex: 1 1 auto;
@@ -8045,38 +8065,6 @@ body[data-theme="taller"] {
     color: #000000 !important;
     border: 1px solid rgba(0, 0, 0, 0.14) !important;
   }
-
-  // Sidebar: Viñetas, cabeceras de grupos activos y abiertos en negro
-  .layout-vertical-nav,
-  .v-navigation-drawer {
-    .nav-group.active > .nav-group-label,
-    .nav-group.open > .nav-group-label,
-    .nav-group.active.open > .nav-group-label,
-    .nav-group > .nav-group-label {
-      color: #000000 !important;
-
-      &,
-      .nav-item-title,
-      .nav-item-icon,
-      .nav-group-arrow,
-      .v-icon {
-        color: #000000 !important;
-        fill: #000000 !important;
-        font-weight: 700 !important;
-        opacity: 1 !important;
-      }
-    }
-
-    .nav-group-children .nav-link a {
-      color: #000000 !important;
-
-      .nav-item-title,
-      .nav-item-icon {
-        color: #000000 !important;
-        fill: #000000 !important;
-      }
-    }
-  }
 }
 
 // ==========================================================================
@@ -8671,13 +8659,18 @@ body[data-theme="taller"] {
     background: var(--bg-surface, rgb(var(--v-theme-surface))) !important;
     border-top: 1px solid var(--border-glass, rgba(var(--v-border-color), 0.12)) !important;
     box-shadow: 0 -4px 18px rgba(0, 0, 0, 0.12) !important;
+    border-bottom-left-radius: 20px !important;
+    border-bottom-right-radius: 20px !important;
   }
 
   .custom-dialog-header-primary,
   .product-quick-header,
   .sale-dialog-header-banner {
-    border-radius: 0 !important;
-    padding: 1rem !important;
+    border-top-left-radius: 20px !important;
+    border-top-right-radius: 20px !important;
+    border-bottom-left-radius: 0 !important;
+    border-bottom-right-radius: 0 !important;
+    padding: 1.25rem 1rem !important;
   }
 }
 

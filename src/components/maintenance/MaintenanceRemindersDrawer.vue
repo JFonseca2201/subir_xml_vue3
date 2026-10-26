@@ -158,12 +158,12 @@ const getRelativeDaysText = (item) => {
     <!-- CABECERA DEL DRAWER -->
     <div class="drawer-header px-4 py-3.5 border-b d-flex align-center justify-space-between">
       <div class="d-flex align-center gap-2.5">
-        <VAvatar color="primary" variant="tonal" size="36" rounded="lg">
-          <VIcon icon="ri-calendar-check-line" size="20" />
+        <VAvatar color="white" variant="tonal" size="36" rounded="lg" class="drawer-header-avatar">
+          <VIcon icon="ri-calendar-check-line" size="20" color="white" />
         </VAvatar>
         <div>
           <div class="d-flex align-center gap-1.5">
-            <h3 class="text-subtitle-1 font-weight-bold text-high-emphasis mb-0" style="line-height: 1.2;">
+            <h3 class="text-subtitle-1 font-weight-bold drawer-header-title mb-0" style="line-height: 1.2;">
               Recordatorios 10k KM
             </h3>
             <VBadge
@@ -174,7 +174,7 @@ const getRelativeDaysText = (item) => {
               class="font-weight-black"
             />
           </div>
-          <span class="text-caption text-medium-emphasis">
+          <span class="text-caption drawer-header-subtitle">
             Mantenimiento Preventivo Periódico
           </span>
         </div>
@@ -186,7 +186,7 @@ const getRelativeDaysText = (item) => {
           icon="ri-refresh-line"
           variant="text"
           size="small"
-          color="medium-emphasis"
+          class="drawer-header-action-btn"
           :loading="isLoading"
           title="Actualizar recordatorios"
           @click="fetchDrawerReminders(false)"
@@ -197,7 +197,7 @@ const getRelativeDaysText = (item) => {
           icon="ri-close-line"
           variant="text"
           size="small"
-          color="medium-emphasis"
+          class="drawer-header-action-btn"
           title="Cerrar panel"
           @click="closeDrawer"
         />
@@ -209,46 +209,33 @@ const getRelativeDaysText = (item) => {
       v-model="activeTab"
       grow
       density="comfortable"
-      color="primary"
       class="border-b drawer-tabs"
     >
       <!-- Pestaña 1: Hoy -->
-      <VTab value="today" class="text-caption font-weight-bold">
+      <VTab value="today" class="text-caption font-weight-bold drawer-tab-item">
         <span>Hoy</span>
-        <VChip
-          size="x-small"
-          class="ms-1.5 font-weight-bold"
-          :color="counts.pending_today > 0 ? 'warning' : 'default'"
-          :variant="counts.pending_today > 0 ? 'flat' : 'tonal'"
-        >
+        <span class="ms-1.5 drawer-tab-badge">
           {{ counts.today }}
-        </VChip>
+        </span>
       </VTab>
 
       <!-- Pestaña 2: Próximos (7 días) -->
-      <VTab value="upcoming" class="text-caption font-weight-bold">
+      <VTab value="upcoming" class="text-caption font-weight-bold drawer-tab-item">
         <span>Próximos (7d)</span>
-        <VChip
-          size="x-small"
-          class="ms-1.5 font-weight-bold"
-          color="primary"
-          variant="tonal"
-        >
+        <span class="ms-1.5 drawer-tab-badge">
           {{ counts.upcoming }}
-        </VChip>
+        </span>
       </VTab>
 
       <!-- Pestaña 3: Vencidos -->
-      <VTab value="overdue" class="text-caption font-weight-bold">
+      <VTab value="overdue" class="text-caption font-weight-bold drawer-tab-item">
         <span>Vencidos</span>
-        <VChip
-          size="x-small"
-          class="ms-1.5 font-weight-bold"
-          :color="counts.overdue > 0 ? 'error' : 'default'"
-          :variant="counts.overdue > 0 ? 'flat' : 'tonal'"
+        <span
+          class="ms-1.5 drawer-tab-badge"
+          :class="{ 'badge-overdue': counts.overdue > 0 }"
         >
           {{ counts.overdue }}
-        </VChip>
+        </span>
       </VTab>
     </VTabs>
 
@@ -256,16 +243,16 @@ const getRelativeDaysText = (item) => {
     <div class="drawer-body pa-3 overflow-y-auto" style="height: calc(100vh - 120px);">
       <!-- Loading Skeletons -->
       <div v-if="isLoading" class="d-flex flex-column gap-3">
-        <VCard v-for="n in 3" :key="n" elevation="0" class="border pa-3 rounded-lg">
+        <VCard v-for="n in 3" :key="n" elevation="0" class="border pa-3 rounded-lg" style="background: rgba(255, 255, 255, 0.12) !important;">
           <div class="d-flex justify-space-between mb-2">
-            <div class="shimmer-line w-40" style="height: 14px;" />
-            <div class="shimmer-chip" style="width: 70px; height: 18px;" />
+            <div class="shimmer-line w-40" style="height: 14px; background: rgba(255, 255, 255, 0.25) !important;" />
+            <div class="shimmer-chip" style="width: 70px; height: 18px; background: rgba(255, 255, 255, 0.25) !important;" />
           </div>
-          <div class="shimmer-line w-75 mb-2" style="height: 16px;" />
-          <div class="shimmer-line w-50 mb-3" style="height: 12px;" />
+          <div class="shimmer-line w-75 mb-2" style="height: 16px; background: rgba(255, 255, 255, 0.25) !important;" />
+          <div class="shimmer-line w-50 mb-3" style="height: 12px; background: rgba(255, 255, 255, 0.25) !important;" />
           <div class="d-flex gap-2">
-            <div class="shimmer-button w-50" style="height: 30px;" />
-            <div class="shimmer-button w-50" style="height: 30px;" />
+            <div class="shimmer-button w-50" style="height: 30px; background: rgba(255, 255, 255, 0.25) !important;" />
+            <div class="shimmer-button w-50" style="height: 30px; background: rgba(255, 255, 255, 0.25) !important;" />
           </div>
         </VCard>
       </div>
@@ -273,18 +260,21 @@ const getRelativeDaysText = (item) => {
       <!-- Estado Vacío -->
       <div
         v-else-if="!currentList || currentList.length === 0"
-        class="d-flex flex-column align-center justify-center text-center py-12 px-4"
+        class="empty-state-container d-flex flex-column align-center justify-center text-center py-12 px-4"
       >
-        <VAvatar size="64" color="primary" variant="tonal" class="mb-3">
-          <VIcon
-            :icon="activeTab === 'overdue' ? 'ri-shield-check-line' : (activeTab === 'today' ? 'ri-checkbox-circle-line' : 'ri-calendar-line')"
-            size="32"
-          />
-        </VAvatar>
-        <h4 class="text-subtitle-1 font-weight-bold text-high-emphasis mb-1">
+        <div class="empty-state-avatar-wrap mb-4">
+          <VAvatar size="68" class="empty-avatar">
+            <VIcon
+              :icon="activeTab === 'overdue' ? 'ri-shield-check-line' : (activeTab === 'today' ? 'ri-checkbox-circle-line' : 'ri-calendar-line')"
+              size="36"
+              color="white"
+            />
+          </VAvatar>
+        </div>
+        <h4 class="empty-title mb-2">
           {{ activeTab === 'overdue' ? '¡Sin recordatorios vencidos!' : (activeTab === 'today' ? 'Al día por hoy' : 'Sin mantenimientos en los próximos 7 días') }}
         </h4>
-        <p class="text-caption text-medium-emphasis mb-0" style="max-width: 280px;">
+        <p class="empty-desc mb-0" style="max-width: 300px;">
           {{ activeTab === 'overdue' ? 'Todos los ciclos de 10.000 KM han sido atendidos oportunamente.' : (activeTab === 'today' ? 'No hay vehículos con ciclos cumplidos agendados para la fecha actual.' : 'Los próximos mantenimientos preventivos se proyectarán automáticamente.') }}
         </p>
       </div>
@@ -450,7 +440,7 @@ const getRelativeDaysText = (item) => {
 
   <!-- 👉 BOTÓN FLOTANTE (FAB) FIJO EN LA PANTALLA (Esquina inferior derecha) -->
   <div v-if="!isDrawerOpen" class="maintenance-floating-fab-root">
-    <VTooltip location="left">
+    <VTooltip location="left" :open-on-focus="false">
       <template #activator="{ props: fabTooltipProps }">
         <VBtn
           v-bind="fabTooltipProps"
@@ -474,10 +464,10 @@ const getRelativeDaysText = (item) => {
           <VIcon v-else icon="ri-calendar-check-line" size="26" />
         </VBtn>
       </template>
-      <span>
+      <span style="color: #ffffff !important; font-weight: 600; font-size: 0.8125rem;">
         Centro de Recordatorios (10.000 KM)
         <template v-if="counts.badge_total > 0">
-          — <strong>{{ counts.badge_total }}</strong> pendiente(s)
+          — <strong style="color: #FBBF24 !important; font-weight: 800;">{{ counts.badge_total }}</strong> pendiente(s)
         </template>
       </span>
     </VTooltip>
@@ -714,46 +704,232 @@ const getRelativeDaysText = (item) => {
 
 <style scoped lang="scss">
 .maintenance-drawer {
-  background: var(--bg-dialog, rgba(16, 20, 36, 0.98)) !important;
+  background: linear-gradient(180deg, #666CFF 0%, #5C61E6 60%, #4F54E5 100%) !important;
+  color: #ffffff !important;
   backdrop-filter: blur(16px);
   -webkit-backdrop-filter: blur(16px);
-  border-left: 1px solid var(--border-glass, rgba(255, 255, 255, 0.12)) !important;
-}
+  border-left: 1px solid rgba(255, 255, 255, 0.18) !important;
+  box-shadow: -8px 0 32px rgba(0, 0, 0, 0.3) !important;
 
-.drawer-header {
-  border-color: var(--border-glass, rgba(255, 255, 255, 0.08)) !important;
-}
+  // 1. Cabecera del Drawer
+  .drawer-header {
+    border-bottom: 1px solid rgba(255, 255, 255, 0.18) !important;
+    background: rgba(0, 0, 0, 0.10) !important;
 
-.drawer-tabs {
-  border-color: var(--border-glass, rgba(255, 255, 255, 0.08)) !important;
-}
+    .drawer-header-avatar {
+      background: rgba(255, 255, 255, 0.22) !important;
+      border: 1.5px solid rgba(255, 255, 255, 0.40) !important;
 
-.reminder-card {
-  background: var(--bg-surface, rgba(255, 255, 255, 0.04)) !important;
-  border-color: var(--border-glass, rgba(255, 255, 255, 0.08)) !important;
+      .v-icon {
+        color: #ffffff !important;
+        fill: #ffffff !important;
+      }
+    }
 
-  &:hover {
-    border-color: rgba(var(--v-theme-primary), 0.4) !important;
-    transform: translateY(-1px);
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
+    .drawer-header-title {
+      color: #ffffff !important;
+      font-weight: 800 !important;
+      font-size: 1.05rem !important;
+      text-shadow: 0 1px 3px rgba(0, 0, 0, 0.35) !important;
+    }
+
+    .drawer-header-subtitle {
+      color: rgba(255, 255, 255, 0.88) !important;
+      font-size: 0.74rem !important;
+      font-weight: 500 !important;
+    }
+
+    .drawer-header-action-btn {
+      color: #ffffff !important;
+
+      .v-icon {
+        color: #ffffff !important;
+        fill: #ffffff !important;
+      }
+
+      &:hover {
+        background: rgba(255, 255, 255, 0.18) !important;
+      }
+    }
   }
 
-  &.reminder-card-overdue {
-    border-left: 3px solid rgb(var(--v-theme-error)) !important;
+  // 2. Pestañas de Navegación
+  .drawer-tabs {
+    border-bottom: 1px solid rgba(255, 255, 255, 0.18) !important;
+    background: rgba(0, 0, 0, 0.14) !important;
+
+    :deep(.v-tab) {
+      color: rgba(255, 255, 255, 0.82) !important;
+      font-weight: 700 !important;
+      letter-spacing: 0.02em;
+
+      .drawer-tab-badge {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        background: rgba(255, 255, 255, 0.22) !important;
+        color: #ffffff !important;
+        -webkit-text-fill-color: #ffffff !important;
+        font-weight: 800 !important;
+        font-size: 0.72rem !important;
+        padding: 1px 7px !important;
+        min-width: 22px !important;
+        height: 19px !important;
+        border-radius: 999px !important;
+        border: 1px solid rgba(255, 255, 255, 0.35) !important;
+        line-height: 1 !important;
+
+        &.badge-overdue {
+          background: #ef4444 !important;
+          border-color: #f87171 !important;
+        }
+      }
+
+      &.v-tab--selected {
+        background: #ffffff !important;
+        opacity: 1 !important;
+        border-radius: 8px 8px 0 0 !important;
+
+        > span:not(.drawer-tab-badge) {
+          color: #5C61E6 !important;
+          font-weight: 900 !important;
+        }
+
+        .drawer-tab-badge {
+          background: #5C61E6 !important;
+          color: #ffffff !important;
+          -webkit-text-fill-color: #ffffff !important;
+          border: none !important;
+          font-weight: 900 !important;
+          box-shadow: 0 2px 6px rgba(92, 97, 230, 0.4) !important;
+
+          &.badge-overdue {
+            background: #ef4444 !important;
+          }
+        }
+      }
+    }
   }
 
-  &.reminder-card-today {
-    border-left: 3px solid rgb(var(--v-theme-primary)) !important;
+  // 3. Estado Vacío (Al día por hoy / Sin recordatorios)
+  .empty-state-container {
+    .empty-avatar {
+      background: rgba(255, 255, 255, 0.20) !important;
+      border: 2px solid rgba(255, 255, 255, 0.45) !important;
+      box-shadow: 0 4px 18px rgba(0, 0, 0, 0.25) !important;
+
+      .v-icon {
+        color: #ffffff !important;
+        fill: #ffffff !important;
+        font-size: 34px !important;
+      }
+    }
+
+    .empty-title {
+      color: #ffffff !important;
+      font-weight: 900 !important;
+      font-size: 1.25rem !important;
+      letter-spacing: 0.02em !important;
+      text-shadow: 0 2px 6px rgba(0, 0, 0, 0.35) !important;
+    }
+
+    .empty-desc {
+      color: rgba(255, 255, 255, 0.92) !important;
+      font-size: 0.88rem !important;
+      line-height: 1.5 !important;
+      text-shadow: 0 1px 3px rgba(0, 0, 0, 0.25) !important;
+    }
   }
 
-  &.reminder-card-notified {
-    opacity: 0.88;
-  }
-}
+  // 4. Tarjetas de Recordatorio (Fondos blancos sólidos para máxima legibilidad)
+  .reminder-card {
+    background: #ffffff !important;
+    color: #0f172a !important;
+    border: 1px solid rgba(255, 255, 255, 0.40) !important;
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.16) !important;
 
-.mileage-info-box {
-  background: rgba(var(--v-theme-on-surface), 0.04);
-  border: 1px dashed rgba(var(--v-theme-on-surface), 0.12);
+    * {
+      color: #0f172a;
+    }
+
+    .kardex-plate-badge {
+      background: #0f172a !important;
+      color: #ffffff !important;
+      border-radius: 6px;
+      font-weight: 800;
+    }
+
+    .text-high-emphasis,
+    .text-body-2 {
+      color: #0f172a !important;
+      font-weight: 700 !important;
+    }
+
+    .text-medium-emphasis,
+    .text-caption {
+      color: #475569 !important;
+    }
+
+    .mileage-info-box {
+      background: #f8fafc !important;
+      border: 1.5px dashed #cbd5e1 !important;
+
+      * {
+        color: #334155;
+      }
+
+      .text-primary {
+        color: #5C61E6 !important;
+        font-weight: 900 !important;
+      }
+
+      .text-error {
+        color: #ef4444 !important;
+      }
+
+      .text-warning {
+        color: #f59e0b !important;
+      }
+    }
+
+    .status-pill-clean {
+      font-weight: 700 !important;
+
+      &.status-paid {
+        background: #ecfdf5 !important;
+        color: #059669 !important;
+        border: 1px solid #a7f3d0 !important;
+        .status-dot { background: #059669 !important; }
+      }
+
+      &.status-pending {
+        background: #fef2f2 !important;
+        color: #dc2626 !important;
+        border: 1px solid #fecaca !important;
+        .status-dot { background: #dc2626 !important; }
+      }
+
+      &.status-partial {
+        background: #fffbeb !important;
+        color: #d97706 !important;
+        border: 1px solid #fde68a !important;
+        .status-dot { background: #d97706 !important; }
+      }
+    }
+
+    &:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.22) !important;
+    }
+
+    &.reminder-card-overdue {
+      border-left: 5px solid #ef4444 !important;
+    }
+
+    &.reminder-card-today {
+      border-left: 5px solid #666CFF !important;
+    }
+  }
 }
 
 .maintenance-floating-fab-root {

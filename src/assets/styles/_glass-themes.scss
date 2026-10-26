@@ -14,17 +14,17 @@ $glass-themes: (
     'is-dark': false,
     'bg-app': #F7F7F9,
     'bg-surface': #ffffff,
-    'bg-sidebar': #ffffff,
-    'bg-header': #666CFF,
+    'bg-sidebar': "linear-gradient(180deg, #666CFF 0%, #5C61E6 60%, #4F54E5 100%)",
+    'bg-header': "linear-gradient(135deg, #666CFF 0%, #5C61E6 100%)",
     'bg-dialog': #ffffff,
-    'bg-active-item': rgba(102, 108, 255, 0.08),
-    'bg-hover-item': rgba(38, 43, 67, 0.04),
-    'border-active': rgba(102, 108, 255, 0.40),
-    'text-active': #666CFF,
+    'bg-active-item': #ffffff,
+    'bg-hover-item': rgba(255, 255, 255, 0.16),
+    'border-active': rgba(255, 255, 255, 0.90),
+    'text-active': #5C61E6,
     'text-primary': #262B43,
     'text-secondary': rgba(38, 43, 67, 0.78),
     'text-muted': rgba(38, 43, 67, 0.45),
-    'icon-color': #262B43,
+    'icon-color': #ffffff,
     'border-glass': rgba(38, 43, 67, 0.12),
     'input-bg': #ffffff,
     'input-border': rgba(38, 43, 67, 0.22),
@@ -277,7 +277,7 @@ $glass-themes: (
 
   // B. NAVEGACIÓN GENERAL: SIDEBAR Y HEADER
   .layout-vertical-nav,
-  .v-navigation-drawer,
+  .v-navigation-drawer:not(.maintenance-drawer),
   .sidebar,
   .layout-nav-type-vertical .layout-vertical-nav {
     background: var(--bg-sidebar) !important;
@@ -299,45 +299,45 @@ $glass-themes: (
       border-bottom: 1px solid var(--border-glass) !important;
 
       .app-logo-title {
-        color: if($theme-name =='taller', #ffffff, var(--text-primary)) !important;
+        color: if($theme-name =='taller' or $theme-name =='light', #ffffff, var(--text-primary)) !important;
       }
     }
 
     .nav-section-title {
       .title-text {
-        color: if($theme-name =='taller', #ffffff, var(--text-muted)) !important;
+        color: if($theme-name =='taller' or $theme-name =='light', #ffffff, var(--text-muted)) !important;
         text-shadow: none !important;
 
         &::before,
         &::after {
-          border-color: if($theme-name =='taller', rgba(255, 255, 255, 0.45), var(--border-glass)) !important;
+          border-color: if($theme-name =='taller' or $theme-name =='light', rgba(255, 255, 255, 0.45), var(--border-glass)) !important;
         }
       }
     }
 
     .nav-link a,
     .nav-group-label {
-      color: if($theme-name =='taller', #ffffff, var(--text-secondary)) !important;
+      color: if($theme-name =='taller' or $theme-name =='light', #ffffff, var(--text-secondary)) !important;
       background: transparent !important;
       transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
 
       .nav-item-icon,
       .nav-item-title,
       .nav-group-arrow {
-        color: if($theme-name =='taller', #ffffff, var(--text-secondary)) !important;
-        fill: if($theme-name =='taller', #ffffff, currentColor) !important;
+        color: if($theme-name =='taller' or $theme-name =='light', #ffffff, var(--text-secondary)) !important;
+        fill: if($theme-name =='taller' or $theme-name =='light', #ffffff, currentColor) !important;
       }
 
       &:not(.router-link-active):not(.router-link-exact-active):hover {
         background: var(--bg-hover-item) !important;
-        color: if($theme-name =='taller', #ffffff, var(--text-primary)) !important;
+        color: if($theme-name =='taller' or $theme-name =='light', #ffffff, var(--text-primary)) !important;
         transform: translateX(3px);
 
         .nav-item-icon,
         .nav-item-title,
         .nav-group-arrow {
-          color: if($theme-name =='taller', #ffffff, var(--text-primary)) !important;
-          fill: if($theme-name =='taller', #ffffff, currentColor) !important;
+          color: if($theme-name =='taller' or $theme-name =='light', #ffffff, var(--text-primary)) !important;
+          fill: if($theme-name =='taller' or $theme-name =='light', #ffffff, currentColor) !important;
         }
       }
     }
@@ -362,14 +362,14 @@ $glass-themes: (
           border: none !important;
           box-shadow: none !important;
           transform: none !important;
-          color: if($theme-name =='taller', #ffffff, var(--text-primary)) !important;
+          color: if($theme-name =='taller' or $theme-name =='light', #ffffff, var(--text-primary)) !important;
 
           &,
           .nav-item-icon,
           .nav-item-title,
           .nav-group-arrow {
-            color: if($theme-name =='taller', #ffffff, var(--text-primary)) !important;
-            fill: if($theme-name =='taller', #ffffff, var(--text-primary)) !important;
+            color: if($theme-name =='taller' or $theme-name =='light', #ffffff, var(--text-primary)) !important;
+            fill: if($theme-name =='taller' or $theme-name =='light', #ffffff, var(--text-primary)) !important;
             font-weight: 700 !important;
           }
 
@@ -386,8 +386,8 @@ $glass-themes: (
             .nav-item-icon,
             .nav-item-title,
             .nav-group-arrow {
-              color: if($theme-name =='taller', #ffffff, var(--text-primary)) !important;
-              fill: if($theme-name =='taller', #ffffff, var(--text-primary)) !important;
+              color: if($theme-name =='taller' or $theme-name =='light', #ffffff, var(--text-primary)) !important;
+              fill: if($theme-name =='taller' or $theme-name =='light', #ffffff, var(--text-primary)) !important;
             }
           }
         }
@@ -432,7 +432,7 @@ $glass-themes: (
 
       .nav-item-icon {
         color: var(--text-active) !important;
-        filter: if($theme-name =='taller', none, drop-shadow(0 0 6px var(--border-active)));
+        filter: if($theme-name =='taller' or $theme-name =='light', none, drop-shadow(0 0 6px var(--border-active)));
       }
 
       .nav-item-title {
@@ -447,7 +447,7 @@ $glass-themes: (
     }
 
     .nav-group-children {
-      border-left: 1.5px solid if($theme-name =='taller', rgba(255, 255, 255, 0.35), var(--border-glass)) !important;
+      border-left: 1.5px solid if($theme-name =='taller' or $theme-name =='light', rgba(255, 255, 255, 0.35), var(--border-glass)) !important;
       background: transparent !important;
       border-top: none !important;
       border-right: none !important;
@@ -1602,15 +1602,15 @@ body[data-theme="light"],
   --bg-app: #F7F7F9;
   --bg-dialog: #ffffff;
   --bg-surface: #ffffff;
-  --bg-sidebar: #ffffff;
-  --bg-header: #666CFF;
-  --border-glass: rgba(38, 43, 67, 0.12);
+  --bg-sidebar: linear-gradient(180deg, #666CFF 0%, #5C61E6 60%, #4F54E5 100%);
+  --bg-header: linear-gradient(135deg, #666CFF 0%, #5C61E6 100%);
+  --border-glass: rgba(255, 255, 255, 0.15);
   --text-primary: #262B43;
   --text-secondary: rgba(38, 43, 67, 0.78);
   --text-muted: rgba(38, 43, 67, 0.45);
   --bg-dialog-header: #ffffff;
   --border-dialog-header: rgba(38, 43, 67, 0.12);
-  --icon-color: #262B43;
+  --icon-color: #ffffff;
 
   color: #262B43 !important;
 
@@ -1624,6 +1624,8 @@ body[data-theme="light"],
 
     .navbar-brand-title,
     .navbar-brand-subtitle,
+    .navbar-brand-subtitle span,
+    .navbar-brand-subtitle *,
     .v-icon,
     .v-btn,
     .v-btn__content,
@@ -1631,6 +1633,134 @@ body[data-theme="light"],
     .IconBtn,
     button {
       color: #ffffff !important;
+    }
+  }
+
+  // Menú lateral izquierdo con el color y degradado de la cabecera
+  .layout-vertical-nav,
+  .layout-nav-type-vertical .layout-vertical-nav {
+    background: linear-gradient(180deg, #666CFF 0%, #5C61E6 60%, #4F54E5 100%) !important;
+    background-color: #666CFF !important;
+    border-right: 1px solid rgba(255, 255, 255, 0.15) !important;
+    box-shadow: 4px 0 25px rgba(102, 108, 255, 0.22) !important;
+
+    .nav-header {
+      background: transparent !important;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.15) !important;
+
+      .app-logo-title {
+        color: #ffffff !important;
+      }
+    }
+
+    .nav-section-title {
+      .title-text {
+        color: #ffffff !important;
+        opacity: 0.92 !important;
+        font-weight: 800 !important;
+        text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2) !important;
+
+        &::before,
+        &::after {
+          border-color: rgba(255, 255, 255, 0.45) !important;
+        }
+      }
+    }
+
+    .nav-link a,
+    .nav-group-label {
+      color: #ffffff !important;
+
+      .nav-item-icon,
+      .nav-item-title,
+      .nav-group-arrow,
+      .v-icon {
+        color: #ffffff !important;
+        fill: #ffffff !important;
+        opacity: 1 !important;
+      }
+
+      &:hover {
+        background: rgba(255, 255, 255, 0.14) !important;
+        color: #ffffff !important;
+
+        .nav-item-icon,
+        .nav-item-title,
+        .nav-group-arrow,
+        .v-icon {
+          color: #ffffff !important;
+          fill: #ffffff !important;
+        }
+      }
+    }
+
+    .nav-group.active > .nav-group-label,
+    .nav-group.open > .nav-group-label {
+      color: #ffffff !important;
+
+      .nav-item-icon,
+      .nav-item-title,
+      .nav-group-arrow,
+      .v-icon {
+        color: #ffffff !important;
+        fill: #ffffff !important;
+      }
+    }
+
+    .nav-group-children {
+      border-left: 1.5px solid rgba(255, 255, 255, 0.35) !important;
+
+      .nav-link a {
+        color: rgba(255, 255, 255, 0.92) !important;
+
+        .nav-item-icon,
+        .nav-item-title {
+          color: rgba(255, 255, 255, 0.92) !important;
+          fill: rgba(255, 255, 255, 0.92) !important;
+        }
+
+        &:hover {
+          background: rgba(255, 255, 255, 0.14) !important;
+          color: #ffffff !important;
+        }
+      }
+    }
+
+    // Elemento activo seleccionado (White pill con texto morado corporativo)
+    .nav-link > a.router-link-active,
+    .nav-link > a.router-link-exact-active,
+    .nav-link.router-link-active > a,
+    .nav-link.router-link-exact-active > a,
+    .v-list-item--active {
+      background: #ffffff !important;
+      color: #5C61E6 !important;
+      box-shadow: 0 4px 14px rgba(0, 0, 0, 0.18) !important;
+      border: none !important;
+
+      * {
+        color: #5C61E6 !important;
+      }
+
+      .nav-item-icon,
+      .nav-item-title,
+      .v-icon {
+        color: #5C61E6 !important;
+        fill: #5C61E6 !important;
+        font-weight: 800 !important;
+      }
+    }
+
+    .sidebar-collapse-footer {
+      border-top: 1px solid rgba(255, 255, 255, 0.15) !important;
+
+      .sidebar-footer-toggle-btn {
+        color: #ffffff !important;
+        background: rgba(255, 255, 255, 0.12) !important;
+
+        .v-icon {
+          color: #ffffff !important;
+        }
+      }
     }
   }
 }
@@ -2571,3 +2701,824 @@ html body .pepa-kpi-card,
     -webkit-text-fill-color: #ffffff !important;
   }
 }
+
+// ==========================================================================
+// BLINDAJE DE TOOLTIPS: MÁXIMO CONTRASTE Y TEXTO BLANCO NÍTIDO
+// ==========================================================================
+.v-tooltip .v-overlay__content,
+.v-tooltip.v-overlay .v-overlay__content,
+.v-overlay--active.v-tooltip .v-overlay__content {
+  background: rgba(15, 23, 42, 0.96) !important;
+  color: #ffffff !important;
+  border: 1px solid rgba(255, 255, 255, 0.22) !important;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.40) !important;
+  border-radius: 8px !important;
+  padding: 6px 12px !important;
+  font-size: 0.8125rem !important;
+  line-height: 1.4 !important;
+  z-index: 99999 !important;
+
+  *,
+  span,
+  strong,
+  p,
+  div {
+    color: #ffffff !important;
+    -webkit-text-fill-color: #ffffff !important;
+  }
+
+  strong {
+    color: #FBBF24 !important; // Amarillo dorado destacado para pendientes
+    -webkit-text-fill-color: #FBBF24 !important;
+    font-weight: 800 !important;
+  }
+}
+
+// ==========================================================================
+// BLINDAJE TOTAL DE DIÁLOGOS (V-DIALOG) EN TODO EL SISTEMA:
+// 1. Esquinas redondeadas perfectas (20px) tanto arriba como abajo sin cortes.
+// 2. Cabeceras con textos, iconos, badges, chips y botón cerrar en BLANCO PURO.
+// 3. Pie de página nítido con esquinas inferiores redondeadas y botón cerrar de alto contraste.
+// ==========================================================================
+
+// Contenedor del V-Dialog y Tarjeta (Card)
+.v-dialog .v-overlay__content,
+.v-overlay.v-dialog .v-overlay__content,
+.v-overlay--active.v-dialog .v-overlay__content,
+.v-dialog.v-overlay .v-overlay__content {
+  border-radius: 20px !important;
+  overflow: hidden !important;
+  clip-path: inset(0 round 20px) !important;
+  -webkit-clip-path: inset(0 round 20px) !important;
+}
+
+.v-dialog .v-card,
+.v-dialog .custom-dialog-card,
+.v-overlay.v-dialog .v-card,
+.v-overlay--active.v-dialog .v-card,
+.custom-dialog-card {
+  border-radius: 20px !important;
+  overflow: hidden !important;
+  clip-path: inset(0 round 20px) !important;
+  -webkit-clip-path: inset(0 round 20px) !important;
+  isolation: isolate !important;
+  -webkit-mask-image: -webkit-radial-gradient(white, black) !important;
+  box-shadow: 0 25px 70px rgba(15, 23, 42, 0.28) !important;
+}
+
+// 1. CABECERA DE LOS V-DIALOGS (En todo el sistema)
+.v-dialog .custom-dialog-header-primary,
+.v-dialog .custom-dialog-header,
+.v-dialog .custom-dialog-header-info,
+.v-dialog .custom-dialog-header-secondary,
+.v-dialog .dialog-header-banner,
+.v-dialog .dialog-header-workshop,
+.v-dialog .sale-dialog-header-banner,
+.v-dialog .product-quick-header,
+.v-dialog .profile-header-banner,
+.v-dialog [class*="dialog-header"],
+.v-dialog [class*="header-primary"],
+.custom-dialog-header-primary,
+.custom-dialog-header {
+  border-top-left-radius: 20px !important;
+  border-top-right-radius: 20px !important;
+  border-bottom-left-radius: 0 !important;
+  border-bottom-right-radius: 0 !important;
+  background: linear-gradient(135deg, #666CFF 0%, #5B61EB 50%, #4F54E5 100%) !important;
+  color: #ffffff !important;
+  padding: 1.5rem 1.5rem 1.25rem 1.5rem !important;
+  position: relative !important;
+
+  // Textos, títulos y subtítulos en blanco puro
+  *,
+  h1, h2, h3, h4, h5, h6,
+  .custom-dialog-title,
+  .custom-dialog-subtitle,
+  .dialog-title,
+  .dialog-subtitle,
+  p,
+  span,
+  label,
+  strong,
+  b,
+  div {
+    color: #ffffff !important;
+    -webkit-text-fill-color: #ffffff !important;
+  }
+
+  .custom-dialog-subtitle,
+  .dialog-subtitle {
+    color: rgba(255, 255, 255, 0.92) !important;
+    -webkit-text-fill-color: rgba(255, 255, 255, 0.92) !important;
+    opacity: 1 !important;
+  }
+
+  // Ícono Avatar Superior
+  .custom-dialog-avatar,
+  .header-avatar-badge {
+    background: rgba(255, 255, 255, 0.22) !important;
+    backdrop-filter: blur(8px) !important;
+    -webkit-backdrop-filter: blur(8px) !important;
+    border: 1.5px solid rgba(255, 255, 255, 0.45) !important;
+    border-radius: 16px !important;
+
+    .v-icon,
+    i,
+    svg {
+      color: #ffffff !important;
+      fill: #ffffff !important;
+      opacity: 1 !important;
+    }
+  }
+
+  // Botón "X" de cerrar superior derecho
+  .custom-dialog-close-btn,
+  .v-dialog-close-btn {
+    background: rgba(255, 255, 255, 0.22) !important;
+    border: 1px solid rgba(255, 255, 255, 0.38) !important;
+    border-radius: 10px !important;
+    color: #ffffff !important;
+    width: 36px !important;
+    height: 36px !important;
+    min-width: 36px !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    opacity: 1 !important;
+    transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1) !important;
+
+    .v-icon,
+    i,
+    svg {
+      color: #ffffff !important;
+      fill: #ffffff !important;
+      font-size: 20px !important;
+      opacity: 1 !important;
+    }
+
+    &:hover {
+      background: rgba(255, 255, 255, 0.38) !important;
+      border-color: rgba(255, 255, 255, 0.65) !important;
+      transform: scale(1.08) !important;
+
+      .v-icon,
+      i,
+      svg {
+        color: #ffffff !important;
+        fill: #ffffff !important;
+      }
+    }
+  }
+
+  // Badges, Chips y Pills dentro de la cabecera (Activo, Cédula, Natural, etc.)
+  .v-chip,
+  .rounded-pill,
+  [class*="pill"],
+  [class*="chip"],
+  [class*="badge"],
+  .d-inline-flex.rounded-pill {
+    background: rgba(255, 255, 255, 0.22) !important;
+    border: 1px solid rgba(255, 255, 255, 0.38) !important;
+    backdrop-filter: blur(8px) !important;
+    -webkit-backdrop-filter: blur(8px) !important;
+    color: #ffffff !important;
+    -webkit-text-fill-color: #ffffff !important;
+
+    *,
+    span,
+    strong,
+    b,
+    div {
+      color: #ffffff !important;
+      -webkit-text-fill-color: #ffffff !important;
+    }
+
+    .v-icon,
+    i,
+    svg {
+      color: #ffffff !important;
+      fill: #ffffff !important;
+      opacity: 1 !important;
+    }
+
+    // Variantes de color en cabecera
+    &[style*="185, 129"],
+    &[style*="success"],
+    &.status-paid,
+    &.bg-success {
+      background: rgba(16, 185, 129, 0.35) !important;
+      border: 1px solid rgba(16, 185, 129, 0.60) !important;
+    }
+
+    &[style*="239, 68"],
+    &[style*="error"],
+    &.status-danger,
+    &.bg-error {
+      background: rgba(239, 68, 68, 0.35) !important;
+      border: 1px solid rgba(239, 68, 68, 0.60) !important;
+    }
+
+    &[style*="245, 158"],
+    &[style*="warning"],
+    &.status-warning,
+    &.bg-warning {
+      background: rgba(245, 158, 11, 0.35) !important;
+      border: 1px solid rgba(245, 158, 11, 0.60) !important;
+    }
+  }
+}
+
+// 2. PIE DE PÁGINA DE LOS V-DIALOGS (En todo el sistema)
+.v-dialog .v-card-actions,
+.v-dialog .v-card > .v-card-actions,
+.custom-dialog-card .v-card-actions,
+.v-dialog .dialog-footer,
+.v-dialog .sticky-dialog-footer,
+.v-dialog .dialog-actions-responsive,
+.v-dialog .v-card-actions[style*="sticky"],
+.v-card-actions.dialog-actions-responsive,
+.v-dialog .v-card > div:last-child,
+.v-dialog .v-card > footer:last-child {
+  border-bottom-left-radius: 20px !important;
+  border-bottom-right-radius: 20px !important;
+  border-top-left-radius: 0 !important;
+  border-top-right-radius: 0 !important;
+  clip-path: inset(0 0 0 0 round 0 0 20px 20px) !important;
+  -webkit-clip-path: inset(0 0 0 0 round 0 0 20px 20px) !important;
+  background: #ffffff !important;
+  border-top: 1px solid #e2e8f0 !important;
+  box-shadow: 0 -3px 12px rgba(0, 0, 0, 0.04) !important;
+  padding: 1rem 1.5rem !important;
+  overflow: hidden !important;
+}
+
+// Barra de metadatos previa al footer (ej. "Registrado por: ...")
+.v-dialog .bg-card-footer {
+  background: #f8fafc !important;
+  border-top: 1px solid #e2e8f0 !important;
+  color: #64748b !important;
+
+  *, span {
+    color: #64748b !important;
+  }
+
+  strong {
+    color: #1e293b !important;
+  }
+}
+
+// Botón de Cerrar / Secundario del pie de página (Modo Claro / Taller)
+[data-theme="light"] .v-dialog .v-card-actions,
+html[data-theme="light"] .v-dialog .v-card-actions,
+body[data-theme="light"] .v-dialog .v-card-actions,
+[data-theme="taller"] .v-dialog .v-card-actions,
+html[data-theme="taller"] .v-dialog .v-card-actions,
+body[data-theme="taller"] .v-dialog .v-card-actions,
+.v-theme--light .v-dialog .v-card-actions,
+.v-theme--taller .v-dialog .v-card-actions {
+  .btn-close-footer,
+  .v-btn.btn-close-footer,
+  .v-btn--variant-outlined,
+  .v-btn--variant-tonal,
+  .text-secondary,
+  .v-btn[color="secondary"],
+  .v-btn:not(.bg-primary):not([class*="bg-primary"]):not(.v-btn--variant-flat):not([class*="bg-info"]):not([class*="bg-success"]):not([class*="bg-error"]) {
+    background: #f8fafc !important;
+    background-color: #f8fafc !important;
+    border: 1.5px solid #cbd5e1 !important;
+    color: #0f172a !important;
+    -webkit-text-fill-color: #0f172a !important;
+    font-weight: 700 !important;
+    font-size: 0.875rem !important;
+    letter-spacing: 0.01em !important;
+    border-radius: 10px !important;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05) !important;
+    transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1) !important;
+
+    .v-btn__overlay,
+    .v-btn__underlay {
+      display: none !important;
+      opacity: 0 !important;
+    }
+
+    .v-btn__content,
+    .v-btn__content span,
+    .v-btn__content i,
+    .v-btn__content .v-icon,
+    i.v-icon {
+      color: #0f172a !important;
+      fill: #0f172a !important;
+      -webkit-text-fill-color: #0f172a !important;
+      opacity: 1 !important;
+      font-weight: 700 !important;
+    }
+
+    &:hover {
+      background: #e2e8f0 !important;
+      background-color: #e2e8f0 !important;
+      border-color: #94a3b8 !important;
+      color: #000000 !important;
+      -webkit-text-fill-color: #000000 !important;
+      transform: translateY(-1px) !important;
+      box-shadow: 0 3px 6px rgba(0, 0, 0, 0.08) !important;
+
+      .v-btn__content,
+      .v-btn__content span,
+      .v-btn__content i,
+      .v-btn__content .v-icon,
+      i.v-icon {
+        color: #000000 !important;
+        fill: #000000 !important;
+        -webkit-text-fill-color: #000000 !important;
+      }
+    }
+  }
+}
+
+// Botón primario de acción en el pie de página
+.v-dialog .v-card-actions .v-btn.bg-primary,
+.v-dialog .v-card-actions .v-btn[color="primary"]:not(.v-btn--variant-outlined) {
+  background: linear-gradient(135deg, #666CFF 0%, #5B61EB 100%) !important;
+  color: #ffffff !important;
+  font-weight: 700 !important;
+  border-radius: 10px !important;
+  border: none !important;
+  box-shadow: 0 3px 10px rgba(102, 108, 255, 0.35) !important;
+
+  .v-btn__overlay,
+  .v-btn__underlay {
+    display: none !important;
+    opacity: 0 !important;
+  }
+
+  .v-btn__content,
+  .v-btn__content span,
+  .v-btn__content i,
+  .v-btn__content .v-icon,
+  i.v-icon {
+    color: #ffffff !important;
+    fill: #ffffff !important;
+    -webkit-text-fill-color: #ffffff !important;
+  }
+
+  &:hover {
+    background: linear-gradient(135deg, #5B61EB 0%, #4F54E5 100%) !important;
+    box-shadow: 0 5px 14px rgba(102, 108, 255, 0.45) !important;
+    transform: translateY(-1px) !important;
+  }
+}
+
+// Soporte para Temas Oscuros en el footer de los V-Dialogs
+.v-theme--dark,
+[data-theme="dark"],
+html[data-theme="dark"],
+body[data-theme="dark"],
+.theme-dark,
+.v-theme--dark-glass,
+[data-theme="dark-glass"],
+html[data-theme="dark-glass"],
+body[data-theme="dark-glass"],
+.theme-dark-glass,
+.v-theme--semi-dark-glass,
+[data-theme="semi-dark-glass"],
+html[data-theme="semi-dark-glass"],
+body[data-theme="semi-dark-glass"],
+.theme-semi-dark-glass {
+  .v-dialog .v-card-actions,
+  .v-dialog .v-card > .v-card-actions,
+  .custom-dialog-card .v-card-actions {
+    background: #181d2e !important;
+    background-color: #181d2e !important;
+    border-top: 1px solid rgba(255, 255, 255, 0.12) !important;
+  }
+
+  .v-dialog .bg-card-footer {
+    background: #141724 !important;
+    border-top: 1px solid rgba(255, 255, 255, 0.1) !important;
+    color: rgba(255, 255, 255, 0.7) !important;
+
+    *, span {
+      color: rgba(255, 255, 255, 0.7) !important;
+    }
+
+    strong {
+      color: #ffffff !important;
+    }
+  }
+
+  .v-dialog .v-card-actions .btn-close-footer,
+  .v-dialog .v-card-actions .v-btn.btn-close-footer,
+  .v-dialog .v-card-actions .v-btn[color="secondary"],
+  .v-dialog .v-card-actions .v-btn.v-btn--variant-outlined,
+  .v-dialog .v-card-actions .v-btn.v-btn--variant-tonal,
+  .v-dialog .v-card-actions .v-btn:not(.bg-primary):not([class*="bg-primary"]):not(.v-btn--variant-flat):not([class*="bg-info"]):not([class*="bg-success"]):not([class*="bg-error"]),
+  .custom-dialog-card .v-card-actions .v-btn[color="secondary"],
+  .custom-dialog-card .v-card-actions .v-btn--variant-outlined,
+  .custom-dialog-card .v-card-actions .v-btn--variant-tonal,
+  .custom-dialog-card .v-card-actions .v-btn:not(.bg-primary):not([class*="bg-primary"]):not(.v-btn--variant-flat):not([class*="bg-info"]):not([class*="bg-success"]):not([class*="bg-error"]) {
+    background: rgba(255, 255, 255, 0.08) !important;
+    background-color: rgba(255, 255, 255, 0.08) !important;
+    border: 1.5px solid rgba(255, 255, 255, 0.28) !important;
+    color: #ffffff !important;
+    -webkit-text-fill-color: #ffffff !important;
+    font-weight: 700 !important;
+    border-radius: 10px !important;
+
+    .v-btn__overlay,
+    .v-btn__underlay {
+      display: none !important;
+      opacity: 0 !important;
+    }
+
+    .v-btn__content,
+    .v-btn__content span,
+    .v-btn__content i,
+    .v-btn__content .v-icon,
+    i.v-icon {
+      color: #ffffff !important;
+      fill: #ffffff !important;
+      -webkit-text-fill-color: #ffffff !important;
+      opacity: 1 !important;
+      font-weight: 700 !important;
+    }
+
+    &:hover {
+      background: rgba(255, 255, 255, 0.18) !important;
+      background-color: rgba(255, 255, 255, 0.18) !important;
+      border-color: rgba(255, 255, 255, 0.5) !important;
+      color: #ffffff !important;
+      -webkit-text-fill-color: #ffffff !important;
+
+      .v-btn__content,
+      .v-btn__content span,
+      .v-btn__content i,
+      .v-btn__content .v-icon,
+      i.v-icon {
+        color: #ffffff !important;
+        fill: #ffffff !important;
+        -webkit-text-fill-color: #ffffff !important;
+      }
+    }
+  }
+}
+
+// ==========================================================================
+// BLINDAJE DEFINITIVO DEL MENÚ LATERAL (SIDEBAR): COLOR DE LA NAVBAR
+// ==========================================================================
+.layout-vertical-nav,
+.layout-nav-type-vertical .layout-vertical-nav,
+.v-navigation-drawer.layout-vertical-nav {
+  background: linear-gradient(180deg, #666CFF 0%, #5C61E6 60%, #4F54E5 100%) !important;
+  background-color: #666CFF !important;
+  border-right: 1px solid rgba(255, 255, 255, 0.15) !important;
+  box-shadow: 4px 0 25px rgba(102, 108, 255, 0.22) !important;
+
+  .v-navigation-drawer__content,
+  .nav-items {
+    background: transparent !important;
+  }
+
+  .nav-header {
+    background: transparent !important;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.15) !important;
+
+    .app-logo-title {
+      color: #ffffff !important;
+    }
+  }
+
+  // Títulos de sección (COMERCIAL, FINANZAS, SERVICIOS, INVENTARIO, etc.)
+  .nav-section-title {
+    opacity: 1 !important;
+
+    .title-text {
+      color: #ffffff !important;
+      opacity: 0.92 !important;
+      font-weight: 800 !important;
+      text-shadow: 0 1px 2px rgba(0, 0, 0, 0.25) !important;
+      letter-spacing: 0.12em !important;
+      text-transform: uppercase !important;
+
+      &::before,
+      &::after {
+        border-color: rgba(255, 255, 255, 0.45) !important;
+        border-block-end-color: rgba(255, 255, 255, 0.45) !important;
+      }
+    }
+  }
+
+  // Enlaces de navegación e iconos
+  .nav-link a,
+  .nav-group-label {
+    color: #ffffff !important;
+
+    *,
+    span,
+    .nav-item-title,
+    .nav-item-icon,
+    .nav-group-arrow,
+    .v-icon {
+      color: #ffffff !important;
+      fill: #ffffff !important;
+      opacity: 1 !important;
+    }
+
+    &:hover {
+      background: rgba(255, 255, 255, 0.18) !important;
+      color: #ffffff !important;
+
+      *,
+      span,
+      .nav-item-title,
+      .nav-item-icon,
+      .nav-group-arrow,
+      .v-icon {
+        color: #ffffff !important;
+        fill: #ffffff !important;
+      }
+    }
+  }
+
+  // Submenús / Hijos de grupos
+  .nav-group.open > .nav-group-label {
+    background: rgba(255, 255, 255, 0.14) !important;
+    color: #ffffff !important;
+
+    *,
+    span,
+    .nav-item-title,
+    .nav-item-icon,
+    .nav-group-arrow,
+    .v-icon {
+      color: #ffffff !important;
+      fill: #ffffff !important;
+    }
+  }
+
+  .nav-group-children {
+    border-left: 1.5px solid rgba(255, 255, 255, 0.35) !important;
+
+    .nav-link a {
+      color: rgba(255, 255, 255, 0.92) !important;
+
+      *,
+      span,
+      .nav-item-icon,
+      .nav-item-title {
+        color: rgba(255, 255, 255, 0.92) !important;
+        fill: rgba(255, 255, 255, 0.92) !important;
+      }
+
+      &:hover {
+        background: rgba(255, 255, 255, 0.16) !important;
+        color: #ffffff !important;
+
+        *,
+        span,
+        .nav-item-icon,
+        .nav-item-title {
+          color: #ffffff !important;
+          fill: #ffffff !important;
+        }
+      }
+    }
+  }
+
+  // Elemento activo seleccionado (White pill con texto morado corporativo)
+  .nav-link > a.router-link-active,
+  .nav-link > a.router-link-exact-active,
+  .nav-link.router-link-active > a,
+  .nav-link.router-link-exact-active > a,
+  .v-list-item--active {
+    background: #ffffff !important;
+    color: #5C61E6 !important;
+    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.18) !important;
+    border: none !important;
+
+    *,
+    span,
+    .nav-item-icon,
+    .nav-item-title,
+    .v-icon {
+      color: #5C61E6 !important;
+      fill: #5C61E6 !important;
+      font-weight: 800 !important;
+      -webkit-text-fill-color: #5C61E6 !important;
+    }
+  }
+
+  .sidebar-collapse-footer {
+    border-top: 1px solid rgba(255, 255, 255, 0.15) !important;
+
+    .sidebar-footer-toggle-btn {
+      color: #ffffff !important;
+      background: rgba(255, 255, 255, 0.12) !important;
+
+      .v-icon {
+        color: #ffffff !important;
+        fill: #ffffff !important;
+      }
+
+      &:hover {
+        background: rgba(255, 255, 255, 0.22) !important;
+        color: #ffffff !important;
+      }
+    }
+  }
+}
+
+// ==========================================================================
+// ESTILOS GLOBALES PARA MENÚ DE PERFIL DE USUARIO (UserProfile.vue)
+// Soluciona transparencia no deseada y letras negras en fondos oscuros
+// ==========================================================================
+
+// 1. Temas Claros y Tema Taller
+[data-theme="light"] .user-profile-menu-list,
+html[data-theme="light"] .user-profile-menu-list,
+body[data-theme="light"] .user-profile-menu-list,
+[data-theme="taller"] .user-profile-menu-list,
+html[data-theme="taller"] .user-profile-menu-list,
+body[data-theme="taller"] .user-profile-menu-list {
+  background: #ffffff !important;
+  background-color: #ffffff !important;
+  border: 1px solid #e2e8f0 !important;
+  box-shadow: 0 14px 38px rgba(15, 23, 42, 0.12) !important;
+
+  .user-profile-name,
+  .text-h6 {
+    color: #0f172a !important;
+    -webkit-text-fill-color: #0f172a !important;
+    font-weight: 800 !important;
+  }
+
+  .user-profile-email,
+  .text-caption {
+    color: #475569 !important;
+    -webkit-text-fill-color: #475569 !important;
+  }
+
+  .user-profile-item-title,
+  .v-list-item-title {
+    color: #0f172a !important;
+    -webkit-text-fill-color: #0f172a !important;
+
+    * {
+      color: #0f172a !important;
+      -webkit-text-fill-color: #0f172a !important;
+    }
+  }
+
+  .user-profile-item-subtitle,
+  .v-list-item-subtitle {
+    color: #475569 !important;
+    -webkit-text-fill-color: #475569 !important;
+  }
+
+  .user-profile-arrow-icon {
+    color: #64748b !important;
+  }
+
+  .profile-menu-close-btn {
+    color: #64748b !important;
+  }
+
+  .theme-subitems-wrapper {
+    background: #f8fafc !important;
+    border-color: #e2e8f0 !important;
+  }
+
+  .theme-group-label {
+    color: #64748b !important;
+  }
+
+  .user-profile-footer {
+    background: #ffffff !important;
+    border-top: 1px solid #e2e8f0 !important;
+  }
+}
+
+// 2. Temas Oscuros y Transparentes (Dark, Dark-Glass, Semi-Dark-Glass)
+[data-theme="dark"] .user-profile-menu-list,
+html[data-theme="dark"] .user-profile-menu-list,
+body[data-theme="dark"] .user-profile-menu-list,
+.v-theme--dark .user-profile-menu-list,
+.theme-dark .user-profile-menu-list,
+[data-theme="dark-glass"] .user-profile-menu-list,
+html[data-theme="dark-glass"] .user-profile-menu-list,
+body[data-theme="dark-glass"] .user-profile-menu-list,
+.v-theme--dark-glass .user-profile-menu-list,
+.theme-dark-glass .user-profile-menu-list,
+[data-theme="semi-dark-glass"] .user-profile-menu-list,
+html[data-theme="semi-dark-glass"] .user-profile-menu-list,
+body[data-theme="semi-dark-glass"] .user-profile-menu-list,
+.v-theme--semi-dark-glass .user-profile-menu-list,
+.theme-semi-dark-glass .user-profile-menu-list {
+  background: #181d2e !important;
+  background-color: #181d2e !important;
+  backdrop-filter: blur(25px) !important;
+  -webkit-backdrop-filter: blur(25px) !important;
+  border: 1px solid rgba(255, 255, 255, 0.16) !important;
+  box-shadow: 0 18px 48px rgba(0, 0, 0, 0.65) !important;
+  color: #ffffff !important;
+
+  .user-profile-header {
+    background: linear-gradient(180deg, rgba(102, 108, 255, 0.20) 0%, rgba(24, 29, 46, 0.05) 100%) !important;
+  }
+
+  .user-profile-name,
+  .text-h6,
+  [class*="user-profile-name"] {
+    color: #ffffff !important;
+    -webkit-text-fill-color: #ffffff !important;
+    font-weight: 800 !important;
+    font-size: 1.0625rem !important;
+  }
+
+  .user-profile-email,
+  .text-caption,
+  [class*="user-profile-email"] {
+    color: #cbd5e1 !important;
+    -webkit-text-fill-color: #cbd5e1 !important;
+    opacity: 0.9 !important;
+  }
+
+  .v-list-item {
+    color: #ffffff !important;
+
+    &:hover {
+      background: rgba(255, 255, 255, 0.09) !important;
+    }
+  }
+
+  .user-profile-item-title,
+  .v-list-item-title,
+  [class*="user-profile-item-title"] {
+    color: #ffffff !important;
+    -webkit-text-fill-color: #ffffff !important;
+    font-weight: 700 !important;
+
+    * {
+      color: #ffffff !important;
+      -webkit-text-fill-color: #ffffff !important;
+    }
+  }
+
+  .user-profile-item-subtitle,
+  .v-list-item-subtitle,
+  [class*="user-profile-item-subtitle"] {
+    color: #94a3b8 !important;
+    -webkit-text-fill-color: #94a3b8 !important;
+    opacity: 0.9 !important;
+  }
+
+  .user-profile-arrow-icon {
+    color: #cbd5e1 !important;
+  }
+
+  .profile-menu-close-btn {
+    color: rgba(255, 255, 255, 0.8) !important;
+
+    &:hover {
+      color: #ffffff !important;
+      background: rgba(255, 255, 255, 0.15) !important;
+    }
+  }
+
+  .theme-subitems-wrapper {
+    background: rgba(10, 14, 26, 0.65) !important;
+    border: 1px solid rgba(255, 255, 255, 0.12) !important;
+  }
+
+  .theme-group-label {
+    color: #94a3b8 !important;
+    font-weight: 800 !important;
+  }
+
+  .theme-subitems-wrapper .v-list-item-title {
+    color: #ffffff !important;
+
+    * {
+      color: #ffffff !important;
+      -webkit-text-fill-color: #ffffff !important;
+    }
+  }
+
+  .text-medium-emphasis {
+    color: rgba(255, 255, 255, 0.70) !important;
+    -webkit-text-fill-color: rgba(255, 255, 255, 0.70) !important;
+  }
+
+  .text-high-emphasis {
+    color: #ffffff !important;
+    -webkit-text-fill-color: #ffffff !important;
+  }
+
+  .v-divider {
+    border-color: rgba(255, 255, 255, 0.14) !important;
+  }
+
+  .user-profile-footer {
+    background: #141724 !important;
+    border-top: 1px solid rgba(255, 255, 255, 0.12) !important;
+  }
+}

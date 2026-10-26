@@ -149,45 +149,27 @@ const logout = async () => {
 <template>
   <div class="user-profile-nav-container d-flex align-center gap-3">
     <!-- 👉 Botón de Notificaciones / Recordatorios 10.000 KM en el Navbar -->
-    <VTooltip location="bottom">
+    <VTooltip location="bottom" :open-on-focus="false">
       <template #activator="{ props: tooltipProps }">
-        <button
-          v-bind="tooltipProps"
-          type="button"
+        <button v-bind="tooltipProps" type="button"
           class="navbar-reminder-bell-btn d-flex align-center justify-center position-relative"
-          aria-label="Centro de Recordatorios 10.000 KM"
-          @click="toggleDrawer"
-        >
-          <VBadge
-            v-if="badgeCount > 0"
-            color="error"
-            :content="badgeCount"
-            max="99"
-            class="navbar-reminder-badge"
-          >
-            <VIcon
-              icon="ri-notification-3-line"
-              size="22"
-              class="text-white"
-            />
+          aria-label="Centro de Recordatorios 10.000 KM" @click="toggleDrawer">
+          <VBadge v-if="badgeCount > 0" color="error" :content="badgeCount" max="99" class="navbar-reminder-badge">
+            <VIcon icon="ri-notification-3-line" size="22" class="text-white" />
           </VBadge>
-          <VIcon
-            v-else
-            icon="ri-notification-3-line"
-            size="22"
-            class="text-white"
-          />
+          <VIcon v-else icon="ri-notification-3-line" size="22" class="text-white" />
         </button>
       </template>
-      <span>
+      <span style="color: #ffffff !important; font-weight: 600; font-size: 0.8125rem;">
         Centro de Recordatorios (10.000 KM)
         <template v-if="badgeCount > 0">
-          — <strong>{{ badgeCount }}</strong> pendiente(s)
+          — <strong style="color: #FBBF24 !important; font-weight: 800;">{{ badgeCount }}</strong> pendiente(s)
         </template>
       </span>
     </VTooltip>
 
     <VBadge dot bordered location="bottom right" offset-x="3" offset-y="3" color="success" class="user-profile-badge">
+
       <VAvatar class="cursor-pointer elevation-2 transition-swing hover-scale" size="52">
         <VImg :src="user && user.avatar ? user.avatar : avatar1" />
 
@@ -196,16 +178,28 @@ const logout = async () => {
           location="bottom end" offset="14px" transition="scale-transition" :close-on-content-click="false">
           <VList class="pa-0 rounded-2xl overflow-hidden elevation-12 border user-profile-menu-list"
             style="width: 390px; max-width: 100%;">
-            <!-- Modern Profile Header (Tamaño Cómodo Original) -->
+            <!-- Modern Profile Header con Botón de Cerrar (X) -->
             <div class="user-profile-header pa-5 d-flex flex-column align-center text-center position-relative">
+              <!-- Botón Cerrar (X) -->
+              <VBtn
+                icon="ri-close-line"
+                size="small"
+                variant="text"
+                class="position-absolute profile-menu-close-btn"
+                style="top: 10px; right: 10px; z-index: 10;"
+                title="Cerrar menú"
+                aria-label="Cerrar menú"
+                @click="isMenuOpen = false"
+              />
+
               <VAvatar size="68" class="elevation-4 mb-3 border-avatar">
                 <VImg :src="user && user.avatar ? user.avatar : avatar1" />
               </VAvatar>
               <div v-if="user" class="w-100">
-                <div class="text-h6 font-weight-bold text-high-emphasis text-truncate mb-1">
+                <div class="user-profile-name text-truncate mb-1">
                   {{ user.full_name || `${user.name} ${user.surname || ''}` || 'Usuario' }}
                 </div>
-                <div class="text-caption text-medium-emphasis mb-2 font-mono text-truncate">
+                <div class="user-profile-email font-mono text-truncate mb-2">
                   {{ user.email }}
                 </div>
                 <VChip size="small" color="primary" variant="tonal" class="font-weight-bold px-3 text-uppercase">
@@ -214,7 +208,7 @@ const logout = async () => {
                 </VChip>
               </div>
               <div v-else>
-                <div class="text-h6 font-weight-bold text-high-emphasis mb-1">
+                <div class="user-profile-name mb-1">
                   Usuario Invitado
                 </div>
               </div>
@@ -238,10 +232,10 @@ const logout = async () => {
                     </VAvatar>
                   </template>
 
-                  <VListItemTitle class="font-weight-bold text-body-2">
+                  <VListItemTitle class="user-profile-item-title font-weight-bold text-body-2">
                     Mi Perfil & Seguridad
                   </VListItemTitle>
-                  <VListItemSubtitle class="text-caption text-medium-emphasis mt-0.5">
+                  <VListItemSubtitle class="user-profile-item-subtitle text-caption mt-0.5">
                     Mis datos y contraseña
                   </VListItemSubtitle>
                 </VListItem>
@@ -256,39 +250,31 @@ const logout = async () => {
                     </VAvatar>
                   </template>
 
-                  <VListItemTitle class="font-weight-bold text-body-2">
+                  <VListItemTitle class="user-profile-item-title font-weight-bold text-body-2">
                     Mi Establecimiento
                   </VListItemTitle>
-                  <VListItemSubtitle class="text-caption text-medium-emphasis mt-0.5">
+                  <VListItemSubtitle class="user-profile-item-subtitle text-caption mt-0.5">
                     Razón social y sucursal
                   </VListItemSubtitle>
                 </VListItem>
 
                 <!-- Viñeta: Centro de Recordatorios de Mantenimiento 10.000 KM -->
-                <VListItem
-                  color="warning"
-                  class="rounded-xl mb-1 nav-item-hover cursor-pointer py-2"
-                  @click="isMenuOpen = false; openDrawer()"
-                >
+                <VListItem color="warning" class="rounded-xl mb-1 nav-item-hover cursor-pointer py-2"
+                  @click="isMenuOpen = false; openDrawer()">
                   <template #prepend>
                     <VAvatar color="warning" variant="tonal" size="34" class="me-3 rounded-lg">
                       <VIcon icon="ri-calendar-check-line" size="18" />
                     </VAvatar>
                   </template>
 
-                  <VListItemTitle class="font-weight-bold text-body-2 d-flex align-center justify-space-between">
+                  <VListItemTitle class="user-profile-item-title font-weight-bold text-body-2 d-flex align-center justify-space-between">
                     <span>Recordatorios 10.000 KM</span>
-                    <VChip
-                      v-if="badgeCount > 0"
-                      size="x-small"
-                      color="error"
-                      variant="elevated"
-                      class="font-weight-bold px-2"
-                    >
+                    <VChip v-if="badgeCount > 0" size="x-small" color="error" variant="elevated"
+                      class="font-weight-bold px-2">
                       {{ badgeCount }}
                     </VChip>
                   </VListItemTitle>
-                  <VListItemSubtitle class="text-caption text-medium-emphasis mt-0.5">
+                  <VListItemSubtitle class="user-profile-item-subtitle text-caption mt-0.5">
                     Mantenimientos preventivos
                   </VListItemSubtitle>
                 </VListItem>
@@ -304,20 +290,20 @@ const logout = async () => {
                     </VAvatar>
                   </template>
 
-                  <VListItemTitle class="font-weight-bold text-body-2 d-flex align-center justify-space-between">
+                  <VListItemTitle class="user-profile-item-title font-weight-bold text-body-2 d-flex align-center justify-space-between">
                     <span>Tema / Apariencia</span>
                     <VChip size="x-small" color="warning" variant="tonal"
                       class="font-weight-semibold text-caption px-2">
                       {{ currentThemeLabel }}
                     </VChip>
                   </VListItemTitle>
-                  <VListItemSubtitle class="text-caption text-medium-emphasis mt-0.5">
+                  <VListItemSubtitle class="user-profile-item-subtitle text-caption mt-0.5">
                     Personalizar interfaz
                   </VListItemSubtitle>
 
                   <template #append>
                     <VIcon :icon="isThemeExpanded ? 'ri-arrow-up-s-line' : 'ri-arrow-down-s-line'" size="20"
-                      class="text-medium-emphasis ms-1" />
+                      class="user-profile-arrow-icon ms-1" />
                   </template>
                 </VListItem>
 
@@ -441,10 +427,10 @@ const logout = async () => {
                     </VAvatar>
                   </template>
 
-                  <VListItemTitle class="font-weight-bold text-body-2">
+                  <VListItemTitle class="user-profile-item-title font-weight-bold text-body-2">
                     Atajos de Teclado & Soporte
                   </VListItemTitle>
-                  <VListItemSubtitle class="text-caption text-medium-emphasis mt-0.5">
+                  <VListItemSubtitle class="user-profile-item-subtitle text-caption mt-0.5">
                     Guía rápida y ayuda
                   </VListItemSubtitle>
                 </VListItem>
@@ -453,7 +439,7 @@ const logout = async () => {
 
             <!-- Logout Button (Siempre Visible en la base) -->
             <VDivider class="border-opacity-50" />
-            <div class="pa-3 bg-surface">
+            <div class="pa-3 user-profile-footer">
               <VBtn block color="error" variant="tonal" prepend-icon="ri-logout-box-r-line"
                 class="rounded-xl font-weight-bold logout-action-btn" size="large" height="44" :loading="loader.loading"
                 :disabled="loader.loading" @click="logout">
@@ -646,6 +632,48 @@ const logout = async () => {
 .settings-scroll :deep(.v-list-item-subtitle) {
   min-width: 0;
   overflow-wrap: anywhere;
+}
+
+.user-profile-menu-list {
+  background: var(--bg-surface, #ffffff);
+
+  .user-profile-name,
+  .text-h6 {
+    color: var(--text-primary, #0f172a);
+    font-weight: 800;
+  }
+
+  .user-profile-email,
+  .text-caption {
+    color: var(--text-secondary, #475569);
+    font-weight: 500;
+  }
+
+  .user-profile-item-title,
+  .v-list-item-title {
+    color: var(--text-primary, #0f172a);
+    font-weight: 700;
+  }
+
+  .user-profile-item-subtitle,
+  .v-list-item-subtitle {
+    color: var(--text-secondary, #475569);
+    font-weight: 500;
+  }
+
+  .user-profile-arrow-icon {
+    color: var(--text-secondary, #475569);
+  }
+}
+
+.profile-menu-close-btn {
+  color: var(--text-secondary, #475569);
+  transition: all 0.2s ease;
+
+  &:hover {
+    color: var(--text-primary, #0f172a);
+    background: rgba(var(--v-theme-primary), 0.08);
+  }
 }
 
 .border-avatar {

@@ -1,6 +1,31 @@
 // 👉 Tooltip
 .v-tooltip.v-overlay {
   .v-overlay__content {
-    font-weight: 500 !important;
+    background: rgba(15, 23, 42, 0.95) !important;
+    color: #ffffff !important;
+    font-weight: 600 !important;
+    font-size: 0.8125rem !important;
+    line-height: 1.4 !important;
+    padding: 6px 12px !important;
+    border-radius: 8px !important;
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.35) !important;
+    border: 1px solid rgba(255, 255, 255, 0.20) !important;
+    backdrop-filter: blur(8px) !important;
+    -webkit-backdrop-filter: blur(8px) !important;
+
+    *,
+    span,
+    strong,
+    p,
+    div {
+      color: #ffffff !important;
+      font-weight: inherit !important;
+    }
+
+    strong {
+      color: #FBBF24 !important; // Dorado para cantidades destacadas
+      font-weight: 800 !important;
+    }
   }
 }
+

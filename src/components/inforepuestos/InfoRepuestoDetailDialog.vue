@@ -65,39 +65,39 @@ const vehicleHeader = computed(() => {
         <div class="d-flex flex-wrap justify-center gap-2 mt-2">
           <div
             class="d-inline-flex align-center px-3 py-1 rounded-pill text-caption font-weight-bold"
-            style="background: rgba(255, 255, 255, 0.22); color: #ffffff; border: 1px solid rgba(255, 255, 255, 0.35);"
+            style="background: rgba(255, 255, 255, 0.22) !important; color: #ffffff !important; border: 1px solid rgba(255, 255, 255, 0.38) !important;"
           >
             <VIcon
               icon="ri-roadster-line"
               size="14"
-              class="me-1"
+              class="me-1 text-white"
             />
-            <span>{{ props.requestSelected.brand }} {{ props.requestSelected.model }}</span>
+            <span class="text-white">{{ props.requestSelected.brand }} {{ props.requestSelected.model }}</span>
           </div>
 
           <div
             v-if="props.requestSelected.year"
             class="d-inline-flex align-center px-3 py-1 rounded-pill text-caption font-weight-medium"
-            style="background: rgba(255, 255, 255, 0.18); color: #ffffff; border: 1px solid rgba(255, 255, 255, 0.28);"
+            style="background: rgba(255, 255, 255, 0.22) !important; color: #ffffff !important; border: 1px solid rgba(255, 255, 255, 0.38) !important;"
           >
             <VIcon
               icon="ri-calendar-line"
               size="14"
-              class="me-1"
+              class="me-1 text-white"
             />
-            <span>Año: <strong>{{ props.requestSelected.year }}</strong></span>
+            <span class="text-white">Año: <strong class="text-white">{{ props.requestSelected.year }}</strong></span>
           </div>
 
           <div
             class="d-inline-flex align-center px-3 py-1 rounded-pill text-caption font-weight-bold"
-            style="background: rgba(16, 185, 129, 0.25); color: #ffffff; border: 1px solid rgba(16, 185, 129, 0.5);"
+            style="background: rgba(16, 185, 129, 0.35) !important; color: #ffffff !important; border: 1px solid rgba(16, 185, 129, 0.60) !important;"
           >
             <VIcon
               icon="ri-settings-3-line"
               size="14"
-              class="me-1"
+              class="me-1 text-white"
             />
-            <span>{{ props.requestSelected.items ? props.requestSelected.items.length : 0 }} Repuestos Registrados</span>
+            <span class="text-white">{{ props.requestSelected.items ? props.requestSelected.items.length : 0 }} Repuestos Registrados</span>
           </div>
         </div>
       </div>
@@ -280,7 +280,7 @@ const vehicleHeader = computed(() => {
 
       <!-- Footer Metadata -->
       <VDivider />
-      <div class="bg-card-footer py-3 px-6 d-flex align-center justify-space-between text-caption text-medium-emphasis bg-slate-50">
+      <div class="bg-card-footer py-3 px-6 d-flex align-center justify-space-between text-caption text-medium-emphasis">
         <div class="d-flex align-center gap-1">
           <VIcon
             icon="ri-user-smile-line"
@@ -297,14 +297,14 @@ const vehicleHeader = computed(() => {
       <!-- Sticky Close Button -->
       <VDivider />
       <VCardActions
-        class="pa-4 justify-end bg-surface dialog-actions-responsive"
+        class="pa-4 justify-end bg-white dialog-actions-responsive"
         style="position: sticky; bottom: 0; z-index: 2;"
       >
         <VBtn
           variant="outlined"
           color="secondary"
           prepend-icon="ri-close-line"
-          class="px-6 rounded-lg font-weight-medium"
+          class="px-6 rounded-lg font-weight-bold btn-close-footer"
           height="40"
           @click="closeDialog"
         >
