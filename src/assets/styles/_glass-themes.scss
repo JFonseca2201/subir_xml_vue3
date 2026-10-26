@@ -3163,15 +3163,15 @@ body[data-theme="semi-dark-glass"],
 }
 
 // ==========================================================================
-// BLINDAJE DEFINITIVO DEL MENÚ LATERAL (SIDEBAR): COLOR DE LA NAVBAR
+// BLINDAJE DINÁMICO DEL MENÚ LATERAL (SIDEBAR): COLOR Y TEMA EXACTO
 // ==========================================================================
 .layout-vertical-nav,
 .layout-nav-type-vertical .layout-vertical-nav,
 .v-navigation-drawer.layout-vertical-nav {
-  background: linear-gradient(180deg, #666CFF 0%, #5C61E6 60%, #4F54E5 100%) !important;
-  background-color: #666CFF !important;
-  border-right: 1px solid rgba(255, 255, 255, 0.15) !important;
-  box-shadow: 4px 0 25px rgba(102, 108, 255, 0.22) !important;
+  background: var(--bg-sidebar, var(--bg-header)) !important;
+  background-color: transparent !important;
+  border-right: 1px solid var(--border-glass, rgba(255, 255, 255, 0.15)) !important;
+  box-shadow: 4px 0 25px rgba(0, 0, 0, 0.18) !important;
 
   .v-navigation-drawer__content,
   .nav-items {
@@ -3180,7 +3180,7 @@ body[data-theme="semi-dark-glass"],
 
   .nav-header {
     background: transparent !important;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.15) !important;
+    border-bottom: 1px solid var(--border-glass, rgba(255, 255, 255, 0.15)) !important;
 
     .app-logo-title {
       color: #ffffff !important;
@@ -3284,14 +3284,14 @@ body[data-theme="semi-dark-glass"],
     }
   }
 
-  // Elemento activo seleccionado (White pill con texto morado corporativo)
+  // Elemento activo seleccionado (adaptable a cada tema)
   .nav-link > a.router-link-active,
   .nav-link > a.router-link-exact-active,
   .nav-link.router-link-active > a,
   .nav-link.router-link-exact-active > a,
   .v-list-item--active {
-    background: #ffffff !important;
-    color: #5C61E6 !important;
+    background: var(--bg-active-item, #ffffff) !important;
+    color: var(--text-active, #5C61E6) !important;
     box-shadow: 0 4px 14px rgba(0, 0, 0, 0.18) !important;
     border: none !important;
 
@@ -3300,10 +3300,10 @@ body[data-theme="semi-dark-glass"],
     .nav-item-icon,
     .nav-item-title,
     .v-icon {
-      color: #5C61E6 !important;
-      fill: #5C61E6 !important;
+      color: var(--text-active, #5C61E6) !important;
+      fill: var(--text-active, #5C61E6) !important;
       font-weight: 800 !important;
-      -webkit-text-fill-color: #5C61E6 !important;
+      -webkit-text-fill-color: var(--text-active, #5C61E6) !important;
     }
   }
 
@@ -3324,6 +3324,373 @@ body[data-theme="semi-dark-glass"],
         color: #ffffff !important;
       }
     }
+  }
+}
+
+// ==========================================================================
+// BLINDAJE DINÁMICO DEL PANEL DE RECORDATORIOS (MaintenanceRemindersDrawer.vue)
+// Respeto absoluto del tema activo: Taller, Dark, Dark-Glass, Semi-Dark, Light
+// ==========================================================================
+
+// A. TEMA TALLER (Oficial Rojo Vino)
+[data-theme="taller"],
+html[data-theme="taller"],
+body[data-theme="taller"] {
+  .maintenance-drawer {
+    background: #ffffff !important;
+    color: #0f172a !important;
+    border-left: 1px solid #e2e8f0 !important;
+
+    .drawer-header {
+      background: linear-gradient(135deg, #8A1538 0%, #600A1F 100%) !important;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.20) !important;
+    }
+
+    .drawer-tabs {
+      background: #f8fafc !important;
+      border-bottom: 1px solid #e2e8f0 !important;
+
+      .v-tab {
+        color: #64748b !important;
+
+        &.v-tab--selected {
+          background: #ffffff !important;
+          color: #8A1538 !important;
+
+          .v-btn__content,
+          > span:not(.drawer-tab-badge) {
+            color: #8A1538 !important;
+            -webkit-text-fill-color: #8A1538 !important;
+          }
+
+          .drawer-tab-badge {
+            background: #8A1538 !important;
+            color: #ffffff !important;
+            -webkit-text-fill-color: #ffffff !important;
+          }
+        }
+      }
+    }
+
+    .drawer-body {
+      background: #f8fafc !important;
+    }
+
+    .empty-state-container {
+      .empty-avatar {
+        background: rgba(138, 21, 56, 0.12) !important;
+        border-color: rgba(138, 21, 56, 0.35) !important;
+
+        .v-icon {
+          color: #8A1538 !important;
+          fill: #8A1538 !important;
+        }
+      }
+
+      .empty-title {
+        color: #0f172a !important;
+      }
+
+      .empty-desc {
+        color: #64748b !important;
+      }
+    }
+
+    .reminder-card {
+      background: #ffffff !important;
+      border-color: #e2e8f0 !important;
+      color: #0f172a !important;
+
+      * {
+        color: #0f172a;
+      }
+
+      .text-medium-emphasis,
+      .text-caption {
+        color: #64748b !important;
+      }
+    }
+  }
+
+  .maintenance-fab-btn {
+    background: linear-gradient(135deg, #8A1538 0%, #600A1F 100%) !important;
+  }
+}
+
+// B. TEMA OSCURO (Dark)
+[data-theme="dark"],
+html[data-theme="dark"],
+body[data-theme="dark"] {
+  .maintenance-drawer {
+    background: #2F3349 !important;
+    color: #ffffff !important;
+    border-left: 1px solid rgba(234, 234, 255, 0.12) !important;
+
+    .drawer-header {
+      background: #2F3349 !important;
+      border-bottom: 1px solid rgba(234, 234, 255, 0.12) !important;
+    }
+
+    .drawer-tabs {
+      background: #282A42 !important;
+      border-bottom: 1px solid rgba(234, 234, 255, 0.12) !important;
+
+      .v-tab {
+        color: rgba(234, 234, 255, 0.75) !important;
+
+        &.v-tab--selected {
+          background: #2F3349 !important;
+          color: #ffffff !important;
+
+          .v-btn__content,
+          > span:not(.drawer-tab-badge) {
+            color: #ffffff !important;
+            -webkit-text-fill-color: #ffffff !important;
+          }
+
+          .drawer-tab-badge {
+            background: rgba(102, 108, 255, 0.4) !important;
+            color: #ffffff !important;
+            -webkit-text-fill-color: #ffffff !important;
+          }
+        }
+      }
+    }
+
+    .drawer-body {
+      background: #282A42 !important;
+    }
+
+    .empty-state-container {
+      .empty-avatar {
+        background: rgba(102, 108, 255, 0.18) !important;
+        border-color: rgba(102, 108, 255, 0.35) !important;
+
+        .v-icon {
+          color: #ffffff !important;
+          fill: #ffffff !important;
+        }
+      }
+
+      .empty-title {
+        color: #ffffff !important;
+      }
+
+      .empty-desc {
+        color: rgba(234, 234, 255, 0.75) !important;
+      }
+    }
+
+    .reminder-card {
+      background: #2F3349 !important;
+      border-color: rgba(234, 234, 255, 0.12) !important;
+      color: #ffffff !important;
+
+      * {
+        color: #ffffff;
+      }
+
+      .text-medium-emphasis,
+      .text-caption {
+        color: rgba(234, 234, 255, 0.70) !important;
+      }
+
+      .mileage-info-box {
+        background: rgba(255, 255, 255, 0.05) !important;
+        border-color: rgba(255, 255, 255, 0.12) !important;
+      }
+    }
+  }
+
+  .maintenance-fab-btn {
+    background: #2F3349 !important;
+    border: 1px solid rgba(255, 255, 255, 0.15) !important;
+  }
+}
+
+// C. TEMA OSCURO TRASLÚCIDO (Dark-Glass)
+[data-theme="dark-glass"],
+html[data-theme="dark-glass"],
+body[data-theme="dark-glass"] {
+  .maintenance-drawer {
+    background: rgba(16, 20, 36, 0.94) !important;
+    backdrop-filter: blur(25px) !important;
+    -webkit-backdrop-filter: blur(25px) !important;
+    color: #ffffff !important;
+    border-left: 1px solid rgba(255, 255, 255, 0.10) !important;
+
+    .drawer-header {
+      background: rgba(12, 14, 25, 0.95) !important;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.10) !important;
+    }
+
+    .drawer-tabs {
+      background: rgba(10, 12, 22, 0.85) !important;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.10) !important;
+
+      .v-tab {
+        color: rgba(255, 255, 255, 0.75) !important;
+
+        &.v-tab--selected {
+          background: rgba(255, 255, 255, 0.12) !important;
+          color: #ffffff !important;
+
+          .v-btn__content,
+          > span:not(.drawer-tab-badge) {
+            color: #ffffff !important;
+            -webkit-text-fill-color: #ffffff !important;
+          }
+
+          .drawer-tab-badge {
+            background: rgba(115, 103, 240, 0.5) !important;
+            color: #ffffff !important;
+            -webkit-text-fill-color: #ffffff !important;
+          }
+        }
+      }
+    }
+
+    .drawer-body {
+      background: rgba(9, 10, 16, 0.88) !important;
+    }
+
+    .empty-state-container {
+      .empty-avatar {
+        background: rgba(115, 103, 240, 0.20) !important;
+        border-color: rgba(115, 103, 240, 0.40) !important;
+
+        .v-icon {
+          color: #ffffff !important;
+          fill: #ffffff !important;
+        }
+      }
+
+      .empty-title {
+        color: #ffffff !important;
+      }
+
+      .empty-desc {
+        color: rgba(255, 255, 255, 0.75) !important;
+      }
+    }
+
+    .reminder-card {
+      background: rgba(255, 255, 255, 0.05) !important;
+      border-color: rgba(255, 255, 255, 0.10) !important;
+      color: #ffffff !important;
+
+      * {
+        color: #ffffff;
+      }
+
+      .text-medium-emphasis,
+      .text-caption {
+        color: rgba(255, 255, 255, 0.70) !important;
+      }
+
+      .mileage-info-box {
+        background: rgba(255, 255, 255, 0.04) !important;
+        border-color: rgba(255, 255, 255, 0.10) !important;
+      }
+    }
+  }
+
+  .maintenance-fab-btn {
+    background: rgba(12, 14, 25, 0.92) !important;
+    border: 1px solid rgba(255, 255, 255, 0.15) !important;
+  }
+}
+
+// D. TEMA SEMI-OSCURO TRASLÚCIDO (Semi-Dark-Glass)
+[data-theme="semi-dark-glass"],
+html[data-theme="semi-dark-glass"],
+body[data-theme="semi-dark-glass"] {
+  .maintenance-drawer {
+    background: rgba(22, 31, 52, 0.94) !important;
+    backdrop-filter: blur(20px) !important;
+    -webkit-backdrop-filter: blur(20px) !important;
+    color: #f8fafc !important;
+    border-left: 1px solid rgba(255, 255, 255, 0.10) !important;
+
+    .drawer-header {
+      background: rgba(20, 27, 47, 0.95) !important;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.10) !important;
+    }
+
+    .drawer-tabs {
+      background: rgba(15, 23, 42, 0.85) !important;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.10) !important;
+
+      .v-tab {
+        color: rgba(241, 245, 249, 0.75) !important;
+
+        &.v-tab--selected {
+          background: rgba(255, 255, 255, 0.12) !important;
+          color: #ffffff !important;
+
+          .v-btn__content,
+          > span:not(.drawer-tab-badge) {
+            color: #ffffff !important;
+            -webkit-text-fill-color: #ffffff !important;
+          }
+
+          .drawer-tab-badge {
+            background: rgba(99, 102, 241, 0.5) !important;
+            color: #ffffff !important;
+            -webkit-text-fill-color: #ffffff !important;
+          }
+        }
+      }
+    }
+
+    .drawer-body {
+      background: rgba(15, 23, 42, 0.88) !important;
+    }
+
+    .empty-state-container {
+      .empty-avatar {
+        background: rgba(99, 102, 241, 0.20) !important;
+        border-color: rgba(129, 140, 248, 0.40) !important;
+
+        .v-icon {
+          color: #ffffff !important;
+          fill: #ffffff !important;
+        }
+      }
+
+      .empty-title {
+        color: #f8fafc !important;
+      }
+
+      .empty-desc {
+        color: rgba(241, 245, 249, 0.75) !important;
+      }
+    }
+
+    .reminder-card {
+      background: rgba(255, 255, 255, 0.06) !important;
+      border-color: rgba(255, 255, 255, 0.10) !important;
+      color: #f8fafc !important;
+
+      * {
+        color: #f8fafc;
+      }
+
+      .text-medium-emphasis,
+      .text-caption {
+        color: rgba(241, 245, 249, 0.70) !important;
+      }
+
+      .mileage-info-box {
+        background: rgba(255, 255, 255, 0.05) !important;
+        border-color: rgba(255, 255, 255, 0.10) !important;
+      }
+    }
+  }
+
+  .maintenance-fab-btn {
+    background: rgba(20, 27, 47, 0.92) !important;
+    border: 1px solid rgba(255, 255, 255, 0.15) !important;
   }
 }
 

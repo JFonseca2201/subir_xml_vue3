@@ -449,10 +449,10 @@ const filteredNavItems = computed(() => {
 .layout-vertical-nav,
 .layout-nav-type-vertical .layout-vertical-nav,
 .v-navigation-drawer.layout-vertical-nav {
-  background: linear-gradient(180deg, #666CFF 0%, #5C61E6 60%, #4F54E5 100%) !important;
-  background-color: #666CFF !important;
+  background: var(--bg-sidebar, var(--bg-header)) !important;
+  background-color: transparent !important;
   border-right: 1px solid rgba(255, 255, 255, 0.15) !important;
-  box-shadow: 4px 0 25px rgba(102, 108, 255, 0.22) !important;
+  box-shadow: 4px 0 25px rgba(0, 0, 0, 0.18) !important;
 
   .vertical-nav-items-shadow {
     display: none !important;
@@ -573,14 +573,14 @@ const filteredNavItems = computed(() => {
     }
   }
 
-  // Elemento activo seleccionado (White pill con texto morado corporativo)
+  // Elemento activo seleccionado (adaptable a cada tema)
   .nav-link > a.router-link-active,
   .nav-link > a.router-link-exact-active,
   .nav-link.router-link-active > a,
   .nav-link.router-link-exact-active > a,
   .v-list-item--active {
-    background: #ffffff !important;
-    color: #5C61E6 !important;
+    background: var(--bg-active-item, #ffffff) !important;
+    color: var(--text-active, #5C61E6) !important;
     box-shadow: 0 4px 14px rgba(0, 0, 0, 0.18) !important;
     border: none !important;
 
@@ -589,10 +589,10 @@ const filteredNavItems = computed(() => {
     .nav-item-icon,
     .nav-item-title,
     .v-icon {
-      color: #5C61E6 !important;
-      fill: #5C61E6 !important;
+      color: var(--text-active, #5C61E6) !important;
+      fill: var(--text-active, #5C61E6) !important;
       font-weight: 800 !important;
-      -webkit-text-fill-color: #5C61E6 !important;
+      -webkit-text-fill-color: var(--text-active, #5C61E6) !important;
     }
   }
 }

@@ -267,7 +267,6 @@ const getRelativeDaysText = (item) => {
             <VIcon
               :icon="activeTab === 'overdue' ? 'ri-shield-check-line' : (activeTab === 'today' ? 'ri-checkbox-circle-line' : 'ri-calendar-line')"
               size="36"
-              color="white"
             />
           </VAvatar>
         </div>
@@ -704,17 +703,21 @@ const getRelativeDaysText = (item) => {
 
 <style scoped lang="scss">
 .maintenance-drawer {
-  background: linear-gradient(180deg, #666CFF 0%, #5C61E6 60%, #4F54E5 100%) !important;
-  color: #ffffff !important;
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
-  border-left: 1px solid rgba(255, 255, 255, 0.18) !important;
-  box-shadow: -8px 0 32px rgba(0, 0, 0, 0.3) !important;
+  background: var(--bg-dialog, #ffffff) !important;
+  color: var(--text-primary, #0f172a) !important;
+  backdrop-filter: var(--blur-glass, none);
+  -webkit-backdrop-filter: var(--blur-glass, none);
+  border-left: 1px solid var(--border-glass, #e2e8f0) !important;
+  box-shadow: -8px 0 32px rgba(0, 0, 0, 0.25) !important;
+
+  :deep(.v-navigation-drawer__content) {
+    background: transparent !important;
+  }
 
   // 1. Cabecera del Drawer
   .drawer-header {
-    border-bottom: 1px solid rgba(255, 255, 255, 0.18) !important;
-    background: rgba(0, 0, 0, 0.10) !important;
+    border-bottom: 1px solid var(--border-dialog-header, rgba(255, 255, 255, 0.15)) !important;
+    background: var(--bg-header, var(--bg-dialog-header, linear-gradient(135deg, #666CFF 0%, #5C61E6 100%))) !important;
 
     .drawer-header-avatar {
       background: rgba(255, 255, 255, 0.22) !important;
@@ -730,7 +733,7 @@ const getRelativeDaysText = (item) => {
       color: #ffffff !important;
       font-weight: 800 !important;
       font-size: 1.05rem !important;
-      text-shadow: 0 1px 3px rgba(0, 0, 0, 0.35) !important;
+      text-shadow: 0 1px 3px rgba(0, 0, 0, 0.25) !important;
     }
 
     .drawer-header-subtitle {
@@ -755,11 +758,11 @@ const getRelativeDaysText = (item) => {
 
   // 2. Pestañas de Navegación
   .drawer-tabs {
-    border-bottom: 1px solid rgba(255, 255, 255, 0.18) !important;
-    background: rgba(0, 0, 0, 0.14) !important;
+    border-bottom: 1px solid var(--border-glass, #e2e8f0) !important;
+    background: var(--table-header-bg, #f8fafc) !important;
 
     :deep(.v-tab) {
-      color: rgba(255, 255, 255, 0.82) !important;
+      color: var(--text-secondary, #64748b) !important;
       font-weight: 700 !important;
       letter-spacing: 0.02em;
 
@@ -767,41 +770,44 @@ const getRelativeDaysText = (item) => {
         display: inline-flex;
         align-items: center;
         justify-content: center;
-        background: rgba(255, 255, 255, 0.22) !important;
-        color: #ffffff !important;
-        -webkit-text-fill-color: #ffffff !important;
+        background: rgba(var(--v-theme-on-surface), 0.10) !important;
+        color: var(--text-secondary, #475569) !important;
+        -webkit-text-fill-color: var(--text-secondary, #475569) !important;
         font-weight: 800 !important;
         font-size: 0.72rem !important;
         padding: 1px 7px !important;
         min-width: 22px !important;
         height: 19px !important;
         border-radius: 999px !important;
-        border: 1px solid rgba(255, 255, 255, 0.35) !important;
+        border: 1px solid var(--border-glass, rgba(0, 0, 0, 0.1)) !important;
         line-height: 1 !important;
 
         &.badge-overdue {
           background: #ef4444 !important;
+          color: #ffffff !important;
+          -webkit-text-fill-color: #ffffff !important;
           border-color: #f87171 !important;
         }
       }
 
       &.v-tab--selected {
-        background: #ffffff !important;
+        background: var(--bg-surface, #ffffff) !important;
         opacity: 1 !important;
         border-radius: 8px 8px 0 0 !important;
 
+        .v-btn__content,
         > span:not(.drawer-tab-badge) {
-          color: #5C61E6 !important;
+          color: var(--text-active, #5C61E6) !important;
+          -webkit-text-fill-color: var(--text-active, #5C61E6) !important;
           font-weight: 900 !important;
         }
 
         .drawer-tab-badge {
-          background: #5C61E6 !important;
+          background: var(--text-active, #5C61E6) !important;
           color: #ffffff !important;
           -webkit-text-fill-color: #ffffff !important;
           border: none !important;
           font-weight: 900 !important;
-          box-shadow: 0 2px 6px rgba(92, 97, 230, 0.4) !important;
 
           &.badge-overdue {
             background: #ef4444 !important;
@@ -811,49 +817,54 @@ const getRelativeDaysText = (item) => {
     }
   }
 
-  // 3. Estado Vacío (Al día por hoy / Sin recordatorios)
+  // 3. Cuerpo del Drawer
+  .drawer-body {
+    background: var(--bg-app, #f8fafc) !important;
+  }
+
+  // 4. Estado Vacío (Al día por hoy / Sin recordatorios)
   .empty-state-container {
     .empty-avatar {
-      background: rgba(255, 255, 255, 0.20) !important;
-      border: 2px solid rgba(255, 255, 255, 0.45) !important;
-      box-shadow: 0 4px 18px rgba(0, 0, 0, 0.25) !important;
+      background: var(--dialog-avatar-bg, rgba(102, 108, 255, 0.12)) !important;
+      border: 2px solid var(--dialog-avatar-border, rgba(102, 108, 255, 0.30)) !important;
+      box-shadow: 0 4px 18px rgba(0, 0, 0, 0.15) !important;
 
       .v-icon {
-        color: #ffffff !important;
-        fill: #ffffff !important;
+        color: var(--text-active, #5C61E6) !important;
+        fill: var(--text-active, #5C61E6) !important;
         font-size: 34px !important;
       }
     }
 
     .empty-title {
-      color: #ffffff !important;
+      color: var(--text-primary, #0f172a) !important;
       font-weight: 900 !important;
       font-size: 1.25rem !important;
       letter-spacing: 0.02em !important;
-      text-shadow: 0 2px 6px rgba(0, 0, 0, 0.35) !important;
+      text-shadow: none !important;
     }
 
     .empty-desc {
-      color: rgba(255, 255, 255, 0.92) !important;
+      color: var(--text-secondary, #64748b) !important;
       font-size: 0.88rem !important;
       line-height: 1.5 !important;
-      text-shadow: 0 1px 3px rgba(0, 0, 0, 0.25) !important;
+      text-shadow: none !important;
     }
   }
 
-  // 4. Tarjetas de Recordatorio (Fondos blancos sólidos para máxima legibilidad)
+  // 5. Tarjetas de Recordatorio
   .reminder-card {
-    background: #ffffff !important;
-    color: #0f172a !important;
-    border: 1px solid rgba(255, 255, 255, 0.40) !important;
-    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.16) !important;
+    background: var(--bg-surface, #ffffff) !important;
+    color: var(--text-primary, #0f172a) !important;
+    border: 1px solid var(--border-glass, #e2e8f0) !important;
+    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.08) !important;
 
     * {
-      color: #0f172a;
+      color: var(--text-primary, #0f172a);
     }
 
     .kardex-plate-badge {
-      background: #0f172a !important;
+      background: var(--text-primary, #0f172a) !important;
       color: #ffffff !important;
       border-radius: 6px;
       font-weight: 800;
@@ -861,25 +872,25 @@ const getRelativeDaysText = (item) => {
 
     .text-high-emphasis,
     .text-body-2 {
-      color: #0f172a !important;
+      color: var(--text-primary, #0f172a) !important;
       font-weight: 700 !important;
     }
 
     .text-medium-emphasis,
     .text-caption {
-      color: #475569 !important;
+      color: var(--text-secondary, #64748b) !important;
     }
 
     .mileage-info-box {
-      background: #f8fafc !important;
-      border: 1.5px dashed #cbd5e1 !important;
+      background: rgba(var(--v-theme-on-surface), 0.04) !important;
+      border: 1.5px dashed var(--border-glass, #cbd5e1) !important;
 
       * {
-        color: #334155;
+        color: var(--text-secondary, #334155);
       }
 
       .text-primary {
-        color: #5C61E6 !important;
+        color: var(--text-active, #5C61E6) !important;
         font-weight: 900 !important;
       }
 
@@ -896,30 +907,30 @@ const getRelativeDaysText = (item) => {
       font-weight: 700 !important;
 
       &.status-paid {
-        background: #ecfdf5 !important;
-        color: #059669 !important;
-        border: 1px solid #a7f3d0 !important;
-        .status-dot { background: #059669 !important; }
+        background: rgba(16, 185, 129, 0.15) !important;
+        color: #10b981 !important;
+        border: 1px solid rgba(16, 185, 129, 0.35) !important;
+        .status-dot { background: #10b981 !important; }
       }
 
       &.status-pending {
-        background: #fef2f2 !important;
-        color: #dc2626 !important;
-        border: 1px solid #fecaca !important;
-        .status-dot { background: #dc2626 !important; }
+        background: rgba(239, 68, 68, 0.15) !important;
+        color: #ef4444 !important;
+        border: 1px solid rgba(239, 68, 68, 0.35) !important;
+        .status-dot { background: #ef4444 !important; }
       }
 
       &.status-partial {
-        background: #fffbeb !important;
-        color: #d97706 !important;
-        border: 1px solid #fde68a !important;
-        .status-dot { background: #d97706 !important; }
+        background: rgba(245, 158, 11, 0.15) !important;
+        color: #f59e0b !important;
+        border: 1px solid rgba(245, 158, 11, 0.35) !important;
+        .status-dot { background: #f59e0b !important; }
       }
     }
 
     &:hover {
       transform: translateY(-2px);
-      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.22) !important;
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.16) !important;
     }
 
     &.reminder-card-overdue {
@@ -927,7 +938,7 @@ const getRelativeDaysText = (item) => {
     }
 
     &.reminder-card-today {
-      border-left: 5px solid #666CFF !important;
+      border-left: 5px solid var(--text-active, #666CFF) !important;
     }
   }
 }
@@ -940,12 +951,14 @@ const getRelativeDaysText = (item) => {
 
   .maintenance-fab-btn {
     border-radius: 50% !important;
-    box-shadow: 0 8px 24px rgba(var(--v-theme-primary), 0.40) !important;
+    background: var(--bg-header, var(--v-theme-primary)) !important;
+    color: #ffffff !important;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.30) !important;
     transition: transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.25s ease;
 
     &:hover {
       transform: scale(1.10) translateY(-2px);
-      box-shadow: 0 12px 30px rgba(var(--v-theme-primary), 0.65) !important;
+      box-shadow: 0 12px 30px rgba(0, 0, 0, 0.45) !important;
     }
   }
 }
