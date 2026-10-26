@@ -119,7 +119,14 @@ const handleProfileUpdate = updatedUser => {
 
 const selectTheme = themeName => {
   configStore.theme = themeName
+  isMenuOpen.value = false
 }
+
+watch(isMenuOpen, val => {
+  if (!val) {
+    isThemeExpanded.value = false
+  }
+})
 
 const logout = async () => {
   isMenuOpen.value = false

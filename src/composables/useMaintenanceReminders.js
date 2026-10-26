@@ -119,15 +119,17 @@ export function useMaintenanceReminders() {
     if (reminder.whatsapp_url) {
       window.open(reminder.whatsapp_url, '_blank')
       await markNotified(reminder, 'whatsapp')
+    } else if (reminder.phone_type === 'conventional') {
+      showNotification(`El teléfono (${reminder.client?.phone || ''}) es un número convencional fijo. WhatsApp requiere un celular de 10 dígitos (ej. 0999179988).`, 'warning')
     } else {
-      showNotification('El cliente no tiene un número telefónico registrado para WhatsApp', 'warning')
+      showNotification('El cliente no tiene un número celular válido de 10 dígitos registrado para WhatsApp (ej. 0999179988)', 'warning')
     }
   }
 
   /**
    * Enviar correo electrónico manual
    */
-  const sendEmail = async (reminder, customEmail = null, customSubject = null) => {
+  const sendEmail = async (reminder, customEmail = null, customSubject = null, customMessage = null) => {
     if (!reminder?.id) return false
     try {
       isActionLoading.value = true
@@ -145,6 +147,7 @@ export function useMaintenanceReminders() {
           channel: 'email',
           custom_email: targetEmail,
           subject: customSubject,
+          message: customMessage,
         },
       })
 

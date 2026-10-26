@@ -51,19 +51,45 @@ const theme = useTheme()
 // Diálogo para enviar correo manual con personalización opcional
 const isEmailDialogVisible = ref(false)
 const emailTargetReminder = ref(null)
+const isPreviewExpanded = ref(false)
 const emailForm = ref({
   email: '',
   subject: '',
+  message: '',
 })
+
+const getWhatsAppTooltip = (item) => {
+  if (item?.has_cellphone) {
+    return `Enviar WhatsApp al celular (${item.whatsapp_phone || item.client?.phone}) y marcar notificado`
+  }
+  if (item?.phone_type === 'conventional') {
+    return `Teléfono convencional (${item.client?.phone || ''}). WhatsApp requiere celular de 10 dígitos (ej: 0999179988)`
+  }
+  return 'Cliente sin teléfono celular registrado'
+}
 
 const openEmailModal = (reminder) => {
   emailTargetReminder.value = reminder
   const plate = reminder.vehicle?.license_plate || 'Vehículo'
   const intervalKm = Number(reminder.interval_km || 10000).toLocaleString()
+  const clientName = reminder.client?.full_name || reminder.client?.name || 'Estimado cliente'
+  const brandName = reminder.vehicle?.brand_name || ''
+  const vehicleFullName = `${brandName} ${reminder.vehicle?.model || ''}`.trim() || 'su vehículo'
+  const targetKm = Number(reminder.target_mileage || 0).toLocaleString()
+  const serviceName = reminder.service_name || reminder.service_category || 'Mantenimiento Preventivo'
+
+  const defaultBody = reminder.default_email_body || `Estimado(a) ${clientName},
+
+De acuerdo con nuestro control técnico de mantenimiento vehicular, le informamos que su vehículo ${vehicleFullName} (Placa: ${plate}) ha cumplido el ciclo de los ${intervalKm} KM recomendados desde su último servicio, alcanzando aproximadamente los ${targetKm} KM.
+
+Servicio correspondiente: ${serviceName}.
+
+Le sugerimos agendar su turno para la inspección y mantenimiento correspondiente, garantizando así la seguridad, rendimiento y óptimo funcionamiento de su vehículo.`
 
   emailForm.value = {
     email: (reminder.client?.email || '').toLowerCase().trim(),
-    subject: `Mantenimiento Preventivo (${intervalKm} KM Cumplidos) - Placa ${plate}`,
+    subject: reminder.default_email_subject || `Mantenimiento Preventivo (${intervalKm} KM Cumplidos) - Placa ${plate}`,
+    message: defaultBody,
   }
 
   // 1. Cerrar y desaparecer inmediatamente la barra lateral (drawer)
@@ -78,7 +104,8 @@ const confirmAndSendEmail = async () => {
   const success = await sendEmail(
     emailTargetReminder.value,
     emailForm.value.email,
-    emailForm.value.subject
+    emailForm.value.subject,
+    emailForm.value.message
   )
   if (success) {
     isEmailDialogVisible.value = false
@@ -313,12 +340,42 @@ const getRelativeDaysText = (item) => {
               </div>
             </div>
 
-            <!-- Fila Cliente -->
-            <div class="d-flex align-center gap-1.5 mb-2.5">
-              <VIcon icon="ri-user-3-line" size="13" class="text-medium-emphasis flex-shrink-0" />
-              <span class="text-caption font-weight-medium text-high-emphasis text-truncate" :title="item.client?.full_name">
-                {{ item.client?.full_name || 'Cliente no registrado' }}
-              </span>
+            <!-- Fila Cliente & Teléfono -->
+            <div class="d-flex align-center justify-space-between gap-1.5 mb-2.5 flex-wrap">
+              <div class="d-flex align-center gap-1.5 min-w-0 flex-grow-1">
+                <VIcon icon="ri-user-3-line" size="13" class="text-medium-emphasis flex-shrink-0" />
+                <span class="text-caption font-weight-medium text-high-emphasis text-truncate" :title="item.client?.full_name">
+                  {{ item.client?.full_name || 'Cliente no registrado' }}
+                </span>
+              </div>
+
+              <!-- Indicador de teléfono y tipo (Celular vs Convencional) -->
+              <div v-if="item.client?.phone" class="d-flex align-center gap-1 flex-shrink-0">
+                <template v-if="item.has_cellphone">
+                  <VIcon icon="ri-smartphone-line" size="13" color="success" />
+                  <span class="text-caption font-mono font-weight-semibold text-success" style="font-size: 0.70rem;">
+                    {{ item.client.phone }}
+                  </span>
+                  <VChip size="x-small" color="success" variant="tonal" class="px-1" style="font-size: 0.60rem; height: 16px;">
+                    Móvil
+                  </VChip>
+                </template>
+                <template v-else-if="item.phone_type === 'conventional'">
+                  <VIcon icon="ri-phone-line" size="13" color="warning" />
+                  <span class="text-caption font-mono text-warning" style="font-size: 0.70rem;" :title="`Teléfono convencional (${item.client.phone}) - No dispone de WhatsApp`">
+                    {{ item.client.phone }}
+                  </span>
+                  <VChip size="x-small" color="warning" variant="tonal" class="px-1" style="font-size: 0.60rem; height: 16px;" :title="`Teléfono convencional (${item.client.phone}) - No dispone de WhatsApp`">
+                    Convencional
+                  </VChip>
+                </template>
+                <template v-else>
+                  <VIcon icon="ri-phone-line" size="13" class="text-medium-emphasis" />
+                  <span class="text-caption font-mono text-medium-emphasis" style="font-size: 0.70rem;">
+                    {{ item.client.phone }}
+                  </span>
+                </template>
+              </div>
             </div>
 
             <!-- Caja de Kilometraje y Metas -->
@@ -360,11 +417,11 @@ const getRelativeDaysText = (item) => {
               <VBtn
                 size="small"
                 variant="tonal"
-                color="success"
+                :color="item.has_cellphone ? 'success' : 'secondary'"
                 class="flex-grow-1 text-caption font-weight-bold"
                 prepend-icon="ri-whatsapp-line"
-                :disabled="!item.has_phone || (isActionLoading && currentActionReminderId === item.id)"
-                :title="item.has_phone ? 'Enviar mensaje por WhatsApp y marcar notificado' : 'Cliente sin teléfono registrado'"
+                :disabled="!item.has_cellphone || (isActionLoading && currentActionReminderId === item.id)"
+                :title="getWhatsAppTooltip(item)"
                 @click="openWhatsApp(item)"
               >
                 WhatsApp
@@ -426,76 +483,230 @@ const getRelativeDaysText = (item) => {
     </VTooltip>
   </div>
 
-  <!-- DIÁLOGO MODAL PARA ENVIAR CORREO CON DESTINATARIO PERSONALIZADO -->
+  <!-- DIÁLOGO MODAL PARA CONFIRMACIÓN Y ENVÍO DE CORREO -->
   <VDialog
     v-model="isEmailDialogVisible"
-    max-width="480"
+    max-width="660"
+    scrollable
   >
-    <VCard class="rounded-xl pa-4">
-      <div class="d-flex align-center justify-space-between mb-3 border-b pb-2">
-        <div class="d-flex align-center gap-2">
-          <VAvatar color="primary" variant="tonal" size="32" rounded="lg">
-            <VIcon icon="ri-mail-send-line" size="18" />
+    <VCard class="rounded-xl overflow-hidden elevation-24">
+      <!-- Header con degradado primario e íconos -->
+      <div class="px-5 py-4 d-flex align-center justify-space-between border-b bg-surface">
+        <div class="d-flex align-center gap-3">
+          <VAvatar color="primary" variant="tonal" size="38" rounded="lg">
+            <VIcon icon="ri-mail-send-fill" size="22" color="primary" />
           </VAvatar>
           <div>
-            <h4 class="text-subtitle-1 font-weight-bold text-high-emphasis mb-0">
-              Enviar Recordatorio por Email
-            </h4>
+            <h3 class="text-subtitle-1 font-weight-bold text-high-emphasis mb-0 d-flex align-center gap-1.5">
+              Confirmación de Envío por Email
+            </h3>
             <span class="text-caption text-medium-emphasis">
-              Placa {{ emailTargetReminder?.vehicle?.license_plate || 'S/P' }} • {{ Number(emailTargetReminder?.target_mileage || 0).toLocaleString() }} KM
+              Revisa los detalles técnicos y el cuerpo del mensaje antes del envío
             </span>
           </div>
         </div>
 
         <VBtn
           icon="ri-close-line"
-          size="x-small"
+          size="small"
           variant="text"
+          color="medium-emphasis"
           @click="isEmailDialogVisible = false"
         />
       </div>
 
-      <div class="mb-3">
-        <VTextField
-          v-model="emailForm.email"
-          label="Correo Destinatario *"
-          placeholder="cliente@ejemplo.com"
-          type="email"
-          variant="outlined"
-          density="comfortable"
-          prepend-inner-icon="ri-mail-line"
-          class="mb-3"
-          hint="Si el cliente no lo tenía, se registrará para futuros envíos."
-          persistent-hint
-        />
+      <VCardText class="pa-5 overflow-y-auto" style="max-height: calc(85vh - 120px);">
+        <!-- Ficha Resumen con Íconos (Vehículo, Placa, Cliente, Servicio) -->
+        <div class="p-3 pa-3 rounded-lg border mb-4 bg-surface" style="background: rgba(var(--v-theme-on-surface), 0.02) !important;">
+          <div class="d-flex align-center justify-space-between flex-wrap gap-2 mb-2">
+            <!-- Vehículo y Placa -->
+            <div class="d-flex align-center gap-2">
+              <VIcon icon="ri-car-fill" size="18" color="primary" />
+              <span class="font-weight-bold text-body-2 text-high-emphasis">
+                {{ emailTargetReminder?.vehicle?.brand_name || '' }} {{ emailTargetReminder?.vehicle?.model || 'Vehículo' }}
+              </span>
+              <span class="kardex-plate-badge" style="font-size: 0.72rem; padding: 1px 6px;">
+                {{ emailTargetReminder?.vehicle?.license_plate || 'S/P' }}
+              </span>
+            </div>
 
-        <VTextField
-          v-model="emailForm.subject"
-          label="Asunto del Correo"
-          variant="outlined"
-          density="comfortable"
-          prepend-inner-icon="ri-text"
-        />
-      </div>
+            <!-- Servicio -->
+            <VChip
+              size="small"
+              :color="emailTargetReminder?.category_color || 'primary'"
+              variant="tonal"
+              class="font-weight-bold"
+            >
+              <VIcon start :icon="emailTargetReminder?.category_icon || 'ri-tools-fill'" size="14" />
+              {{ emailTargetReminder?.service_name || emailTargetReminder?.service_category || 'Preventivo' }}
+            </VChip>
+          </div>
 
-      <div class="d-flex justify-end gap-2 pt-2">
+          <VRow dense class="text-caption">
+            <!-- Cliente -->
+            <VCol cols="12" sm="6" class="d-flex align-center gap-1.5 text-medium-emphasis">
+              <VIcon icon="ri-user-3-line" size="14" />
+              <span>Cliente:</span>
+              <strong class="text-high-emphasis">{{ emailTargetReminder?.client?.full_name || 'No registrado' }}</strong>
+            </VCol>
+
+            <!-- Kilometraje Meta -->
+            <VCol cols="12" sm="6" class="d-flex align-center gap-1.5 text-medium-emphasis justify-sm-end">
+              <VIcon icon="ri-dashboard-3-line" size="14" />
+              <span>Kilometraje:</span>
+              <strong class="text-primary font-mono">{{ Number(emailTargetReminder?.target_mileage || 0).toLocaleString() }} KM</strong>
+            </VCol>
+          </VRow>
+        </div>
+
+        <!-- Campos de Destinatario y Asunto -->
+        <div class="mb-4">
+          <VTextField
+            v-model="emailForm.email"
+            label="Correo Electrónico Destinatario *"
+            placeholder="ejemplo@correo.com"
+            type="email"
+            variant="outlined"
+            density="comfortable"
+            prepend-inner-icon="ri-mail-line"
+            class="mb-3"
+            hint="Si el cliente no tenía correo registrado, se actualizará automáticamente."
+            persistent-hint
+          />
+
+          <VTextField
+            v-model="emailForm.subject"
+            label="Asunto del Correo *"
+            placeholder="Asunto descriptivo del recordatorio..."
+            variant="outlined"
+            density="comfortable"
+            prepend-inner-icon="ri-file-text-line"
+          />
+        </div>
+
+        <!-- Cuerpo del Correo a Enviar (Editable) -->
+        <div class="mb-3">
+          <div class="d-flex align-center justify-space-between mb-1.5">
+            <span class="text-caption font-weight-bold text-high-emphasis d-flex align-center gap-1.5">
+              <VIcon icon="ri-message-2-line" size="16" color="primary" />
+              Cuerpo del Mensaje a Enviar *
+            </span>
+            <VChip size="x-small" color="primary" variant="tonal" class="font-weight-semibold">
+              <VIcon start icon="ri-edit-line" size="11" />
+              Editable
+            </VChip>
+          </div>
+
+          <VTextarea
+            v-model="emailForm.message"
+            label="Mensaje para el Cliente"
+            placeholder="Escribe el cuerpo del mensaje que recibirá el cliente..."
+            variant="outlined"
+            density="comfortable"
+            rows="6"
+            auto-grow
+            prepend-inner-icon="ri-edit-2-line"
+            hint="Este texto se insertará en el cuerpo principal de la plantilla institucional enviada al cliente."
+            persistent-hint
+          />
+        </div>
+
+        <!-- Acordeón / Vista previa en vivo -->
+        <div class="mt-3">
+          <VBtn
+            variant="text"
+            size="small"
+            color="primary"
+            class="pa-0 text-caption font-weight-bold"
+            :prepend-icon="isPreviewExpanded ? 'ri-eye-off-line' : 'ri-eye-line'"
+            @click="isPreviewExpanded = !isPreviewExpanded"
+          >
+            {{ isPreviewExpanded ? 'Ocultar vista previa del correo' : 'Ver vista previa del correo' }}
+          </VBtn>
+
+          <VExpandTransition>
+            <div v-if="isPreviewExpanded" class="mt-2 pa-4 rounded-lg border bg-surface email-preview-card">
+              <div class="d-flex align-center gap-2 mb-3 pb-2 border-b">
+                <VIcon icon="ri-mail-open-line" size="18" color="primary" />
+                <span class="text-caption font-weight-bold text-high-emphasis">
+                  Vista Previa del Formato que Recibirá el Cliente
+                </span>
+              </div>
+
+              <!-- Header Simulado -->
+              <div class="pa-3 rounded-md mb-3 text-center" style="background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%); color: #fff;">
+                <div class="d-inline-flex align-center justify-center rounded-circle mb-1" style="width: 32px; height: 32px; background: rgba(245, 158, 11, 0.2); border: 1px solid rgba(245, 158, 11, 0.4);">
+                  <VIcon icon="ri-tools-fill" size="16" color="warning" />
+                </div>
+                <div class="text-caption font-weight-bold text-uppercase" style="letter-spacing: 0.5px; color: #fff;">
+                  TECNICENTRO LUXURY EVYS
+                </div>
+                <div class="text-caption text-medium-emphasis" style="font-size: 0.70rem; color: #94a3b8 !important;">
+                  Control de Mantenimiento Preventivo Periódico
+                </div>
+              </div>
+
+              <!-- Cuerpo de Mensaje Simulado -->
+              <div class="pa-3 rounded-md border mb-3 text-body-2" style="white-space: pre-line; background: rgba(var(--v-theme-on-surface), 0.03); line-height: 1.5; font-size: 0.82rem;">
+                {{ emailForm.message || 'Sin mensaje especificado' }}
+              </div>
+
+              <!-- Detalle Vehicular Simulado -->
+              <div class="pa-3 rounded-md border mb-3" style="background: rgba(var(--v-theme-primary), 0.03); border-left: 3px solid rgb(var(--v-theme-primary)) !important;">
+                <div class="text-caption font-weight-bold text-high-emphasis mb-1 d-flex align-center gap-1">
+                  <VIcon icon="ri-file-list-3-line" size="13" color="primary" />
+                  Detalle del Control Técnico
+                </div>
+                <div class="d-flex justify-space-between text-caption py-0.5">
+                  <span class="text-medium-emphasis">Vehículo:</span>
+                  <span class="font-weight-bold">{{ emailTargetReminder?.vehicle?.brand_name || '' }} {{ emailTargetReminder?.vehicle?.model || 'Vehículo' }}</span>
+                </div>
+                <div class="d-flex justify-space-between text-caption py-0.5">
+                  <span class="text-medium-emphasis">Placa:</span>
+                  <span class="font-weight-bold font-mono">{{ emailTargetReminder?.vehicle?.license_plate || 'S/P' }}</span>
+                </div>
+                <div class="d-flex justify-space-between text-caption py-0.5">
+                  <span class="text-medium-emphasis">Kilometraje Meta:</span>
+                  <span class="font-weight-bold text-primary font-mono">{{ Number(emailTargetReminder?.target_mileage || 0).toLocaleString() }} KM</span>
+                </div>
+              </div>
+
+              <!-- Botón WhatsApp Simulado -->
+              <div class="text-center pt-1">
+                <VBtn size="small" color="success" variant="flat" prepend-icon="ri-whatsapp-line" class="text-caption font-weight-bold">
+                  Agendar Turno por WhatsApp
+                </VBtn>
+              </div>
+            </div>
+          </VExpandTransition>
+        </div>
+      </VCardText>
+
+      <VDivider />
+
+      <VCardActions class="pa-4 bg-surface d-flex align-center justify-end gap-2">
         <VBtn
-          variant="text"
+          variant="outlined"
           color="secondary"
+          prepend-icon="ri-close-line"
+          class="rounded-lg px-4"
+          :disabled="isActionLoading"
           @click="isEmailDialogVisible = false"
         >
           Cancelar
         </VBtn>
         <VBtn
           color="primary"
+          variant="elevated"
           prepend-icon="ri-send-plane-fill"
+          class="rounded-lg px-5 font-weight-bold"
           :loading="isActionLoading"
-          :disabled="!emailForm.email || isActionLoading"
+          :disabled="!emailForm.email || !emailForm.subject || !emailForm.message || isActionLoading"
           @click="confirmAndSendEmail"
         >
           Enviar Correo
         </VBtn>
-      </div>
+      </VCardActions>
     </VCard>
   </VDialog>
   </template>

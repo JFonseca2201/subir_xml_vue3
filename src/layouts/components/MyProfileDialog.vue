@@ -134,6 +134,11 @@ const closeDialog = () => {
   emit('update:isDialogVisible', false)
 }
 
+const selectTheme = themeName => {
+  configStore.theme = themeName
+  closeDialog()
+}
+
 const passwordsMatch = computed(() => {
   return passwordData.value.new_password &&
          passwordData.value.new_password_confirmation &&
@@ -582,7 +587,7 @@ const showConfirmPassword = ref(false)
                     variant="outlined"
                     class="pa-3 rounded-xl cursor-pointer transition-swing theme-choice-card mb-2"
                     :class="{ 'theme-choice-card--active': configStore.theme === thm.name }"
-                    @click="configStore.theme = thm.name"
+                    @click="selectTheme(thm.name)"
                   >
                     <div class="d-flex align-center justify-space-between">
                       <div class="d-flex align-center gap-3">
