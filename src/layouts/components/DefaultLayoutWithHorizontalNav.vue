@@ -6,7 +6,6 @@ import { themeConfig } from '@themeConfig'
 import Footer from '@/layouts/components/Footer.vue'
 import UserProfile from '@/layouts/components/UserProfile.vue'
 import NavBarI18n from '@core/components/I18n.vue'
-import MaintenanceRemindersDrawer from '@/components/maintenance/MaintenanceRemindersDrawer.vue'
 import { HorizontalNavLayout } from '@layouts'
 import { VNodeRenderer } from '@layouts/components/VNodeRenderer'
 
@@ -51,9 +50,6 @@ watch([
     </template>
 
     <AppLoadingIndicator ref="refLoadingIndicator" />
-
-    <!-- 👉 Centro de Recordatorios de Mantenimiento 10.000 KM (Drawer Lateral) -->
-    <MaintenanceRemindersDrawer />
 
     <!-- 👉 Pages -->
     <RouterView v-slot="{ Component, route }">

@@ -1,7 +1,35 @@
 <script setup>
 import { ref, computed } from 'vue'
+import { useRoute } from 'vue-router'
 import { useTheme } from 'vuetify'
 import { useMaintenanceReminders } from '@/composables/useMaintenanceReminders'
+
+const route = useRoute()
+
+// El botón y el panel solo deben operar si el usuario está autenticado y NO está en la vista de login / auth
+const isLoginOrAuthPage = computed(() => {
+  if (!route) return false
+  const path = (route.path || '').toLowerCase()
+  const name = String(route.name || '').toLowerCase()
+
+  if (name === 'login' || path === '/login' || path.startsWith('/login')) {
+    return true
+  }
+
+  if (route.meta?.unauthenticatedOnly || route.meta?.layout === 'blank') {
+    return true
+  }
+
+  if (typeof window !== 'undefined') {
+    const token = localStorage.getItem('token')
+    const user = localStorage.getItem('user')
+    if (!token || !user) {
+      return true
+    }
+  }
+
+  return false
+})
 
 const {
   isDrawerOpen,
@@ -38,6 +66,10 @@ const openEmailModal = (reminder) => {
     subject: `Mantenimiento Preventivo (${intervalKm} KM Cumplidos) - Placa ${plate}`,
   }
 
+  // 1. Cerrar y desaparecer inmediatamente la barra lateral (drawer)
+  closeDrawer()
+
+  // 2. Mostrar el diálogo modal de confirmación
   isEmailDialogVisible.value = true
 }
 
@@ -87,14 +119,15 @@ const getRelativeDaysText = (item) => {
 </script>
 
 <template>
-  <VNavigationDrawer
-    v-model="isDrawerOpen"
-    location="end"
-    temporary
-    width="440"
-    class="maintenance-drawer elevation-12"
-    style="z-index: 2500;"
-  >
+  <template v-if="!isLoginOrAuthPage">
+    <VNavigationDrawer
+      v-model="isDrawerOpen"
+      location="end"
+      temporary
+      width="440"
+      class="maintenance-drawer elevation-12"
+      style="z-index: 2500;"
+    >
     <!-- CABECERA DEL DRAWER -->
     <div class="drawer-header px-4 py-3.5 border-b d-flex align-center justify-space-between">
       <div class="d-flex align-center gap-2.5">
@@ -356,79 +389,6 @@ const getRelativeDaysText = (item) => {
         </VCard>
       </div>
     </div>
-
-    <!-- DIÁLOGO MODAL PARA ENVIAR CORREO CON DESTINATARIO PERSONALIZADO -->
-    <VDialog
-      v-model="isEmailDialogVisible"
-      max-width="480"
-    >
-      <VCard class="rounded-xl pa-4">
-        <div class="d-flex align-center justify-space-between mb-3 border-b pb-2">
-          <div class="d-flex align-center gap-2">
-            <VAvatar color="primary" variant="tonal" size="32" rounded="lg">
-              <VIcon icon="ri-mail-send-line" size="18" />
-            </VAvatar>
-            <div>
-              <h4 class="text-subtitle-1 font-weight-bold text-high-emphasis mb-0">
-                Enviar Recordatorio por Email
-              </h4>
-              <span class="text-caption text-medium-emphasis">
-                Placa {{ emailTargetReminder?.vehicle?.license_plate || 'S/P' }} • {{ Number(emailTargetReminder?.target_mileage || 0).toLocaleString() }} KM
-              </span>
-            </div>
-          </div>
-
-          <VBtn
-            icon="ri-close-line"
-            size="x-small"
-            variant="text"
-            @click="isEmailDialogVisible = false"
-          />
-        </div>
-
-        <div class="mb-3">
-          <VTextField
-            v-model="emailForm.email"
-            label="Correo Destinatario *"
-            placeholder="cliente@ejemplo.com"
-            type="email"
-            variant="outlined"
-            density="comfortable"
-            prepend-inner-icon="ri-mail-line"
-            class="mb-3"
-            hint="Si el cliente no lo tenía, se registrará para futuros envíos."
-            persistent-hint
-          />
-
-          <VTextField
-            v-model="emailForm.subject"
-            label="Asunto del Correo"
-            variant="outlined"
-            density="comfortable"
-            prepend-inner-icon="ri-text"
-          />
-        </div>
-
-        <div class="d-flex justify-end gap-2 pt-2">
-          <VBtn
-            variant="text"
-            color="secondary"
-            @click="isEmailDialogVisible = false"
-          >
-            Cancelar
-          </VBtn>
-          <VBtn
-            color="primary"
-            prepend-icon="ri-send-plane-fill"
-            :loading="isActionLoading"
-            :disabled="!emailForm.email || isActionLoading"
-            @click="confirmAndSendEmail"
-          >
-            Enviar Correo
-          </VBtn>
-        </div>
-      </VCard>
-    </VDialog>
   </VNavigationDrawer>
 
   <!-- 👉 BOTÓN FLOTANTE (FAB) FIJO EN LA PANTALLA (Esquina inferior derecha) -->
@@ -465,6 +425,80 @@ const getRelativeDaysText = (item) => {
       </span>
     </VTooltip>
   </div>
+
+  <!-- DIÁLOGO MODAL PARA ENVIAR CORREO CON DESTINATARIO PERSONALIZADO -->
+  <VDialog
+    v-model="isEmailDialogVisible"
+    max-width="480"
+  >
+    <VCard class="rounded-xl pa-4">
+      <div class="d-flex align-center justify-space-between mb-3 border-b pb-2">
+        <div class="d-flex align-center gap-2">
+          <VAvatar color="primary" variant="tonal" size="32" rounded="lg">
+            <VIcon icon="ri-mail-send-line" size="18" />
+          </VAvatar>
+          <div>
+            <h4 class="text-subtitle-1 font-weight-bold text-high-emphasis mb-0">
+              Enviar Recordatorio por Email
+            </h4>
+            <span class="text-caption text-medium-emphasis">
+              Placa {{ emailTargetReminder?.vehicle?.license_plate || 'S/P' }} • {{ Number(emailTargetReminder?.target_mileage || 0).toLocaleString() }} KM
+            </span>
+          </div>
+        </div>
+
+        <VBtn
+          icon="ri-close-line"
+          size="x-small"
+          variant="text"
+          @click="isEmailDialogVisible = false"
+        />
+      </div>
+
+      <div class="mb-3">
+        <VTextField
+          v-model="emailForm.email"
+          label="Correo Destinatario *"
+          placeholder="cliente@ejemplo.com"
+          type="email"
+          variant="outlined"
+          density="comfortable"
+          prepend-inner-icon="ri-mail-line"
+          class="mb-3"
+          hint="Si el cliente no lo tenía, se registrará para futuros envíos."
+          persistent-hint
+        />
+
+        <VTextField
+          v-model="emailForm.subject"
+          label="Asunto del Correo"
+          variant="outlined"
+          density="comfortable"
+          prepend-inner-icon="ri-text"
+        />
+      </div>
+
+      <div class="d-flex justify-end gap-2 pt-2">
+        <VBtn
+          variant="text"
+          color="secondary"
+          @click="isEmailDialogVisible = false"
+        >
+          Cancelar
+        </VBtn>
+        <VBtn
+          color="primary"
+          prepend-icon="ri-send-plane-fill"
+          :loading="isActionLoading"
+          :disabled="!emailForm.email || isActionLoading"
+          @click="confirmAndSendEmail"
+        >
+          Enviar Correo
+        </VBtn>
+      </div>
+    </VCard>
+  </VDialog>
+  </template>
 </template>
 
 <style scoped lang="scss">
