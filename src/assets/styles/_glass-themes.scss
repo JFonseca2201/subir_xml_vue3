@@ -10,6 +10,38 @@ Temas:
 // 1. MAPA Y VARIABLES SCSS DE TEMAS
 // --------------------------------------------------------------------------
 $glass-themes: (
+  'light': ('name': 'light',
+    'is-dark': false,
+    'bg-app': #F7F7F9,
+    'bg-surface': #ffffff,
+    'bg-sidebar': #ffffff,
+    'bg-header': #666CFF,
+    'bg-dialog': #ffffff,
+    'bg-active-item': rgba(102, 108, 255, 0.08),
+    'bg-hover-item': rgba(38, 43, 67, 0.04),
+    'border-active': rgba(102, 108, 255, 0.40),
+    'text-active': #666CFF,
+    'text-primary': #262B43,
+    'text-secondary': rgba(38, 43, 67, 0.78),
+    'text-muted': rgba(38, 43, 67, 0.45),
+    'icon-color': #262B43,
+    'border-glass': rgba(38, 43, 67, 0.12),
+    'input-bg': #ffffff,
+    'input-border': rgba(38, 43, 67, 0.22),
+    'table-header-bg': #F5F5F7,
+    'table-row-even-bg': #ffffff,
+    'table-row-hover-bg': rgba(102, 108, 255, 0.04),
+    'blur-glass': "none",
+    'shadow-glass': "0 2px 10px rgba(38, 43, 67, 0.08)",
+    'shadow-glow': "none",
+    'skeleton-gradient': "linear-gradient(90deg, rgba(38, 43, 67, 0.06) 25%, rgba(38, 43, 67, 0.12) 50%, rgba(38, 43, 67, 0.06) 75%)",
+    'bg-dialog-header': "#ffffff",
+    'border-dialog-header': rgba(38, 43, 67, 0.12),
+    'dialog-header-glow': "none",
+    'dialog-avatar-bg': rgba(102, 108, 255, 0.1),
+    'dialog-avatar-border': rgba(102, 108, 255, 0.25),
+    'dialog-avatar-shadow': "none",
+  ),
   'dark': ('name': 'dark',
     'is-dark': true,
     'bg-app': #282A42,
@@ -427,10 +459,8 @@ $glass-themes: (
   // CABECERA / HEADER
   .layout-navbar,
   .v-app-bar,
-  .header,
-  .layout-wrapper.layout-nav-type-vertical .layout-navbar {
-    background: var(--bg-header) !important;
-    background-color: var(--bg-header) !important;
+  .header {
+    background: var(--bg-header);
     backdrop-filter: var(--blur-glass) !important;
     -webkit-backdrop-filter: var(--blur-glass) !important;
     border-bottom: 1px solid var(--border-glass) !important;
@@ -1562,8 +1592,55 @@ $glass-themes: (
 }
 
 // --------------------------------------------------------------------------
-// 7. TEMA OSCURO ESTÁNDAR (dark)
+// 7. TEMA OSCURO ESTÁNDAR (dark) Y TEMA CLARO ESTÁNDAR (light)
 // --------------------------------------------------------------------------
+[data-theme="light"],
+html[data-theme="light"],
+body[data-theme="light"],
+.v-theme--light,
+.theme-light {
+  --bg-app: #F7F7F9;
+  --bg-dialog: #ffffff;
+  --bg-surface: #ffffff;
+  --bg-sidebar: #ffffff;
+  --bg-header: #666CFF;
+  --border-glass: rgba(38, 43, 67, 0.12);
+  --text-primary: #262B43;
+  --text-secondary: rgba(38, 43, 67, 0.78);
+  --text-muted: rgba(38, 43, 67, 0.45);
+  --bg-dialog-header: #ffffff;
+  --border-dialog-header: rgba(38, 43, 67, 0.12);
+  --icon-color: #262B43;
+
+  color: #262B43 !important;
+
+  .layout-wrapper.layout-nav-type-vertical .layout-navbar,
+  .layout-navbar,
+  .v-app-bar {
+    background: linear-gradient(135deg, #666CFF 0%, #5C61E6 100%) !important;
+    background-color: transparent !important;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.15) !important;
+    box-shadow: 0 4px 20px rgba(102, 108, 255, 0.28) !important;
+
+    .navbar-brand-title,
+    .navbar-brand-subtitle,
+    .v-icon,
+    .v-btn,
+    .v-btn__content,
+    .icon-btn,
+    .IconBtn,
+    button {
+      color: #ffffff !important;
+    }
+  }
+}
+
+html[data-theme="light"]:not(.auth-page-root),
+body[data-theme="light"]:not(.auth-page-root),
+.v-application.v-theme--light:not(.auth-page-root) {
+  background-color: #F7F7F9 !important;
+}
+
 [data-theme="dark"],
 html[data-theme="dark"],
 body[data-theme="dark"],
@@ -1599,14 +1676,13 @@ body[data-theme="taller"],
   --v-theme-on-primary: 255, 255, 255;
   --v-theme-primary-darken-1: 107, 14, 39;
   
-  &:not(.auth-page-root) {
-    background-color: #f8fafc !important;
-  }
   color: #0f172a !important; // 1. NAVBAR SUPERIOR
 
+  .layout-wrapper.layout-nav-type-vertical .layout-navbar,
   .layout-navbar,
   .v-app-bar {
     background: linear-gradient(135deg, #8A1538 0%, #6B0E27 60%, #58081C 100%) !important;
+    background-color: transparent !important;
     border-bottom: 1px solid rgba(255, 255, 255, 0.15) !important;
     box-shadow: 0 4px 20px rgba(138, 21, 56, 0.28) !important;
 
@@ -1712,10 +1788,10 @@ body[data-theme="taller"],
     }
   }
 
-  // 3. TARJETAS Y CONTENEDORES
-  .v-card:not(.v-navigation-drawer):not(.layout-vertical-nav),
-  .card,
-  .v-sheet:not(.v-navigation-drawer):not(.layout-vertical-nav) {
+  // 3. TARJETAS Y CONTENEDORES (excluyendo tarjetas de métricas/KPIs degradadas)
+  .v-card:not(.v-navigation-drawer):not(.layout-vertical-nav):not(.pepa-kpi-card):not([class*="kpi-gradient"]),
+  .card:not(.pepa-kpi-card):not([class*="kpi-gradient"]),
+  .v-sheet:not(.v-navigation-drawer):not(.layout-vertical-nav):not(.pepa-kpi-card):not([class*="kpi-gradient"]) {
     background: #ffffff !important;
     background-color: #ffffff !important;
     border: 1px solid #e2e8f0 !important;
@@ -1916,6 +1992,12 @@ body[data-theme="taller"],
   }
 }
 
+html[data-theme="taller"]:not(.auth-page-root),
+body[data-theme="taller"]:not(.auth-page-root),
+.v-application.v-theme--taller:not(.auth-page-root) {
+  background-color: #f8fafc !important;
+}
+
 // --------------------------------------------------------------------------
 // 9. OVERRIDES DE NIVEL SUPERIOR (BODY LEVEL) PARA DIÁLOGOS Y POPUPS EN TALLER
 // --------------------------------------------------------------------------
@@ -1950,14 +2032,19 @@ body[data-theme="taller"],
   // SCRIM / TELÓN DE FONDO SUAVE Y TRANSLÚCIDO
   // Permite ver los demás componentes de la página detrás del diálogo con total claridad
   .v-overlay--active.v-dialog > .v-overlay__scrim,
-  .v-overlay--active > .v-overlay__scrim,
-  .v-overlay__scrim {
+  .v-overlay--active > .v-overlay__scrim {
     display: block !important;
     background: rgba(15, 23, 42, 0.25) !important;
     background-color: rgba(15, 23, 42, 0.25) !important;
     backdrop-filter: blur(1.5px) !important;
     -webkit-backdrop-filter: blur(1.5px) !important;
     opacity: 1 !important;
+  }
+
+  .v-overlay:not(.v-overlay--active) .v-overlay__scrim {
+    display: none !important;
+    opacity: 0 !important;
+    pointer-events: none !important;
   }
 
   // MODALES Y TARJETAS EN TALLER
@@ -2299,5 +2386,188 @@ body[data-theme="taller"],
         }
       }
     }
+  }
+}
+
+// ==========================================================================
+// 9. BLINDAJE TOTAL CONTRA FONDOS BLANCOS CON TEXTO BLANCO EN MODO OSCURO
+// ==========================================================================
+[data-theme="dark"],
+html[data-theme="dark"],
+body[data-theme="dark"],
+.v-theme--dark,
+.theme-dark,
+[data-theme="dark-glass"],
+html[data-theme="dark-glass"],
+body[data-theme="dark-glass"],
+.theme-dark-glass,
+[data-theme="semi-dark-glass"],
+html[data-theme="semi-dark-glass"],
+body[data-theme="semi-dark-glass"],
+.theme-semi-dark-glass {
+  // 1. Cabeceras y filas de tablas en cualquier página (facturas, ventas, etc.)
+  thead,
+  thead tr,
+  thead th,
+  .v-table thead,
+  .v-table thead tr,
+  .v-table thead th,
+  .v-table tr.bg-grey-lighten-5,
+  .v-table tr.bg-grey-lighten-4,
+  .v-table tr.bg-grey-lighten-3,
+  .v-table tr.bg-slate-50,
+  .v-table tr.bg-slate-100,
+  .v-table thead.bg-grey-lighten-5,
+  .v-table thead.bg-grey-lighten-4,
+  tr.bg-grey-lighten-5,
+  tr.bg-grey-lighten-4,
+  tr.bg-grey-lighten-3,
+  tr.bg-slate-50,
+  tr.bg-slate-100,
+  .bg-grey-lighten-5 th,
+  .bg-grey-lighten-4 th,
+  .bg-grey-lighten-5 td,
+  .bg-grey-lighten-4 td {
+    background: var(--table-header-bg, #2F3349) !important;
+    background-color: var(--table-header-bg, #2F3349) !important;
+    color: var(--text-primary, #ffffff) !important;
+    border-color: var(--border-glass, rgba(255, 255, 255, 0.12)) !important;
+  }
+
+  // 2. Estados Vacíos (Empty States como "No se encontraron facturas", etc.)
+  .v-card.bg-surface:not(.pepa-kpi-card):not([class*="kpi-gradient"]),
+  .v-card[class*="bg-surface"]:not(.pepa-kpi-card):not([class*="kpi-gradient"]),
+  .v-card.bg-white:not(.pepa-kpi-card):not([class*="kpi-gradient"]),
+  .v-card[class*="bg-white"]:not(.pepa-kpi-card):not([class*="kpi-gradient"]),
+  .empty-state-card {
+    background: var(--bg-surface, #2F3349) !important;
+    background-color: var(--bg-surface, #2F3349) !important;
+    color: var(--text-primary, #ffffff) !important;
+    border-color: var(--border-glass, rgba(255, 255, 255, 0.12)) !important;
+  }
+
+  // 3. Status Pills en Listado de Facturas y Tablas
+  .status-paid,
+  .status-pill-clean.status-paid {
+    background-color: rgba(16, 185, 129, 0.18) !important;
+    color: #4ade80 !important;
+    border: 1px solid rgba(16, 185, 129, 0.40) !important;
+
+    .status-dot {
+      background-color: #10b981 !important;
+    }
+  }
+
+  .status-partial,
+  .status-pill-clean.status-partial {
+    background-color: rgba(245, 158, 11, 0.18) !important;
+    color: #fbbf24 !important;
+    border: 1px solid rgba(245, 158, 11, 0.40) !important;
+
+    .status-dot {
+      background-color: #f59e0b !important;
+    }
+  }
+
+  // 4. Clases Utilitarias Blancas y Grises Claras en General
+  .bg-white:not(.v-btn--elevated):not(.v-btn--flat):not(.v-chip--color):not(.status-pill):not(.badge):not(.badge-sri):not(.badge-internal),
+  .bg-slate-50,
+  .bg-slate-100,
+  .bg-slate-200,
+  .bg-grey-lighten-5,
+  .bg-grey-lighten-4,
+  .bg-grey-lighten-3,
+  .bg-grey-lighten-2,
+  .bg-grey-lighten-1,
+  .bg-grey-50,
+  .bg-grey-100,
+  .bg-grey-200,
+  .bg-gray-50,
+  .bg-gray-100,
+  .bg-gray-200,
+  .bg-blue-50,
+  .bg-purple-lighten-5 {
+    background: var(--bg-surface, #2F3349) !important;
+    background-color: var(--bg-surface, #2F3349) !important;
+    color: var(--text-primary, #ffffff) !important;
+    border-color: var(--border-glass, rgba(255, 255, 255, 0.12)) !important;
+  }
+
+  // 5. Overrides para estilos en línea con fondos blancos
+  [style*="background-color: #ffffff"],
+  [style*="background-color: #fff"],
+  [style*="background: #ffffff"],
+  [style*="background: #fff"],
+  [style*="background: white"],
+  [style*="background-color: white"],
+  [style*="background-color: #f8fafc"],
+  [style*="background-color: #fafafa"],
+  [style*="background-color: #fbfbfb"],
+  [style*="background-color: #f1f5f9"],
+  [style*="background-color: #f0fdf4"],
+  [style*="background-color: #f0f9ff"],
+  [style*="background-color: #f0f1ff"],
+  [style*="background-color: #eff6ff"],
+  [style*="background-color: #fffbeb"],
+  [style*="background-color: #ecfdf5"] {
+    background: var(--bg-surface, #2F3349) !important;
+    background-color: var(--bg-surface, #2F3349) !important;
+    color: var(--text-primary, #ffffff) !important;
+    border-color: var(--border-glass, rgba(255, 255, 255, 0.12)) !important;
+
+    * {
+      color: var(--text-primary, #ffffff);
+    }
+  }
+}
+
+// 6. PROTECCIÓN TOTAL Y VITALICIA PARA TARJETAS KPI (Dashboard) EN CUALQUIER TEMA
+html body .v-application .pepa-kpi-card,
+html body .pepa-kpi-card,
+.v-card.pepa-kpi-card,
+.pepa-kpi-card {
+  color: #ffffff !important;
+  border: none !important;
+
+  &.kpi-gradient-primary,
+  &[class*="gradient-primary"] {
+    background: linear-gradient(135deg, #6366F1 0%, #8B5CF6 50%, #A855F7 100%) !important;
+    background-color: transparent !important;
+    box-shadow: 0 10px 28px rgba(99, 102, 241, 0.35) !important;
+  }
+
+  &.kpi-gradient-info,
+  &[class*="gradient-info"] {
+    background: linear-gradient(135deg, #0EA5E9 0%, #06B6D4 50%, #14B8A6 100%) !important;
+    background-color: transparent !important;
+    box-shadow: 0 10px 28px rgba(14, 165, 233, 0.35) !important;
+  }
+
+  &.kpi-gradient-success,
+  &[class*="gradient-success"] {
+    background: linear-gradient(135deg, #10B981 0%, #059669 50%, #047857 100%) !important;
+    background-color: transparent !important;
+    box-shadow: 0 10px 28px rgba(16, 185, 129, 0.35) !important;
+  }
+
+  &.kpi-gradient-warning,
+  &[class*="gradient-warning"] {
+    background: linear-gradient(135deg, #F59E0B 0%, #EA580C 50%, #D97706 100%) !important;
+    background-color: transparent !important;
+    box-shadow: 0 10px 28px rgba(245, 158, 11, 0.35) !important;
+  }
+
+  *,
+  h1, h2, h3, h4, h5, h6,
+  div, span, p,
+  .text-h4,
+  .text-caption,
+  .text-white,
+  .kpi-badge-pill,
+  .kpi-icon-bubble,
+  .v-icon,
+  i, svg {
+    color: #ffffff !important;
+    -webkit-text-fill-color: #ffffff !important;
   }
 }

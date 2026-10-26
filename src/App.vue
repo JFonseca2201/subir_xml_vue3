@@ -7,6 +7,7 @@ import { hexToRgb } from "@layouts/utils"
 import GlobalLoader from '@/components/loaders/GlobalLoader.vue'
 import OfflineOverlay from '@/components/OfflineOverlay.vue'
 import GlobalToast from '@/components/common/GlobalToast.vue'
+import MaintenanceRemindersDrawer from '@/components/maintenance/MaintenanceRemindersDrawer.vue'
 
 const { global } = useTheme()
 
@@ -54,6 +55,7 @@ onMounted(() => {
       )}`"
     >
       <RouterView />
+      <MaintenanceRemindersDrawer />
       <GlobalLoader />
       <ScrollToTop />
       

@@ -205,7 +205,7 @@ const filteredNavItems = computed(() => {
           </RouterLink>
         </div>
 
-        <!-- 3. Columna Derecha: Herramientas, Idioma y Perfil de Usuario -->
+        <!-- 3. Columna Derecha: Herramientas, Idioma y Perfil de Usuario con Notificaciones -->
         <div class="navbar-right-section d-flex align-center justify-end gap-2">
           <NavBarI18n
             v-if="themeConfig.app.i18n.enable && themeConfig.app.i18n.langConfig?.length"

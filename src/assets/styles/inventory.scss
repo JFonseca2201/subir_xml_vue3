@@ -7834,13 +7834,18 @@ body[data-theme="taller"] {
 
   // Scrim - Suave y translúcido para que los componentes detrás de la página sean claramente visibles
   .v-overlay--active > .v-overlay__scrim,
-  .v-overlay--active.v-dialog > .v-overlay__scrim,
-  .v-overlay__scrim {
+  .v-overlay--active.v-dialog > .v-overlay__scrim {
     background: rgba(15, 23, 42, 0.25) !important;
     background-color: rgba(15, 23, 42, 0.25) !important;
     backdrop-filter: blur(1.5px) !important;
     -webkit-backdrop-filter: blur(1.5px) !important;
     opacity: 1 !important;
+  }
+
+  .v-overlay:not(.v-overlay--active) .v-overlay__scrim {
+    display: none !important;
+    opacity: 0 !important;
+    pointer-events: none !important;
   }
 
   // Menús y dropdowns - Fondo blanco

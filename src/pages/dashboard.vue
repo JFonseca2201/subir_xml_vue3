@@ -5,6 +5,7 @@ import { useRouter } from 'vue-router'
 import VueApexCharts from 'vue3-apexcharts'
 import { $api } from '@/utils/api'
 import { useGlobalToast } from '@/composables/useGlobalToast'
+import { useMaintenanceReminders } from '@/composables/useMaintenanceReminders'
 import { getBrandNameById } from '@/data/vehicleBrands.js'
 
 // Dialogs Import
@@ -13,6 +14,7 @@ import VehicleShowDialog from '@/components/inventory/vehicles/VehicleShowDialog
 import MonthlySalesBreakdownDialog from '@/components/dashboard/MonthlySalesBreakdownDialog.vue'
 
 const theme = useTheme()
+const { fetchDrawerReminders, openDrawer, badgeCount } = useMaintenanceReminders()
 const router = useRouter()
 const { showNotification } = useGlobalToast()
 
@@ -305,6 +307,7 @@ const sendWhatsAppNotification = async reminder => {
       reminder.notified_at = new Date().toISOString()
       showNotification('WhatsApp abierto y notificación registrada', 'success')
       fetchCalendarEvents()
+      fetchDrawerReminders(true)
       if (calendarViewMode.value === 'upcoming') {
         fetchUpcomingEvents()
       }
@@ -372,6 +375,7 @@ const confirmSendEmail = async () => {
     showNotification(`Correo de recordatorio enviado exitosamente a ${targetEmail}`, 'success')
     isEmailDialogVisible.value = false
     fetchCalendarEvents()
+    fetchDrawerReminders(true)
     if (calendarViewMode.value === 'upcoming') {
       fetchUpcomingEvents()
     }
@@ -1051,6 +1055,34 @@ const tecnicosOptions = computed(() => {
             </template>
           </VTooltip>
 
+          <!-- Botón Rápido Recordatorios 10.000 KM en el Header del Dashboard -->
+          <VTooltip text="Centro de Recordatorios 10.000 KM" location="bottom">
+            <template #activator="{ props }">
+              <VBtn
+                v-bind="props"
+                icon
+                variant="elevated"
+                size="small"
+                class="rounded-xl text-white position-relative"
+                style="background: linear-gradient(135deg, #F59E0B 0%, #D97706 100%); box-shadow: 0 4px 12px rgba(245, 158, 11, 0.40) !important;"
+                @click="openDrawer()"
+              >
+                <VBadge
+                  v-if="badgeCount > 0"
+                  color="error"
+                  :content="badgeCount"
+                  max="99"
+                  location="top end"
+                  offset-x="2"
+                  offset-y="2"
+                >
+                  <VIcon icon="ri-calendar-check-line" size="18" />
+                </VBadge>
+                <VIcon v-else icon="ri-calendar-check-line" size="18" />
+              </VBtn>
+            </template>
+          </VTooltip>
+
           <VTooltip text="Kardex de Inventario" location="bottom">
             <template #activator="{ props }">
               <VBtn
@@ -1612,13 +1644,27 @@ const tecnicosOptions = computed(() => {
                     </div>
                   </div>
 
-                  <VProgressCircular
-                    v-if="isLoadingEvents || isLoadingUpcoming"
-                    indeterminate
-                    size="18"
-                    width="2"
-                    color="primary"
-                  />
+                  <div class="d-flex align-center gap-1.5">
+                    <VBtn
+                      size="x-small"
+                      variant="tonal"
+                      color="primary"
+                      prepend-icon="ri-layout-right-line"
+                      class="font-weight-bold"
+                      title="Abrir Centro de Recordatorios lateral"
+                      @click="openDrawer()"
+                    >
+                      Panel Lateral
+                    </VBtn>
+
+                    <VProgressCircular
+                      v-if="isLoadingEvents || isLoadingUpcoming"
+                      indeterminate
+                      size="18"
+                      width="2"
+                      color="primary"
+                    />
+                  </div>
                 </div>
 
                 <!-- Selector de Vistas Estilo Pill (Sin solapamiento) -->

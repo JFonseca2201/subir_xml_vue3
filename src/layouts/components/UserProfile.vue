@@ -1,5 +1,5 @@
 <script setup>
-import { ref, computed, watch } from 'vue'
+import { ref, computed, watch, onMounted } from 'vue'
 import { PerfectScrollbar } from "vue3-perfect-scrollbar"
 import avatar1 from "@images/avatars/avatar-1.png"
 import { useRouter, useRoute } from "vue-router"
@@ -7,6 +7,7 @@ import { useLoaderStore } from '@/stores/loader'
 import { useConfigStore } from '@core/stores/config'
 import MyProfileDialog from './MyProfileDialog.vue'
 import { usePermissions } from '@/composables/usePermissions'
+import { useMaintenanceReminders } from '@/composables/useMaintenanceReminders'
 
 const router = useRouter()
 const route = useRoute()
@@ -24,6 +25,17 @@ const isMenuOpen = ref(false)
 const isProfileDialogVisible = ref(false)
 const isShortcutsDialogVisible = ref(false)
 const isThemeExpanded = ref(false)
+
+const {
+  badgeCount,
+  toggleDrawer,
+  openDrawer,
+  fetchDrawerReminders,
+} = useMaintenanceReminders()
+
+onMounted(() => {
+  fetchDrawerReminders(true)
+})
 
 const supportPhone = import.meta.env.VITE_SUPPORT_PHONE || '593999179988'
 const supportWhatsappUrl = computed(() => `https://wa.me/${supportPhone.replace(/[^0-9]/g, '')}`)
@@ -128,7 +140,46 @@ const logout = async () => {
 </script>
 
 <template>
-  <div>
+  <div class="user-profile-nav-container d-flex align-center gap-3">
+    <!-- 👉 Botón de Notificaciones / Recordatorios 10.000 KM en el Navbar -->
+    <VTooltip location="bottom">
+      <template #activator="{ props: tooltipProps }">
+        <button
+          v-bind="tooltipProps"
+          type="button"
+          class="navbar-reminder-bell-btn d-flex align-center justify-center position-relative"
+          aria-label="Centro de Recordatorios 10.000 KM"
+          @click="toggleDrawer"
+        >
+          <VBadge
+            v-if="badgeCount > 0"
+            color="error"
+            :content="badgeCount"
+            max="99"
+            class="navbar-reminder-badge"
+          >
+            <VIcon
+              icon="ri-notification-3-line"
+              size="22"
+              class="text-white"
+            />
+          </VBadge>
+          <VIcon
+            v-else
+            icon="ri-notification-3-line"
+            size="22"
+            class="text-white"
+          />
+        </button>
+      </template>
+      <span>
+        Centro de Recordatorios (10.000 KM)
+        <template v-if="badgeCount > 0">
+          — <strong>{{ badgeCount }}</strong> pendiente(s)
+        </template>
+      </span>
+    </VTooltip>
+
     <VBadge dot bordered location="bottom right" offset-x="3" offset-y="3" color="success" class="user-profile-badge">
       <VAvatar class="cursor-pointer elevation-2 transition-swing hover-scale" size="52">
         <VImg :src="user && user.avatar ? user.avatar : avatar1" />
@@ -203,6 +254,35 @@ const logout = async () => {
                   </VListItemTitle>
                   <VListItemSubtitle class="text-caption text-medium-emphasis mt-0.5">
                     Razón social y sucursal
+                  </VListItemSubtitle>
+                </VListItem>
+
+                <!-- Viñeta: Centro de Recordatorios de Mantenimiento 10.000 KM -->
+                <VListItem
+                  color="warning"
+                  class="rounded-xl mb-1 nav-item-hover cursor-pointer py-2"
+                  @click="isMenuOpen = false; openDrawer()"
+                >
+                  <template #prepend>
+                    <VAvatar color="warning" variant="tonal" size="34" class="me-3 rounded-lg">
+                      <VIcon icon="ri-calendar-check-line" size="18" />
+                    </VAvatar>
+                  </template>
+
+                  <VListItemTitle class="font-weight-bold text-body-2 d-flex align-center justify-space-between">
+                    <span>Recordatorios 10.000 KM</span>
+                    <VChip
+                      v-if="badgeCount > 0"
+                      size="x-small"
+                      color="error"
+                      variant="elevated"
+                      class="font-weight-bold px-2"
+                    >
+                      {{ badgeCount }}
+                    </VChip>
+                  </VListItemTitle>
+                  <VListItemSubtitle class="text-caption text-medium-emphasis mt-0.5">
+                    Mantenimientos preventivos
                   </VListItemSubtitle>
                 </VListItem>
 
@@ -601,5 +681,42 @@ const logout = async () => {
 
 .logout-action-btn {
   letter-spacing: 0.5px;
+}
+
+.navbar-reminder-bell-btn {
+  background: rgba(255, 255, 255, 0.15) !important;
+  color: #ffffff !important;
+  border: 1.5px solid rgba(255, 255, 255, 0.28) !important;
+  border-radius: 12px !important;
+  width: 44px !important;
+  height: 44px !important;
+  min-width: 44px !important;
+  cursor: pointer;
+  outline: none;
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  box-shadow: 0 3px 12px rgba(0, 0, 0, 0.2);
+  transition: all 0.25s cubic-bezier(0.34, 1.56, 0.64, 1) !important;
+
+  &:hover {
+    background: rgba(255, 255, 255, 0.3) !important;
+    border-color: rgba(255, 255, 255, 0.6) !important;
+    transform: scale(1.08);
+    box-shadow: 0 4px 18px rgba(245, 158, 11, 0.5);
+  }
+
+  &:active {
+    transform: scale(0.95);
+  }
+}
+
+:deep(.navbar-reminder-badge .v-badge__badge) {
+  font-size: 0.72rem !important;
+  font-weight: 800 !important;
+  height: 19px !important;
+  min-width: 19px !important;
+  padding: 0 4px !important;
+  box-shadow: 0 2px 8px rgba(239, 68, 68, 0.7) !important;
+  animation: pulse-attention 2.5s infinite ease-in-out;
 }
 </style>

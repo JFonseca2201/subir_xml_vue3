@@ -261,6 +261,7 @@ declare global {
   const useLastChanged: typeof import('@vueuse/core')['useLastChanged']
   const useLocalStorage: typeof import('@vueuse/core')['useLocalStorage']
   const useMagicKeys: typeof import('@vueuse/core')['useMagicKeys']
+  const useMaintenanceReminders: typeof import('./src/composables/useMaintenanceReminders.js')['useMaintenanceReminders']
   const useManualRefHistory: typeof import('@vueuse/core')['useManualRefHistory']
   const useMath: typeof import('@vueuse/math')['useMath']
   const useMax: typeof import('@vueuse/math')['useMax']
@@ -634,6 +635,7 @@ declare module 'vue' {
     readonly useLastChanged: UnwrapRef<typeof import('@vueuse/core')['useLastChanged']>
     readonly useLocalStorage: UnwrapRef<typeof import('@vueuse/core')['useLocalStorage']>
     readonly useMagicKeys: UnwrapRef<typeof import('@vueuse/core')['useMagicKeys']>
+    readonly useMaintenanceReminders: UnwrapRef<typeof import('./src/composables/useMaintenanceReminders.js')['useMaintenanceReminders']>
     readonly useManualRefHistory: UnwrapRef<typeof import('@vueuse/core')['useManualRefHistory']>
     readonly useMath: UnwrapRef<typeof import('@vueuse/math')['useMath']>
     readonly useMax: UnwrapRef<typeof import('@vueuse/math')['useMax']>
@@ -998,6 +1000,7 @@ declare module '@vue/runtime-core' {
     readonly useLastChanged: UnwrapRef<typeof import('@vueuse/core')['useLastChanged']>
     readonly useLocalStorage: UnwrapRef<typeof import('@vueuse/core')['useLocalStorage']>
     readonly useMagicKeys: UnwrapRef<typeof import('@vueuse/core')['useMagicKeys']>
+    readonly useMaintenanceReminders: UnwrapRef<typeof import('./src/composables/useMaintenanceReminders.js')['useMaintenanceReminders']>
     readonly useManualRefHistory: UnwrapRef<typeof import('@vueuse/core')['useManualRefHistory']>
     readonly useMath: UnwrapRef<typeof import('@vueuse/math')['useMath']>
     readonly useMax: UnwrapRef<typeof import('@vueuse/math')['useMax']>
