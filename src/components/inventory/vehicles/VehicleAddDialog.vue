@@ -8,6 +8,8 @@ import {
 } from '@/utils/ecuadorianPlateValidator.js'
 import { getVehicleTypeOptions, getVehicleUsageTypeOptions } from '@/data/vehicleTypes.js'
 import VSearch from '@/components/common/VSearch.vue'
+import FormValidationAlert from '@/components/common/FormValidationAlert.vue'
+import { useFormValidation } from '@/composables/useFormValidation'
 
 const props = defineProps({
   isDialogVisible: {
@@ -33,6 +35,7 @@ const loading = ref(false)
 const error = ref('')
 const success = ref('')
 const formRef = ref(null)
+const { validationAlertVisible, validationAlertMessage, validateAndNotify, resetValidationAlert } = useFormValidation()
 
 const notificationShow = ref(false)
 const notificationMessage = ref('')
@@ -195,6 +198,7 @@ const resetForm = () => {
     client_id: props.clientSelectedId || null,
     status: 1,
   }
+  resetValidationAlert()
   formRef.value?.resetValidation()
 }
 
@@ -204,7 +208,7 @@ const closeDialog = () => {
 }
 
 const saveVehicle = async () => {
-  const { valid } = await formRef.value?.validate()
+  const { valid } = await validateAndNotify(formRef, '#vehicleAddForm')
   if (!valid) return
 
   loading.value = true
@@ -275,6 +279,13 @@ onMounted(() => {
       </div>
 
       <VCardText class="pa-sm-6 pa-4">
+        <!-- Alerta de Validación de Campos Obligatorios -->
+        <FormValidationAlert
+          :visible="validationAlertVisible"
+          :message="validationAlertMessage"
+          @close="validationAlertVisible = false"
+        />
+
         <VForm
           id="vehicleAddForm"
           ref="formRef"

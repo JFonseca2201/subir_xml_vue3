@@ -71,6 +71,8 @@ declare module 'vue' {
     ErrorHeader: typeof import('./src/components/ErrorHeader.vue')['default']
     ExpenseDialog: typeof import('./src/components/inventory/finances-records/ExpenseDialog.vue')['default']
     FormDraftAlert: typeof import('./src/components/common/FormDraftAlert.vue')['default']
+    FormValidationAlert: typeof import('./src/components/common/FormValidationAlert.vue')['default']
+    GlobalFormValidationMonitor: typeof import('./src/components/common/GlobalFormValidationMonitor.vue')['default']
     GlobalLoader: typeof import('./src/components/loaders/GlobalLoader.vue')['default']
     GlobalToast: typeof import('./src/components/common/GlobalToast.vue')['default']
     GroupedMovementsTable: typeof import('./src/components/inventory/finances-records/GroupedMovementsTable.vue')['default']

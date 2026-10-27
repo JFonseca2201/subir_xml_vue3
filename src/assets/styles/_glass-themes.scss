@@ -650,7 +650,7 @@ $glass-themes: (
     }
   }
 
-  // E. FORMULARIOS
+  // E. FORMULARIOS & VALIDACIONES (Visibilidad Óptima en Todos los Temas)
   .v-field,
   .v-field--variant-outlined,
   .v-field--variant-filled {
@@ -673,6 +673,42 @@ $glass-themes: (
     &.v-field--focused {
       border-color: var(--border-active) !important;
       box-shadow: 0 0 0 3px var(--bg-active-item) !important;
+    }
+
+    // ESTADO DE ERROR / VALIDACIÓN FALLIDA - ALTA VISIBILIDAD EN TEMA OSCURO Y CLARO
+    &.v-field--error,
+    .v-input--error & {
+      border-color: #ef4444 !important;
+      border-width: 1.5px !important;
+      background-color: if($is-dark, rgba(239, 68, 68, 0.12), rgba(239, 68, 68, 0.05)) !important;
+      box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.28), 0 0 12px rgba(239, 68, 68, 0.2) !important;
+
+      .v-field__outline {
+        border-color: #ef4444 !important;
+        --v-field-border-opacity: 1 !important;
+      }
+
+      .v-field__input {
+        color: if($is-dark, #ffffff, #991b1b) !important;
+      }
+
+      .v-label,
+      .v-field-label {
+        color: if($is-dark, #fca5a5, #dc2626) !important;
+        font-weight: 700 !important;
+      }
+
+      .v-field__prepend-inner .v-icon,
+      .v-field__append-inner .v-icon {
+        color: if($is-dark, #f87171, #ef4444) !important;
+        opacity: 1 !important;
+      }
+
+      &:hover,
+      &.v-field--focused {
+        border-color: #f87171 !important;
+        box-shadow: 0 0 0 4px rgba(239, 68, 68, 0.38), 0 0 16px rgba(239, 68, 68, 0.3) !important;
+      }
     }
 
     .v-field__input {
@@ -708,14 +744,161 @@ $glass-themes: (
     .text-error,
     .required {
       color: #ea5455 !important;
+      font-weight: bold !important;
     }
   }
 
-  .v-messages,
-  .v-input__details,
-  .text-caption.text-medium-emphasis {
+  // MENSAJES DE DETALLE Y VALIDACIÓN
+  .v-input:not(.v-input--error) {
+    .v-messages,
+    .v-input__details {
+      color: var(--text-muted) !important;
+      opacity: 0.9 !important;
+    }
+  }
+
+  .text-caption.text-medium-emphasis:not(.v-input--error *) {
     color: var(--text-muted) !important;
     opacity: 0.9 !important;
+  }
+
+  // MENSAJES DE ERROR EN FORMULARIO - RESALTADO VIBRANTE Y LEGIBLE
+  .v-input--error {
+    label,
+    .v-label,
+    .text-label,
+    .field-label {
+      color: if($is-dark, #fca5a5, #dc2626) !important;
+      font-weight: 700 !important;
+    }
+
+    .v-messages,
+    .v-messages__message,
+    .v-input__details {
+      color: if($is-dark, #fca5a5, #dc2626) !important;
+      -webkit-text-fill-color: if($is-dark, #fca5a5, #dc2626) !important;
+      font-weight: 700 !important;
+      font-size: 0.82rem !important;
+      opacity: 1 !important;
+      margin-top: 4px !important;
+      letter-spacing: 0.2px !important;
+      text-shadow: if($is-dark, 0 1px 3px rgba(0, 0, 0, 0.9), none) !important;
+    }
+  }
+
+  // ALERTAS DEL SISTEMA (VAlert) - MÁXIMA LEGIBILIDAD Y CONTRASTE EN TEMAS OSCUROS Y CLAROS
+  .v-alert {
+    border-radius: 10px !important;
+    font-weight: 500 !important;
+    backdrop-filter: blur(12px) !important;
+    -webkit-backdrop-filter: blur(12px) !important;
+
+    .v-alert__prepend .v-icon {
+      font-size: 1.45rem !important;
+    }
+
+    .v-alert-title {
+      font-weight: 700 !important;
+      letter-spacing: 0.3px !important;
+    }
+
+    // Alerta de Error
+    &.bg-error,
+    &.text-error,
+    &.v-alert--color-error {
+      background: if($is-dark,
+        linear-gradient(135deg, rgba(239, 68, 68, 0.22) 0%, rgba(185, 28, 28, 0.15) 100%),
+        linear-gradient(135deg, #fef2f2 0%, #fee2e2 100%)) !important;
+      border: 1.5px solid if($is-dark, rgba(239, 68, 68, 0.55), #fca5a5) !important;
+      box-shadow: 0 4px 16px if($is-dark, rgba(239, 68, 68, 0.2), rgba(239, 68, 68, 0.12)) !important;
+      color: if($is-dark, #ffffff, #991b1b) !important;
+
+      .v-alert__content,
+      .v-alert-title {
+        color: if($is-dark, #ffffff, #991b1b) !important;
+      }
+
+      .v-alert__prepend .v-icon {
+        color: if($is-dark, #fca5a5, #dc2626) !important;
+      }
+
+      .v-alert__close .v-btn {
+        color: if($is-dark, #ffffff, #991b1b) !important;
+      }
+    }
+
+    // Alerta de Advertencia (Warning)
+    &.bg-warning,
+    &.text-warning,
+    &.v-alert--color-warning {
+      background: if($is-dark,
+        linear-gradient(135deg, rgba(245, 158, 11, 0.22) 0%, rgba(180, 83, 9, 0.15) 100%),
+        linear-gradient(135deg, #fffbeb 0%, #fef3c7 100%)) !important;
+      border: 1.5px solid if($is-dark, rgba(245, 158, 11, 0.55), #fcd34d) !important;
+      box-shadow: 0 4px 16px if($is-dark, rgba(245, 158, 11, 0.2), rgba(245, 158, 11, 0.12)) !important;
+      color: if($is-dark, #ffffff, #92400e) !important;
+
+      .v-alert__content,
+      .v-alert-title {
+        color: if($is-dark, #ffffff, #92400e) !important;
+      }
+
+      .v-alert__prepend .v-icon {
+        color: if($is-dark, #fcd34d, #d97706) !important;
+      }
+
+      .v-alert__close .v-btn {
+        color: if($is-dark, #ffffff, #92400e) !important;
+      }
+    }
+
+    // Alerta de Éxito (Success)
+    &.bg-success,
+    &.text-success,
+    &.v-alert--color-success {
+      background: if($is-dark,
+        linear-gradient(135deg, rgba(16, 185, 129, 0.22) 0%, rgba(5, 150, 105, 0.15) 100%),
+        linear-gradient(135deg, #ecfdf5 0%, #d1fae5 100%)) !important;
+      border: 1.5px solid if($is-dark, rgba(16, 185, 129, 0.55), #86efac) !important;
+      box-shadow: 0 4px 16px if($is-dark, rgba(16, 185, 129, 0.2), rgba(16, 185, 129, 0.12)) !important;
+      color: if($is-dark, #ffffff, #065f46) !important;
+
+      .v-alert__content,
+      .v-alert-title {
+        color: if($is-dark, #ffffff, #065f46) !important;
+      }
+
+      .v-alert__prepend .v-icon {
+        color: if($is-dark, #86efac, #059669) !important;
+      }
+    }
+
+    // Alerta de Información (Info)
+    &.bg-info,
+    &.text-info,
+    &.v-alert--color-info {
+      background: if($is-dark,
+        linear-gradient(135deg, rgba(14, 165, 233, 0.22) 0%, rgba(2, 132, 199, 0.15) 100%),
+        linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%)) !important;
+      border: 1.5px solid if($is-dark, rgba(14, 165, 233, 0.55), #7dd3fc) !important;
+      box-shadow: 0 4px 16px if($is-dark, rgba(14, 165, 233, 0.2), rgba(14, 165, 233, 0.12)) !important;
+      color: if($is-dark, #ffffff, #075985) !important;
+
+      .v-alert__content,
+      .v-alert-title {
+        color: if($is-dark, #ffffff, #075985) !important;
+      }
+
+      .v-alert__prepend .v-icon {
+        color: if($is-dark, #7dd3fc, #0284c7) !important;
+      }
+    }
+  }
+
+  // Alerta destacada para validación de casilleros en formularios
+  .form-validation-alert {
+    animation: alertPulseIn 0.3s cubic-bezier(0.16, 1, 0.3, 1) !important;
+    border-left: 5px solid #ef4444 !important;
   }
 
   // BOTONES
@@ -4030,4 +4213,33 @@ body[data-theme="taller"] {
       opacity: 1 !important;
     }
   }
+}
+
+// --------------------------------------------------------------------------
+// ANIMACIONES Y UTILIDADES GLOBALES PARA VALIDACIÓN DE FORMULARIOS
+// --------------------------------------------------------------------------
+@keyframes alertPulseIn {
+  from {
+    opacity: 0;
+    transform: translateY(-8px) scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes errorFieldPulse {
+  0% { transform: translateX(0); }
+  20% { transform: translateX(-3px); }
+  40% { transform: translateX(3px); }
+  60% { transform: translateX(-2px); }
+  80% { transform: translateX(2px); }
+  100% { transform: translateX(0); }
+}
+
+.form-validation-alert {
+  animation: alertPulseIn 0.3s cubic-bezier(0.16, 1, 0.3, 1) !important;
+  box-shadow: 0 4px 20px rgba(239, 68, 68, 0.25) !important;
+  letter-spacing: 0.2px;
 }

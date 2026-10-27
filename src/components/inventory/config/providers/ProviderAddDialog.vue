@@ -2,6 +2,8 @@
 import { useLoaderStore } from '@/stores/loader'
 import { useGlobalToast } from '@/composables/useGlobalToast'
 import { $api } from '@/utils/api'
+import FormValidationAlert from '@/components/common/FormValidationAlert.vue'
+import { useFormValidation } from '@/composables/useFormValidation'
 
 const props = defineProps({
   isDialogVisible: {
@@ -18,6 +20,7 @@ const emit = defineEmits(['update:isDialogVisible', 'addProvider', 'add-provider
 
 const loader = useLoaderStore()
 const { showNotification } = useGlobalToast()
+const { validationAlertVisible, validationAlertMessage, validateAndNotify, resetValidationAlert } = useFormValidation()
 
 const isLoading = ref(false)
 const lastSupplierId = ref('prov000')  // Iniciar en 0 para que el primero sea prov001
@@ -83,12 +86,8 @@ const providerForm = ref(null)
 ====================================================== */
 
 const store = async () => {
-  const { valid } = await providerForm.value?.validate()
-  if (!valid) {
-    showNotification('Por favor complete todos los campos requeridos', 'error')
-    
-    return
-  }
+  const { valid } = await validateAndNotify(providerForm)
+  if (!valid) return
 
   loader.start()
 
@@ -222,6 +221,13 @@ watch(() => props.isDialogVisible, val => {
 
       <!-- Form -->
       <VCardText class="pa-4">
+        <!-- Alerta de Validación de Campos Obligatorios -->
+        <FormValidationAlert
+          :visible="validationAlertVisible"
+          :message="validationAlertMessage"
+          @close="validationAlertVisible = false"
+        />
+
         <VForm
           ref="providerForm"
           @submit.prevent="store"

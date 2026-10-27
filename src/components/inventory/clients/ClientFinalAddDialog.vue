@@ -2,6 +2,8 @@
 import { ref, onMounted, watch, computed } from 'vue'
 import { useDebounceFn } from '@vueuse/core'
 import { $api } from '@/utils/api'
+import FormValidationAlert from '@/components/common/FormValidationAlert.vue'
+import { useFormValidation } from '@/composables/useFormValidation'
 
 const props = defineProps({
   isDialogVisible: {
@@ -23,6 +25,7 @@ const loading = ref(false)
 const error = ref('')
 const success = ref('')
 const userStore = JSON.parse(localStorage.getItem('user'))
+const { validationAlertVisible, validationAlertMessage, validateAndNotify, resetValidationAlert } = useFormValidation()
 
 const isDocumentChecked = ref(false)
 const isClientExisting = ref(false)
@@ -351,7 +354,7 @@ const saveClient = async () => {
     }
   }
 
-  const { valid } = await formRef.value?.validate()
+  const { valid } = await validateAndNotify(formRef, '#clientFinalAddForm')
   if (!valid) return
 
   loading.value = true
@@ -636,6 +639,12 @@ onMounted(() => {
       </div>
 
       <VCardText class="pa-sm-6 pa-4">
+        <!-- Alerta de Validación de Campos Obligatorios -->
+        <FormValidationAlert
+          :visible="validationAlertVisible"
+          :message="validationAlertMessage"
+          @close="validationAlertVisible = false"
+        />
         <!-- 👉 Form -->
         <VForm
           id="clientFinalAddForm"

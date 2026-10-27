@@ -1,6 +1,8 @@
 <script setup>
 import { ref } from 'vue'
 import { useLoaderStore } from '@/stores/loader'
+import FormValidationAlert from '@/components/common/FormValidationAlert.vue'
+import { useFormValidation } from '@/composables/useFormValidation'
 
 const props = defineProps({
   isDialogVisible: {
@@ -45,6 +47,7 @@ const addressRules = [
 const warning = ref(null)
 const error_exist = ref(null)
 const loader = useLoaderStore()
+const { validationAlertVisible, validationAlertMessage, validateAndNotify, resetValidationAlert } = useFormValidation()
 
 const notificationShow = ref(false)
 const notificationMessage = ref('')
@@ -62,7 +65,7 @@ const store = async () => {
   loader.start()
 
   if (formRef.value && typeof formRef.value.validate === 'function') {
-    const valid = await formRef.value.validate()
+    const valid = await validateAndNotify(formRef, '#warehouseAddForm')
     if (!valid.valid) {
       loader.stop()
       warning.value = 'Corrige los campos obligatorios.'
@@ -142,6 +145,23 @@ const onFormReset = () => {
       </div>
 
       <VCardText class="pa-6 pa-sm-8">
+        <!-- Alerta de Validación de Campos Obligatorios -->
+        <FormValidationAlert
+          :visible="Boolean(warning || validationAlertVisible)"
+          :message="warning || validationAlertMessage"
+          @close="warning = null; validationAlertVisible = false"
+        />
+
+        <VAlert
+          v-if="error_exist"
+          type="error"
+          variant="tonal"
+          closable
+          class="mb-4 rounded-lg form-validation-alert"
+          @click:close="error_exist = null"
+        >
+          {{ error_exist }}
+        </VAlert>
         <!-- Form -->
         <VForm
           id="warehouseAddForm"

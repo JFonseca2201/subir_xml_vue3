@@ -383,6 +383,7 @@
     "DEFAULT_TAX_PERCENT": true,
     "DEFAULT_TAX_RATE": true,
     "useTaxConfig": true,
-    "useMaintenanceReminders": true
+    "useMaintenanceReminders": true,
+    "useFormValidation": true
   }
 }

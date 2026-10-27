@@ -3,6 +3,8 @@ import { ref, onMounted, computed } from 'vue'
 import { useLoaderStore } from '@/stores/loader'
 import { useGlobalToast } from '@/composables/useGlobalToast'
 import { $api } from '@/utils/api'
+import FormValidationAlert from '@/components/common/FormValidationAlert.vue'
+import { useFormValidation } from '@/composables/useFormValidation'
 
 const props = defineProps({
   isDialogVisible: {
@@ -21,10 +23,15 @@ const emit = defineEmits([
   'addUser',
 ])
 
+const formRef = ref(null)
+const error_exist = ref(null)
+const warning = ref(null)
+const { validationAlertVisible, validationAlertMessage, validateAndNotify, resetValidationAlert } = useFormValidation()
+
 const getActiveSucursaleId = () => {
   try {
     const user = JSON.parse(localStorage.getItem('user') || '{}')
-    
+
     return String(user.sucursale_id || '1')
   } catch (e) {
     return '1'
@@ -51,7 +58,7 @@ const newUser = ref({
 
 const avatarPreview = ref(null) // Para previsualización del avatar
 
-const formRef = ref(null)
+
 
 // Reglas de validación
 const requiredRule = v => !!v || 'Campo obligatorio'
@@ -59,7 +66,7 @@ const requiredRule = v => !!v || 'Campo obligatorio'
 const emailRule = v => {
   if (!v) return 'Campo obligatorio'
   const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
-  
+
   return re.test(v) || 'Correo inválido'
 }
 
@@ -69,7 +76,7 @@ const identificationRules = [
   v => {
     const val = String(v || '').trim()
     if (!/^\d{10,13}$/.test(val)) return 'Solo se permiten entre 10 y 13 números'
-    
+
     return true
   },
   v => isValidEcuadorianID(String(v || '')) || 'Cédula/RUC inválida',
@@ -82,7 +89,7 @@ const phoneRule = v => {
   if (!v) return 'Campo obligatorio'
   const val = String(v).trim().replace(/\D/g, '')
   if (val.length !== 10) return 'El teléfono debe tener exactamente 10 dígitos'
-  
+
   return true
 }
 
@@ -119,21 +126,20 @@ function isValidEcuadorianID(id) {
       sum += val
     }
     const checkDigit = (10 - (sum % 10)) % 10
-    
+
     return checkDigit === digits[9]
   }
   if (id.length === 13) {
     const rucSuffix = parseInt(id.substring(10, 13), 10)
     if (rucSuffix < 1) return false
-    
+
     return isValidEcuadorianID(id.substring(0, 10))
   }
-  
+
   return false
 }
 
-const warning = ref(null)
-const error_exist = ref(null)
+
 const loader = useLoaderStore()
 const { showNotification } = useGlobalToast()
 
@@ -199,11 +205,11 @@ const store = async () => {
 
   // Validar formulario antes de enviar
   if (formRef.value && typeof formRef.value.validate === 'function') {
-    const valid = await formRef.value.validate()
+    const valid = await validateAndNotify(formRef, '#userAddForm')
     if (!valid.valid) {
       loader.stop()
       warning.value = 'Por favor, completa todos los campos obligatorios.'
-      
+
       return
     }
   }
@@ -225,7 +231,7 @@ const store = async () => {
     if (!newUser.value[field] || (typeof newUser.value[field] === 'string' && newUser.value[field].trim() === '')) {
       loader.stop()
       warning.value = `El campo "${label}" es obligatorio`
-      
+
       return
     }
   }
@@ -234,7 +240,7 @@ const store = async () => {
   if (newUser.value.password !== newUser.value.confirmPassword) {
     loader.stop()
     warning.value = 'Las contraseñas no coinciden'
-    
+
     return
   }
 
@@ -243,7 +249,7 @@ const store = async () => {
       const res = rules[i](value)
       if (res !== true) return res
     }
-    
+
     return true
   }
 
@@ -251,7 +257,7 @@ const store = async () => {
   if (idCheck !== true) {
     loader.stop()
     warning.value = typeof idCheck === 'string' ? idCheck : 'Cédula/RUC inválida'
-    
+
     return
   }
 
@@ -259,7 +265,7 @@ const store = async () => {
   if (phoneCheck !== true) {
     loader.stop()
     warning.value = typeof phoneCheck === 'string' ? phoneCheck : 'Teléfono no válido'
-    
+
     return
   }
 
@@ -293,7 +299,7 @@ const store = async () => {
         } catch (error) {
           console.error('Error al convertir imagen:', error)
           warning.value = 'No se pudo convertir la imagen a un formato compatible.'
-          
+
           return
         }
       } else {
@@ -335,9 +341,9 @@ const store = async () => {
             }
           } else {
             errorMessage = response._data.error ||
-                            response._data.message ||
-                            response._data.msg ||
-                            JSON.stringify(response._data)
+              response._data.message ||
+              response._data.msg ||
+              JSON.stringify(response._data)
           }
         } else if (response.statusText) {
           errorMessage = response.statusText
@@ -406,23 +412,12 @@ const onFormReset = () => {
 </script>
 
 <template>
-  <VDialog
-    scrollable
-    :width="$vuetify.display.smAndDown ? 'auto' : 720"
-    :model-value="props.isDialogVisible"
-    transition="dialog-bottom-transition"
-    @update:model-value="val => emit('update:isDialogVisible', val)"
-  >
+  <VDialog scrollable :width="$vuetify.display.smAndDown ? 'auto' : 720" :model-value="props.isDialogVisible"
+    transition="dialog-bottom-transition" @update:model-value="val => emit('update:isDialogVisible', val)">
     <VCard class="custom-dialog-card elevation-24">
       <!-- Header Banner Primary -->
       <div class="custom-dialog-header-primary">
-        <VBtn
-          icon="ri-close-line"
-          variant="text"
-          size="small"
-          class="custom-dialog-close-btn"
-          @click="onFormReset"
-        />
+        <VBtn icon="ri-close-line" variant="text" size="small" class="custom-dialog-close-btn" @click="onFormReset" />
         <div class="custom-dialog-avatar">
           <VIcon icon="ri-user-add-line" />
         </div>
@@ -435,213 +430,97 @@ const onFormReset = () => {
       </div>
 
       <VCardText class="pa-6 pa-sm-8">
+        <!-- Alerta de Validación de Campos Obligatorios -->
+        <FormValidationAlert
+          :visible="Boolean(warning || validationAlertVisible)"
+          :message="warning || validationAlertMessage"
+          @close="warning = null; validationAlertVisible = false"
+        />
+
+        <VAlert v-if="error_exist" type="error" variant="tonal" closable class="mb-4 rounded-lg form-validation-alert"
+          @click:close="error_exist = null">
+          {{ error_exist }}
+        </VAlert>
         <!-- Form -->
-        <VForm
-          id="userAddForm"
-          ref="formRef"
-          @submit.prevent="store"
-        >
+        <VForm id="userAddForm" ref="formRef" @submit.prevent="store">
           <VRow>
             <!-- Nombre y Apellido -->
-            <VCol
-              cols="12"
-              sm="6"
-            >
-              <VTextField
-                v-model="newUser.name"
-                :rules="nameRules"
-                label="Nombre"
-                placeholder="Ej. Juan"
-                variant="outlined"
-                density="comfortable"
-                prepend-inner-icon="ri-user-line"
-                hide-details="auto"
-                required
-              />
+            <VCol cols="12" sm="6">
+              <VTextField v-model="newUser.name" :rules="nameRules" label="Nombre" placeholder="Ej. Juan"
+                variant="outlined" density="comfortable" prepend-inner-icon="ri-user-line" hide-details="auto"
+                required />
             </VCol>
 
-            <VCol
-              cols="12"
-              sm="6"
-            >
-              <VTextField
-                v-model="newUser.surname"
-                :rules="nameRules"
-                label="Apellido"
-                placeholder="Ej. Pérez"
-                variant="outlined"
-                density="comfortable"
-                prepend-inner-icon="ri-user-line"
-                hide-details="auto"
-                required
-              />
+            <VCol cols="12" sm="6">
+              <VTextField v-model="newUser.surname" :rules="nameRules" label="Apellido" placeholder="Ej. Pérez"
+                variant="outlined" density="comfortable" prepend-inner-icon="ri-user-line" hide-details="auto"
+                required />
             </VCol>
 
             <!-- Correo y Teléfono -->
-            <VCol
-              cols="12"
-              sm="6"
-            >
-              <VTextField
-                v-model="newUser.email"
-                :rules="emailRules"
-                label="Correo Electrónico"
-                placeholder="ejemplo@dominio.com"
-                variant="outlined"
-                density="comfortable"
-                prepend-inner-icon="ri-mail-line"
-                hide-details="auto"
-                type="email"
-                required
-              />
+            <VCol cols="12" sm="6">
+              <VTextField v-model="newUser.email" :rules="emailRules" label="Correo Electrónico"
+                placeholder="ejemplo@dominio.com" variant="outlined" density="comfortable"
+                prepend-inner-icon="ri-mail-line" hide-details="auto" type="email" required />
             </VCol>
 
-            <VCol
-              cols="12"
-              sm="6"
-            >
-              <VTextField
-                v-model="newUser.phone"
-                :rules="phoneRules"
-                label="Teléfono"
-                placeholder="Ej. 0991234567"
-                variant="outlined"
-                density="comfortable"
-                prepend-inner-icon="ri-phone-line"
-                hide-details="auto"
-                type="tel"
-                required
-                maxlength="10"
-                @input="e => { newUser.phone = e.target.value.replace(/\D/g, '').slice(0, 10) }"
-              />
+            <VCol cols="12" sm="6">
+              <VTextField v-model="newUser.phone" :rules="phoneRules" label="Teléfono" placeholder="Ej. 0991234567"
+                variant="outlined" density="comfortable" prepend-inner-icon="ri-phone-line" hide-details="auto"
+                type="tel" required maxlength="10"
+                @input="e => { newUser.phone = e.target.value.replace(/\D/g, '').slice(0, 10) }" />
             </VCol>
 
             <!-- Tipo de Documento y Número de Documento -->
-            <VCol
-              cols="12"
-              sm="6"
-            >
-              <VSelect
-                v-model="newUser.type_document"
-                :items="[
-                  { title: 'Cédula', value: 'CI' },
-                  { title: 'RUC', value: 'RUC' },
-                  { title: 'Pasaporte', value: 'PASS' }
-                ]"
-                label="Tipo de Documento"
-                variant="outlined"
-                density="comfortable"
-                prepend-inner-icon="ri-file-list-line"
-                hide-details="auto"
-                required
-              />
+            <VCol cols="12" sm="6">
+              <VSelect v-model="newUser.type_document" :items="[
+                { title: 'Cédula', value: 'CI' },
+                { title: 'RUC', value: 'RUC' },
+                { title: 'Pasaporte', value: 'PASS' }
+              ]" label="Tipo de Documento" variant="outlined" density="comfortable"
+                prepend-inner-icon="ri-file-list-line" hide-details="auto" required />
             </VCol>
 
-            <VCol
-              cols="12"
-              sm="6"
-            >
-              <VTextField
-                v-model="newUser.identification"
-                :rules="identificationRules"
-                label="Número de Documento"
+            <VCol cols="12" sm="6">
+              <VTextField v-model="newUser.identification" :rules="identificationRules" label="Número de Documento"
                 :placeholder="newUser.type_document === 'CI' ? 'Ej. 1710034065' : 'Ej. 1793192550001'"
-                variant="outlined"
-                density="comfortable"
-                prepend-inner-icon="ri-user-line"
-                hide-details="auto"
-                required
+                variant="outlined" density="comfortable" prepend-inner-icon="ri-user-line" hide-details="auto" required
                 :maxlength="newUser.type_document === 'CI' ? 10 : (newUser.type_document === 'RUC' ? 13 : 20)"
-                @input="e => { const maxL = newUser.type_document === 'CI' ? 10 : (newUser.type_document === 'RUC' ? 13 : 20); newUser.identification = e.target.value.replace(/\D/g, '').slice(0, maxL) }"
-              />
+                @input="e => { const maxL = newUser.type_document === 'CI' ? 10 : (newUser.type_document === 'RUC' ? 13 : 20); newUser.identification = e.target.value.replace(/\D/g, '').slice(0, maxL) }" />
             </VCol>
 
             <!-- Dirección (toda la fila) -->
             <VCol cols="12">
-              <VTextField
-                v-model="newUser.address"
-                label="Dirección"
-                placeholder="Ej. Calle Abc 123"
-                variant="outlined"
-                density="comfortable"
-                prepend-inner-icon="ri-map-pin-line"
-                hide-details="auto"
-              />
+              <VTextField v-model="newUser.address" label="Dirección" placeholder="Ej. Calle Abc 123" variant="outlined"
+                density="comfortable" prepend-inner-icon="ri-map-pin-line" hide-details="auto" />
             </VCol>
 
             <!-- Género y Rol -->
-            <VCol
-              cols="12"
-              sm="6"
-            >
-              <VSelect
-                v-model="newUser.gender"
-                :items="[
-                  { title: 'Masculino', value: 'M' },
-                  { title: 'Femenino', value: 'F' },
-                  { title: 'Otro', value: 'O' }
-                ]"
-                label="Género"
-                variant="outlined"
-                density="comfortable"
-                prepend-inner-icon="ri-men-women-line"
-                hide-details="auto"
-              />
+            <VCol cols="12" sm="6">
+              <VSelect v-model="newUser.gender" :items="[
+                { title: 'Masculino', value: 'M' },
+                { title: 'Femenino', value: 'F' },
+                { title: 'Otro', value: 'O' }
+              ]" label="Género" variant="outlined" density="comfortable" prepend-inner-icon="ri-men-women-line"
+                hide-details="auto" />
             </VCol>
 
-            <VCol
-              cols="12"
-              sm="6"
-            >
-              <VSelect
-                v-model="newUser.role_id"
-                :items="props.roles"
-                item-title="name"
-                item-value="id"
-                density="comfortable"
-                variant="outlined"
-                label="Rol de usuario"
-                placeholder="Selecciona"
-                prepend-inner-icon="ri-shield-user-line"
-                eager
-                outlined
-                dense
-                required
-              />
+            <VCol cols="12" sm="6">
+              <VSelect v-model="newUser.role_id" :items="props.roles" item-title="name" item-value="id"
+                density="comfortable" variant="outlined" label="Rol de usuario" placeholder="Selecciona"
+                prepend-inner-icon="ri-shield-user-line" eager outlined dense required />
             </VCol>
 
             <!-- Avatar y Previsualización -->
-            <VCol
-              cols="12"
-              sm="6"
-            >
-              <VFileInput
-                v-model="newUser.avatar"
-                label="Avatar"
-                accept="image/*"
-                variant="outlined"
-                density="comfortable"
-                prepend-inner-icon="ri-image-line"
-                hide-details="auto"
-                show-size
-                @change="handleAvatarChange"
-                @update:model-value="handleAvatarClear"
-              />
+            <VCol cols="12" sm="6">
+              <VFileInput v-model="newUser.avatar" label="Avatar" accept="image/*" variant="outlined"
+                density="comfortable" prepend-inner-icon="ri-image-line" hide-details="auto" show-size
+                @change="handleAvatarChange" @update:model-value="handleAvatarClear" />
             </VCol>
-            <VCol
-              cols="12"
-              sm="6"
-            >
+            <VCol cols="12" sm="6">
               <!-- Previsualización siempre en el mismo espacio -->
-              <div
-                v-if="avatarPreview"
-                class="text-center d-flex flex-column align-center mt-3"
-              >
-                <VAvatar
-                  :image="avatarPreview"
-                  size="50"
-                  class="elevation-3 mb-1"
-                />
+              <div v-if="avatarPreview" class="text-center d-flex flex-column align-center mt-3">
+                <VAvatar :image="avatarPreview" size="50" class="elevation-3 mb-1" />
                 <div class="text-caption text-medium-emphasis">
                   {{ newUser.name }}
                 </div>
@@ -650,15 +529,8 @@ const onFormReset = () => {
           </VRow>
           <VRow>
             <!-- Validación de avatar -->
-            <VCol
-              v-if="newUser.avatar && !newUser.avatar.type?.startsWith('image/')"
-              cols="12"
-            >
-              <VAlert
-                color="error"
-                variant="tonal"
-                closable
-              >
+            <VCol v-if="newUser.avatar && !newUser.avatar.type?.startsWith('image/')" cols="12">
+              <VAlert color="error" variant="tonal" closable>
                 El archivo seleccionado no es una imagen válida. Por favor selecciona un archivo de imagen
                 (JPG, PNG, GIF, etc.).
               </VAlert>
@@ -666,66 +538,28 @@ const onFormReset = () => {
           </VRow>
           <VRow>
             <!-- Contraseña y Confirmar Contraseña (siempre en la misma posición) -->
-            <VCol
-              cols="12"
-              sm="6"
-            >
-              <VTextField
-                v-model="newUser.password"
-                :rules="passwordRules"
-                label="Contraseña"
-                placeholder="Mínimo 6 caracteres"
-                variant="outlined"
-                density="comfortable"
-                prepend-inner-icon="ri-lock-line"
-                hide-details="auto"
-                type="password"
-                required
-              />
+            <VCol cols="12" sm="6">
+              <VTextField v-model="newUser.password" :rules="passwordRules" label="Contraseña"
+                placeholder="Mínimo 6 caracteres" variant="outlined" density="comfortable"
+                prepend-inner-icon="ri-lock-line" hide-details="auto" type="password" required />
             </VCol>
 
-            <VCol
-              cols="12"
-              sm="6"
-            >
-              <VTextField
-                v-model="newUser.confirmPassword"
-                :rules="confirmPasswordRules"
-                label="Confirmar Contraseña"
-                placeholder="Repite la contraseña"
-                variant="outlined"
-                density="comfortable"
-                prepend-inner-icon="ri-lock-line"
-                hide-details="auto"
-                type="password"
-                required
-              />
+            <VCol cols="12" sm="6">
+              <VTextField v-model="newUser.confirmPassword" :rules="confirmPasswordRules" label="Confirmar Contraseña"
+                placeholder="Repite la contraseña" variant="outlined" density="comfortable"
+                prepend-inner-icon="ri-lock-line" hide-details="auto" type="password" required />
             </VCol>
           </VRow>
           <VRow>
             <!-- Alertas de Error/Éxito -->
-            <VCol
-              v-if="warning"
-              cols="12"
-            >
-              <VAlert
-                color="warning"
-                variant="tonal"
-                closable
-              >
+            <VCol v-if="warning" cols="12">
+              <VAlert color="warning" variant="tonal" closable>
                 {{ warning }}
               </VAlert>
             </VCol>
 
-            <VCol
-              v-if="error_exist"
-              cols="12"
-            >
-              <VAlert
-                color="error"
-                variant="tonal"
-                closable
-              >
+            <VCol v-if="error_exist" cols="12">
+              <VAlert color="error" variant="tonal" closable>
                 {{ error_exist }}
               </VAlert>
             </VCol>
@@ -736,32 +570,15 @@ const onFormReset = () => {
       <VDivider />
 
       <!-- Acciones Fijas -->
-      <VCardActions
-        class="pa-4 d-flex justify-end align-center gap-3 bg-white"
-        style="position: sticky; bottom: 0; z-index: 2;"
-      >
-        <VBtn
-          variant="outlined"
-          color="secondary"
-          prepend-icon="ri-close-line"
-          class="rounded-lg px-6 font-weight-medium"
-          height="40"
-          @click="onFormReset"
-        >
+      <VCardActions class="pa-4 d-flex justify-end align-center gap-3 bg-white"
+        style="position: sticky; bottom: 0; z-index: 2;">
+        <VBtn variant="outlined" color="secondary" prepend-icon="ri-close-line"
+          class="rounded-lg px-6 font-weight-medium" height="40" @click="onFormReset">
           Cancelar
         </VBtn>
 
-        <VBtn
-          type="submit"
-          form="userAddForm"
-          color="primary"
-          variant="elevated"
-          prepend-icon="ri-save-3-line"
-          class="rounded-lg px-6 font-weight-bold"
-          height="40"
-          :loading="loader.loading"
-          :disabled="loader.loading"
-        >
+        <VBtn type="submit" form="userAddForm" color="primary" variant="elevated" prepend-icon="ri-save-3-line"
+          class="rounded-lg px-6 font-weight-bold" height="40" :loading="loader.loading" :disabled="loader.loading">
           Crear Usuario
         </VBtn>
       </VCardActions>

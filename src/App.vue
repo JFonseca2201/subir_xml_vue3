@@ -7,6 +7,7 @@ import { hexToRgb } from "@layouts/utils"
 import GlobalLoader from '@/components/loaders/GlobalLoader.vue'
 import OfflineOverlay from '@/components/OfflineOverlay.vue'
 import GlobalToast from '@/components/common/GlobalToast.vue'
+import GlobalFormValidationMonitor from '@/components/common/GlobalFormValidationMonitor.vue'
 import MaintenanceRemindersDrawer from '@/components/maintenance/MaintenanceRemindersDrawer.vue'
 
 const { global } = useTheme()
@@ -64,6 +65,9 @@ onMounted(() => {
 
       <!-- Notificaciones Toast Globales -->
       <GlobalToast />
+
+      <!-- Monitor Global de Validación de Formularios (VAlerts) -->
+      <GlobalFormValidationMonitor />
     </VApp>
   </VLocaleProvider>
 </template>
