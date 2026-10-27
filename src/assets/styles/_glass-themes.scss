@@ -60,7 +60,7 @@ $glass-themes: (
     'border-glass': rgba(234, 234, 255, 0.12),
     'input-bg': rgba(255, 255, 255, 0.05),
     'input-border': rgba(234, 234, 255, 0.16),
-    'table-header-bg': #2F3349,
+    'table-header-bg': #3A3E5B,
     'table-row-even-bg': rgba(255, 255, 255, 0.02),
     'table-row-hover-bg': rgba(102, 108, 255, 0.08),
     'blur-glass': "none",
@@ -92,7 +92,7 @@ $glass-themes: (
     'border-glass': rgba(255, 255, 255, 0.08),
     'input-bg': rgba(255, 255, 255, 0.05),
     'input-border': rgba(255, 255, 255, 0.12),
-    'table-header-bg': rgba(255, 255, 255, 0.07),
+    'table-header-bg': #252a46,
     'table-row-even-bg': rgba(255, 255, 255, 0.02),
     'table-row-hover-bg': rgba(115, 103, 240, 0.14),
     'blur-glass': "blur(20px)",
@@ -124,7 +124,7 @@ $glass-themes: (
     'border-glass': rgba(255, 255, 255, 0.10),
     'input-bg': rgba(255, 255, 255, 0.06),
     'input-border': rgba(255, 255, 255, 0.14),
-    'table-header-bg': rgba(255, 255, 255, 0.09),
+    'table-header-bg': #263352,
     'table-row-even-bg': rgba(255, 255, 255, 0.02),
     'table-row-hover-bg': rgba(99, 102, 241, 0.14),
     'blur-glass': "blur(18px)",
@@ -246,7 +246,7 @@ $glass-themes: (
   [data-theme="#{$theme-name}"],
   html[data-theme="#{$theme-name}"],
   body[data-theme="#{$theme-name}"],
-  .v-theme--#{$theme-name},
+  .v-application.v-theme--#{$theme-name},
   .theme-#{$theme-name} {
     @include define-glass-variables($theme);
   }
@@ -547,27 +547,27 @@ $glass-themes: (
   h1,
   h2,
   h3,
-  h4,
-  h5,
-  h6,
-  .text-h4,
-  .text-h5,
-  .text-h6 {
-    color: var(--text-primary) !important;
+  h4:not([class*="text-"]):not([class*="color-"]),
+  h5:not([class*="text-"]):not([class*="color-"]),
+  h6:not([class*="text-"]):not([class*="color-"]),
+  .text-h4:not([class*="text-"]):not([class*="color-"]),
+  .text-h5:not([class*="text-"]):not([class*="color-"]),
+  .text-h6:not([class*="text-"]):not([class*="color-"]) {
+    color: var(--text-primary);
   }
 
-  p,
-  .text-body-1,
-  .text-body-2,
-  .text-caption {
+  p:not([class*="text-"]):not([class*="color-"]),
+  .text-body-1:not([class*="text-"]):not([class*="color-"]),
+  .text-body-2:not([class*="text-"]):not([class*="color-"]),
+  .text-caption:not([class*="text-"]):not([class*="color-"]) {
     color: var(--text-secondary);
   }
 
-  span:not([class*="status"]):not([class*="badge"]):not([class*="chip"]):not(.v-chip *):not(.status-pill-clean *):not(.v-btn *):not(.kardex-plate-badge *):not(.doc-type-badge-mini *):not(.sri-status-tag *):not(.sri-tag-text) {
+  span:not([class*="status"]):not([class*="badge"]):not([class*="chip"]):not(.v-chip *):not(.status-pill-clean *):not(.v-btn *):not(.kardex-plate-badge *):not(.doc-type-badge-mini *):not(.sri-status-tag *):not(.sri-tag-text):not(.v-avatar *):not([class*="avatar"] *):not(.v-avatar__underlay):not([class*="text-"]):not([class*="color-"]) {
     color: var(--text-secondary);
   }
 
-  .text-medium-emphasis {
+  .text-medium-emphasis:not([class*="text-primary"]):not([class*="text-success"]):not([class*="text-warning"]):not([class*="text-info"]):not([class*="text-error"]) {
     color: var(--text-muted) !important;
   }
 
@@ -1871,7 +1871,7 @@ $glass-themes: (
   [data-theme="#{$theme-name}"],
   html[data-theme="#{$theme-name}"],
   body[data-theme="#{$theme-name}"],
-  .v-theme--#{$theme-name},
+  .v-application.v-theme--#{$theme-name},
   .theme-#{$theme-name} {
     @include apply-glass-theme-rules($theme);
   }
@@ -1887,7 +1887,7 @@ $glass-themes: (
 [data-theme="light"],
 html[data-theme="light"],
 body[data-theme="light"],
-.v-theme--light,
+.v-application.v-theme--light,
 .theme-light {
   --bg-app: #F7F7F9;
   --bg-dialog: #ffffff;
@@ -1902,7 +1902,7 @@ body[data-theme="light"],
   --border-dialog-header: rgba(38, 43, 67, 0.12);
   --icon-color: #ffffff;
 
-  color: #262B43 !important;
+  color: #262B43;
 
   .layout-wrapper.layout-nav-type-vertical .layout-navbar,
   .layout-navbar,
@@ -2064,7 +2064,7 @@ body[data-theme="light"]:not(.auth-page-root),
 [data-theme="dark"],
 html[data-theme="dark"],
 body[data-theme="dark"],
-.v-theme--dark,
+.v-application.v-theme--dark,
 .theme-dark {
   --bg-app: #282A42;
   --bg-dialog: #2F3349;
@@ -2082,7 +2082,7 @@ body[data-theme="dark"],
 // --------------------------------------------------------------------------
 // 8. TEMA DEL TALLER (taller) - REDISEÑADO Y BLINDADO
 // --------------------------------------------------------------------------
-.v-theme--taller,
+.v-application.v-theme--taller,
 [data-theme="taller"],
 body[data-theme="taller"],
 .theme-taller {
@@ -2096,7 +2096,7 @@ body[data-theme="taller"],
   --v-theme-on-primary: 255, 255, 255;
   --v-theme-primary-darken-1: 107, 14, 39;
   
-  color: #0f172a !important; // 1. NAVBAR SUPERIOR
+  color: #0f172a; // 1. NAVBAR SUPERIOR
 
   .layout-wrapper.layout-nav-type-vertical .layout-navbar,
   .layout-navbar,
@@ -2817,6 +2817,11 @@ html[data-theme="dark"],
 body[data-theme="dark"],
 .v-theme--dark,
 .theme-dark,
+[data-theme="dark"],
+html[data-theme="dark"],
+body[data-theme="dark"],
+.theme-dark,
+.v-theme--dark,
 [data-theme="dark-glass"],
 html[data-theme="dark-glass"],
 body[data-theme="dark-glass"],
@@ -2832,6 +2837,10 @@ body[data-theme="semi-dark-glass"],
   .v-table thead,
   .v-table thead tr,
   .v-table thead th,
+  .v-data-table thead,
+  .v-data-table thead tr,
+  .v-data-table thead th,
+  .v-data-table__th,
   .v-table tr.bg-grey-lighten-5,
   .v-table tr.bg-grey-lighten-4,
   .v-table tr.bg-grey-lighten-3,
@@ -2848,10 +2857,99 @@ body[data-theme="semi-dark-glass"],
   .bg-grey-lighten-4 th,
   .bg-grey-lighten-5 td,
   .bg-grey-lighten-4 td {
-    background: var(--table-header-bg, #2F3349) !important;
-    background-color: var(--table-header-bg, #2F3349) !important;
+    background: var(--table-header-bg, #3A3E5B) !important;
+    background-color: var(--table-header-bg, #3A3E5B) !important;
     color: var(--text-primary, #ffffff) !important;
     border-color: var(--border-glass, rgba(255, 255, 255, 0.12)) !important;
+
+    .v-data-table-header__content,
+    span,
+    div {
+      color: var(--text-primary, #ffffff) !important;
+    }
+  }
+
+  // Soporte para módulo de Operaciones / Finanzas en temas oscuros
+  .operations-date-header {
+    background: rgba(255, 255, 255, 0.05) !important;
+    background-color: rgba(255, 255, 255, 0.05) !important;
+    border: 1px solid var(--border-glass, rgba(234, 234, 255, 0.14)) !important;
+    border-radius: 10px !important;
+
+    .date-icon-box {
+      background-color: rgba(102, 108, 255, 0.22) !important;
+      color: #a5b4fc !important;
+
+      .v-icon {
+        color: #a5b4fc !important;
+      }
+    }
+
+    .date-title-text {
+      color: #f8fafc !important;
+      font-weight: 700 !important;
+    }
+
+    .day-subtotal {
+      &.day-subtotal-income {
+        background-color: rgba(16, 185, 129, 0.18) !important;
+        color: #34d399 !important;
+        border: 1px solid rgba(16, 185, 129, 0.35) !important;
+      }
+
+      &.day-subtotal-expense {
+        background-color: rgba(239, 68, 68, 0.18) !important;
+        color: #f87171 !important;
+        border: 1px solid rgba(239, 68, 68, 0.35) !important;
+      }
+    }
+  }
+
+  .operations-movement-item {
+    background: var(--bg-surface, #2F3349) !important;
+    background-color: var(--bg-surface, #2F3349) !important;
+    border: 1px solid var(--border-glass, rgba(234, 234, 255, 0.12)) !important;
+    color: var(--text-primary, #ffffff) !important;
+
+    &:hover {
+      background: rgba(255, 255, 255, 0.08) !important;
+      border-color: rgba(102, 108, 255, 0.35) !important;
+    }
+
+    .movement-title-row {
+      color: #ffffff !important;
+      * {
+        color: #ffffff !important;
+      }
+    }
+
+    .movement-client-row {
+      color: rgba(234, 234, 255, 0.75) !important;
+
+      .v-icon {
+        color: rgba(234, 234, 255, 0.60) !important;
+      }
+    }
+
+    .movement-direction-avatar {
+      &.avatar-income {
+        background-color: rgba(16, 185, 129, 0.18) !important;
+        color: #34d399 !important;
+        border: 1px solid rgba(16, 185, 129, 0.35) !important;
+      }
+
+      &.avatar-expense {
+        background-color: rgba(239, 68, 68, 0.18) !important;
+        color: #f87171 !important;
+        border: 1px solid rgba(239, 68, 68, 0.35) !important;
+      }
+
+      &.avatar-transfer {
+        background-color: rgba(14, 165, 233, 0.18) !important;
+        color: #38bdf8 !important;
+        border: 1px solid rgba(14, 165, 233, 0.35) !important;
+      }
+    }
   }
 
   // 2. Estados Vacíos (Empty States como "No se encontraron facturas", etc.)
@@ -4385,3 +4483,212 @@ body[data-theme="light"],
     color: var(--text-primary) !important;
   }
 }
+
+// ==========================================================================
+// BOTONES DE ACCIÓN TONAL EN TODAS LAS TABLAS Y LISTADOS (ALTO CONTRASTE)
+// ==========================================================================
+.v-btn.v-btn--variant-tonal.v-btn--icon,
+.v-table td .v-btn.v-btn--variant-tonal,
+td .d-flex .v-btn.v-btn--variant-tonal,
+.listing-item-actions .v-btn.v-btn--variant-tonal,
+.table-actions .v-btn.v-btn--variant-tonal,
+.action-btn {
+  border-radius: 8px !important;
+  width: 32px !important;
+  height: 32px !important;
+  min-width: 32px !important;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1) !important;
+  box-shadow: none !important;
+
+  .v-btn__underlay {
+    display: none !important;
+  }
+  .v-btn__overlay {
+    opacity: 0 !important;
+  }
+
+  .v-icon {
+    font-size: 18px !important;
+    width: 18px !important;
+    height: 18px !important;
+    color: currentColor !important;
+    fill: currentColor !important;
+    opacity: 1 !important;
+    transition: transform 0.2s ease !important;
+  }
+
+  &:hover {
+    transform: translateY(-2px) !important;
+
+    .v-icon {
+      transform: scale(1.12) !important;
+    }
+  }
+
+  // 1. INFO: Ver Ficha / Detalle (Cian / Azul cielo nítido)
+  &.text-info,
+  &.bg-info,
+  &[color="info"] {
+    background-color: #e0f2fe !important;
+    color: #0284c7 !important;
+    border: 1px solid #bae6fd !important;
+
+    &:hover {
+      background-color: #bae6fd !important;
+      border-color: #0284c7 !important;
+      color: #0369a1 !important;
+      box-shadow: 0 4px 10px rgba(2, 132, 199, 0.25) !important;
+    }
+  }
+
+  // 2. WARNING: Editar Registro (Ámbar cálido visible)
+  &.text-warning,
+  &.bg-warning,
+  &[color="warning"] {
+    background-color: #fef3c7 !important;
+    color: #d97706 !important;
+    border: 1px solid #fde68a !important;
+
+    &:hover {
+      background-color: #fde68a !important;
+      border-color: #d97706 !important;
+      color: #b45309 !important;
+      box-shadow: 0 4px 10px rgba(217, 119, 6, 0.25) !important;
+    }
+  }
+
+  // 3. ERROR: Eliminar / Anular (Rojo carmesí visible)
+  &.text-error,
+  &.bg-error,
+  &[color="error"] {
+    background-color: #fee2e2 !important;
+    color: #dc2626 !important;
+    border: 1px solid #fecaca !important;
+
+    &:hover {
+      background-color: #fecaca !important;
+      border-color: #dc2626 !important;
+      color: #b91c1c !important;
+      box-shadow: 0 4px 10px rgba(220, 38, 38, 0.25) !important;
+    }
+  }
+
+  // 4. SUCCESS: WhatsApp / Completar / Cobrar (Verde esmeralda visible)
+  &.text-success,
+  &.bg-success,
+  &[color="success"] {
+    background-color: #dcfce7 !important;
+    color: #059669 !important;
+    border: 1px solid #bbf7d0 !important;
+
+    &:hover {
+      background-color: #bbf7d0 !important;
+      border-color: #059669 !important;
+      color: #047857 !important;
+      box-shadow: 0 4px 10px rgba(5, 150, 105, 0.25) !important;
+    }
+  }
+
+  // 5. PRIMARY: Historial / Acciones Principales (Índigo suave)
+  &.text-primary,
+  &.bg-primary,
+  &[color="primary"] {
+    background-color: #ede9fe !important;
+    color: #5C61E6 !important;
+    border: 1px solid #ddd6fe !important;
+
+    &:hover {
+      background-color: #ddd6fe !important;
+      border-color: #5C61E6 !important;
+      color: #4338ca !important;
+      box-shadow: 0 4px 10px rgba(92, 97, 230, 0.25) !important;
+    }
+  }
+
+  // 6. SECONDARY: Más Opciones (Pizarra suave)
+  &.text-secondary,
+  &.bg-secondary,
+  &[color="secondary"] {
+    background-color: #f1f5f9 !important;
+    color: #475569 !important;
+    border: 1px solid #e2e8f0 !important;
+
+    &:hover {
+      background-color: #e2e8f0 !important;
+      border-color: #475569 !important;
+      color: #1e293b !important;
+      box-shadow: 0 4px 10px rgba(71, 85, 105, 0.20) !important;
+    }
+  }
+}
+
+// Adaptación en Temas Oscuros
+[data-theme="dark"],
+[data-theme="dark-glass"],
+[data-theme="semi-dark-glass"],
+.v-application.v-theme--dark,
+.v-application.v-theme--dark-glass,
+.v-application.v-theme--semi-dark-glass {
+  .v-btn.v-btn--variant-tonal.v-btn--icon,
+  .v-table td .v-btn.v-btn--variant-tonal,
+  td .d-flex .v-btn.v-btn--variant-tonal,
+  .listing-item-actions .v-btn.v-btn--variant-tonal,
+  .table-actions .v-btn.v-btn--variant-tonal,
+  .action-btn {
+    &.text-info, &.bg-info, &[color="info"] {
+      background-color: rgba(56, 189, 248, 0.18) !important;
+      color: #38bdf8 !important;
+      border-color: rgba(56, 189, 248, 0.40) !important;
+      &:hover { background-color: rgba(56, 189, 248, 0.30) !important; border-color: #38bdf8 !important; }
+    }
+    &.text-warning, &.bg-warning, &[color="warning"] {
+      background-color: rgba(251, 191, 36, 0.18) !important;
+      color: #fbbf24 !important;
+      border-color: rgba(251, 191, 36, 0.40) !important;
+      &:hover { background-color: rgba(251, 191, 36, 0.30) !important; border-color: #fbbf24 !important; }
+    }
+    &.text-error, &.bg-error, &[color="error"] {
+      background-color: rgba(248, 113, 113, 0.18) !important;
+      color: #f87171 !important;
+      border-color: rgba(248, 113, 113, 0.40) !important;
+      &:hover { background-color: rgba(248, 113, 113, 0.30) !important; border-color: #f87171 !important; }
+    }
+    &.text-success, &.bg-success, &[color="success"] {
+      background-color: rgba(74, 222, 128, 0.18) !important;
+      color: #4ade80 !important;
+      border-color: rgba(74, 222, 128, 0.40) !important;
+      &:hover { background-color: rgba(74, 222, 128, 0.30) !important; border-color: #4ade80 !important; }
+    }
+    &.text-primary, &.bg-primary, &[color="primary"] {
+      background-color: rgba(167, 139, 250, 0.18) !important;
+      color: #a78bfa !important;
+      border-color: rgba(167, 139, 250, 0.40) !important;
+      &:hover { background-color: rgba(167, 139, 250, 0.30) !important; border-color: #a78bfa !important; }
+    }
+    &.text-secondary, &.bg-secondary, &[color="secondary"] {
+      background-color: rgba(148, 163, 184, 0.16) !important;
+      color: #cbd5e1 !important;
+      border-color: rgba(148, 163, 184, 0.32) !important;
+      &:hover { background-color: rgba(148, 163, 184, 0.26) !important; border-color: #cbd5e1 !important; }
+    }
+  }
+}
+
+// Adaptación en Tema Taller
+[data-theme="taller"],
+.v-application.v-theme--taller {
+  .v-btn.v-btn--variant-tonal.v-btn--icon,
+  .v-table td .v-btn.v-btn--variant-tonal,
+  td .d-flex .v-btn.v-btn--variant-tonal,
+  .listing-item-actions .v-btn.v-btn--variant-tonal,
+  .table-actions .v-btn.v-btn--variant-tonal,
+  .action-btn {
+    &.text-primary, &.bg-primary, &[color="primary"] {
+      background-color: #fae8ed !important;
+      color: #8A1538 !important;
+      border-color: #f3c2cf !important;
+      &:hover { background-color: #f3c2cf !important; border-color: #8A1538 !important; }
+    }
+  }
+}
+

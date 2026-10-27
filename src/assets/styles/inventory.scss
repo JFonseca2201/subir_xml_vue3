@@ -6859,8 +6859,6 @@ body[data-theme="semi-dark-glass"],
     .spec-item,
     .dialog-body-content,
     .movements-scroll-container,
-    .operations-date-header,
-    .operations-movement-item,
     .quick-edit-section,
     .quick-stock-stepper-box,
     .price-calc-summary-box,
@@ -6869,6 +6867,90 @@ body[data-theme="semi-dark-glass"],
       background-color: rgba(16, 185, 129, 0.14) !important;
       border-color: rgba(16, 185, 129, 0.35) !important;
       color: #34d399 !important;
+    }
+
+    // Cabecera de fecha de operaciones en modo oscuro
+    .operations-date-header {
+      background: rgba(255, 255, 255, 0.05) !important;
+      background-color: rgba(255, 255, 255, 0.05) !important;
+      border: 1px solid var(--border-glass, rgba(234, 234, 255, 0.14)) !important;
+      border-radius: 10px !important;
+
+      .date-icon-box {
+        background-color: rgba(102, 108, 255, 0.22) !important;
+        color: #a5b4fc !important;
+
+        .v-icon {
+          color: #a5b4fc !important;
+        }
+      }
+
+      .date-title-text {
+        color: #f8fafc !important;
+        font-weight: 700 !important;
+      }
+
+      .day-subtotal {
+        &.day-subtotal-income {
+          background-color: rgba(16, 185, 129, 0.18) !important;
+          color: #34d399 !important;
+          border: 1px solid rgba(16, 185, 129, 0.35) !important;
+        }
+
+        &.day-subtotal-expense {
+          background-color: rgba(239, 68, 68, 0.18) !important;
+          color: #f87171 !important;
+          border: 1px solid rgba(239, 68, 68, 0.35) !important;
+        }
+      }
+    }
+
+    // Item de movimiento en operaciones en modo oscuro
+    .operations-movement-item {
+      background: var(--bg-surface, #2F3349) !important;
+      background-color: var(--bg-surface, #2F3349) !important;
+      border: 1px solid var(--border-glass, rgba(234, 234, 255, 0.12)) !important;
+      color: var(--text-primary, #ffffff) !important;
+
+      &:hover {
+        background: rgba(255, 255, 255, 0.08) !important;
+        border-color: rgba(102, 108, 255, 0.35) !important;
+      }
+
+      .movement-title-row {
+        color: #ffffff !important;
+        * {
+          color: #ffffff !important;
+        }
+      }
+
+      .movement-client-row {
+        color: rgba(234, 234, 255, 0.75) !important;
+
+        .v-icon {
+          color: rgba(234, 234, 255, 0.60) !important;
+        }
+      }
+
+      .movement-direction-avatar {
+        &.avatar-income {
+          background-color: rgba(16, 185, 129, 0.18) !important;
+          color: #34d399 !important;
+          border: 1px solid rgba(16, 185, 129, 0.35) !important;
+        }
+
+        &.avatar-expense {
+          background-color: rgba(239, 68, 68, 0.18) !important;
+          color: #f87171 !important;
+          border: 1px solid rgba(239, 68, 68, 0.35) !important;
+        }
+
+        &.avatar-transfer {
+          background-color: rgba(14, 165, 233, 0.18) !important;
+          color: #38bdf8 !important;
+          border: 1px solid rgba(14, 165, 233, 0.35) !important;
+        }
+      }
     }
 
     [style*="background-color: #ffffff"],
@@ -6895,10 +6977,16 @@ body[data-theme="semi-dark-glass"],
       color: #ffffff !important;
 
       thead, thead tr, thead th, thead[class*="bg-"], tr[class*="bg-"], tr[class*="bg-slate"], tr[class*="bg-grey"] {
-        background: rgba(255, 255, 255, 0.06) !important;
-        background-color: rgba(255, 255, 255, 0.06) !important;
+        background: var(--table-header-bg, #3A3E5B) !important;
+        background-color: var(--table-header-bg, #3A3E5B) !important;
         color: #ffffff !important;
         border-color: var(--border-glass, rgba(234, 234, 255, 0.12)) !important;
+
+        .v-data-table-header__content,
+        span,
+        div {
+          color: #ffffff !important;
+        }
       }
 
       tbody tr, tbody td {
@@ -8827,3 +8915,539 @@ body[data-theme="taller"] {
     }
   }
 }
+
+// ==========================================================================
+// ESTANDARIZACIÓN VISUAL VIBRANTE: KPIS, ENCABEZADOS E ICONOS EN LISTADOS
+// ==========================================================================
+
+// 1. Núcleo de V-Avatar y V-Icon (Reactivación de color en variantes tonales)
+.v-avatar {
+  .v-icon {
+    color: currentColor !important;
+    fill: currentColor !important;
+    opacity: 1 !important;
+  }
+
+  &.v-avatar--variant-tonal {
+    .v-avatar__underlay {
+      background-color: currentColor !important;
+      opacity: 0.14 !important;
+    }
+  }
+
+  &.text-primary,
+  &.bg-primary {
+    background: rgba(102, 108, 255, 0.12) !important;
+    color: #666CFF !important;
+    border: 1px solid rgba(102, 108, 255, 0.24) !important;
+    .v-icon { color: #666CFF !important; fill: #666CFF !important; }
+  }
+
+  &.text-success,
+  &.bg-success {
+    background: rgba(16, 185, 129, 0.12) !important;
+    color: #10B981 !important;
+    border: 1px solid rgba(16, 185, 129, 0.24) !important;
+    .v-icon { color: #10B981 !important; fill: #10B981 !important; }
+  }
+
+  &.text-warning,
+  &.bg-warning {
+    background: rgba(245, 158, 11, 0.14) !important;
+    color: #F59E0B !important;
+    border: 1px solid rgba(245, 158, 11, 0.28) !important;
+    .v-icon { color: #F59E0B !important; fill: #F59E0B !important; }
+  }
+
+  &.text-info,
+  &.bg-info {
+    background: rgba(14, 165, 233, 0.12) !important;
+    color: #0EA5E9 !important;
+    border: 1px solid rgba(14, 165, 233, 0.24) !important;
+    .v-icon { color: #0EA5E9 !important; fill: #0EA5E9 !important; }
+  }
+
+  &.text-error,
+  &.bg-error {
+    background: rgba(239, 68, 68, 0.12) !important;
+    color: #EF4444 !important;
+    border: 1px solid rgba(239, 68, 68, 0.24) !important;
+    .v-icon { color: #EF4444 !important; fill: #EF4444 !important; }
+  }
+
+  &.text-secondary,
+  &.bg-secondary {
+    background: rgba(100, 116, 139, 0.10) !important;
+    color: #64748B !important;
+    border: 1px solid rgba(100, 116, 139, 0.20) !important;
+    .v-icon { color: #64748B !important; fill: #64748B !important; }
+  }
+}
+
+// 2. Tarjetas de Métricas Rápidas (KPIs) en Listados
+.kpi-stat-card {
+  transition: all 0.22s cubic-bezier(0.4, 0, 0.2, 1) !important;
+  background-color: var(--bg-surface, #ffffff) !important;
+  border: 1px solid rgba(var(--v-border-color), 0.12) !important;
+  border-radius: 14px !important;
+  position: relative !important;
+  overflow: hidden !important;
+
+  &:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08) !important;
+    border-color: rgba(var(--v-theme-primary), 0.35) !important;
+
+    .v-avatar {
+      transform: scale(1.05);
+    }
+  }
+
+  // Encabezado / Título de la tarjeta KPI
+  .text-caption {
+    font-size: 0.76rem !important;
+    font-weight: 700 !important;
+    letter-spacing: 0.04em !important;
+    text-transform: uppercase !important;
+    color: var(--text-secondary, #64748b) !important;
+    margin-bottom: 2px !important;
+    line-height: 1.2 !important;
+  }
+
+  // Cifras numéricas vivas y con contraste
+  .text-h6 {
+    font-size: 1.45rem !important;
+    font-weight: 800 !important;
+    line-height: 1.25 !important;
+    letter-spacing: -0.02em !important;
+
+    &.text-high-emphasis,
+    &:not([class*="text-"]) {
+      color: var(--text-primary, #1e293b) !important;
+    }
+
+    &.text-success {
+      color: #10B981 !important;
+    }
+
+    &.text-warning {
+      color: #F59E0B !important;
+    }
+
+    &.text-info {
+      color: #0EA5E9 !important;
+    }
+
+    &.text-primary {
+      color: #666CFF !important;
+    }
+
+    &.text-error {
+      color: #EF4444 !important;
+    }
+
+    span.text-caption,
+    span.text-disabled {
+      font-size: 0.74rem !important;
+      font-weight: 500 !important;
+      letter-spacing: normal !important;
+      color: var(--text-muted, #94a3b8) !important;
+    }
+  }
+
+  .v-avatar {
+    border-radius: 12px !important;
+    transition: transform 0.2s ease !important;
+  }
+}
+
+// 3. Encabezados de página y avatar de título en listados
+.page-header-avatar,
+.page-title-avatar,
+h1 .v-avatar {
+  background: rgba(102, 108, 255, 0.12) !important;
+  color: #666CFF !important;
+  border: 1px solid rgba(102, 108, 255, 0.24) !important;
+
+  .v-icon {
+    color: #666CFF !important;
+    fill: #666CFF !important;
+    opacity: 1 !important;
+  }
+}
+
+// 4. Iconos en Sección de Filtros y Búsqueda
+.v-card {
+  .v-card-text {
+    .ri-filter-3-line,
+    .ri-filter-line,
+    .ri-filter-2-line {
+      color: #666CFF !important;
+      opacity: 1 !important;
+    }
+  }
+}
+
+// 5. Botones de acción en tablas de listados (Ver, Editar, WhatsApp, Eliminar, Más) - ESTILO TONAL ELEGANTE
+.v-table td .v-btn,
+td .d-flex .v-btn,
+.listing-item-actions .v-btn,
+.table-actions .v-btn,
+.action-btn {
+  border-radius: 8px !important;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1) !important;
+  box-shadow: none !important;
+
+  // Botón INFO (Ver Ficha / Detalle)
+  &.bg-info,
+  &.text-info,
+  &[color="info"],
+  &.v-btn--color-info {
+    background-color: rgba(14, 165, 233, 0.12) !important;
+    color: #0284c7 !important;
+    border: 1px solid rgba(14, 165, 233, 0.28) !important;
+
+    .v-icon, i, svg {
+      color: #0284c7 !important;
+      fill: #0284c7 !important;
+      opacity: 1 !important;
+    }
+
+    &:hover {
+      background-color: rgba(14, 165, 233, 0.22) !important;
+      border-color: rgba(14, 165, 233, 0.50) !important;
+      transform: translateY(-1.5px) !important;
+      box-shadow: 0 3px 8px rgba(14, 165, 233, 0.18) !important;
+    }
+  }
+
+  // Botón WARNING (Editar Registro)
+  &.bg-warning,
+  &.text-warning,
+  &[color="warning"],
+  &.v-btn--color-warning {
+    background-color: rgba(245, 158, 11, 0.14) !important;
+    color: #d97706 !important;
+    border: 1px solid rgba(245, 158, 11, 0.32) !important;
+
+    .v-icon, i, svg {
+      color: #d97706 !important;
+      fill: #d97706 !important;
+      opacity: 1 !important;
+    }
+
+    &:hover {
+      background-color: rgba(245, 158, 11, 0.25) !important;
+      border-color: rgba(245, 158, 11, 0.55) !important;
+      transform: translateY(-1.5px) !important;
+      box-shadow: 0 3px 8px rgba(245, 158, 11, 0.20) !important;
+    }
+  }
+
+  // Botón ERROR (Eliminar)
+  &.bg-error,
+  &.text-error,
+  &[color="error"],
+  &.v-btn--color-error {
+    background-color: rgba(239, 68, 68, 0.12) !important;
+    color: #dc2626 !important;
+    border: 1px solid rgba(239, 68, 68, 0.28) !important;
+
+    .v-icon, i, svg {
+      color: #dc2626 !important;
+      fill: #dc2626 !important;
+      opacity: 1 !important;
+    }
+
+    &:hover {
+      background-color: rgba(239, 68, 68, 0.22) !important;
+      border-color: rgba(239, 68, 68, 0.50) !important;
+      transform: translateY(-1.5px) !important;
+      box-shadow: 0 3px 8px rgba(239, 68, 68, 0.18) !important;
+    }
+  }
+
+  // Botón SUCCESS (WhatsApp / Cobros / Completar)
+  &.bg-success,
+  &.text-success,
+  &[color="success"],
+  &.v-btn--color-success {
+    background-color: rgba(16, 185, 129, 0.12) !important;
+    color: #059669 !important;
+    border: 1px solid rgba(16, 185, 129, 0.28) !important;
+
+    .v-icon, i, svg {
+      color: #059669 !important;
+      fill: #059669 !important;
+      opacity: 1 !important;
+    }
+
+    &:hover {
+      background-color: rgba(16, 185, 129, 0.22) !important;
+      border-color: rgba(16, 185, 129, 0.50) !important;
+      transform: translateY(-1.5px) !important;
+      box-shadow: 0 3px 8px rgba(16, 185, 129, 0.18) !important;
+    }
+  }
+
+  // Botón PRIMARY (Historial / Acciones principales)
+  &.bg-primary,
+  &.text-primary,
+  &[color="primary"],
+  &.v-btn--color-primary {
+    background-color: rgba(102, 108, 255, 0.12) !important;
+    color: #5C61E6 !important;
+    border: 1px solid rgba(102, 108, 255, 0.28) !important;
+
+    .v-icon, i, svg {
+      color: #5C61E6 !important;
+      fill: #5C61E6 !important;
+      opacity: 1 !important;
+    }
+
+    &:hover {
+      background-color: rgba(102, 108, 255, 0.22) !important;
+      border-color: rgba(102, 108, 255, 0.50) !important;
+      transform: translateY(-1.5px) !important;
+      box-shadow: 0 3px 8px rgba(102, 108, 255, 0.18) !important;
+    }
+  }
+
+  // Botón SECONDARY (Más Opciones)
+  &.bg-secondary,
+  &.text-secondary,
+  &[color="secondary"],
+  &.v-btn--color-secondary {
+    background-color: rgba(100, 116, 139, 0.10) !important;
+    color: #475569 !important;
+    border: 1px solid rgba(100, 116, 139, 0.22) !important;
+
+    .v-icon, i, svg {
+      color: #475569 !important;
+      fill: #475569 !important;
+      opacity: 1 !important;
+    }
+
+    &:hover {
+      background-color: rgba(100, 116, 139, 0.18) !important;
+      border-color: rgba(100, 116, 139, 0.40) !important;
+      transform: translateY(-1.5px) !important;
+      box-shadow: 0 3px 8px rgba(100, 116, 139, 0.12) !important;
+    }
+  }
+
+  // Desactivar opacidad excesiva del overlay de vuetify para preservar el tonal limpio
+  .v-btn__overlay {
+    opacity: 0 !important;
+  }
+}
+
+// 6. Iconos en celdas de las tablas de listados
+.v-table {
+  // Iniciales de clientes y personas en tablas
+  .v-avatar {
+    font-weight: 700 !important;
+    font-size: 0.82rem !important;
+
+    &.text-primary,
+    &.bg-primary {
+      background: rgba(102, 108, 255, 0.12) !important;
+      color: #5C61E6 !important;
+      border: 1px solid rgba(102, 108, 255, 0.22) !important;
+    }
+  }
+
+  // Iconos informativos en celdas
+  .ri-mail-line,
+  .ri-mail-fill {
+    color: #0284c7 !important;
+    opacity: 0.9 !important;
+  }
+
+  .ri-phone-line,
+  .ri-phone-fill {
+    color: #059669 !important;
+    opacity: 0.9 !important;
+  }
+
+  .ri-map-pin-line,
+  .ri-map-pin-fill {
+    color: #d97706 !important;
+    opacity: 0.9 !important;
+  }
+
+  .ri-calendar-line,
+  .ri-time-line {
+    color: #7c3aed !important;
+    opacity: 0.9 !important;
+  }
+
+  .ri-roadster-line,
+  .ri-car-line {
+    color: #666CFF !important;
+    opacity: 0.9 !important;
+  }
+
+  .ri-user-line,
+  .ri-user-smile-line,
+  .ri-team-line {
+    color: #666CFF !important;
+    opacity: 0.9 !important;
+  }
+
+  .ri-price-tag-3-line,
+  .ri-money-dollar-circle-line {
+    color: #059669 !important;
+    opacity: 0.9 !important;
+  }
+}
+
+// 7. Adaptaciones específicas para el tema del taller
+[data-theme="taller"],
+.v-application.v-theme--taller {
+  .page-header-avatar,
+  .page-title-avatar,
+  h1 .v-avatar {
+    background: rgba(138, 21, 56, 0.12) !important;
+    color: #8A1538 !important;
+    border: 1px solid rgba(138, 21, 56, 0.24) !important;
+    .v-icon { color: #8A1538 !important; fill: #8A1538 !important; }
+  }
+
+  .kpi-stat-card {
+    .v-avatar.text-primary,
+    .v-avatar.bg-primary {
+      background: rgba(138, 21, 56, 0.12) !important;
+      color: #8A1538 !important;
+      border: 1px solid rgba(138, 21, 56, 0.24) !important;
+      .v-icon { color: #8A1538 !important; fill: #8A1538 !important; }
+    }
+
+    .text-h6.text-primary {
+      color: #8A1538 !important;
+    }
+  }
+
+  .v-card .v-card-text {
+    .ri-filter-3-line,
+    .ri-filter-line,
+    .ri-filter-2-line {
+      color: #8A1538 !important;
+    }
+  }
+
+  .v-table .v-avatar.text-primary {
+    background: rgba(138, 21, 56, 0.12) !important;
+    color: #8A1538 !important;
+    border: 1px solid rgba(138, 21, 56, 0.22) !important;
+  }
+}
+
+// 8. Adaptaciones para temas oscuros
+[data-theme="dark"],
+[data-theme="dark-glass"],
+[data-theme="semi-dark-glass"],
+.v-application.v-theme--dark,
+.v-application.v-theme--dark-glass,
+.v-application.v-theme--semi-dark-glass {
+  .kpi-stat-card {
+    background-color: var(--bg-surface, #2F3349) !important;
+    border-color: rgba(255, 255, 255, 0.10) !important;
+
+    .text-caption {
+      color: rgba(234, 234, 255, 0.75) !important;
+    }
+
+    .text-h6.text-high-emphasis,
+    .text-h6:not([class*="text-"]) {
+      color: #ffffff !important;
+    }
+
+    .text-h6.text-success { color: #34d399 !important; }
+    .text-h6.text-warning { color: #fbbf24 !important; }
+    .text-h6.text-info { color: #38bdf8 !important; }
+    .text-h6.text-primary { color: #a78bfa !important; }
+    .text-h6.text-error { color: #f87171 !important; }
+
+    .v-avatar.text-primary {
+      background: rgba(115, 103, 240, 0.20) !important;
+      color: #a78bfa !important;
+      border-color: rgba(115, 103, 240, 0.35) !important;
+      .v-icon { color: #a78bfa !important; fill: #a78bfa !important; }
+    }
+
+    .v-avatar.text-success {
+      background: rgba(34, 197, 94, 0.20) !important;
+      color: #4ade80 !important;
+      border-color: rgba(34, 197, 94, 0.35) !important;
+      .v-icon { color: #4ade80 !important; fill: #4ade80 !important; }
+    }
+
+    .v-avatar.text-warning {
+      background: rgba(245, 158, 11, 0.22) !important;
+      color: #fbbf24 !important;
+      border-color: rgba(245, 158, 11, 0.38) !important;
+      .v-icon { color: #fbbf24 !important; fill: #fbbf24 !important; }
+    }
+
+    .v-avatar.text-info {
+      background: rgba(14, 165, 233, 0.20) !important;
+      color: #38bdf8 !important;
+      border-color: rgba(14, 165, 233, 0.35) !important;
+      .v-icon { color: #38bdf8 !important; fill: #38bdf8 !important; }
+    }
+  }
+
+  .v-table {
+    .v-avatar.text-primary {
+      background: rgba(115, 103, 240, 0.20) !important;
+      color: #a78bfa !important;
+      border-color: rgba(115, 103, 240, 0.35) !important;
+    }
+  }
+
+  // Botones de acción en modo oscuro
+  .v-table td .v-btn,
+  td .d-flex .v-btn,
+  .listing-item-actions .v-btn,
+  .table-actions .v-btn,
+  .action-btn {
+    &.bg-info, &.text-info, &[color="info"] {
+      background-color: rgba(56, 189, 248, 0.16) !important;
+      color: #38bdf8 !important;
+      border-color: rgba(56, 189, 248, 0.35) !important;
+      .v-icon { color: #38bdf8 !important; fill: #38bdf8 !important; }
+    }
+    &.bg-warning, &.text-warning, &[color="warning"] {
+      background-color: rgba(251, 191, 36, 0.16) !important;
+      color: #fbbf24 !important;
+      border-color: rgba(251, 191, 36, 0.35) !important;
+      .v-icon { color: #fbbf24 !important; fill: #fbbf24 !important; }
+    }
+    &.bg-error, &.text-error, &[color="error"] {
+      background-color: rgba(248, 113, 113, 0.16) !important;
+      color: #f87171 !important;
+      border-color: rgba(248, 113, 113, 0.35) !important;
+      .v-icon { color: #f87171 !important; fill: #f87171 !important; }
+    }
+    &.bg-success, &.text-success, &[color="success"] {
+      background-color: rgba(74, 222, 128, 0.16) !important;
+      color: #4ade80 !important;
+      border-color: rgba(74, 222, 128, 0.35) !important;
+      .v-icon { color: #4ade80 !important; fill: #4ade80 !important; }
+    }
+    &.bg-primary, &.text-primary, &[color="primary"] {
+      background-color: rgba(167, 139, 250, 0.18) !important;
+      color: #a78bfa !important;
+      border-color: rgba(167, 139, 250, 0.35) !important;
+      .v-icon { color: #a78bfa !important; fill: #a78bfa !important; }
+    }
+    &.bg-secondary, &.text-secondary, &[color="secondary"] {
+      background-color: rgba(148, 163, 184, 0.14) !important;
+      color: #cbd5e1 !important;
+      border-color: rgba(148, 163, 184, 0.28) !important;
+      .v-icon { color: #cbd5e1 !important; fill: #cbd5e1 !important; }
+    }
+  }
+}
+
