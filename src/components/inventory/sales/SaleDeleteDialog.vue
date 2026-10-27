@@ -280,19 +280,9 @@ const cancelDelete = () => {
             </div>
           </div>
 
-          <VAlert
-            type="warning"
-            variant="tonal"
-            class="mt-4 text-start"
-            border="start"
-          >
-            <template #prepend>
-              <VIcon icon="ri-alert-line" />
-            </template>
-            <div class="text-body-2">
-              <strong>Advertencia:</strong> Esta acción revertirá el stock y anulará la transacción financiera.
-            </div>
-          </VAlert>
+          <p class="text-caption text-medium-emphasis text-center mb-0 mt-3">
+            Esta acción revertirá el stock y anulará la transacción comercial.
+          </p>
         </div>
       </VCardText>
 

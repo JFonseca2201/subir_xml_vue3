@@ -136,7 +136,7 @@ const handleImageError = () => {
           </div>
 
           <div class="flex-grow-1 min-w-0">
-            <div class="product-title-text font-weight-bold text-slate-900 mb-1.5 line-clamp-2">
+            <div class="product-title-text font-weight-bold text-high-emphasis mb-1.5 line-clamp-2">
               {{ product.title || product.description || 'Sin descripción' }}
             </div>
             
@@ -164,28 +164,14 @@ const handleImageError = () => {
           </div>
         </div>
 
-        <VAlert
-          color="error"
-          variant="tonal"
-          density="comfortable"
-          class="rounded-xl pa-3.5"
-        >
-          <template #prepend>
-            <VIcon
-              icon="ri-error-warning-fill"
-              size="20"
-              class="mr-1"
-            />
-          </template>
-          <div class="text-body-2 font-weight-medium">
-            ¿Está seguro de eliminar este producto? Esta acción no se puede revertir.
-          </div>
-        </VAlert>
+        <p class="text-caption text-medium-emphasis text-center mb-0 mt-3">
+          ¿Está seguro de eliminar este producto? Esta acción no se puede revertir.
+        </p>
       </VCardText>
 
       <VDivider />
 
-      <VCardActions class="pa-4 px-6 d-flex justify-end align-center gap-3 bg-white">
+      <VCardActions class="pa-4 px-6 d-flex justify-end align-center gap-3">
         <VBtn 
           variant="outlined" 
           color="secondary"
@@ -216,9 +202,15 @@ const handleImageError = () => {
 
 <style scoped>
 .product-preview-card {
+  border: 1px solid rgba(255, 255, 255, 0.12) !important;
+  background-color: rgba(255, 255, 255, 0.04) !important;
+  transition: all 0.2s ease;
+}
+
+:global([data-theme="light"]) .product-preview-card,
+:global(.v-theme--light) .product-preview-card {
   border-color: #e2e8f0 !important;
   background-color: #f8fafc !important;
-  transition: all 0.2s ease;
 }
 
 .product-thumb-container {
@@ -226,6 +218,13 @@ const handleImageError = () => {
   height: 72px;
   border-radius: 12px;
   overflow: hidden;
+  background: rgba(0, 0, 0, 0.25);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+}
+
+:global([data-theme="light"]) .product-thumb-container,
+:global(.v-theme--light) .product-thumb-container {
   background: #ffffff;
   border: 1px solid #e2e8f0;
   box-shadow: 0 2px 6px rgba(0, 0, 0, 0.06);
@@ -241,12 +240,23 @@ const handleImageError = () => {
 .product-thumb-placeholder {
   width: 100%;
   height: 100%;
+  background: rgba(255, 255, 255, 0.04);
+}
+
+:global([data-theme="light"]) .product-thumb-placeholder,
+:global(.v-theme--light) .product-thumb-placeholder {
   background: #f1f5f9;
 }
 
 .product-title-text {
   font-size: 0.92rem;
   line-height: 1.35;
+  color: var(--text-primary);
+}
+
+:global([data-theme="light"]) .product-title-text,
+:global(.v-theme--light) .product-title-text {
+  color: #0f172a;
 }
 
 .line-clamp-2 {

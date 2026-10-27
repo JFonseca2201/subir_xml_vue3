@@ -289,15 +289,18 @@ const openAttachment = att => {
 
           <div
             v-else-if="existingAttachments.length === 0"
-            class="empty-attachments-box pa-4 text-center rounded border border-dashed text-medium-emphasis"
+            class="empty-attachments-box pa-5 text-center rounded-lg border border-dashed"
           >
             <VIcon
               icon="ri-file-cloud-line"
-              size="32"
-              class="mb-1 text-disabled"
+              size="38"
+              class="mb-2 empty-box-icon"
             />
-            <div class="text-caption">
+            <div class="text-body-2 font-weight-medium empty-box-text">
               No hay comprobantes guardados todavía para este registro.
+            </div>
+            <div class="text-caption empty-box-subtext mt-1">
+              Los comprobantes guardados aparecerán aquí para consultarlos o descargarlos
             </div>
           </div>
 
@@ -396,7 +399,7 @@ const openAttachment = att => {
 
       <VDivider />
 
-      <VCardActions class="pa-4 d-flex justify-space-between align-center bg-grey-lighten-5">
+      <VCardActions class="pa-4 d-flex justify-space-between align-center">
         <VBtn
           color="secondary"
           variant="outlined"
@@ -422,8 +425,42 @@ const openAttachment = att => {
 
 <style scoped>
 .empty-attachments-box {
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px dashed rgba(255, 255, 255, 0.16) !important;
+  transition: all 0.25s ease;
+}
+
+.empty-box-icon {
+  color: rgba(255, 255, 255, 0.40);
+}
+
+.empty-box-text {
+  color: rgba(255, 255, 255, 0.85);
+}
+
+.empty-box-subtext {
+  color: rgba(255, 255, 255, 0.45);
+}
+
+:global([data-theme="light"]) .empty-attachments-box,
+:global(.v-theme--light) .empty-attachments-box {
   background: #f8fafc;
-  border-color: #cbd5e1 !important;
+  border: 1px dashed #cbd5e1 !important;
+}
+
+:global([data-theme="light"]) .empty-box-icon,
+:global(.v-theme--light) .empty-box-icon {
+  color: #94a3b8;
+}
+
+:global([data-theme="light"]) .empty-box-text,
+:global(.v-theme--light) .empty-box-text {
+  color: #334155;
+}
+
+:global([data-theme="light"]) .empty-box-subtext,
+:global(.v-theme--light) .empty-box-subtext {
+  color: #64748b;
 }
 
 .existing-grid {
@@ -434,23 +471,40 @@ const openAttachment = att => {
 
 .existing-card {
   border-radius: 8px;
-  border: 1px solid rgba(0, 0, 0, 0.08);
-  background: white;
+  border: 1px solid rgba(255, 255, 255, 0.10);
+  background: rgba(255, 255, 255, 0.04);
   overflow: hidden;
   display: flex;
   flex-direction: column;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.existing-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.25);
+}
+
+:global([data-theme="light"]) .existing-card,
+:global(.v-theme--light) .existing-card {
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  background: #ffffff;
 }
 
 .existing-media {
   height: 85px;
   width: 100%;
-  background: #f8fafc;
+  background: rgba(0, 0, 0, 0.22);
   display: flex;
   align-items: center;
   justify-content: center;
   position: relative;
   cursor: pointer;
   overflow: hidden;
+}
+
+:global([data-theme="light"]) .existing-media,
+:global(.v-theme--light) .existing-media {
+  background: #f8fafc;
 }
 
 .existing-img {
@@ -480,20 +534,36 @@ const openAttachment = att => {
 }
 
 .pdf-media {
-  background: #fef2f2;
+  background: rgba(239, 68, 68, 0.12);
   flex-direction: column;
   gap: 2px;
+}
+
+:global([data-theme="light"]) .pdf-media,
+:global(.v-theme--light) .pdf-media {
+  background: #fef2f2;
 }
 
 .pdf-tag {
   font-size: 9px;
   font-weight: 800;
-  color: #dc2626;
+  color: #ef4444;
   letter-spacing: 0.5px;
 }
 
+:global([data-theme="light"]) .pdf-tag,
+:global(.v-theme--light) .pdf-tag {
+  color: #dc2626;
+}
+
 .existing-info {
-  background: white;
+  background: rgba(255, 255, 255, 0.03);
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+:global([data-theme="light"]) .existing-info,
+:global(.v-theme--light) .existing-info {
+  background: #ffffff;
   border-top: 1px solid rgba(0, 0, 0, 0.05);
 }
 </style>

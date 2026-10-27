@@ -168,19 +168,9 @@ const cancelDelete = () => {
             </div>
           </div>
 
-          <!-- Alerta de Advertencia -->
-          <VAlert
-            type="warning"
-            variant="tonal"
-            class="mb-2 text-start"
-            icon="ri-alert-line"
-          >
-            <div class="text-body-2">
-              <strong>¿Está seguro de eliminar este registro?</strong>
-              <br>
-              Esta acción es permanente y no se puede deshacer. Se eliminará el vehículo y su lista de repuestos compatibles.
-            </div>
-          </VAlert>
+          <p class="text-body-2 text-center text-medium-emphasis mb-0 mt-3">
+              ¿Está seguro de eliminar este registro? Esta acción es permanente y no se puede deshacer.
+            </p>
         </div>
       </VCardText>
 

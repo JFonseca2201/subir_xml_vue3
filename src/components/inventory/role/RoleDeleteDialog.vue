@@ -112,7 +112,7 @@ const onFormReset = () => {
         </div>
 
         <!-- Ficha Resumen de Información -->
-        <div class="bg-grey-lighten-4 rounded-lg pa-4 mb-4 text-left border">
+        <div class="dialog-summary-card rounded-lg pa-4 mb-4 text-left border">
           <div class="d-flex align-center justify-space-between mb-2">
             <span class="d-flex align-center gap-2 text-caption text-medium-emphasis">
               <VIcon
@@ -156,17 +156,9 @@ const onFormReset = () => {
           </div>
         </div>
 
-        <!-- Alerta de Advertencia -->
-        <VAlert
-          type="error"
-          variant="tonal"
-          class="text-left text-caption pa-3 mb-0"
-        >
-          <template #prepend>
-            <VIcon icon="ri-error-warning-line" />
-          </template>
-          Los usuarios que tengan asignado este rol perderán inmediatamente sus accesos y privilegios en el sistema.
-        </VAlert>
+        <p class="text-caption text-medium-emphasis text-center mb-0 mt-3">
+          Los usuarios que tengan asignado este rol perderán inmediatamente sus privilegios.
+        </p>
 
         <VAlert
           v-if="errorMessage"
@@ -183,7 +175,7 @@ const onFormReset = () => {
 
       <!-- Footer de Acciones -->
       <VCardActions
-        class="pa-4 bg-white d-flex justify-end align-center gap-3"
+        class="pa-4 d-flex justify-end align-center gap-3"
         style="position: sticky; bottom: 0; z-index: 2;"
       >
         <VBtn

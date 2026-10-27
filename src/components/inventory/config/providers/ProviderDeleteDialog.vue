@@ -140,19 +140,9 @@ const deleteProvider = async () => {
             </div>
           </div>
 
-          <!-- Warning Alert -->
-          <VAlert 
-            type="warning" 
-            variant="tonal" 
-            class="mb-4"
-            icon="ri-alert-line"
-          >
-            <div class="text-body-2">
-              <strong>¿Está seguro de eliminar este proveedor?</strong>
-              <br>
-              Esta acción no se puede deshacer y podría afectar facturas asociadas.
-            </div>
-          </VAlert>
+          <p class="text-body-2 text-center text-medium-emphasis mb-0 mt-3">
+            ¿Está seguro de eliminar este proveedor? Esta acción no se puede deshacer y podría afectar facturas asociadas.
+          </p>
         </div>
       </VCardText>
 
@@ -160,7 +150,7 @@ const deleteProvider = async () => {
 
       <!-- Actions -->
       <VCardActions
-        class="pa-4 d-flex justify-end align-center gap-3 bg-white"
+        class="pa-4 d-flex justify-end align-center gap-3"
         style="position: sticky; bottom: 0; z-index: 2;"
       >
         <VBtn 

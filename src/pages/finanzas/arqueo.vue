@@ -1614,7 +1614,7 @@ onActivated(() => {
 
         <VDivider />
 
-        <VCardActions class="pa-4 d-flex justify-end align-center gap-3 bg-white"
+        <VCardActions class="pa-4 d-flex justify-end align-center gap-3"
           style="position: sticky; bottom: 0; z-index: 2;">
           <VBtn variant="outlined" color="secondary" prepend-icon="ri-close-line"
             class="rounded-lg px-6 font-weight-medium" height="40" :disabled="sealing"
@@ -1646,7 +1646,7 @@ onActivated(() => {
           </p>
         </div>
 
-        <VCardText v-if="initialBalances.cash_details" class="pa-6 bg-white">
+        <VCardText v-if="initialBalances.cash_details" class="pa-6">
           <VRow>
             <!-- Billetes -->
             <VCol cols="12" sm="6" class="border-right-divider pr-sm-4">
@@ -1671,10 +1671,10 @@ onActivated(() => {
                 <tbody>
                   <tr v-for="denom in billsList" :key="`prev-bill-${denom}`">
                     <td class="py-2">
-                      <VChip variant="tonal" size="small" color="primary" class="font-weight-bold font-mono px-2"
-                        style="width: 55px; justify-content: center;">
-                        ${{ denom }}
-                      </VChip>
+                      <div class="bill-badge">
+                        <VIcon icon="ri-bill-line" size="13" class="me-1 opacity-70" />
+                        <span>${{ denom }}</span>
+                      </div>
                     </td>
                     <td class="py-2 text-center font-weight-bold font-mono text-slate-800">
                       {{ getPrevBillQty(denom) }}
@@ -1710,10 +1710,10 @@ onActivated(() => {
                 <tbody>
                   <tr v-for="denom in coinsList" :key="`prev-coin-${denom}`">
                     <td class="py-2">
-                      <VChip variant="tonal" size="small" color="secondary" class="font-weight-bold font-mono px-2"
-                        style="width: 55px; justify-content: center;">
-                        ${{ denom }}
-                      </VChip>
+                      <div class="coin-badge">
+                        <VIcon icon="ri-copper-coin-line" size="13" class="me-1 opacity-70" />
+                        <span>${{ denom }}</span>
+                      </div>
                     </td>
                     <td class="py-2 text-center font-weight-bold font-mono text-slate-800">
                       {{ getPrevCoinQty(denom) }}
@@ -2152,9 +2152,10 @@ onActivated(() => {
                 <tbody>
                   <tr v-for="denom in billsList" :key="`detail-bill-${denom}`">
                     <td class="py-1.5">
-                      <VChip variant="tonal" size="x-small" color="primary" class="font-weight-bold font-mono">
-                        ${{ denom }}
-                      </VChip>
+                      <div class="bill-badge">
+                        <VIcon icon="ri-bill-line" size="13" class="me-1 opacity-70" />
+                        <span>${{ denom }}</span>
+                      </div>
                     </td>
                     <td class="py-1.5 text-center font-weight-bold font-mono text-slate-800">
                       {{ selectedHistoryItem.cash_details?.bills?.[denom] || 0 }}
@@ -2190,9 +2191,10 @@ onActivated(() => {
                 <tbody>
                   <tr v-for="denom in coinsList" :key="`detail-coin-${denom}`">
                     <td class="py-1.5">
-                      <VChip variant="tonal" size="x-small" color="warning" class="font-weight-bold font-mono">
-                        ${{ denom }}
-                      </VChip>
+                      <div class="coin-badge">
+                        <VIcon icon="ri-copper-coin-line" size="13" class="me-1 opacity-70" />
+                        <span>${{ denom }}</span>
+                      </div>
                     </td>
                     <td class="py-1.5 text-center font-weight-bold font-mono text-slate-800">
                       {{ selectedHistoryItem.cash_details?.coins?.[denom] || 0 }}
@@ -2208,7 +2210,7 @@ onActivated(() => {
           </VRow>
 
           <!-- Observaciones -->
-          <div class="pa-3 bg-slate-50 rounded-lg border">
+          <div class="pa-3 rounded-lg border observations-box">
             <div class="d-flex align-center gap-2 mb-1">
               <VIcon icon="ri-message-3-line" size="16" color="primary" />
               <span class="text-caption font-weight-bold text-slate-700 text-uppercase">Observaciones del
@@ -2222,7 +2224,7 @@ onActivated(() => {
 
         <VDivider />
 
-        <VCardActions class="pa-4 bg-white d-flex justify-space-between align-center">
+        <VCardActions class="pa-4 d-flex justify-space-between align-center">
           <VBtn color="primary" variant="flat" class="text-none font-weight-bold px-5"
             prepend-icon="ri-arrow-right-line"
             @click="historyItemDetailDialog = false; selectHistoryDate(selectedHistoryItem.count_date)">
@@ -2244,15 +2246,20 @@ meta:
 </route>
 
 <style scoped lang="scss">
-.coin-badge {
+.coin-badge,
+.bill-badge {
   display: inline-flex;
   align-items: center;
+  justify-content: center;
+  min-width: 64px;
   border-radius: 6px;
   padding: 3px 8px;
   font-family: 'Consolas', 'Monaco', 'Courier New', monospace;
   font-weight: 800;
   font-size: 0.82rem;
   letter-spacing: 0.5px;
+  text-align: center;
+  box-sizing: border-box;
 
   span,
   .v-icon,
@@ -2262,21 +2269,14 @@ meta:
   }
 }
 
-.bill-badge {
-  display: inline-flex;
-  align-items: center;
-  border-radius: 6px;
-  padding: 3px 8px;
-  font-family: 'Consolas', 'Monaco', 'Courier New', monospace;
-  font-weight: 800;
-  font-size: 0.82rem;
-  letter-spacing: 0.5px;
+.observations-box {
+  background: rgba(255, 255, 255, 0.03);
+  border-color: rgba(255, 255, 255, 0.1) !important;
+}
 
-  span,
-  .v-icon,
-  * {
-    font-weight: 900 !important;
-    opacity: 1 !important;
-  }
+:global([data-theme="light"]) .observations-box,
+:global(.v-theme--light) .observations-box {
+  background: #f8fafc;
+  border-color: #e2e8f0 !important;
 }
 </style>

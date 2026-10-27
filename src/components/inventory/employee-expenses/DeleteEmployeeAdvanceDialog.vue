@@ -28,23 +28,14 @@
 
       <!-- Content -->
       <VCardText class="pa-6">
-        <VAlert
-          type="warning"
-          variant="tonal"
-          class="mb-4"
-        >
-          <template #prepend>
-            <VIcon>ri-alert-line</VIcon>
-          </template>
-          <div class="text-body-1">
-            ¿Estás seguro de que deseas eliminar este adelanto?
-          </div>
-        </VAlert>
+        <p class="text-body-1 text-center font-weight-medium mb-3">
+          ¿Estás seguro de que deseas eliminar este adelanto?
+        </p>
 
         <!-- Advance Details -->
         <VCard
           v-if="advance && advance.id"
-          class="bg-grey-lighten-5 rounded-lg pa-4 mb-4"
+          class="rounded-lg pa-4 mb-3 border" style="background: rgba(var(--v-theme-on-surface), 0.02);"
         >
           <VCardText class="pa-0">
             <div class="mb-3">
@@ -74,27 +65,16 @@
           </VCardText>
         </VCard>
 
-        <VAlert
-          type="info"
-          variant="tonal"
-          density="compact"
-        >
-          <template #prepend>
-            <VIcon>ri-information-line</VIcon>
-          </template>
-          <div class="text-body-2">
-            Al eliminar este adelanto, se restaurará el monto a la cuenta correspondiente y se eliminará
-            permanentemente del
-            sistema.
-          </div>
-        </VAlert>
+        <p class="text-caption text-medium-emphasis text-center mb-0">
+          Al eliminar este adelanto, se restaurará el monto a la cuenta correspondiente.
+        </p>
       </VCardText>
 
       <VDivider />
 
       <!-- Actions -->
       <VCardActions
-        class="pa-4 d-flex justify-end align-center gap-3 bg-white"
+        class="pa-4 d-flex justify-end align-center gap-3"
         style="position: sticky; bottom: 0; z-index: 2;"
       >
         <VBtn

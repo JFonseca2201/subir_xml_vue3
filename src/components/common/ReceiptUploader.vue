@@ -506,7 +506,7 @@ const openPreview = item => {
           />
         </VCardTitle>
 
-        <VCardText class="pa-4 text-center bg-grey-lighten-4">
+        <VCardText class="pa-4 text-center preview-lightbox-body">
           <img
             v-if="previewItem.isImage"
             :src="previewItem.url"
@@ -520,7 +520,7 @@ const openPreview = item => {
           />
         </VCardText>
 
-        <VCardActions class="pa-3 justify-space-between bg-white border-t">
+        <VCardActions class="pa-3 justify-space-between preview-lightbox-actions border-t">
           <span class="text-caption text-medium-emphasis">
             Tamaño: {{ previewItem.size }}
           </span>
@@ -547,7 +547,7 @@ const openPreview = item => {
 
 .drop-zone {
   border: 2px dashed rgba(var(--v-theme-primary), 0.35);
-  background-color: rgba(var(--v-theme-primary), 0.02);
+  background-color: rgba(var(--v-theme-primary), 0.03);
   border-radius: 10px;
   cursor: pointer;
   transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
@@ -557,7 +557,7 @@ const openPreview = item => {
 
 .drop-zone:hover {
   border-color: rgb(var(--v-theme-primary));
-  background-color: rgba(var(--v-theme-primary), 0.05);
+  background-color: rgba(var(--v-theme-primary), 0.06);
   transform: translateY(-1px);
 }
 
@@ -570,6 +570,11 @@ const openPreview = item => {
 .drop-zone-disabled {
   opacity: 0.6;
   cursor: not-allowed;
+  border-color: rgba(255, 255, 255, 0.12);
+}
+
+:global([data-theme="light"]) .drop-zone-disabled,
+:global(.v-theme--light) .drop-zone-disabled {
   border-color: rgba(0, 0, 0, 0.12);
 }
 
@@ -595,8 +600,8 @@ const openPreview = item => {
 .thumbnail-card {
   position: relative;
   border-radius: 8px;
-  border: 1px solid rgba(0, 0, 0, 0.08);
-  background: white;
+  border: 1px solid rgba(255, 255, 255, 0.10);
+  background: rgba(255, 255, 255, 0.04);
   overflow: hidden;
   display: flex;
   flex-direction: column;
@@ -605,19 +610,30 @@ const openPreview = item => {
 
 .thumbnail-card:hover {
   transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1) !important;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.25) !important;
+}
+
+:global([data-theme="light"]) .thumbnail-card,
+:global(.v-theme--light) .thumbnail-card {
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  background: #ffffff;
 }
 
 .thumbnail-media {
   height: 72px;
   width: 100%;
-  background: #f8fafc;
+  background: rgba(0, 0, 0, 0.22);
   display: flex;
   align-items: center;
   justify-content: center;
   position: relative;
   cursor: pointer;
   overflow: hidden;
+}
+
+:global([data-theme="light"]) .thumbnail-media,
+:global(.v-theme--light) .thumbnail-media {
+  background: #f8fafc;
 }
 
 .thumbnail-img {
@@ -647,20 +663,36 @@ const openPreview = item => {
 }
 
 .pdf-media {
-  background: #fef2f2;
+  background: rgba(239, 68, 68, 0.12);
   flex-direction: column;
   gap: 2px;
+}
+
+:global([data-theme="light"]) .pdf-media,
+:global(.v-theme--light) .pdf-media {
+  background: #fef2f2;
 }
 
 .pdf-tag {
   font-size: 9px;
   font-weight: 800;
-  color: #dc2626;
+  color: #ef4444;
   letter-spacing: 0.5px;
 }
 
+:global([data-theme="light"]) .pdf-tag,
+:global(.v-theme--light) .pdf-tag {
+  color: #dc2626;
+}
+
 .thumbnail-info {
-  background: white;
+  background: rgba(255, 255, 255, 0.03);
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+:global([data-theme="light"]) .thumbnail-info,
+:global(.v-theme--light) .thumbnail-info {
+  background: #ffffff;
   border-top: 1px solid rgba(0, 0, 0, 0.05);
 }
 
@@ -671,7 +703,25 @@ const openPreview = item => {
   width: 20px !important;
   height: 20px !important;
   min-width: 20px !important;
-  box-shadow: 0 2px 4px rgba(0,0,0,0.2) !important;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.3) !important;
+}
+
+.preview-lightbox-body {
+  background: rgba(15, 23, 42, 0.95);
+}
+
+:global([data-theme="light"]) .preview-lightbox-body,
+:global(.v-theme--light) .preview-lightbox-body {
+  background: #f1f5f9;
+}
+
+.preview-lightbox-actions {
+  background: rgba(24, 28, 48, 0.98);
+}
+
+:global([data-theme="light"]) .preview-lightbox-actions,
+:global(.v-theme--light) .preview-lightbox-actions {
+  background: #ffffff;
 }
 
 .lightbox-img {

@@ -131,40 +131,21 @@ const cancelDelete = () => {
         </p>
 
         <!-- Alerta especial para Super-Admin -->
-        <VAlert
+        <div
           v-if="props.userSelected.id === 1"
-          color="error"
-          variant="tonal"
-          class="mb-6"
+          class="pa-3 rounded-lg border border-error text-error text-caption d-flex align-center gap-2 mb-4"
+          style="background: rgba(var(--v-theme-error), 0.08);"
         >
-          <div class="d-flex align-center gap-2">
-            <VIcon
-              icon="ri-shield-cross-line"
-              size="20"
-            />
-            <span>
-              <strong>Usuario Protegido:</strong> El Super-Admin no puede ser eliminado
-            </span>
-          </div>
-        </VAlert>
+          <VIcon icon="ri-shield-cross-line" size="18" />
+          <span><strong>Usuario Protegido:</strong> El Super-Admin no puede ser eliminado.</span>
+        </div>
 
-        <!-- Alerta general -->
-        <VAlert
+        <p
           v-else
-          color="warning"
-          variant="tonal"
-          class="mb-6"
+          class="text-caption text-medium-emphasis text-center mb-4"
         >
-          <div class="d-flex align-center gap-2">
-            <VIcon
-              icon="ri-error-warning-line"
-              size="20"
-            />
-            <span>
-              Esta acción es permanente y no se puede deshacer
-            </span>
-          </div>
-        </VAlert>
+          Esta acción es permanente y no se puede deshacer.
+        </p>
 
         <!-- Acciones -->
         <div class="d-flex justify-end align-center gap-3">

@@ -110,12 +110,8 @@ const deleteInvoice = async () => {
             'N/A' }}</strong>.
         </p>
 
-        <VAlert
-          type="warning"
-          variant="tonal"
-          class="text-left mt-4"
-        >
-          <div class="text-subtitle-2 font-weight-bold mb-1">
+        <div class="text-left mt-4 pa-3 rounded-lg border text-caption text-medium-emphasis" style="background: rgba(var(--v-theme-on-surface), 0.02);">
+          <div class="font-weight-bold mb-1 text-high-emphasis">
             Impacto de esta acción:
           </div>
           <ul class="ml-4">
@@ -123,7 +119,7 @@ const deleteInvoice = async () => {
             <li>Se anularán los movimientos financieros y se repondrá el saldo.</li>
             <li>Si esta compra es a crédito y tiene <strong>abonos</strong>, no se podrá eliminar.</li>
           </ul>
-        </VAlert>
+        </div>
 
         <VAlert
           v-if="error_msg"
@@ -136,7 +132,7 @@ const deleteInvoice = async () => {
       </VCardText>
 
       <VCardActions
-        class="pa-4 d-flex justify-end align-center gap-3 bg-white"
+        class="pa-4 d-flex justify-end align-center gap-3"
         style="position: sticky; bottom: 0; z-index: 2;"
       >
         <VBtn

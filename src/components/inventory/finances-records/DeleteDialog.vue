@@ -85,7 +85,7 @@ watch(() => props.modelValue, newVal => {
           />
         </div>
                 
-        <div class="bg-grey-lighten-4 rounded-lg pa-3 mb-4">
+        <div class="dialog-summary-card rounded-lg pa-3 mb-4 border">
           <div class="d-flex justify-space-between align-center mb-2">
             <span class="text-medium-emphasis">Tipo:</span>
             <VChip 
@@ -118,22 +118,13 @@ watch(() => props.modelValue, newVal => {
           </div>
         </div>
                 
-        <VAlert
-          type="warning"
-          variant="tonal"
-          class="mb-4"
-        >
-          <div class="d-flex align-center gap-2">
-            <VIcon icon="ri-alert-line" />
-            <span>
-              ¿Estás seguro de que quieres eliminar este {{ props.movement?.type === 0 ? 'ingreso' : 'egreso' }}?
-            </span>
-          </div>
-        </VAlert>
+        <p class="text-body-2 text-center text-medium-emphasis mb-4">
+          ¿Estás seguro de que quieres eliminar este {{ props.movement?.type === 0 ? 'ingreso' : 'egreso' }}? Esta acción no se puede deshacer.
+        </p>
       </VCardText>
       <VDivider />
       <VCardActions
-        class="pa-4 d-flex justify-end align-center gap-3 bg-white"
+        class="pa-4 d-flex justify-end align-center gap-3"
         style="position: sticky; bottom: 0; z-index: 2;"
       >
         <VBtn

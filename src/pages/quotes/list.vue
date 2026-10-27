@@ -1209,7 +1209,7 @@ onActivated(() => {
 
         <VDivider />
 
-        <VCardActions class="pa-4 d-flex justify-end align-center gap-3 bg-white"
+        <VCardActions class="pa-4 d-flex justify-end align-center gap-3"
           style="position: sticky; bottom: 0; z-index: 2;">
           <VBtn color="secondary" variant="outlined" prepend-icon="ri-close-line"
             class="rounded-lg px-6 font-weight-medium" height="40" @click="isConvertDialogVisible = false">
@@ -1248,7 +1248,7 @@ onActivated(() => {
           <p class="text-body-2 text-medium-emphasis mb-3">
             Esta acción no se puede revertir y la cotización pasará a estado Anulada.
           </p>
-          <div v-if="quoteToCancel?.client" class="bg-grey-lighten-4 rounded-lg pa-3 text-caption text-medium-emphasis">
+          <div v-if="quoteToCancel?.client" class="rounded-lg pa-3 text-caption text-medium-emphasis border" style="background: rgba(var(--v-theme-on-surface), 0.02);">
             Cliente: <strong class="text-high-emphasis">{{ getClientName(quoteToCancel?.client) }}</strong>
           </div>
         </VCardText>

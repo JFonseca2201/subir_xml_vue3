@@ -1417,7 +1417,7 @@ onActivated(() => {
 
         <VDivider />
 
-        <VCardActions class="pa-4 d-flex justify-end align-center gap-3 bg-white"
+        <VCardActions class="pa-4 d-flex justify-end align-center gap-3"
           style="position: sticky; bottom: 0; z-index: 2;">
           <VBtn variant="outlined" color="secondary" prepend-icon="ri-close-line"
             class="rounded-lg px-6 font-weight-medium" height="40" :disabled="deleteLoading" @click="closeDeleteDialog">

@@ -86,7 +86,7 @@ const onDelete = () => {
         </div>
 
         <!-- Ficha Resumen de Información -->
-        <div class="bg-grey-lighten-4 rounded-lg pa-4 mb-4 text-left border">
+        <div class="dialog-summary-card rounded-lg pa-4 mb-4 text-left border">
           <div class="d-flex align-center justify-space-between mb-2">
             <span class="d-flex align-center gap-2 text-caption text-medium-emphasis">
               <VIcon
@@ -146,23 +146,15 @@ const onDelete = () => {
           </div>
         </div>
 
-        <!-- Alerta de Advertencia -->
-        <VAlert
-          type="error"
-          variant="tonal"
-          class="text-left text-caption pa-3 mb-0"
-        >
-          <template #prepend>
-            <VIcon icon="ri-error-warning-line" />
-          </template>
+        <p class="text-caption text-medium-emphasis text-center mb-0 mt-3">
           Esta acción eliminará al socio permanentemente del sistema y no se podrá deshacer.
-        </VAlert>
+        </p>
       </VCardText>
 
       <VDivider />
 
       <VCardActions
-        class="pa-4 d-flex justify-end align-center gap-3 bg-white"
+        class="pa-4 d-flex justify-end align-center gap-3"
         style="position: sticky; bottom: 0; z-index: 2;"
       >
         <VBtn

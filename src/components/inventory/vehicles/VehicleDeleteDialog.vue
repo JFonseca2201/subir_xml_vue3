@@ -175,17 +175,9 @@ const cancelDelete = () => {
             </div>
           </div>
 
-          <!-- Warning Alert -->
-          <VAlert
-            type="warning"
-            variant="tonal"
-            class="rounded-lg text-start w-100"
-            icon="ri-error-warning-line"
-          >
-            <div class="text-caption font-weight-medium">
-              <strong>Advertencia:</strong> Esta acción no se puede deshacer. Se desvinculará este vehículo de futuros registros del taller.
-            </div>
-          </VAlert>
+          <p class="text-caption text-medium-emphasis text-center mb-0 mt-3">
+            Esta acción no se puede deshacer. Se desvinculará este vehículo de futuros registros.
+          </p>
         </div>
       </VCardText>
 
