@@ -200,17 +200,17 @@ const handleImageError = () => {
   </VDialog>
 </template>
 
-<style scoped>
+<style scoped lang="scss">
 .product-preview-card {
   border: 1px solid rgba(255, 255, 255, 0.12) !important;
   background-color: rgba(255, 255, 255, 0.04) !important;
   transition: all 0.2s ease;
-}
 
-:global([data-theme="light"]) .product-preview-card,
-:global(.v-theme--light) .product-preview-card {
-  border-color: #e2e8f0 !important;
-  background-color: #f8fafc !important;
+  [data-theme="light"] &,
+  .v-theme--light & {
+    border-color: #e2e8f0 !important;
+    background-color: #f8fafc !important;
+  }
 }
 
 .product-thumb-container {
@@ -221,13 +221,13 @@ const handleImageError = () => {
   background: rgba(0, 0, 0, 0.25);
   border: 1px solid rgba(255, 255, 255, 0.12);
   box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
-}
 
-:global([data-theme="light"]) .product-thumb-container,
-:global(.v-theme--light) .product-thumb-container {
-  background: #ffffff;
-  border: 1px solid #e2e8f0;
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.06);
+  [data-theme="light"] &,
+  .v-theme--light & {
+    background: #ffffff;
+    border: 1px solid #e2e8f0;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.06);
+  }
 }
 
 .product-thumb-img {
@@ -241,22 +241,22 @@ const handleImageError = () => {
   width: 100%;
   height: 100%;
   background: rgba(255, 255, 255, 0.04);
-}
 
-:global([data-theme="light"]) .product-thumb-placeholder,
-:global(.v-theme--light) .product-thumb-placeholder {
-  background: #f1f5f9;
+  [data-theme="light"] &,
+  .v-theme--light & {
+    background: #f1f5f9;
+  }
 }
 
 .product-title-text {
   font-size: 0.92rem;
   line-height: 1.35;
   color: var(--text-primary);
-}
 
-:global([data-theme="light"]) .product-title-text,
-:global(.v-theme--light) .product-title-text {
-  color: #0f172a;
+  [data-theme="light"] &,
+  .v-theme--light & {
+    color: #0f172a;
+  }
 }
 
 .line-clamp-2 {

@@ -425,26 +425,26 @@ const copyText = async (text, label = 'Texto') => {
     line-height: 1 !important;
     font-weight: 900 !important;
   }
-}
 
-:global([data-theme="light"]) .total-with-iva-box,
-:global([data-theme="taller"]) .total-with-iva-box {
-  background-color: #ecfdf5 !important;
-  border: 1px solid #a7f3d0 !important;
+  [data-theme="light"] &,
+  [data-theme="taller"] & {
+    background-color: #ecfdf5 !important;
+    border: 1px solid #a7f3d0 !important;
 
-  .total-with-iva-title {
-    color: #065f46 !important;
-    -webkit-text-fill-color: #065f46 !important;
-  }
+    .total-with-iva-title {
+      color: #065f46 !important;
+      -webkit-text-fill-color: #065f46 !important;
+    }
 
-  .iva-subcaption {
-    color: #047857 !important;
-    -webkit-text-fill-color: #047857 !important;
-  }
+    .iva-subcaption {
+      color: #047857 !important;
+      -webkit-text-fill-color: #047857 !important;
+    }
 
-  .total-price-val {
-    color: #064e3b !important;
-    -webkit-text-fill-color: #064e3b !important;
+    .total-price-val {
+      color: #064e3b !important;
+      -webkit-text-fill-color: #064e3b !important;
+    }
   }
 }
 

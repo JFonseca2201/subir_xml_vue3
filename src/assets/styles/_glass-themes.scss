@@ -1847,12 +1847,12 @@ $glass-themes: (
 
   @if $theme-name !='taller' {
 
-    .v-overlay--active.v-dialog>.v-overlay__content,
-    .v-overlay--active.v-dialog>.v-overlay__content>.v-card,
-    .v-overlay--active .v-dialog>.v-card,
+    .v-overlay--active.v-dialog > .v-overlay__content,
+    .v-overlay--active.v-dialog > .v-overlay__content > .v-card,
+    .v-overlay--active .v-dialog > .v-card,
     .v-overlay--active .v-card.modal-glass,
-    .v-dialog .v-card,
-    .custom-dialog-card {
+    .v-overlay--active.v-dialog .v-card,
+    .v-overlay--active .custom-dialog-card {
       background: var(--bg-dialog) !important;
       backdrop-filter: var(--blur-glass) !important;
       -webkit-backdrop-filter: var(--blur-glass) !important;

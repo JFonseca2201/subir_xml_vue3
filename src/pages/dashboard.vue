@@ -521,18 +521,39 @@ const formattedCurrentDate = computed(() => {
 
 // Compute theme colors dynamically from the Vuetify system context
 const chartThemes = computed(() => {
-  const isDark = theme.current.value.dark
+  const isDark = !!theme.current.value?.dark
+  const themeName = theme.name.value || (isDark ? 'dark' : 'light')
   const textColor = isDark ? '#CFD3EC' : '#6D788D'
   const borderColor = isDark ? 'rgba(234, 234, 255, 0.12)' : 'rgba(38, 43, 67, 0.12)'
-  const primaryColor = theme.current.value.colors.primary || '#800020'
-  const infoColor = theme.current.value.colors.info || '#0EA5E9'
+  const primaryColor = theme.current.value?.colors?.primary || '#800020'
+  const infoColor = theme.current.value?.colors?.info || '#0EA5E9'
   const tooltipTheme = isDark ? 'dark' : 'light'
 
-  return { textColor, borderColor, primaryColor, infoColor, tooltipTheme }
+  return { textColor, borderColor, primaryColor, infoColor, tooltipTheme, themeKey: `${themeName}-${isDark ? 'dark' : 'light'}` }
+})
+
+// Indicadores booleanos de datos válidos para evitar divisiones NaN en ApexCharts
+const wavyChartHasData = computed(() => {
+  return Array.isArray(cashFlow.value) && cashFlow.value.length > 0 && cashFlow.value.some(item => (Number(item.income) || 0) > 0 || (Number(item.expense) || 0) > 0)
+})
+
+const donutChartHasData = computed(() => {
+  const sales = Number(kpis.value?.monthly_sales) || 0
+  const expenses = Number(kpis.value?.monthly_expenses) || 0
+  return (sales + expenses) > 0
+})
+
+const barChartHasData = computed(() => {
+  return Array.isArray(topProducts.value) && topProducts.value.length > 0 && topProducts.value.some(p => (Number(p.total_quantity) || 0) > 0)
 })
 
 // ApexChart: Wavy Dual Area Chart Options & Series using system colors
 const wavyChartOptions = computed(() => {
+  const hasData = wavyChartHasData.value
+  const categories = (hasData && Array.isArray(cashFlow.value))
+    ? cashFlow.value.map(item => item.month_name ? item.month_name.substring(0, 3) : '')
+    : ['Sin datos']
+
   return {
     chart: {
       type: 'area',
@@ -558,7 +579,7 @@ const wavyChartOptions = computed(() => {
       strokeDashArray: 4,
     },
     xaxis: {
-      categories: cashFlow.value.map(item => item.month_name ? item.month_name.substring(0, 3) : ''),
+      categories: categories.length > 0 ? categories : ['Sin datos'],
       labels: { style: { colors: chartThemes.value.textColor, fontSize: '11px', fontWeight: 600 } },
       axisBorder: { show: false },
       axisTicks: { show: false },
@@ -566,13 +587,13 @@ const wavyChartOptions = computed(() => {
     yaxis: {
       labels: {
         style: { colors: chartThemes.value.textColor, fontSize: '11px', fontWeight: 600 },
-        formatter: val => `$${Math.round(val)}`,
+        formatter: val => `${Math.round(val || 0)}`,
       },
     },
     tooltip: {
       theme: chartThemes.value.tooltipTheme,
       y: {
-        formatter: val => `$${Number(val || 0).toFixed(2)}`,
+        formatter: val => `${Number(val || 0).toFixed(2)}`,
       },
     },
     legend: {
@@ -584,14 +605,21 @@ const wavyChartOptions = computed(() => {
 })
 
 const wavyChartSeries = computed(() => {
+  if (!wavyChartHasData.value) {
+    return [
+      { name: 'Ingresos YTD', data: [0] },
+      { name: 'Egresos YTD', data: [0] },
+    ]
+  }
+
   return [
     {
       name: 'Ingresos YTD',
-      data: cashFlow.value.map(item => item.income),
+      data: cashFlow.value.map(item => Number(item.income) || 0),
     },
     {
       name: 'Egresos YTD',
-      data: cashFlow.value.map(item => item.expense),
+      data: cashFlow.value.map(item => Number(item.expense) || 0),
     },
   ]
 })
@@ -660,7 +688,10 @@ const donutChartOptions = computed(() => {
 })
 
 const donutChartSeries = computed(() => {
-  return [Number(kpis.value.monthly_sales) || 0, Number(kpis.value.monthly_expenses) || 0]
+  const sales = Number(kpis.value?.monthly_sales) || 0
+  const expenses = Number(kpis.value?.monthly_expenses) || 0
+  if (sales + expenses === 0) return [1, 0] // Evita 0 / 0 = NaN en cálculos de ApexCharts
+  return [sales, expenses]
 })
 
 // ApexChart: Bar Chart for Top 5 Products
@@ -697,17 +728,23 @@ const barChartOptions = computed(() => {
 })
 
 const barChartSeries = computed(() => {
+  const data = (topProducts.value || []).slice(0, 5).map(p => Number(p.total_quantity) || 0)
   return [{
     name: 'Unidades Vendidas',
-    data: topProducts.value.slice(0, 5).map(p => Number(p.total_quantity) || 0),
+    data: data.length > 0 ? data : [0],
   }]
 })
 
 // =======================================================
 // PASTEL DE PRODUCTOS MÁS COMPRADOS A PROVEEDORES
 // =======================================================
+const purchasedProductsHasData = computed(() => {
+  if (!topPurchasedProducts.value || topPurchasedProducts.value.length === 0) return false
+  return topPurchasedProducts.value.some(p => (Number(p.total_quantity) || 0) > 0)
+})
+
 const purchasedProductsSeries = computed(() => {
-  if (!topPurchasedProducts.value || topPurchasedProducts.value.length === 0) return []
+  if (!purchasedProductsHasData.value) return [1]
   
   return topPurchasedProducts.value.map(p => Number(p.total_quantity) || 0)
 })
@@ -802,8 +839,13 @@ const workOrdersReport = computed(() => kpis.value?.work_orders_report || {
   technicians: {},
 })
 
+const otTotalesHasData = computed(() => {
+  return Array.isArray(workOrdersReport.value?.ot_totales) && workOrdersReport.value.ot_totales.some(i => (Number(i.count) || 0) > 0)
+})
+
 const otTotalesSeries = computed(() => {
-  return workOrdersReport.value.ot_totales.map(i => i.count)
+  if (!otTotalesHasData.value) return [1]
+  return workOrdersReport.value.ot_totales.map(i => Number(i.count) || 0)
 })
 
 const otTotalesOptions = computed(() => {
@@ -826,10 +868,14 @@ const otTotalesOptions = computed(() => {
   }
 })
 
-const slaSeries = computed(() => {
-  if (!workOrdersReport.value.sla) return []
+const slaHasData = computed(() => {
+  if (!workOrdersReport.value?.sla) return false
+  return Object.values(workOrdersReport.value.sla).some(v => (Number(v) || 0) > 0)
+})
 
-  return Object.values(workOrdersReport.value.sla)
+const slaSeries = computed(() => {
+  if (!slaHasData.value) return [1]
+  return Object.values(workOrdersReport.value.sla).map(v => Number(v) || 0)
 })
 
 const slaOptions = computed(() => {
@@ -849,6 +895,11 @@ const slaOptions = computed(() => {
     legend: { position: 'right', labels: { colors: chartThemes.value.textColor } },
     stroke: { show: false },
   }
+})
+
+const tecnicosHasData = computed(() => {
+  const techs = workOrdersReport.value?.technicians || {}
+  return Object.values(techs).some(t => Object.values(t).some(v => (Number(v) || 0) > 0))
 })
 
 const tecnicosSeries = computed(() => {
@@ -1428,11 +1479,20 @@ const tecnicosOptions = computed(() => {
 
                 <div class="pa-1">
                   <VueApexCharts
+                    v-if="wavyChartHasData"
+                    :key="`wavy-${chartThemes.themeKey}`"
                     type="area"
                     height="270"
                     :options="wavyChartOptions"
                     :series="wavyChartSeries"
                   />
+                  <div
+                    v-else
+                    class="d-flex align-center justify-center text-caption text-medium-emphasis"
+                    style="height: 270px;"
+                  >
+                    Sin datos de flujo de caja para mostrar
+                  </div>
                 </div>
               </div>
             </VCard>
@@ -1467,11 +1527,20 @@ const tecnicosOptions = computed(() => {
 
                 <div class="pa-1 d-flex justify-center align-center my-auto">
                   <VueApexCharts
+                    v-if="donutChartHasData"
+                    :key="`donut-${chartThemes.themeKey}`"
                     type="donut"
                     height="240"
                     :options="donutChartOptions"
                     :series="donutChartSeries"
                   />
+                  <div
+                    v-else
+                    class="d-flex align-center justify-center text-caption text-medium-emphasis"
+                    style="height: 240px;"
+                  >
+                    Sin ingresos ni egresos en el período
+                  </div>
                 </div>
               </div>
             </VCard>
@@ -1523,11 +1592,20 @@ const tecnicosOptions = computed(() => {
 
                 <div class="pa-1">
                   <VueApexCharts
+                    v-if="barChartHasData"
+                    :key="`bar-${chartThemes.themeKey}`"
                     type="bar"
                     height="220"
                     :options="barChartOptions"
                     :series="barChartSeries"
                   />
+                  <div
+                    v-else
+                    class="d-flex align-center justify-center text-caption text-medium-emphasis"
+                    style="height: 220px;"
+                  >
+                    Sin ventas registradas en el período
+                  </div>
                 </div>
               </div>
             </VCard>
@@ -2094,12 +2172,21 @@ const tecnicosOptions = computed(() => {
                   </div>
                   <div class="pa-1 d-flex justify-center align-center my-auto">
                     <VueApexCharts
+                      v-if="otTotalesHasData"
+                      :key="`otTotales-${chartThemes.themeKey}`"
                       type="donut"
                       height="200"
                       width="100%"
                       :options="otTotalesOptions"
                       :series="otTotalesSeries"
                     />
+                    <div
+                      v-else
+                      class="d-flex align-center justify-center text-caption text-medium-emphasis"
+                      style="height: 200px;"
+                    >
+                      Sin órdenes de trabajo registradas
+                    </div>
                   </div>
                 </VCard>
               </VCol>
@@ -2122,12 +2209,21 @@ const tecnicosOptions = computed(() => {
                   </div>
                   <div class="pa-1 d-flex justify-center align-center my-auto">
                     <VueApexCharts
+                      v-if="slaHasData"
+                      :key="`sla-${chartThemes.themeKey}`"
                       type="pie"
                       height="200"
                       width="100%"
                       :options="slaOptions"
                       :series="slaSeries"
                     />
+                    <div
+                      v-else
+                      class="d-flex align-center justify-center text-caption text-medium-emphasis"
+                      style="height: 200px;"
+                    >
+                      Sin registros de cierre de OTs
+                    </div>
                   </div>
                 </VCard>
               </VCol>
@@ -2155,12 +2251,21 @@ const tecnicosOptions = computed(() => {
                   </div>
                   <div class="pa-1">
                     <VueApexCharts
+                      v-if="tecnicosHasData"
+                      :key="`tecnicos-${chartThemes.themeKey}`"
                       type="bar"
                       height="210"
                       width="100%"
                       :options="tecnicosOptions"
                       :series="tecnicosSeries"
                     />
+                    <div
+                      v-else
+                      class="d-flex align-center justify-center text-caption text-medium-emphasis"
+                      style="height: 210px;"
+                    >
+                      Sin servicios asignados por técnico
+                    </div>
                   </div>
                 </VCard>
               </VCol>
@@ -2332,10 +2437,11 @@ const tecnicosOptions = computed(() => {
                 </div>
 
                 <div
-                  v-else
+                  v-else-if="purchasedProductsHasData"
                   class="pa-2 d-flex justify-center align-center"
                 >
                   <VueApexCharts
+                    :key="`purchased-${chartThemes.themeKey}`"
                     type="donut"
                     height="340"
                     width="100%"

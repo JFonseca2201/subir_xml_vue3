@@ -438,29 +438,35 @@ const openAttachment = att => {
   color: rgba(255, 255, 255, 0.85);
 }
 
+.empty-attachments-box {
+  [data-theme="light"] &,
+  .v-theme--light & {
+    background: #f8fafc;
+    border: 1px dashed #cbd5e1 !important;
+  }
+}
+
+.empty-box-icon {
+  [data-theme="light"] &,
+  .v-theme--light & {
+    color: #94a3b8;
+  }
+}
+
+.empty-box-text {
+  [data-theme="light"] &,
+  .v-theme--light & {
+    color: #334155;
+  }
+}
+
 .empty-box-subtext {
   color: rgba(255, 255, 255, 0.45);
-}
 
-:global([data-theme="light"]) .empty-attachments-box,
-:global(.v-theme--light) .empty-attachments-box {
-  background: #f8fafc;
-  border: 1px dashed #cbd5e1 !important;
-}
-
-:global([data-theme="light"]) .empty-box-icon,
-:global(.v-theme--light) .empty-box-icon {
-  color: #94a3b8;
-}
-
-:global([data-theme="light"]) .empty-box-text,
-:global(.v-theme--light) .empty-box-text {
-  color: #334155;
-}
-
-:global([data-theme="light"]) .empty-box-subtext,
-:global(.v-theme--light) .empty-box-subtext {
-  color: #64748b;
+  [data-theme="light"] &,
+  .v-theme--light & {
+    color: #64748b;
+  }
 }
 
 .existing-grid {
@@ -477,17 +483,17 @@ const openAttachment = att => {
   display: flex;
   flex-direction: column;
   transition: transform 0.2s ease, box-shadow 0.2s ease;
-}
 
-.existing-card:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.25);
-}
+  &:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.25);
+  }
 
-:global([data-theme="light"]) .existing-card,
-:global(.v-theme--light) .existing-card {
-  border: 1px solid rgba(0, 0, 0, 0.08);
-  background: #ffffff;
+  [data-theme="light"] &,
+  .v-theme--light & {
+    border: 1px solid rgba(0, 0, 0, 0.08);
+    background: #ffffff;
+  }
 }
 
 .existing-media {
@@ -500,11 +506,11 @@ const openAttachment = att => {
   position: relative;
   cursor: pointer;
   overflow: hidden;
-}
 
-:global([data-theme="light"]) .existing-media,
-:global(.v-theme--light) .existing-media {
-  background: #f8fafc;
+  [data-theme="light"] &,
+  .v-theme--light & {
+    background: #f8fafc;
+  }
 }
 
 .existing-img {
@@ -537,11 +543,11 @@ const openAttachment = att => {
   background: rgba(239, 68, 68, 0.12);
   flex-direction: column;
   gap: 2px;
-}
 
-:global([data-theme="light"]) .pdf-media,
-:global(.v-theme--light) .pdf-media {
-  background: #fef2f2;
+  [data-theme="light"] &,
+  .v-theme--light & {
+    background: #fef2f2;
+  }
 }
 
 .pdf-tag {
@@ -549,21 +555,21 @@ const openAttachment = att => {
   font-weight: 800;
   color: #ef4444;
   letter-spacing: 0.5px;
-}
 
-:global([data-theme="light"]) .pdf-tag,
-:global(.v-theme--light) .pdf-tag {
-  color: #dc2626;
+  [data-theme="light"] &,
+  .v-theme--light & {
+    color: #dc2626;
+  }
 }
 
 .existing-info {
   background: rgba(255, 255, 255, 0.03);
   border-top: 1px solid rgba(255, 255, 255, 0.08);
-}
 
-:global([data-theme="light"]) .existing-info,
-:global(.v-theme--light) .existing-info {
-  background: #ffffff;
-  border-top: 1px solid rgba(0, 0, 0, 0.05);
+  [data-theme="light"] &,
+  .v-theme--light & {
+    background: #ffffff;
+    border-top: 1px solid rgba(0, 0, 0, 0.05);
+  }
 }
 </style>

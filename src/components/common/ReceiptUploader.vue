@@ -571,11 +571,11 @@ const openPreview = item => {
   opacity: 0.6;
   cursor: not-allowed;
   border-color: rgba(255, 255, 255, 0.12);
-}
 
-:global([data-theme="light"]) .drop-zone-disabled,
-:global(.v-theme--light) .drop-zone-disabled {
-  border-color: rgba(0, 0, 0, 0.12);
+  [data-theme="light"] &,
+  .v-theme--light & {
+    border-color: rgba(0, 0, 0, 0.12);
+  }
 }
 
 .drop-zone-has-files {
@@ -606,17 +606,17 @@ const openPreview = item => {
   display: flex;
   flex-direction: column;
   transition: transform 0.2s ease, box-shadow 0.2s ease;
-}
 
-.thumbnail-card:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.25) !important;
-}
+  &:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.25) !important;
+  }
 
-:global([data-theme="light"]) .thumbnail-card,
-:global(.v-theme--light) .thumbnail-card {
-  border: 1px solid rgba(0, 0, 0, 0.08);
-  background: #ffffff;
+  [data-theme="light"] &,
+  .v-theme--light & {
+    border: 1px solid rgba(0, 0, 0, 0.08);
+    background: #ffffff;
+  }
 }
 
 .thumbnail-media {
@@ -629,11 +629,11 @@ const openPreview = item => {
   position: relative;
   cursor: pointer;
   overflow: hidden;
-}
 
-:global([data-theme="light"]) .thumbnail-media,
-:global(.v-theme--light) .thumbnail-media {
-  background: #f8fafc;
+  [data-theme="light"] &,
+  .v-theme--light & {
+    background: #f8fafc;
+  }
 }
 
 .thumbnail-img {
@@ -666,11 +666,11 @@ const openPreview = item => {
   background: rgba(239, 68, 68, 0.12);
   flex-direction: column;
   gap: 2px;
-}
 
-:global([data-theme="light"]) .pdf-media,
-:global(.v-theme--light) .pdf-media {
-  background: #fef2f2;
+  [data-theme="light"] &,
+  .v-theme--light & {
+    background: #fef2f2;
+  }
 }
 
 .pdf-tag {
@@ -678,22 +678,22 @@ const openPreview = item => {
   font-weight: 800;
   color: #ef4444;
   letter-spacing: 0.5px;
-}
 
-:global([data-theme="light"]) .pdf-tag,
-:global(.v-theme--light) .pdf-tag {
-  color: #dc2626;
+  [data-theme="light"] &,
+  .v-theme--light & {
+    color: #dc2626;
+  }
 }
 
 .thumbnail-info {
   background: rgba(255, 255, 255, 0.03);
   border-top: 1px solid rgba(255, 255, 255, 0.08);
-}
 
-:global([data-theme="light"]) .thumbnail-info,
-:global(.v-theme--light) .thumbnail-info {
-  background: #ffffff;
-  border-top: 1px solid rgba(0, 0, 0, 0.05);
+  [data-theme="light"] &,
+  .v-theme--light & {
+    background: #ffffff;
+    border-top: 1px solid rgba(0, 0, 0, 0.05);
+  }
 }
 
 .thumbnail-remove-btn {
@@ -708,20 +708,20 @@ const openPreview = item => {
 
 .preview-lightbox-body {
   background: rgba(15, 23, 42, 0.95);
-}
 
-:global([data-theme="light"]) .preview-lightbox-body,
-:global(.v-theme--light) .preview-lightbox-body {
-  background: #f1f5f9;
+  [data-theme="light"] &,
+  .v-theme--light & {
+    background: #f1f5f9;
+  }
 }
 
 .preview-lightbox-actions {
   background: rgba(24, 28, 48, 0.98);
-}
 
-:global([data-theme="light"]) .preview-lightbox-actions,
-:global(.v-theme--light) .preview-lightbox-actions {
-  background: #ffffff;
+  [data-theme="light"] &,
+  .v-theme--light & {
+    background: #ffffff;
+  }
 }
 
 .lightbox-img {

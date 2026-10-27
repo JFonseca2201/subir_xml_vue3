@@ -2272,11 +2272,11 @@ meta:
 .observations-box {
   background: rgba(255, 255, 255, 0.03);
   border-color: rgba(255, 255, 255, 0.1) !important;
-}
 
-:global([data-theme="light"]) .observations-box,
-:global(.v-theme--light) .observations-box {
-  background: #f8fafc;
-  border-color: #e2e8f0 !important;
+  [data-theme="light"] &,
+  .v-theme--light & {
+    background: #f8fafc;
+    border-color: #e2e8f0 !important;
+  }
 }
 </style>

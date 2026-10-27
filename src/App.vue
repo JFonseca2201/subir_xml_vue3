@@ -20,7 +20,6 @@ const configStore = useConfigStore()
 
 // Sincronizar data-theme en html y body para selector global de temas glassmorphism
 watch(() => global.name.value, (newTheme) => {
-  console.log('Theme changed to:', newTheme, 'current theme object:', global.current.value)
   if (typeof document !== 'undefined') {
     document.documentElement.setAttribute('data-theme', newTheme)
     document.body.setAttribute('data-theme', newTheme)
