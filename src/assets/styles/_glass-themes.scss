@@ -2623,6 +2623,65 @@ body[data-theme="semi-dark-glass"],
     border-color: var(--border-glass, rgba(255, 255, 255, 0.12)) !important;
   }
 
+  // Cajas destacadas de totales (ej: Total con IVA en catálogo y ventas)
+  .total-with-iva-box,
+  .bg-emerald-50,
+  [class*="bg-emerald-50"] {
+    background: rgba(16, 185, 129, 0.16) !important;
+    background-color: rgba(16, 185, 129, 0.16) !important;
+    border: 1.5px solid rgba(16, 185, 129, 0.35) !important;
+
+    .total-with-iva-title,
+    .text-emerald-800 {
+      color: #34d399 !important;
+      -webkit-text-fill-color: #34d399 !important;
+      font-weight: 800 !important;
+    }
+
+    .iva-subcaption,
+    .text-emerald-700 {
+      color: rgba(52, 211, 153, 0.85) !important;
+      -webkit-text-fill-color: rgba(52, 211, 153, 0.85) !important;
+    }
+
+    .total-price-val,
+    .text-emerald-900 {
+      color: #34d399 !important;
+      -webkit-text-fill-color: #34d399 !important;
+      font-weight: 900 !important;
+    }
+  }
+
+  .bg-amber-50,
+  [class*="bg-amber-50"] {
+    background: rgba(245, 158, 11, 0.16) !important;
+    background-color: rgba(245, 158, 11, 0.16) !important;
+    border: 1.5px solid rgba(245, 158, 11, 0.35) !important;
+    color: #fbbf24 !important;
+  }
+
+  // Status pills en temas oscuros para evitar pasteles blancos
+  .status-paid {
+    background-color: rgba(16, 185, 129, 0.16) !important;
+    color: #34d399 !important;
+    border-color: rgba(16, 185, 129, 0.35) !important;
+    -webkit-text-fill-color: #34d399 !important;
+  }
+
+  .status-partial {
+    background-color: rgba(245, 158, 11, 0.16) !important;
+    color: #fbbf24 !important;
+    border-color: rgba(245, 158, 11, 0.35) !important;
+    -webkit-text-fill-color: #fbbf24 !important;
+  }
+
+  .status-transfer {
+    background-color: rgba(59, 130, 246, 0.16) !important;
+    color: #60a5fa !important;
+    border-color: rgba(59, 130, 246, 0.35) !important;
+    -webkit-text-fill-color: #60a5fa !important;
+  }
+
   // 5. Overrides para estilos en línea con fondos blancos
   [style*="background-color: #ffffff"],
   [style*="background-color: #fff"],
@@ -2639,7 +2698,8 @@ body[data-theme="semi-dark-glass"],
   [style*="background-color: #f0f1ff"],
   [style*="background-color: #eff6ff"],
   [style*="background-color: #fffbeb"],
-  [style*="background-color: #ecfdf5"] {
+  [style*="background-color: #ecfdf5"],
+  [style*="background: #ecfdf5"] {
     background: var(--bg-surface, #2F3349) !important;
     background-color: var(--bg-surface, #2F3349) !important;
     color: var(--text-primary, #ffffff) !important;

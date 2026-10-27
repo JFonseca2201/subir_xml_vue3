@@ -322,15 +322,15 @@ const copyText = async (text, label = 'Texto') => {
           <!-- Total Destacado: Precio ya con IVA -->
           <div class="total-with-iva-box pa-3 rounded-lg d-flex align-center justify-space-between gap-3">
             <div>
-              <div class="text-caption font-weight-bold text-uppercase text-emerald-800">
+              <div class="text-caption font-weight-bold text-uppercase total-with-iva-title">
                 Precio Total con IVA
               </div>
-              <div class="text-caption text-emerald-700 iva-subcaption">
+              <div class="text-caption iva-subcaption">
                 Costo neto de adquisición
               </div>
             </div>
             <div class="text-right">
-              <div class="font-mono font-weight-black text-h5 text-emerald-900 total-price-val">
+              <div class="font-mono font-weight-black total-price-val">
                 {{ formatCurrency(priceWithIva) }}
               </div>
             </div>
@@ -402,28 +402,50 @@ const copyText = async (text, label = 'Texto') => {
 }
 
 .total-with-iva-box {
-  background-color: #ecfdf5;
-  border: 1px solid #a7f3d0;
+  background-color: rgba(16, 185, 129, 0.14) !important;
+  border: 1.5px solid rgba(16, 185, 129, 0.35) !important;
+  border-radius: 8px;
+
+  .total-with-iva-title {
+    color: #34d399 !important;
+    -webkit-text-fill-color: #34d399 !important;
+    font-weight: 800 !important;
+  }
+
+  .iva-subcaption {
+    color: rgba(52, 211, 153, 0.85) !important;
+    -webkit-text-fill-color: rgba(52, 211, 153, 0.85) !important;
+    font-size: 0.72rem !important;
+  }
+
+  .total-price-val {
+    color: #34d399 !important;
+    -webkit-text-fill-color: #34d399 !important;
+    font-size: 1.45rem !important;
+    line-height: 1 !important;
+    font-weight: 900 !important;
+  }
 }
 
-.text-emerald-700 {
-  color: #047857 !important;
-}
+:global([data-theme="light"]) .total-with-iva-box,
+:global([data-theme="taller"]) .total-with-iva-box {
+  background-color: #ecfdf5 !important;
+  border: 1px solid #a7f3d0 !important;
 
-.text-emerald-800 {
-  color: #065f46 !important;
-}
+  .total-with-iva-title {
+    color: #065f46 !important;
+    -webkit-text-fill-color: #065f46 !important;
+  }
 
-.text-emerald-900 {
-  color: #064e3b !important;
-}
+  .iva-subcaption {
+    color: #047857 !important;
+    -webkit-text-fill-color: #047857 !important;
+  }
 
-.iva-subcaption {
-  font-size: 0.72rem !important;
-}
-
-.total-price-val {
-  line-height: 1 !important;
+  .total-price-val {
+    color: #064e3b !important;
+    -webkit-text-fill-color: #064e3b !important;
+  }
 }
 
 .bg-slate-100 {

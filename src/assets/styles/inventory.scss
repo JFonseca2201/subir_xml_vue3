@@ -6863,11 +6863,12 @@ body[data-theme="semi-dark-glass"],
     .operations-movement-item,
     .quick-edit-section,
     .quick-stock-stepper-box,
-    .price-calc-summary-box {
-      background: rgba(255, 255, 255, 0.05) !important;
-      background-color: rgba(255, 255, 255, 0.05) !important;
-      border-color: var(--border-glass, rgba(234, 234, 255, 0.12)) !important;
-      color: #ffffff !important;
+    .price-calc-summary-box,
+    .total-with-iva-box {
+      background: rgba(16, 185, 129, 0.14) !important;
+      background-color: rgba(16, 185, 129, 0.14) !important;
+      border-color: rgba(16, 185, 129, 0.35) !important;
+      color: #34d399 !important;
     }
 
     [style*="background-color: #ffffff"],
