@@ -1421,17 +1421,37 @@ onMounted(() => {
         <!-- 1. DATOS DE FACTURA (12 COLUMNAS COMPLETAS) -->
         <VCol cols="12">
           <VCard
-            class="elevation-2 rounded-xl mb-6 border"
+            class="rounded-xl border-light elevation-1 mb-6 overflow-hidden"
             :class="{ 'opacity-90 bg-grey-lighten-5': isDuplicateInvoice }"
           >
-            <VCardTitle class="px-6 pt-6 pb-2 text-h6 font-weight-bold d-flex align-center gap-2">
-              <VIcon
-                icon="ri-file-info-line"
-                color="primary"
-              />
-              <span>Datos de Factura</span>
-            </VCardTitle>
-            <VCardText class="px-6 pb-6">
+            <VCardItem class="py-3 px-4 border-b">
+              <template #title>
+                <div class="d-flex align-center justify-space-between flex-wrap gap-2">
+                  <div class="d-flex align-center gap-3">
+                    <VAvatar
+                      size="36"
+                      color="primary"
+                      variant="tonal"
+                      class="rounded-lg"
+                    >
+                      <VIcon
+                        icon="ri-file-info-line"
+                        size="20"
+                      />
+                    </VAvatar>
+                    <div>
+                      <h3 class="text-subtitle-1 font-weight-bold text-high-emphasis mb-0">
+                        Datos de Factura
+                      </h3>
+                      <p class="text-caption text-medium-emphasis mb-0">
+                        Información fiscal del proveedor y comprobante
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              </template>
+            </VCardItem>
+            <VCardText class="pa-4 pa-sm-5">
               <VRow>
                 <VCol
                   cols="12"
@@ -1579,37 +1599,65 @@ onMounted(() => {
           </VCard>
 
           <!-- DETALLE DE PRODUCTOS -->
-          <VCard class="elevation-2 rounded-xl border">
-            <VCardTitle class="px-6 pt-6 pb-2 d-flex align-center justify-space-between flex-wrap gap-2">
-              <div class="text-h6 font-weight-bold d-flex align-center gap-2">
-                <VIcon
-                  icon="ri-box-3-line"
-                  color="primary"
-                />
-                <span>Detalle de Productos ({{ items.length }})</span>
-                <VChip
-                  v-if="isDuplicateInvoice"
-                  size="x-small"
-                  color="error"
-                  variant="tonal"
-                  class="ms-1 font-weight-bold"
-                >
-                  Informativo
-                </VChip>
-              </div>
-              <VBtn
-                v-if="!xmlLoadedInfo && !isDuplicateInvoice"
-                color="primary"
-                variant="tonal"
-                size="small"
-                prepend-icon="ri-add-line"
-                class="rounded-lg font-weight-bold"
-                @click="openManualProductDialog('')"
-              >
-                Ingresar Producto Manual
-              </VBtn>
-            </VCardTitle>
-            <VCardText class="px-6">
+          <VCard class="rounded-xl border-light elevation-1 mb-6 overflow-hidden">
+            <VCardItem class="py-3 px-4 border-b">
+              <template #title>
+                <div class="d-flex align-center justify-space-between flex-wrap gap-2">
+                  <div class="d-flex align-center gap-3">
+                    <VAvatar
+                      size="36"
+                      color="primary"
+                      variant="tonal"
+                      class="rounded-lg"
+                    >
+                      <VIcon
+                        icon="ri-box-3-line"
+                        size="20"
+                      />
+                    </VAvatar>
+                    <div>
+                      <div class="d-flex align-center gap-2 flex-wrap">
+                        <h3 class="text-subtitle-1 font-weight-bold text-high-emphasis mb-0">
+                          Detalle de Productos
+                        </h3>
+                        <VChip
+                          size="x-small"
+                          color="primary"
+                          variant="tonal"
+                          class="font-weight-bold"
+                        >
+                          {{ items.length }}
+                        </VChip>
+                        <VChip
+                          v-if="isDuplicateInvoice"
+                          size="x-small"
+                          color="error"
+                          variant="tonal"
+                          class="ms-1 font-weight-bold"
+                        >
+                          Informativo
+                        </VChip>
+                      </div>
+                      <p class="text-caption text-medium-emphasis mb-0">
+                        Lista de artículos adquiridos e ingresados al inventario
+                      </p>
+                    </div>
+                  </div>
+                  <VBtn
+                    v-if="!xmlLoadedInfo && !isDuplicateInvoice"
+                    color="primary"
+                    variant="tonal"
+                    size="small"
+                    prepend-icon="ri-add-line"
+                    class="rounded-lg font-weight-bold"
+                    @click="openManualProductDialog('')"
+                  >
+                    Ingresar Producto Manual
+                  </VBtn>
+                </div>
+              </template>
+            </VCardItem>
+            <VCardText class="pa-4 pa-sm-5">
               <VAutocomplete
                 v-if="!xmlLoadedInfo && !isDuplicateInvoice"
                 v-model="searchProduct"
@@ -2085,26 +2133,48 @@ onMounted(() => {
           md="4"
         >
           <VCard
-            class="elevation-2 rounded-xl mb-6 border-primary border-opacity-50 border-s-4 border"
+            class="rounded-xl border-light elevation-1 mb-6 overflow-hidden"
             :class="{ 'opacity-90 bg-grey-lighten-5': isDuplicateInvoice }"
           >
-            <VCardTitle class="px-6 pt-6 pb-2 text-h6 font-weight-bold d-flex align-center gap-2">
-              <VIcon
-                icon="ri-money-dollar-circle-line"
-                color="primary"
-              />
-              <span>Origen de Fondos</span>
-              <VChip
-                v-if="isDuplicateInvoice"
-                size="x-small"
-                color="error"
-                variant="tonal"
-                class="ms-2 font-weight-bold"
-              >
-                Solo Lectura
-              </VChip>
-            </VCardTitle>
-            <VCardText class="px-6 pb-6">
+            <VCardItem class="py-3 px-4 border-b">
+              <template #title>
+                <div class="d-flex align-center justify-space-between flex-wrap gap-2">
+                  <div class="d-flex align-center gap-3">
+                    <VAvatar
+                      size="36"
+                      color="primary"
+                      variant="tonal"
+                      class="rounded-lg"
+                    >
+                      <VIcon
+                        icon="ri-money-dollar-circle-line"
+                        size="20"
+                      />
+                    </VAvatar>
+                    <div>
+                      <div class="d-flex align-center gap-2 flex-wrap">
+                        <h3 class="text-subtitle-1 font-weight-bold text-high-emphasis mb-0">
+                          Origen de Fondos
+                        </h3>
+                        <VChip
+                          v-if="isDuplicateInvoice"
+                          size="x-small"
+                          color="error"
+                          variant="tonal"
+                          class="font-weight-bold"
+                        >
+                          Solo Lectura
+                        </VChip>
+                      </div>
+                      <p class="text-caption text-medium-emphasis mb-0">
+                        Forma de pago o financiamiento
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              </template>
+            </VCardItem>
+            <VCardText class="pa-4 pa-sm-5">
               <VRadioGroup
                 v-model="formData.payment_type"
                 class="mb-4"
@@ -2186,11 +2256,35 @@ onMounted(() => {
           </VCard>
 
           <!-- RESUMEN TOTAL -->
-          <VCard class="elevation-2 rounded-xl bg-grey-lighten-4 border">
-            <VCardTitle class="px-6 pt-6 text-h6 font-weight-bold">
-              Resumen de Factura
-            </VCardTitle>
-            <VCardText class="px-6">
+          <VCard class="rounded-xl border-light elevation-1 mb-6 overflow-hidden bg-surface">
+            <VCardItem class="py-3 px-4 border-b">
+              <template #title>
+                <div class="d-flex align-center justify-space-between flex-wrap gap-2">
+                  <div class="d-flex align-center gap-3">
+                    <VAvatar
+                      size="36"
+                      color="primary"
+                      variant="tonal"
+                      class="rounded-lg"
+                    >
+                      <VIcon
+                        icon="ri-calculator-line"
+                        size="20"
+                      />
+                    </VAvatar>
+                    <div>
+                      <h3 class="text-subtitle-1 font-weight-bold text-high-emphasis mb-0">
+                        Resumen de Factura
+                      </h3>
+                      <p class="text-caption text-medium-emphasis mb-0">
+                        Totales y valores a liquidar
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              </template>
+            </VCardItem>
+            <VCardText class="pa-4 pa-sm-5">
               <div class="d-flex justify-space-between mb-2">
                 <span class="text-medium-emphasis">Subtotal SRI</span>
                 <span class="font-weight-bold">${{ subtotal.toFixed(2) }}</span>

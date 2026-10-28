@@ -632,8 +632,33 @@ onActivated(async () => {
           md="8"
         >
           <!-- Cabecera de la Cotización -->
-          <VCard class="elevation-2 mb-6">
-            <VCardText class="pa-6">
+          <VCard class="rounded-xl border-light elevation-1 mb-6 overflow-hidden">
+            <VCardItem class="py-3 px-4 border-b">
+              <template #title>
+                <div class="d-flex align-center gap-3">
+                  <VAvatar
+                    size="36"
+                    color="primary"
+                    variant="tonal"
+                    class="rounded-lg"
+                  >
+                    <VIcon
+                      icon="ri-file-text-line"
+                      size="20"
+                    />
+                  </VAvatar>
+                  <div>
+                    <h3 class="text-subtitle-1 font-weight-bold text-high-emphasis mb-0">
+                      Datos del Presupuesto
+                    </h3>
+                    <p class="text-caption text-medium-emphasis mb-0">
+                      Número secuencial y fecha de emisión
+                    </p>
+                  </div>
+                </div>
+              </template>
+            </VCardItem>
+            <VCardText class="pa-4 pa-sm-5">
               <VRow>
                 <VCol
                   cols="12"
@@ -676,18 +701,35 @@ onActivated(async () => {
           </VCard>
 
           <!-- Cliente y Vehículo -->
-          <VCard class="elevation-2 mb-6">
-            <VCardText class="pa-6">
-              <div class="d-flex align-center justify-space-between mb-4">
-                <h3 class="text-h6 font-weight-bold mb-0 d-flex align-center">
-                  <VIcon
-                    icon="ri-user-settings-line"
-                    class="mr-2"
-                    color="primary"
-                  />
-                  Cliente y Vehículo
-                </h3>
-              </div>
+          <VCard class="rounded-xl border-light elevation-1 mb-6 overflow-hidden">
+            <VCardItem class="py-3 px-4 border-b">
+              <template #title>
+                <div class="d-flex align-center justify-space-between flex-wrap gap-2">
+                  <div class="d-flex align-center gap-3">
+                    <VAvatar
+                      size="36"
+                      color="primary"
+                      variant="tonal"
+                      class="rounded-lg"
+                    >
+                      <VIcon
+                        icon="ri-user-settings-line"
+                        size="20"
+                      />
+                    </VAvatar>
+                    <div>
+                      <h3 class="text-subtitle-1 font-weight-bold text-high-emphasis mb-0">
+                        Cliente y Vehículo
+                      </h3>
+                      <p class="text-caption text-medium-emphasis mb-0">
+                        Selecciona el cliente y el vehículo para la cotización
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              </template>
+            </VCardItem>
+            <VCardText class="pa-4 pa-sm-5">
 
               <VRow>
                 <!-- Cliente -->
@@ -856,39 +898,68 @@ onActivated(async () => {
           </VCard>
 
           <!-- Búsqueda y Agregar Items -->
-          <VCard class="elevation-2 mb-6">
-            <VCardText class="pa-6">
-              <div class="d-flex align-center justify-space-between mb-4 flex-wrap gap-2">
-                <h3 class="text-h6 font-weight-bold mb-0 d-flex align-center">
-                  <VIcon
-                    icon="ri-shopping-cart-line"
-                    class="mr-2"
-                    color="primary"
-                  />
-                  Servicios y Repuestos
-                </h3>
-                <div class="d-flex align-center gap-2">
-                  <VBtn
-                    color="primary"
-                    size="small"
-                    variant="tonal"
-                    prepend-icon="ri-add-circle-line"
-                    class="font-weight-medium"
-                    @click="openManualProductDialog"
-                  >
-                    + Producto Manual
-                  </VBtn>
-                  <VBtn
-                    color="secondary"
-                    size="small"
-                    variant="text"
-                    prepend-icon="ri-tools-line"
-                    @click="isAddServiceDialogVisible = true"
-                  >
-                    Servicio Express
-                  </VBtn>
+          <VCard class="rounded-xl border-light elevation-1 mb-6 overflow-hidden">
+            <VCardItem class="py-3 px-4 border-b">
+              <template #title>
+                <div class="d-flex align-center justify-space-between flex-wrap gap-2">
+                  <div class="d-flex align-center gap-3">
+                    <VAvatar
+                      size="36"
+                      color="primary"
+                      variant="tonal"
+                      class="rounded-lg"
+                    >
+                      <VIcon
+                        icon="ri-shopping-cart-line"
+                        size="20"
+                      />
+                    </VAvatar>
+                    <div>
+                      <div class="d-flex align-center gap-2 flex-wrap">
+                        <h3 class="text-subtitle-1 font-weight-bold text-high-emphasis mb-0">
+                          Servicios y Repuestos
+                        </h3>
+                        <VChip
+                          v-if="quote.items.length > 0"
+                          size="x-small"
+                          color="primary"
+                          variant="tonal"
+                          class="font-weight-bold"
+                        >
+                          {{ quote.items.length }}
+                        </VChip>
+                      </div>
+                      <p class="text-caption text-medium-emphasis mb-0">
+                        Ítems, servicios y repuestos a presupuestar
+                      </p>
+                    </div>
+                  </div>
+                  <div class="d-flex align-center gap-2">
+                    <VBtn
+                      color="primary"
+                      size="small"
+                      variant="tonal"
+                      prepend-icon="ri-add-circle-line"
+                      class="rounded-lg font-weight-bold"
+                      @click="openManualProductDialog"
+                    >
+                      + Producto Manual
+                    </VBtn>
+                    <VBtn
+                      color="secondary"
+                      size="small"
+                      variant="text"
+                      prepend-icon="ri-tools-line"
+                      class="font-weight-medium"
+                      @click="isAddServiceDialogVisible = true"
+                    >
+                      Servicio Express
+                    </VBtn>
+                  </div>
                 </div>
-              </div>
+              </template>
+            </VCardItem>
+            <VCardText class="pa-4 pa-sm-5">
 
               <VSearch
                 v-model="selectedProductTemp"
@@ -1095,16 +1166,35 @@ onActivated(async () => {
           md="4"
         >
           <!-- Observaciones -->
-          <VCard class="elevation-2 mb-6">
-            <VCardText class="pa-6">
-              <h3 class="text-subtitle-1 font-weight-bold mb-3 d-flex align-center">
-                <VIcon
-                  icon="ri-chat-1-line"
-                  class="mr-2"
-                  color="primary"
-                />
-                Observaciones del Presupuesto
-              </h3>
+          <VCard class="rounded-xl border-light elevation-1 mb-6 overflow-hidden">
+            <VCardItem class="py-3 px-4 border-b">
+              <template #title>
+                <div class="d-flex align-center justify-space-between flex-wrap gap-2">
+                  <div class="d-flex align-center gap-3">
+                    <VAvatar
+                      size="36"
+                      color="primary"
+                      variant="tonal"
+                      class="rounded-lg"
+                    >
+                      <VIcon
+                        icon="ri-chat-1-line"
+                        size="20"
+                      />
+                    </VAvatar>
+                    <div>
+                      <h3 class="text-subtitle-1 font-weight-bold text-high-emphasis mb-0">
+                        Observaciones del Presupuesto
+                      </h3>
+                      <p class="text-caption text-medium-emphasis mb-0">
+                        Términos, validez y condiciones
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              </template>
+            </VCardItem>
+            <VCardText class="pa-4 pa-sm-5">
               <VTextarea
                 v-model="quote.observations"
                 rows="4"
@@ -1117,12 +1207,35 @@ onActivated(async () => {
           </VCard>
 
           <!-- Resumen del Presupuesto -->
-          <VCard class="elevation-4 mb-6 border-primary border-t-4">
-            <VCardText class="pa-6">
-              <h3 class="text-h6 font-weight-bold mb-4 text-grey-darken-4">
-                Resumen
-              </h3>
-
+          <VCard class="rounded-xl border-light elevation-1 mb-6 overflow-hidden bg-surface">
+            <VCardItem class="py-3 px-4 border-b">
+              <template #title>
+                <div class="d-flex align-center justify-space-between flex-wrap gap-2">
+                  <div class="d-flex align-center gap-3">
+                    <VAvatar
+                      size="36"
+                      color="primary"
+                      variant="tonal"
+                      class="rounded-lg"
+                    >
+                      <VIcon
+                        icon="ri-calculator-line"
+                        size="20"
+                      />
+                    </VAvatar>
+                    <div>
+                      <h3 class="text-subtitle-1 font-weight-bold text-high-emphasis mb-0">
+                        Resumen de Cotización
+                      </h3>
+                      <p class="text-caption text-medium-emphasis mb-0">
+                        Totales y valores calculados
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              </template>
+            </VCardItem>
+            <VCardText class="pa-4 pa-sm-5">
               <div class="d-flex justify-space-between mb-3 text-body-1">
                 <span class="text-medium-emphasis">Subtotal (Sin IVA):</span>
                 <span class="font-weight-medium text-grey-darken-4">${{ displaySubtotal.toFixed(2) }}</span>
@@ -1159,9 +1272,9 @@ onActivated(async () => {
                 variant="elevated"
                 prepend-icon="ri-save-3-line"
                 :loading="isSubmitting"
-                size="large"
+                height="42"
                 block
-                class="text-none font-weight-bold mb-3 elevation-2"
+                class="rounded-lg text-none font-weight-bold mb-3 elevation-2"
               >
                 Guardar Cotización
               </VBtn>
@@ -1170,9 +1283,9 @@ onActivated(async () => {
                 color="secondary"
                 variant="outlined"
                 prepend-icon="ri-close-line"
-                size="large"
+                height="42"
                 block
-                class="text-none font-weight-medium"
+                class="rounded-lg text-none font-weight-medium"
                 @click="cancelAndReturn"
               >
                 Cancelar
