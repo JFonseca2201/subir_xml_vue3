@@ -19,15 +19,15 @@ $glass-themes: (
     'bg-dialog': #ffffff,
     'bg-active-item': #ffffff,
     'bg-hover-item': rgba(255, 255, 255, 0.16),
-    'border-active': rgba(255, 255, 255, 0.90),
+    'border-active': #666CFF,
     'text-active': #5C61E6,
     'text-primary': #262B43,
     'text-secondary': rgba(38, 43, 67, 0.78),
     'text-muted': rgba(38, 43, 67, 0.45),
-    'icon-color': #ffffff,
+    'icon-color': #6D788D,
     'border-glass': rgba(38, 43, 67, 0.12),
     'input-bg': #ffffff,
-    'input-border': rgba(38, 43, 67, 0.22),
+    'input-border': rgba(38, 43, 67, 0.28),
     'table-header-bg': #F5F5F7,
     'table-row-even-bg': #ffffff,
     'table-row-hover-bg': rgba(102, 108, 255, 0.04),
@@ -51,7 +51,7 @@ $glass-themes: (
     'bg-dialog': #2F3349,
     'bg-active-item': rgba(102, 108, 255, 0.16),
     'bg-hover-item': rgba(255, 255, 255, 0.05),
-    'border-active': rgba(102, 108, 255, 0.45),
+    'border-active': #666CFF,
     'text-active': #ffffff,
     'text-primary': #ffffff,
     'text-secondary': rgba(234, 234, 255, 0.78),
@@ -59,7 +59,7 @@ $glass-themes: (
     'icon-color': #ffffff,
     'border-glass': rgba(234, 234, 255, 0.12),
     'input-bg': rgba(255, 255, 255, 0.05),
-    'input-border': rgba(234, 234, 255, 0.16),
+    'input-border': rgba(234, 234, 255, 0.24),
     'table-header-bg': #3A3E5B,
     'table-row-even-bg': rgba(255, 255, 255, 0.02),
     'table-row-hover-bg': rgba(102, 108, 255, 0.08),
@@ -179,12 +179,12 @@ $glass-themes: (
     'bg-dialog': #ffffff,
     'bg-active-item': #ffffff,
     'bg-hover-item': rgba(255, 255, 255, 0.16),
-    'border-active': rgba(255, 255, 255, 0.90),
+    'border-active': #8A1538,
     'text-active': #7A102B,
     'text-primary': #0f172a,
     'text-secondary': #334155,
     'text-muted': #64748b,
-    'icon-color': #ffffff,
+    'icon-color': #64748b,
     'border-glass': rgba(226, 232, 240, 0.8),
     'input-bg': #ffffff,
     'input-border': #cbd5e1,
@@ -650,41 +650,68 @@ $glass-themes: (
     }
   }
 
-  // E. FORMULARIOS & VALIDACIONES (Visibilidad Óptima en Todos los Temas)
-  .v-field,
-  .v-field--variant-outlined,
-  .v-field--variant-filled {
-    background-color: var(--input-bg) !important;
-    border: 1px solid var(--input-border) !important;
-    border-radius: 8px !important;
+  // E. FORMULARIOS & VALIDACIONES (Vuetify Outlined Estándar Limpio y Simple)
+  .v-field {
     color: var(--text-primary) !important;
     transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1) !important;
 
-    .v-field__outline {
+    // Variante estándar Outlined (Vuetify / Material Design estándar: borde mediante outline con notch limpio)
+    &.v-field--variant-outlined {
+      background-color: var(--input-bg) !important;
       border: none !important;
-      --v-field-border-width: 0 !important;
+      border-radius: 8px !important;
+
+      .v-field__outline {
+        color: var(--input-border, rgba(38, 43, 67, 0.28)) !important;
+        --v-field-border-width: 1px !important;
+        --v-field-border-opacity: 1 !important;
+      }
+
+      &:hover:not(.v-field--focused):not(.v-field--error) {
+        .v-field__outline {
+          color: var(--border-active, #666CFF) !important;
+          --v-field-border-opacity: 1 !important;
+        }
+      }
+
+      &.v-field--focused:not(.v-field--error) {
+        .v-field__outline {
+          color: var(--border-active, #666CFF) !important;
+          --v-field-border-width: 2px !important;
+          --v-field-border-opacity: 1 !important;
+        }
+
+        .v-label,
+        .v-field-label {
+          color: var(--border-active, #666CFF) !important;
+          opacity: 1 !important;
+        }
+      }
     }
 
-    &:hover {
-      border-color: var(--border-active) !important;
-      background-color: var(--bg-hover-item) !important;
-    }
+    // Variante filled
+    &.v-field--variant-filled {
+      background-color: var(--input-bg) !important;
+      border: 1px solid var(--input-border) !important;
+      border-radius: 8px !important;
 
-    &.v-field--focused {
-      border-color: var(--border-active) !important;
-      box-shadow: 0 0 0 3px var(--bg-active-item) !important;
+      &:hover {
+        border-color: var(--border-active, #666CFF) !important;
+      }
+
+      &.v-field--focused {
+        border-color: var(--border-active, #666CFF) !important;
+      }
     }
 
     // ESTADO DE ERROR / VALIDACIÓN FALLIDA - ALTA VISIBILIDAD EN TEMA OSCURO Y CLARO
     &.v-field--error,
     .v-input--error & {
-      border-color: #ef4444 !important;
-      border-width: 1.5px !important;
-      background-color: if($is-dark, rgba(239, 68, 68, 0.12), rgba(239, 68, 68, 0.05)) !important;
-      box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.28), 0 0 12px rgba(239, 68, 68, 0.2) !important;
+      background-color: if($is-dark, rgba(239, 68, 68, 0.10), rgba(239, 68, 68, 0.04)) !important;
 
       .v-field__outline {
-        border-color: #ef4444 !important;
+        color: #ef4444 !important;
+        --v-field-border-width: 2px !important;
         --v-field-border-opacity: 1 !important;
       }
 
@@ -699,15 +726,18 @@ $glass-themes: (
       }
 
       .v-field__prepend-inner .v-icon,
-      .v-field__append-inner .v-icon {
+      .v-field__append-inner .v-icon,
+      .v-field__clearable .v-icon {
         color: if($is-dark, #f87171, #ef4444) !important;
         opacity: 1 !important;
       }
 
       &:hover,
       &.v-field--focused {
-        border-color: #f87171 !important;
-        box-shadow: 0 0 0 4px rgba(239, 68, 68, 0.38), 0 0 16px rgba(239, 68, 68, 0.3) !important;
+        .v-field__outline {
+          color: #f87171 !important;
+          --v-field-border-width: 2px !important;
+        }
       }
     }
 
@@ -721,10 +751,12 @@ $glass-themes: (
       }
     }
 
+    // Iconos interiores (flecha de select, calendario, iconos de texto) siempre visibles en tema claro y oscuro
     .v-field__prepend-inner .v-icon,
-    .v-field__append-inner .v-icon {
-      color: if($theme-name =='taller', #64748b, var(--icon-color)) !important;
-      opacity: 0.85 !important;
+    .v-field__append-inner .v-icon,
+    .v-field__clearable .v-icon {
+      color: if($is-dark, rgba(234, 234, 255, 0.78), #6D788D) !important;
+      opacity: 0.95 !important;
     }
 
     .v-label {
@@ -750,6 +782,7 @@ $glass-themes: (
 
   // MENSAJES DE DETALLE Y VALIDACIÓN
   .v-input:not(.v-input--error) {
+
     .v-messages,
     .v-input__details {
       color: var(--text-muted) !important;
@@ -764,6 +797,7 @@ $glass-themes: (
 
   // MENSAJES DE ERROR EN FORMULARIO - RESALTADO VIBRANTE Y LEGIBLE
   .v-input--error {
+
     label,
     .v-label,
     .text-label,
@@ -807,8 +841,8 @@ $glass-themes: (
     &.text-error,
     &.v-alert--color-error {
       background: if($is-dark,
-        linear-gradient(135deg, rgba(239, 68, 68, 0.22) 0%, rgba(185, 28, 28, 0.15) 100%),
-        linear-gradient(135deg, #fef2f2 0%, #fee2e2 100%)) !important;
+          linear-gradient(135deg, rgba(239, 68, 68, 0.22) 0%, rgba(185, 28, 28, 0.15) 100%),
+          linear-gradient(135deg, #fef2f2 0%, #fee2e2 100%)) !important;
       border: 1.5px solid if($is-dark, rgba(239, 68, 68, 0.55), #fca5a5) !important;
       box-shadow: 0 4px 16px if($is-dark, rgba(239, 68, 68, 0.2), rgba(239, 68, 68, 0.12)) !important;
       color: if($is-dark, #ffffff, #991b1b) !important;
@@ -832,8 +866,8 @@ $glass-themes: (
     &.text-warning,
     &.v-alert--color-warning {
       background: if($is-dark,
-        linear-gradient(135deg, rgba(245, 158, 11, 0.22) 0%, rgba(180, 83, 9, 0.15) 100%),
-        linear-gradient(135deg, #fffbeb 0%, #fef3c7 100%)) !important;
+          linear-gradient(135deg, rgba(245, 158, 11, 0.22) 0%, rgba(180, 83, 9, 0.15) 100%),
+          linear-gradient(135deg, #fffbeb 0%, #fef3c7 100%)) !important;
       border: 1.5px solid if($is-dark, rgba(245, 158, 11, 0.55), #fcd34d) !important;
       box-shadow: 0 4px 16px if($is-dark, rgba(245, 158, 11, 0.2), rgba(245, 158, 11, 0.12)) !important;
       color: if($is-dark, #ffffff, #92400e) !important;
@@ -857,8 +891,8 @@ $glass-themes: (
     &.text-success,
     &.v-alert--color-success {
       background: if($is-dark,
-        linear-gradient(135deg, rgba(16, 185, 129, 0.22) 0%, rgba(5, 150, 105, 0.15) 100%),
-        linear-gradient(135deg, #ecfdf5 0%, #d1fae5 100%)) !important;
+          linear-gradient(135deg, rgba(16, 185, 129, 0.22) 0%, rgba(5, 150, 105, 0.15) 100%),
+          linear-gradient(135deg, #ecfdf5 0%, #d1fae5 100%)) !important;
       border: 1.5px solid if($is-dark, rgba(16, 185, 129, 0.55), #86efac) !important;
       box-shadow: 0 4px 16px if($is-dark, rgba(16, 185, 129, 0.2), rgba(16, 185, 129, 0.12)) !important;
       color: if($is-dark, #ffffff, #065f46) !important;
@@ -878,8 +912,8 @@ $glass-themes: (
     &.text-info,
     &.v-alert--color-info {
       background: if($is-dark,
-        linear-gradient(135deg, rgba(14, 165, 233, 0.22) 0%, rgba(2, 132, 199, 0.15) 100%),
-        linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%)) !important;
+          linear-gradient(135deg, rgba(14, 165, 233, 0.22) 0%, rgba(2, 132, 199, 0.15) 100%),
+          linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%)) !important;
       border: 1.5px solid if($is-dark, rgba(14, 165, 233, 0.55), #7dd3fc) !important;
       box-shadow: 0 4px 16px if($is-dark, rgba(14, 165, 233, 0.2), rgba(14, 165, 233, 0.12)) !important;
       color: if($is-dark, #ffffff, #075985) !important;
@@ -1185,7 +1219,9 @@ $glass-themes: (
       border: 1px solid rgba(34, 197, 94, 0.40) !important;
       color: #22c55e !important;
 
-      &, span, * {
+      &,
+      span,
+      * {
         color: #22c55e !important;
         font-weight: 700 !important;
       }
@@ -1201,7 +1237,9 @@ $glass-themes: (
       border: 1px solid rgba(239, 68, 68, 0.40) !important;
       color: #f87171 !important;
 
-      &, span, * {
+      &,
+      span,
+      * {
         color: #f87171 !important;
         font-weight: 700 !important;
       }
@@ -1217,7 +1255,9 @@ $glass-themes: (
       border: 1px solid rgba(245, 158, 11, 0.40) !important;
       color: #fbbf24 !important;
 
-      &, span, * {
+      &,
+      span,
+      * {
         color: #fbbf24 !important;
         font-weight: 700 !important;
       }
@@ -1233,7 +1273,9 @@ $glass-themes: (
       border: 1px solid rgba(14, 165, 233, 0.40) !important;
       color: #38bdf8 !important;
 
-      &, span, * {
+      &,
+      span,
+      * {
         color: #38bdf8 !important;
         font-weight: 700 !important;
       }
@@ -1251,7 +1293,9 @@ $glass-themes: (
       border: 1px solid rgba(148, 163, 184, 0.35) !important;
       color: #cbd5e1 !important;
 
-      &, span, * {
+      &,
+      span,
+      * {
         color: #cbd5e1 !important;
         font-weight: 700 !important;
       }
@@ -1273,7 +1317,9 @@ $glass-themes: (
         border: 1px solid rgba(34, 197, 94, 0.40) !important;
         color: #4ade80 !important;
 
-        &, .sri-tag-text, .v-icon {
+        &,
+        .sri-tag-text,
+        .v-icon {
           color: #4ade80 !important;
         }
 
@@ -1288,7 +1334,9 @@ $glass-themes: (
         border: 1px solid rgba(59, 130, 246, 0.40) !important;
         color: #60a5fa !important;
 
-        &, .sri-tag-text, .v-icon {
+        &,
+        .sri-tag-text,
+        .v-icon {
           color: #60a5fa !important;
         }
 
@@ -1303,7 +1351,9 @@ $glass-themes: (
         border: 1px solid rgba(14, 165, 233, 0.40) !important;
         color: #38bdf8 !important;
 
-        &, .sri-tag-text, .v-icon {
+        &,
+        .sri-tag-text,
+        .v-icon {
           color: #38bdf8 !important;
         }
 
@@ -1318,7 +1368,9 @@ $glass-themes: (
         border: 1px solid rgba(168, 85, 247, 0.40) !important;
         color: #c084fc !important;
 
-        &, .sri-tag-text, .v-icon {
+        &,
+        .sri-tag-text,
+        .v-icon {
           color: #c084fc !important;
         }
 
@@ -1333,7 +1385,9 @@ $glass-themes: (
         border: 1px solid rgba(245, 158, 11, 0.40) !important;
         color: #fbbf24 !important;
 
-        &, .sri-tag-text, .v-icon {
+        &,
+        .sri-tag-text,
+        .v-icon {
           color: #fbbf24 !important;
         }
 
@@ -1349,7 +1403,9 @@ $glass-themes: (
         border: 1px solid rgba(239, 68, 68, 0.40) !important;
         color: #f87171 !important;
 
-        &, .sri-tag-text, .v-icon {
+        &,
+        .sri-tag-text,
+        .v-icon {
           color: #f87171 !important;
         }
 
@@ -1366,7 +1422,9 @@ $glass-themes: (
         border: 1px solid rgba(148, 163, 184, 0.35) !important;
         color: #cbd5e1 !important;
 
-        &, .sri-tag-text, .v-icon {
+        &,
+        .sri-tag-text,
+        .v-icon {
           color: #cbd5e1 !important;
         }
 
@@ -1417,18 +1475,22 @@ $glass-themes: (
       background-color: rgba(115, 103, 240, 0.16) !important;
       color: #a78bfa !important;
     }
+
     .bg-info-lighten-5 {
       background-color: rgba(59, 130, 246, 0.16) !important;
       color: #60a5fa !important;
     }
+
     .bg-success-lighten-5 {
       background-color: rgba(34, 197, 94, 0.16) !important;
       color: #4ade80 !important;
     }
+
     .bg-warning-lighten-5 {
       background-color: rgba(245, 158, 11, 0.16) !important;
       color: #fbbf24 !important;
     }
+
     .bg-error-lighten-5 {
       background-color: rgba(239, 68, 68, 0.16) !important;
       color: #f87171 !important;
@@ -1437,6 +1499,7 @@ $glass-themes: (
     .v-card-item,
     .v-card-text,
     .v-card-actions {
+
       &.bg-white,
       &[class*="bg-white"],
       &.bg-slate-50,
@@ -1794,7 +1857,9 @@ $glass-themes: (
         background: rgba(239, 68, 68, 0.15) !important;
       }
     }
-  } @else {
+  }
+
+  @else {
     .empty-attachments-box {
       background: #f8fafc !important;
       border: 1px dashed #cbd5e1 !important;
@@ -1842,136 +1907,152 @@ $glass-themes: (
 // 5. REGLAS GLOBALES PARA DIÁLOGOS Y POPUPS (MIXIN)
 // --------------------------------------------------------------------------
 @mixin apply-glass-dialog-rules($theme) {
-  $is-dark: map-get($theme, 'is-dark');
-  $theme-name: map-get($theme, 'name');
+    $is-dark: map-get($theme, 'is-dark');
+    $theme-name: map-get($theme, 'name');
 
-  @if $theme-name !='taller' {
+    @if $theme-name !='taller' {
 
-    .v-overlay--active.v-dialog > .v-overlay__content,
-    .v-overlay--active.v-dialog > .v-overlay__content > .v-card,
-    .v-overlay--active .v-dialog > .v-card,
-    .v-overlay--active .v-card.modal-glass,
-    .v-overlay--active.v-dialog .v-card,
-    .v-overlay--active .custom-dialog-card {
-      background: var(--bg-dialog) !important;
-      backdrop-filter: var(--blur-glass) !important;
-      -webkit-backdrop-filter: var(--blur-glass) !important;
-      border: 1px solid var(--border-glass) !important;
-      box-shadow: 0 24px 60px rgba(0, 0, 0, 0.55), var(--shadow-glow) !important;
-      color: var(--text-primary) !important;
-    }
-  }
-}
-
-// --------------------------------------------------------------------------
-// 6. APLICACIÓN DE REGLAS GLOBALES POR TEMA
-// --------------------------------------------------------------------------
-@each $theme-name, $theme in $glass-themes {
-
-  [data-theme="#{$theme-name}"],
-  html[data-theme="#{$theme-name}"],
-  body[data-theme="#{$theme-name}"],
-  .v-application.v-theme--#{$theme-name},
-  .theme-#{$theme-name} {
-    @include apply-glass-theme-rules($theme);
-  }
-
-  body[data-theme="#{$theme-name}"] {
-    @include apply-glass-dialog-rules($theme);
-  }
-}
-
-// --------------------------------------------------------------------------
-// 7. TEMA OSCURO ESTÁNDAR (dark) Y TEMA CLARO ESTÁNDAR (light)
-// --------------------------------------------------------------------------
-[data-theme="light"],
-html[data-theme="light"],
-body[data-theme="light"],
-.v-application.v-theme--light,
-.theme-light {
-  --bg-app: #F7F7F9;
-  --bg-dialog: #ffffff;
-  --bg-surface: #ffffff;
-  --bg-sidebar: linear-gradient(180deg, #666CFF 0%, #5C61E6 60%, #4F54E5 100%);
-  --bg-header: linear-gradient(135deg, #666CFF 0%, #5C61E6 100%);
-  --border-glass: rgba(255, 255, 255, 0.15);
-  --text-primary: #262B43;
-  --text-secondary: rgba(38, 43, 67, 0.78);
-  --text-muted: rgba(38, 43, 67, 0.45);
-  --bg-dialog-header: #ffffff;
-  --border-dialog-header: rgba(38, 43, 67, 0.12);
-  --icon-color: #ffffff;
-
-  color: #262B43;
-
-  .layout-wrapper.layout-nav-type-vertical .layout-navbar,
-  .layout-navbar,
-  .v-app-bar {
-    background: linear-gradient(135deg, #666CFF 0%, #5C61E6 100%) !important;
-    background-color: transparent !important;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.15) !important;
-    box-shadow: 0 4px 20px rgba(102, 108, 255, 0.28) !important;
-
-    .navbar-brand-title,
-    .navbar-brand-subtitle,
-    .navbar-brand-subtitle span,
-    .navbar-brand-subtitle *,
-    .v-icon,
-    .v-btn,
-    .v-btn__content,
-    .icon-btn,
-    .IconBtn,
-    button {
-      color: #ffffff !important;
+      .v-overlay--active.v-dialog>.v-overlay__content,
+      .v-overlay--active.v-dialog>.v-overlay__content>.v-card,
+      .v-overlay--active .v-dialog>.v-card,
+      .v-overlay--active .v-card.modal-glass,
+      .v-overlay--active.v-dialog .v-card,
+      .v-overlay--active .custom-dialog-card {
+        background: var(--bg-dialog) !important;
+        backdrop-filter: var(--blur-glass) !important;
+        -webkit-backdrop-filter: var(--blur-glass) !important;
+        border: 1px solid var(--border-glass) !important;
+        box-shadow: 0 24px 60px rgba(0, 0, 0, 0.55), var(--shadow-glow) !important;
+        color: var(--text-primary) !important;
+      }
     }
   }
 
-  // Menú lateral izquierdo con el color y degradado de la cabecera
-  .layout-vertical-nav,
-  .layout-nav-type-vertical .layout-vertical-nav {
-    background: linear-gradient(180deg, #666CFF 0%, #5C61E6 60%, #4F54E5 100%) !important;
-    background-color: #666CFF !important;
-    border-right: 1px solid rgba(255, 255, 255, 0.15) !important;
-    box-shadow: 4px 0 25px rgba(102, 108, 255, 0.22) !important;
+  // --------------------------------------------------------------------------
+  // 6. APLICACIÓN DE REGLAS GLOBALES POR TEMA
+  // --------------------------------------------------------------------------
+  @each $theme-name, $theme in $glass-themes {
 
-    .nav-header {
-      background: transparent !important;
+    [data-theme="#{$theme-name}"],
+    html[data-theme="#{$theme-name}"],
+    body[data-theme="#{$theme-name}"],
+    .v-application.v-theme--#{$theme-name},
+    .theme-#{$theme-name} {
+      @include apply-glass-theme-rules($theme);
+    }
+
+    body[data-theme="#{$theme-name}"] {
+      @include apply-glass-dialog-rules($theme);
+    }
+  }
+
+  // --------------------------------------------------------------------------
+  // 7. TEMA OSCURO ESTÁNDAR (dark) Y TEMA CLARO ESTÁNDAR (light)
+  // --------------------------------------------------------------------------
+  [data-theme="light"],
+  html[data-theme="light"],
+  body[data-theme="light"],
+  .v-application.v-theme--light,
+  .theme-light {
+    --bg-app: #F7F7F9;
+    --bg-dialog: #ffffff;
+    --bg-surface: #ffffff;
+    --bg-sidebar: linear-gradient(180deg, #666CFF 0%, #5C61E6 60%, #4F54E5 100%);
+    --bg-header: linear-gradient(135deg, #666CFF 0%, #5C61E6 100%);
+    --border-glass: rgba(255, 255, 255, 0.15);
+    --text-primary: #262B43;
+    --text-secondary: rgba(38, 43, 67, 0.78);
+    --text-muted: rgba(38, 43, 67, 0.45);
+    --bg-dialog-header: #ffffff;
+    --border-dialog-header: rgba(38, 43, 67, 0.12);
+    --icon-color: #6D788D;
+    --border-active: #666CFF;
+    --input-border: rgba(38, 43, 67, 0.28);
+
+    color: #262B43;
+
+    .layout-wrapper.layout-nav-type-vertical .layout-navbar,
+    .layout-navbar,
+    .v-app-bar {
+      background: linear-gradient(135deg, #666CFF 0%, #5C61E6 100%) !important;
+      background-color: transparent !important;
       border-bottom: 1px solid rgba(255, 255, 255, 0.15) !important;
+      box-shadow: 0 4px 20px rgba(102, 108, 255, 0.28) !important;
 
-      .app-logo-title {
+      .navbar-brand-title,
+      .navbar-brand-subtitle,
+      .navbar-brand-subtitle span,
+      .navbar-brand-subtitle *,
+      .v-icon,
+      .v-btn,
+      .v-btn__content,
+      .icon-btn,
+      .IconBtn,
+      button {
         color: #ffffff !important;
       }
     }
 
-    .nav-section-title {
-      .title-text {
-        color: #ffffff !important;
-        opacity: 0.92 !important;
-        font-weight: 800 !important;
-        text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2) !important;
+    // Menú lateral izquierdo con el color y degradado de la cabecera
+    .layout-vertical-nav,
+    .layout-nav-type-vertical .layout-vertical-nav {
+      background: linear-gradient(180deg, #666CFF 0%, #5C61E6 60%, #4F54E5 100%) !important;
+      background-color: #666CFF !important;
+      border-right: 1px solid rgba(255, 255, 255, 0.15) !important;
+      box-shadow: 4px 0 25px rgba(102, 108, 255, 0.22) !important;
 
-        &::before,
-        &::after {
-          border-color: rgba(255, 255, 255, 0.45) !important;
+      .nav-header {
+        background: transparent !important;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.15) !important;
+
+        .app-logo-title {
+          color: #ffffff !important;
         }
       }
-    }
 
-    .nav-link a,
-    .nav-group-label {
-      color: #ffffff !important;
+      .nav-section-title {
+        .title-text {
+          color: #ffffff !important;
+          opacity: 0.92 !important;
+          font-weight: 800 !important;
+          text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2) !important;
 
-      .nav-item-icon,
-      .nav-item-title,
-      .nav-group-arrow,
-      .v-icon {
-        color: #ffffff !important;
-        fill: #ffffff !important;
-        opacity: 1 !important;
+          &::before,
+          &::after {
+            border-color: rgba(255, 255, 255, 0.45) !important;
+          }
+        }
       }
 
-      &:hover {
-        background: rgba(255, 255, 255, 0.14) !important;
+      .nav-link a,
+      .nav-group-label {
+        color: #ffffff !important;
+
+        .nav-item-icon,
+        .nav-item-title,
+        .nav-group-arrow,
+        .v-icon {
+          color: #ffffff !important;
+          fill: #ffffff !important;
+          opacity: 1 !important;
+        }
+
+        &:hover {
+          background: rgba(255, 255, 255, 0.14) !important;
+          color: #ffffff !important;
+
+          .nav-item-icon,
+          .nav-item-title,
+          .nav-group-arrow,
+          .v-icon {
+            color: #ffffff !important;
+            fill: #ffffff !important;
+          }
+        }
+      }
+
+      .nav-group.active>.nav-group-label,
+      .nav-group.open>.nav-group-label {
         color: #ffffff !important;
 
         .nav-item-icon,
@@ -1982,14 +2063,1769 @@ body[data-theme="light"],
           fill: #ffffff !important;
         }
       }
+
+      .nav-group-children {
+        border-left: 1.5px solid rgba(255, 255, 255, 0.35) !important;
+
+        .nav-link a {
+          color: rgba(255, 255, 255, 0.92) !important;
+
+          .nav-item-icon,
+          .nav-item-title {
+            color: rgba(255, 255, 255, 0.92) !important;
+            fill: rgba(255, 255, 255, 0.92) !important;
+          }
+
+          &:hover {
+            background: rgba(255, 255, 255, 0.14) !important;
+            color: #ffffff !important;
+          }
+        }
+      }
+
+      // Elemento activo seleccionado (White pill con texto morado corporativo)
+      .nav-link>a.router-link-active,
+      .nav-link>a.router-link-exact-active,
+      .nav-link.router-link-active>a,
+      .nav-link.router-link-exact-active>a,
+      .v-list-item--active {
+        background: #ffffff !important;
+        color: #5C61E6 !important;
+        box-shadow: 0 4px 14px rgba(0, 0, 0, 0.18) !important;
+        border: none !important;
+
+        * {
+          color: #5C61E6 !important;
+        }
+
+        .nav-item-icon,
+        .nav-item-title,
+        .v-icon {
+          color: #5C61E6 !important;
+          fill: #5C61E6 !important;
+          font-weight: 800 !important;
+        }
+      }
+
+      .sidebar-collapse-footer {
+        border-top: 1px solid rgba(255, 255, 255, 0.15) !important;
+
+        .sidebar-footer-toggle-btn {
+          color: #ffffff !important;
+          background: rgba(255, 255, 255, 0.12) !important;
+
+          .v-icon {
+            color: #ffffff !important;
+          }
+        }
+      }
+    }
+  }
+
+  html[data-theme="light"]:not(.auth-page-root),
+  body[data-theme="light"]:not(.auth-page-root),
+  .v-application.v-theme--light:not(.auth-page-root) {
+    background-color: #F7F7F9 !important;
+  }
+
+  [data-theme="dark"],
+  html[data-theme="dark"],
+  body[data-theme="dark"],
+  .v-application.v-theme--dark,
+  .theme-dark {
+    --bg-app: #282A42;
+    --bg-dialog: #2F3349;
+    --bg-surface: #2F3349;
+    --bg-sidebar: #2F3349;
+    --bg-header: #2F3349;
+    --border-glass: rgba(234, 234, 255, 0.12);
+    --text-primary: #ffffff;
+    --text-secondary: rgba(234, 234, 255, 0.78);
+    --text-muted: rgba(234, 234, 255, 0.50);
+    --bg-dialog-header: linear-gradient(180deg, rgba(255, 255, 255, 0.04) 0%, rgba(255, 255, 255, 0) 100%), #2F3349;
+    --border-dialog-header: rgba(234, 234, 255, 0.12);
+  }
+
+  // --------------------------------------------------------------------------
+  // 8. TEMA DEL TALLER (taller) - REDISEÑADO Y BLINDADO
+  // --------------------------------------------------------------------------
+  .v-application.v-theme--taller,
+  [data-theme="taller"],
+  body[data-theme="taller"],
+  .theme-taller {
+    --theme-wine: #8A1538;
+    --theme-wine-dark: #58081C;
+    --theme-wine-glow: rgba(138, 21, 56, 0.25);
+    --theme-slate-border: #e2e8f0;
+    --theme-white: #ffffff;
+    --theme-black: #0f172a;
+    --v-theme-primary: 138, 21, 56;
+    --v-theme-on-primary: 255, 255, 255;
+    --v-theme-primary-darken-1: 107, 14, 39;
+
+    color: #0f172a; // 1. NAVBAR SUPERIOR
+
+    .layout-wrapper.layout-nav-type-vertical .layout-navbar,
+    .layout-navbar,
+    .v-app-bar {
+      background: linear-gradient(135deg, #8A1538 0%, #6B0E27 60%, #58081C 100%) !important;
+      background-color: transparent !important;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.15) !important;
+      box-shadow: 0 4px 20px rgba(138, 21, 56, 0.28) !important;
+
+      .navbar-brand-title,
+      .navbar-brand-subtitle,
+      .v-icon,
+      .v-btn,
+      .v-btn__content,
+      .icon-btn,
+      .IconBtn,
+      button {
+        color: #ffffff !important;
+
+        i,
+        svg {
+          color: #ffffff !important;
+          fill: #ffffff !important;
+        }
+      }
+
+      .theme-switcher-btn {
+        background: rgba(255, 255, 255, 0.12) !important;
+        border: 1px solid rgba(255, 255, 255, 0.22) !important;
+        color: #ffffff !important;
+
+        .v-icon,
+        i,
+        svg {
+          color: #ffffff !important;
+          fill: #ffffff !important;
+        }
+      }
     }
 
-    .nav-group.active > .nav-group-label,
-    .nav-group.open > .nav-group-label {
+    // 2. SIDEBAR / DRAWER
+    .layout-vertical-nav,
+    .v-navigation-drawer,
+    .sidebar {
+      background: linear-gradient(180deg, #8A1538 0%, #6B0E27 60%, #58081C 100%) !important;
+      border-right: 1px solid rgba(255, 255, 255, 0.12) !important;
+      box-shadow: 4px 0 28px rgba(138, 21, 56, 0.25) !important;
+
+      .nav-section-title .title-text {
+        color: #ffffff !important;
+        font-weight: 800 !important;
+        letter-spacing: 1.5px !important;
+        text-transform: uppercase !important;
+        opacity: 1 !important;
+
+        &::before,
+        &::after {
+          border-color: rgba(255, 255, 255, 0.45) !important;
+        }
+      }
+
+      .nav-link a,
+      .nav-group-label {
+        color: #ffffff !important;
+
+        .nav-item-icon,
+        .nav-item-title,
+        .nav-group-arrow,
+        .v-icon,
+        i,
+        svg {
+          color: #ffffff !important;
+          fill: #ffffff !important;
+        }
+
+        &:hover {
+          background: rgba(255, 255, 255, 0.18) !important;
+          color: #ffffff !important;
+        }
+      }
+
+      .nav-link>a.router-link-active,
+      .nav-link>a.router-link-exact-active,
+      .nav-link.router-link-active>a,
+      .nav-link.router-link-exact-active>a,
+      .v-list-item--active {
+        background: #ffffff !important;
+        color: #7A102B !important;
+        font-weight: 700 !important;
+        box-shadow: 0 4px 14px rgba(0, 0, 0, 0.18) !important;
+        border-radius: 8px !important;
+
+        &,
+        * {
+          color: #7A102B !important;
+        }
+
+        .nav-item-icon,
+        .v-icon,
+        i,
+        svg {
+          color: #7A102B !important;
+          fill: #7A102B !important;
+        }
+
+        .nav-item-title {
+          color: #7A102B !important;
+        }
+      }
+    }
+
+    // 3. TARJETAS Y CONTENEDORES (excluyendo tarjetas de métricas/KPIs degradadas)
+    .v-card:not(.v-navigation-drawer):not(.layout-vertical-nav):not(.pepa-kpi-card):not([class*="kpi-gradient"]),
+    .card:not(.pepa-kpi-card):not([class*="kpi-gradient"]),
+    .v-sheet:not(.v-navigation-drawer):not(.layout-vertical-nav):not(.pepa-kpi-card):not([class*="kpi-gradient"]) {
+      background: #ffffff !important;
+      background-color: #ffffff !important;
+      border: 1px solid #e2e8f0 !important;
+      border-radius: 12px !important;
+      box-shadow: 0 2px 10px rgba(15, 23, 42, 0.04) !important;
+      color: #0f172a !important;
+
+      h1,
+      h2,
+      h3,
+      h4,
+      h5,
+      h6,
+      .text-h4,
+      .text-h5,
+      .text-h6,
+      .text-slate-900,
+      .text-slate-800 {
+        color: #0f172a !important;
+      }
+
+      p,
+      .text-slate-600,
+      .text-slate-500 {
+        color: #334155 !important;
+      }
+
+      // Iconos en tarjetas del tema taller: Nítidos y con colores semánticos
+      .v-icon {
+        opacity: 1 !important;
+        visibility: visible !important;
+
+        &.text-primary,
+        &.v-icon--color-primary {
+          color: #8A1538 !important;
+          fill: #8A1538 !important;
+        }
+
+        &.text-info,
+        &.v-icon--color-info {
+          color: #0EA5E9 !important;
+          fill: #0EA5E9 !important;
+        }
+
+        &.text-success,
+        &.v-icon--color-success {
+          color: #10B981 !important;
+          fill: #10B981 !important;
+        }
+
+        &.text-warning,
+        &.v-icon--color-warning {
+          color: #F59E0B !important;
+          fill: #F59E0B !important;
+        }
+
+        &.text-error,
+        &.text-danger,
+        &.v-icon--color-error {
+          color: #EF4444 !important;
+          fill: #EF4444 !important;
+        }
+
+        &.text-white {
+          color: #ffffff !important;
+          fill: #ffffff !important;
+        }
+      }
+    }
+
+    // 4. BOTONES PRIMARIOS Y OUTLINED
+    .v-btn.bg-primary:not(.auth-submit-btn):not(.auth-submit-btn-white),
+    .v-btn.v-btn--color-primary:not(.v-btn--variant-outlined):not(.auth-submit-btn):not(.auth-submit-btn-white),
+    .v-btn--variant-elevated.v-btn--color-primary:not(.auth-submit-btn):not(.auth-submit-btn-white),
+    .v-btn--variant-flat.v-btn--color-primary:not(.auth-submit-btn):not(.auth-submit-btn-white) {
+      background: linear-gradient(135deg, #8A1538 0%, #600A1F 100%) !important;
+      color: #ffffff !important;
+      box-shadow: 0 4px 14px rgba(138, 21, 56, 0.35) !important;
+
+      * {
+        color: #ffffff !important;
+      }
+
+      &:hover {
+        background: linear-gradient(135deg, #A31842 0%, #720C25 100%) !important;
+        box-shadow: 0 6px 20px rgba(138, 21, 56, 0.45) !important;
+      }
+    }
+
+    .v-btn.v-btn--variant-outlined.v-btn--color-primary {
+      border: 1.5px solid #8A1538 !important;
+      color: #8A1538 !important;
+      background: transparent !important;
+
+      * {
+        color: #8A1538 !important;
+      }
+
+      &:hover {
+        background: rgba(138, 21, 56, 0.08) !important;
+      }
+    }
+
+    // 5. TABLAS DE DATOS
+    .v-table,
+    .v-data-table {
+      background: #ffffff !important;
+      color: #0f172a !important;
+
+      thead tr th {
+        background: #f8fafc !important;
+        color: #334155 !important;
+        font-weight: 700 !important;
+        border-bottom: 2px solid #8A1538 !important;
+
+        span,
+        div,
+        .v-data-table-header__content {
+          color: #334155 !important;
+        }
+      }
+
+      tbody tr {
+        &:hover {
+          background: rgba(138, 21, 56, 0.04) !important;
+        }
+
+        td {
+          color: #0f172a !important;
+          border-bottom: 1px solid #e2e8f0 !important;
+        }
+      }
+    }
+
+    // 6. PAGINADOR EN TEMA TALLER
+    .v-pagination {
+
+      // Botón Activo: Fondo rojo vino con número blanco nítido y en negrita
+      .v-pagination__item .v-btn[aria-current="page"],
+      .v-pagination__item .v-btn[aria-label*="Current page"],
+      .v-pagination__item .v-btn[aria-label*="Página actual"],
+      .v-pagination__item .v-btn.v-btn--active,
+      .v-pagination__item--is-active,
+      .v-pagination__item--is-active .v-btn,
+      .v-btn.v-pagination__item--is-active {
+        background: linear-gradient(135deg, #8A1538 0%, #600A1F 100%) !important;
+        background-color: #8A1538 !important;
+        color: #ffffff !important;
+        border: 1px solid #8A1538 !important;
+        box-shadow: 0 4px 12px rgba(138, 21, 56, 0.35) !important;
+        opacity: 1 !important;
+
+        .v-btn__content {
+          color: #ffffff !important;
+          font-weight: 700 !important;
+          font-size: 0.95rem !important;
+          opacity: 1 !important;
+        }
+
+        * {
+          color: #ffffff !important;
+          opacity: 1 !important;
+        }
+      }
+
+      // Botones Inactivos: Fondo blanco limpio con números oscuros de alto contraste
+      .v-pagination__item .v-btn:not([aria-current="page"]):not([aria-label*="Current page"]):not([aria-label*="Página actual"]):not(.v-btn--active),
+      .v-pagination__prev .v-btn,
+      .v-pagination__next .v-btn {
+        background: #ffffff !important;
+        background-color: #ffffff !important;
+        border: 1px solid #e2e8f0 !important;
+        color: #1e293b !important;
+        opacity: 1 !important;
+
+        .v-btn__content {
+          color: #1e293b !important;
+          font-weight: 600 !important;
+          opacity: 1 !important;
+        }
+
+        .v-icon,
+        i,
+        svg {
+          color: #334155 !important;
+          fill: #334155 !important;
+          opacity: 1 !important;
+        }
+
+        &:hover {
+          background: #f8fafc !important;
+          border-color: #cbd5e1 !important;
+          color: #8A1538 !important;
+
+          .v-btn__content,
+          .v-icon,
+          i,
+          svg {
+            color: #8A1538 !important;
+            fill: #8A1538 !important;
+          }
+        }
+      }
+    }
+  }
+
+  html[data-theme="taller"]:not(.auth-page-root),
+  body[data-theme="taller"]:not(.auth-page-root),
+  .v-application.v-theme--taller:not(.auth-page-root) {
+    background-color: #f8fafc !important;
+  }
+
+  // --------------------------------------------------------------------------
+  // 9. OVERRIDES DE NIVEL SUPERIOR (BODY LEVEL) PARA DIÁLOGOS Y POPUPS EN TALLER
+  // --------------------------------------------------------------------------
+  body[data-theme="taller"],
+  [data-theme="taller"],
+  .v-theme--taller {
+
+    // CORRECCIÓN CRÍTICA DE CAPAS FANTASMAS
+    .v-overlay:not(.v-overlay--active) {
+      display: none !important;
+      background: transparent !important;
+      opacity: 0 !important;
+      pointer-events: none !important;
+    }
+
+    // Quitar cualquier fondo sólido que Vuetify o el tema le ponga al overlay completo
+    .v-overlay--active.v-dialog,
+    .v-overlay--active.v-menu,
+    .v-overlay--active.v-select,
+    .v-overlay--active.v-autocomplete {
+      background: transparent !important;
+      background-color: transparent !important;
+    }
+
+    // El contenedor de contenido del diálogo no debe tener fondo para no crear un recuadro gris
+    .v-overlay--active.v-dialog>.v-overlay__content {
+      background: transparent !important;
+      background-color: transparent !important;
+      box-shadow: none !important;
+    }
+
+    // SCRIM / TELÓN DE FONDO SUAVE Y TRANSLÚCIDO
+    // Permite ver los demás componentes de la página detrás del diálogo con total claridad
+    .v-overlay--active.v-dialog>.v-overlay__scrim,
+    .v-overlay--active>.v-overlay__scrim {
+      display: block !important;
+      background: rgba(15, 23, 42, 0.25) !important;
+      background-color: rgba(15, 23, 42, 0.25) !important;
+      backdrop-filter: blur(1.5px) !important;
+      -webkit-backdrop-filter: blur(1.5px) !important;
+      opacity: 1 !important;
+    }
+
+    .v-overlay:not(.v-overlay--active) .v-overlay__scrim {
+      display: none !important;
+      opacity: 0 !important;
+      pointer-events: none !important;
+    }
+
+    // MODALES Y TARJETAS EN TALLER
+    .v-overlay--active.v-dialog>.v-overlay__content>.v-card,
+    .v-overlay--active.v-dialog .v-card,
+    .v-dialog .v-card,
+    [role="dialog"] .v-card {
+      background: #ffffff !important;
+      background-color: #ffffff !important;
+      backdrop-filter: none !important;
+      -webkit-backdrop-filter: none !important;
+      border: 1px solid #e2e8f0 !important;
+      border-radius: 16px !important;
+      box-shadow: 0 20px 60px rgba(15, 23, 42, 0.18) !important;
+      color: #0f172a !important;
+    }
+
+    // =========================================================================
+    // BLINDAJE ABSOLUTO DE CABECERA DE VDIALOG EN TEMA TALLER
+    // (Elimina fondos azules/violetas heredados y asegura rojo vino nítido)
+    // =========================================================================
+    .v-dialog .v-card-title.bg-primary,
+    .v-dialog .v-card-item.bg-primary,
+    .v-dialog .custom-dialog-header,
+    .v-dialog .custom-dialog-header-primary,
+    .v-dialog .custom-dialog-header-info,
+    .v-dialog .custom-dialog-header-secondary,
+    .v-dialog .dialog-header-banner,
+    .v-dialog .dialog-header-workshop,
+    .v-dialog .sale-dialog-header-banner,
+    .v-dialog .product-quick-header,
+    .v-dialog .profile-header-banner,
+    .v-dialog [class*="dialog-header"],
+    .v-dialog [class*="header-primary"],
+    .v-dialog .v-card>div:first-child[class*="header"],
+    .v-dialog .v-card>div:first-child[class*="banner"],
+    .v-dialog .v-card>.bg-primary:first-child,
+    .v-dialog .v-card>.v-card-title:first-child,
+    .v-overlay--active.v-dialog>.v-overlay__content .v-card-title.bg-primary,
+    .v-overlay--active.v-dialog>.v-overlay__content .v-card-item.bg-primary,
+    .custom-dialog-header-primary,
+    .custom-dialog-header {
+      background: linear-gradient(135deg, #8A1538 0%, #600A1F 100%) !important;
+      color: #ffffff !important;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.20) !important;
+      border-radius: 16px 16px 0 0 !important; // 1. TÍTULOS Y SUBTÍTULOS EN BLANCO PURO
+
+      *,
+      h1,
+      h2,
+      h3,
+      h4,
+      h5,
+      h6,
+      .v-card-title,
+      .v-card-subtitle,
+      .custom-dialog-title,
+      .custom-dialog-subtitle,
+      .dialog-title,
+      .dialog-subtitle,
+      p,
+      span,
+      label,
+      div {
+        color: #ffffff !important;
+        -webkit-text-fill-color: #ffffff !important;
+      }
+
+      // Subtítulo con ligera opacidad pero totalmente blanco y legible
+      .custom-dialog-subtitle,
+      .dialog-subtitle,
+      .v-card-subtitle,
+      p {
+        color: rgba(255, 255, 255, 0.90) !important;
+        -webkit-text-fill-color: rgba(255, 255, 255, 0.90) !important;
+      }
+
+      // 2. ICONOS DE CABECERA
+      .v-icon,
+      i,
+      svg {
+        color: #ffffff !important;
+        fill: #ffffff !important;
+        opacity: 1 !important;
+      }
+
+      // 3. AVATAR / ICONO CENTRAL
+      .custom-dialog-avatar,
+      .header-avatar-badge,
+      .v-avatar {
+        background: rgba(255, 255, 255, 0.18) !important;
+        border: 1.5px solid rgba(255, 255, 255, 0.35) !important;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25) !important;
+
+        .v-icon,
+        i,
+        svg {
+          color: #ffffff !important;
+          fill: #ffffff !important;
+          opacity: 1 !important;
+        }
+      }
+
+      // 4. BOTÓN DE CERRAR (X) EN LA CABECERA
+      .custom-dialog-close-btn,
+      .v-dialog-close-btn {
+        position: absolute !important;
+        top: 14px !important;
+        right: 14px !important;
+        width: 34px !important;
+        height: 34px !important;
+        min-width: 34px !important;
+        color: #ffffff !important;
+        background: rgba(0, 0, 0, 0.25) !important;
+        border: 1px solid rgba(255, 255, 255, 0.3) !important;
+        border-radius: 8px !important;
+        opacity: 1 !important;
+        display: inline-flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        backdrop-filter: none !important;
+        -webkit-backdrop-filter: none !important;
+        cursor: pointer !important;
+        z-index: 10 !important;
+        padding: 0 !important;
+        box-shadow: none !important;
+
+        .v-btn__overlay,
+        .v-btn__underlay {
+          display: none !important;
+        }
+
+        .v-btn__content {
+          color: #ffffff !important;
+          display: inline-flex !important;
+          align-items: center !important;
+          justify-content: center !important;
+        }
+
+        *,
+        .v-icon,
+        i,
+        svg {
+          color: #ffffff !important;
+          fill: #ffffff !important;
+          font-size: 1.25rem !important;
+          opacity: 1 !important;
+          visibility: visible !important;
+        }
+
+        &:hover {
+          background: rgba(0, 0, 0, 0.45) !important;
+          border-color: rgba(255, 255, 255, 0.6) !important;
+          color: #ffffff !important;
+          transform: rotate(90deg) scale(1.05) !important;
+        }
+      }
+    }
+
+    // 5. BOTÓN DE CERRAR (X) EN MODALES SOBRE FONDO BLANCO (DialogCloseBtn o modales sin banner)
+    .v-dialog .v-card>.v-dialog-close-btn,
+    .v-dialog .v-card>.custom-dialog-close-btn,
+    .v-dialog .v-card>div:not([class*="header"]):not([class*="banner"]) .v-dialog-close-btn,
+    .v-dialog .v-card>div:not([class*="header"]):not([class*="banner"]) .custom-dialog-close-btn,
+    .v-dialog-close-btn:not([class*="header"] *):not([class*="banner"] *),
+    .custom-dialog-close-btn:not([class*="header"] *):not([class*="banner"] *) {
+      position: absolute !important;
+      top: 14px !important;
+      right: 14px !important;
+      width: 34px !important;
+      height: 34px !important;
+      min-width: 34px !important;
+      background: #f1f5f9 !important;
+      background-color: #f1f5f9 !important;
+      border: 1px solid #cbd5e1 !important;
+      border-radius: 8px !important;
+      color: #1e293b !important;
+      display: inline-flex !important;
+      align-items: center !important;
+      justify-content: center !important;
+      cursor: pointer !important;
+      z-index: 10 !important;
+      padding: 0 !important;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08) !important;
+
+      .v-btn__overlay,
+      .v-btn__underlay {
+        display: none !important;
+      }
+
+      .v-btn__content {
+        color: #1e293b !important;
+        display: inline-flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+      }
+
+      *,
+      .v-icon,
+      i,
+      svg {
+        color: #1e293b !important;
+        fill: #1e293b !important;
+        font-size: 1.25rem !important;
+        opacity: 1 !important;
+        visibility: visible !important;
+      }
+
+      &:hover {
+        background: #e2e8f0 !important;
+        background-color: #e2e8f0 !important;
+        border-color: #94a3b8 !important;
+        color: #0f172a !important;
+        transform: rotate(90deg) scale(1.05) !important;
+
+        *,
+        .v-icon,
+        i,
+        svg {
+          color: #0f172a !important;
+          fill: #0f172a !important;
+        }
+      }
+    }
+
+    // 6. ICONOS NÍTIDOS EN TEMA TALLER (Nunca transparentes ni atenuados)
+    .v-icon,
+    i.v-icon,
+    svg.v-icon,
+    .v-icon__svg,
+    .v-icon__component {
+      opacity: 1 !important;
+      visibility: visible !important;
+    }
+
+    .text-medium-emphasis {
+      color: #475569 !important;
+      opacity: 1 !important;
+    }
+
+    // Botones de acción en tablas con tonal: mayor contraste en el icono
+    .v-btn--variant-tonal {
+      &.v-btn--color-info {
+        color: #0284c7 !important;
+        background: rgba(14, 165, 233, 0.15) !important;
+
+        .v-icon {
+          color: #0284c7 !important;
+          opacity: 1 !important;
+        }
+      }
+
+      &.v-btn--color-secondary {
+        color: #334155 !important;
+        background: rgba(71, 85, 105, 0.15) !important;
+
+        .v-icon {
+          color: #334155 !important;
+          opacity: 1 !important;
+        }
+      }
+
+      &.v-btn--color-primary {
+        color: #8A1538 !important;
+        background: rgba(138, 21, 56, 0.15) !important;
+
+        .v-icon {
+          color: #8A1538 !important;
+          opacity: 1 !important;
+        }
+      }
+
+      &.v-btn--color-success {
+        color: #059669 !important;
+        background: rgba(16, 185, 129, 0.15) !important;
+
+        .v-icon {
+          color: #059669 !important;
+          opacity: 1 !important;
+        }
+      }
+
+      &.v-btn--color-warning {
+        color: #d97706 !important;
+        background: rgba(245, 158, 11, 0.15) !important;
+
+        .v-icon {
+          color: #d97706 !important;
+          opacity: 1 !important;
+        }
+      }
+
+      &.v-btn--color-error {
+        color: #dc2626 !important;
+        background: rgba(239, 68, 68, 0.15) !important;
+
+        .v-icon {
+          color: #dc2626 !important;
+          opacity: 1 !important;
+        }
+      }
+    }
+
+    // ESTILOS PARA EL CONTENIDO INTERNO DEL FORMULARIO DEL DIÁLOGO
+    .v-dialog .v-card-text,
+    [role="dialog"] .v-card-text {
+
+      // Encabezados de sección dentro del formulario (ej. 1. IDENTIFICACIÓN TRIBUTARIA)
+      .text-subtitle-2,
+      .font-weight-bold,
+      h6 {
+        color: #0f172a !important;
+      }
+
+      // Badges / iconos de las secciones (recuadros grises pequeños de números)
+      .v-avatar.v-avatar--variant-tonal,
+      .section-num-badge {
+        background: #f1f5f9 !important;
+        color: #8A1538 !important;
+        border: 1px solid #e2e8f0 !important;
+
+        .v-icon {
+          color: #8A1538 !important;
+          fill: #8A1538 !important;
+        }
+      }
+
+      // Campos de texto dentro del modal
+      .v-field {
+        background: #ffffff !important;
+
+        &.v-field--variant-outlined {
+          border: none !important;
+
+          .v-field__outline {
+            color: #cbd5e1 !important;
+            --v-field-border-opacity: 1 !important;
+          }
+
+          &.v-field--focused .v-field__outline {
+            color: #8A1538 !important;
+            --v-field-border-width: 2px !important;
+          }
+        }
+
+        .v-field__input {
+          color: #0f172a !important;
+        }
+
+        .v-label {
+          color: #475569 !important;
+        }
+      }
+    }
+
+    // MENÚS DESPLEGABLES TELEPORTADOS
+    .v-overlay--active.v-menu>.v-overlay__content>.v-list,
+    .v-select__content,
+    .v-autocomplete__content {
+      background: #ffffff !important;
+      border: 1px solid #e2e8f0 !important;
+      color: #0f172a !important;
+
+      .v-list-item {
+        color: #0f172a !important;
+
+        &:hover {
+          background: rgba(138, 21, 56, 0.08) !important;
+        }
+
+        &.v-list-item--active {
+          background: rgba(138, 21, 56, 0.12) !important;
+          color: #8A1538 !important;
+
+          * {
+            color: #8A1538 !important;
+          }
+        }
+      }
+    }
+  }
+
+  // ==========================================================================
+  // 9. BLINDAJE TOTAL CONTRA FONDOS BLANCOS CON TEXTO BLANCO EN MODO OSCURO
+  // ==========================================================================
+  [data-theme="dark"],
+  html[data-theme="dark"],
+  body[data-theme="dark"],
+  .v-theme--dark,
+  .theme-dark,
+  [data-theme="dark"],
+  html[data-theme="dark"],
+  body[data-theme="dark"],
+  .theme-dark,
+  .v-theme--dark,
+  [data-theme="dark-glass"],
+  html[data-theme="dark-glass"],
+  body[data-theme="dark-glass"],
+  .theme-dark-glass,
+  [data-theme="semi-dark-glass"],
+  html[data-theme="semi-dark-glass"],
+  body[data-theme="semi-dark-glass"],
+  .theme-semi-dark-glass {
+
+    // 1. Cabeceras y filas de tablas en cualquier página (facturas, ventas, etc.)
+    thead,
+    thead tr,
+    thead th,
+    .v-table thead,
+    .v-table thead tr,
+    .v-table thead th,
+    .v-data-table thead,
+    .v-data-table thead tr,
+    .v-data-table thead th,
+    .v-data-table__th,
+    .v-table tr.bg-grey-lighten-5,
+    .v-table tr.bg-grey-lighten-4,
+    .v-table tr.bg-grey-lighten-3,
+    .v-table tr.bg-slate-50,
+    .v-table tr.bg-slate-100,
+    .v-table thead.bg-grey-lighten-5,
+    .v-table thead.bg-grey-lighten-4,
+    tr.bg-grey-lighten-5,
+    tr.bg-grey-lighten-4,
+    tr.bg-grey-lighten-3,
+    tr.bg-slate-50,
+    tr.bg-slate-100,
+    .bg-grey-lighten-5 th,
+    .bg-grey-lighten-4 th,
+    .bg-grey-lighten-5 td,
+    .bg-grey-lighten-4 td {
+      background: var(--table-header-bg, #3A3E5B) !important;
+      background-color: var(--table-header-bg, #3A3E5B) !important;
+      color: var(--text-primary, #ffffff) !important;
+      border-color: var(--border-glass, rgba(255, 255, 255, 0.12)) !important;
+
+      .v-data-table-header__content,
+      span,
+      div {
+        color: var(--text-primary, #ffffff) !important;
+      }
+    }
+
+    // Soporte para módulo de Operaciones / Finanzas en temas oscuros
+    .operations-date-header {
+      background: rgba(255, 255, 255, 0.05) !important;
+      background-color: rgba(255, 255, 255, 0.05) !important;
+      border: 1px solid var(--border-glass, rgba(234, 234, 255, 0.14)) !important;
+      border-radius: 10px !important;
+
+      .date-icon-box {
+        background-color: rgba(102, 108, 255, 0.22) !important;
+        color: #a5b4fc !important;
+
+        .v-icon {
+          color: #a5b4fc !important;
+        }
+      }
+
+      .date-title-text {
+        color: #f8fafc !important;
+        font-weight: 700 !important;
+      }
+
+      .day-subtotal {
+        &.day-subtotal-income {
+          background-color: rgba(16, 185, 129, 0.18) !important;
+          color: #34d399 !important;
+          border: 1px solid rgba(16, 185, 129, 0.35) !important;
+        }
+
+        &.day-subtotal-expense {
+          background-color: rgba(239, 68, 68, 0.18) !important;
+          color: #f87171 !important;
+          border: 1px solid rgba(239, 68, 68, 0.35) !important;
+        }
+      }
+    }
+
+    .operations-movement-item {
+      background: var(--bg-surface, #2F3349) !important;
+      background-color: var(--bg-surface, #2F3349) !important;
+      border: 1px solid var(--border-glass, rgba(234, 234, 255, 0.12)) !important;
+      color: var(--text-primary, #ffffff) !important;
+
+      &:hover {
+        background: rgba(255, 255, 255, 0.08) !important;
+        border-color: rgba(102, 108, 255, 0.35) !important;
+      }
+
+      .movement-title-row {
+        color: #ffffff !important;
+
+        * {
+          color: #ffffff !important;
+        }
+      }
+
+      .movement-client-row {
+        color: rgba(234, 234, 255, 0.75) !important;
+
+        .v-icon {
+          color: rgba(234, 234, 255, 0.60) !important;
+        }
+      }
+
+      .movement-direction-avatar {
+        &.avatar-income {
+          background-color: rgba(16, 185, 129, 0.18) !important;
+          color: #34d399 !important;
+          border: 1px solid rgba(16, 185, 129, 0.35) !important;
+        }
+
+        &.avatar-expense {
+          background-color: rgba(239, 68, 68, 0.18) !important;
+          color: #f87171 !important;
+          border: 1px solid rgba(239, 68, 68, 0.35) !important;
+        }
+
+        &.avatar-transfer {
+          background-color: rgba(14, 165, 233, 0.18) !important;
+          color: #38bdf8 !important;
+          border: 1px solid rgba(14, 165, 233, 0.35) !important;
+        }
+      }
+    }
+
+    // 2. Estados Vacíos (Empty States como "No se encontraron facturas", etc.)
+    .v-card.bg-surface:not(.pepa-kpi-card):not([class*="kpi-gradient"]),
+    .v-card[class*="bg-surface"]:not(.pepa-kpi-card):not([class*="kpi-gradient"]),
+    .v-card.bg-white:not(.pepa-kpi-card):not([class*="kpi-gradient"]),
+    .v-card[class*="bg-white"]:not(.pepa-kpi-card):not([class*="kpi-gradient"]),
+    .empty-state-card {
+      background: var(--bg-surface, #2F3349) !important;
+      background-color: var(--bg-surface, #2F3349) !important;
+      color: var(--text-primary, #ffffff) !important;
+      border-color: var(--border-glass, rgba(255, 255, 255, 0.12)) !important;
+    }
+
+    // 3. Status Pills en Listado de Facturas y Tablas
+    .status-paid,
+    .status-pill-clean.status-paid {
+      background-color: rgba(16, 185, 129, 0.18) !important;
+      color: #4ade80 !important;
+      border: 1px solid rgba(16, 185, 129, 0.40) !important;
+
+      .status-dot {
+        background-color: #10b981 !important;
+      }
+    }
+
+    .status-partial,
+    .status-pill-clean.status-partial {
+      background-color: rgba(245, 158, 11, 0.18) !important;
+      color: #fbbf24 !important;
+      border: 1px solid rgba(245, 158, 11, 0.40) !important;
+
+      .status-dot {
+        background-color: #f59e0b !important;
+      }
+    }
+
+    // 4. Clases Utilitarias Blancas y Grises Claras en General
+    .bg-white:not(.v-btn--elevated):not(.v-btn--flat):not(.v-chip--color):not(.status-pill):not(.badge):not(.badge-sri):not(.badge-internal),
+    .bg-slate-50,
+    .bg-slate-100,
+    .bg-slate-200,
+    .bg-grey-lighten-5,
+    .bg-grey-lighten-4,
+    .bg-grey-lighten-3,
+    .bg-grey-lighten-2,
+    .bg-grey-lighten-1,
+    .bg-grey-50,
+    .bg-grey-100,
+    .bg-grey-200,
+    .bg-gray-50,
+    .bg-gray-100,
+    .bg-gray-200,
+    .bg-blue-50,
+    .bg-purple-lighten-5 {
+      background: var(--bg-surface, #2F3349) !important;
+      background-color: var(--bg-surface, #2F3349) !important;
+      color: var(--text-primary, #ffffff) !important;
+      border-color: var(--border-glass, rgba(255, 255, 255, 0.12)) !important;
+    }
+
+    // Cajas destacadas de totales (ej: Total con IVA en catálogo y ventas)
+    .total-with-iva-box,
+    .bg-emerald-50,
+    [class*="bg-emerald-50"] {
+      background: rgba(16, 185, 129, 0.16) !important;
+      background-color: rgba(16, 185, 129, 0.16) !important;
+      border: 1.5px solid rgba(16, 185, 129, 0.35) !important;
+
+      .total-with-iva-title,
+      .text-emerald-800 {
+        color: #34d399 !important;
+        -webkit-text-fill-color: #34d399 !important;
+        font-weight: 800 !important;
+      }
+
+      .iva-subcaption,
+      .text-emerald-700 {
+        color: rgba(52, 211, 153, 0.85) !important;
+        -webkit-text-fill-color: rgba(52, 211, 153, 0.85) !important;
+      }
+
+      .total-price-val,
+      .text-emerald-900 {
+        color: #34d399 !important;
+        -webkit-text-fill-color: #34d399 !important;
+        font-weight: 900 !important;
+      }
+    }
+
+    .bg-amber-50,
+    [class*="bg-amber-50"] {
+      background: rgba(245, 158, 11, 0.16) !important;
+      background-color: rgba(245, 158, 11, 0.16) !important;
+      border: 1.5px solid rgba(245, 158, 11, 0.35) !important;
+      color: #fbbf24 !important;
+    }
+
+    // Status pills en temas oscuros para evitar pasteles blancos
+    .status-paid {
+      background-color: rgba(16, 185, 129, 0.16) !important;
+      color: #34d399 !important;
+      border-color: rgba(16, 185, 129, 0.35) !important;
+      -webkit-text-fill-color: #34d399 !important;
+    }
+
+    .status-partial {
+      background-color: rgba(245, 158, 11, 0.16) !important;
+      color: #fbbf24 !important;
+      border-color: rgba(245, 158, 11, 0.35) !important;
+      -webkit-text-fill-color: #fbbf24 !important;
+    }
+
+    .status-transfer {
+      background-color: rgba(59, 130, 246, 0.16) !important;
+      color: #60a5fa !important;
+      border-color: rgba(59, 130, 246, 0.35) !important;
+      -webkit-text-fill-color: #60a5fa !important;
+    }
+
+    // 5. Overrides para estilos en línea con fondos blancos
+    [style*="background-color: #ffffff"],
+    [style*="background-color: #fff"],
+    [style*="background: #ffffff"],
+    [style*="background: #fff"],
+    [style*="background: white"],
+    [style*="background-color: white"],
+    [style*="background-color: #f8fafc"],
+    [style*="background-color: #fafafa"],
+    [style*="background-color: #fbfbfb"],
+    [style*="background-color: #f1f5f9"],
+    [style*="background-color: #f0fdf4"],
+    [style*="background-color: #f0f9ff"],
+    [style*="background-color: #f0f1ff"],
+    [style*="background-color: #eff6ff"],
+    [style*="background-color: #fffbeb"],
+    [style*="background-color: #ecfdf5"],
+    [style*="background: #ecfdf5"] {
+      background: var(--bg-surface, #2F3349) !important;
+      background-color: var(--bg-surface, #2F3349) !important;
+      color: var(--text-primary, #ffffff) !important;
+      border-color: var(--border-glass, rgba(255, 255, 255, 0.12)) !important;
+
+      * {
+        color: var(--text-primary, #ffffff);
+      }
+    }
+  }
+
+  // 6. PROTECCIÓN TOTAL Y VITALICIA PARA TARJETAS KPI (Dashboard) EN CUALQUIER TEMA
+  html body .v-application .pepa-kpi-card,
+  html body .pepa-kpi-card,
+  .v-card.pepa-kpi-card,
+  .pepa-kpi-card {
+    color: #ffffff !important;
+    border: none !important;
+
+    &.kpi-gradient-primary,
+    &[class*="gradient-primary"] {
+      background: linear-gradient(135deg, #6366F1 0%, #8B5CF6 50%, #A855F7 100%) !important;
+      background-color: transparent !important;
+      box-shadow: 0 10px 28px rgba(99, 102, 241, 0.35) !important;
+    }
+
+    &.kpi-gradient-info,
+    &[class*="gradient-info"] {
+      background: linear-gradient(135deg, #0EA5E9 0%, #06B6D4 50%, #14B8A6 100%) !important;
+      background-color: transparent !important;
+      box-shadow: 0 10px 28px rgba(14, 165, 233, 0.35) !important;
+    }
+
+    &.kpi-gradient-success,
+    &[class*="gradient-success"] {
+      background: linear-gradient(135deg, #10B981 0%, #059669 50%, #047857 100%) !important;
+      background-color: transparent !important;
+      box-shadow: 0 10px 28px rgba(16, 185, 129, 0.35) !important;
+    }
+
+    &.kpi-gradient-warning,
+    &[class*="gradient-warning"] {
+      background: linear-gradient(135deg, #F59E0B 0%, #EA580C 50%, #D97706 100%) !important;
+      background-color: transparent !important;
+      box-shadow: 0 10px 28px rgba(245, 158, 11, 0.35) !important;
+    }
+
+    *,
+    h1,
+    h2,
+    h3,
+    h4,
+    h5,
+    h6,
+    div,
+    span,
+    p,
+    .text-h4,
+    .text-caption,
+    .text-white,
+    .kpi-badge-pill,
+    .kpi-icon-bubble,
+    .v-icon,
+    i,
+    svg {
+      color: #ffffff !important;
+      -webkit-text-fill-color: #ffffff !important;
+    }
+  }
+
+  // ==========================================================================
+  // BLINDAJE DE TOOLTIPS: MÁXIMO CONTRASTE Y TEXTO BLANCO NÍTIDO
+  // ==========================================================================
+  .v-tooltip .v-overlay__content,
+  .v-tooltip.v-overlay .v-overlay__content,
+  .v-overlay--active.v-tooltip .v-overlay__content {
+    background: rgba(15, 23, 42, 0.96) !important;
+    color: #ffffff !important;
+    border: 1px solid rgba(255, 255, 255, 0.22) !important;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.40) !important;
+    border-radius: 8px !important;
+    padding: 6px 12px !important;
+    font-size: 0.8125rem !important;
+    line-height: 1.4 !important;
+    z-index: 99999 !important;
+
+    *,
+    span,
+    strong,
+    p,
+    div {
+      color: #ffffff !important;
+      -webkit-text-fill-color: #ffffff !important;
+    }
+
+    strong {
+      color: #FBBF24 !important; // Amarillo dorado destacado para pendientes
+      -webkit-text-fill-color: #FBBF24 !important;
+      font-weight: 800 !important;
+    }
+  }
+
+  // ==========================================================================
+  // BLINDAJE TOTAL DE DIÁLOGOS (V-DIALOG) EN TODO EL SISTEMA:
+  // 1. Esquinas redondeadas perfectas (20px) tanto arriba como abajo sin cortes.
+  // 2. Cabeceras con textos, iconos, badges, chips y botón cerrar en BLANCO PURO.
+  // 3. Pie de página nítido con esquinas inferiores redondeadas y botón cerrar de alto contraste.
+  // ==========================================================================
+
+  // Contenedor del V-Dialog y Tarjeta (Card)
+  .v-dialog .v-overlay__content,
+  .v-overlay.v-dialog .v-overlay__content,
+  .v-overlay--active.v-dialog .v-overlay__content,
+  .v-dialog.v-overlay .v-overlay__content {
+    border-radius: 20px !important;
+    overflow: hidden !important;
+    clip-path: inset(0 round 20px) !important;
+    -webkit-clip-path: inset(0 round 20px) !important;
+  }
+
+  .v-dialog .v-card,
+  .v-dialog .custom-dialog-card,
+  .v-overlay.v-dialog .v-card,
+  .v-overlay--active.v-dialog .v-card,
+  .custom-dialog-card {
+    border-radius: 20px !important;
+    overflow: hidden !important;
+    clip-path: inset(0 round 20px) !important;
+    -webkit-clip-path: inset(0 round 20px) !important;
+    isolation: isolate !important;
+    -webkit-mask-image: -webkit-radial-gradient(white, black) !important;
+    box-shadow: 0 25px 70px rgba(15, 23, 42, 0.28) !important;
+  }
+
+  // 1. CABECERA DE LOS V-DIALOGS (En todo el sistema)
+  .v-dialog .custom-dialog-header-primary,
+  .v-dialog .custom-dialog-header,
+  .v-dialog .custom-dialog-header-info,
+  .v-dialog .custom-dialog-header-secondary,
+  .v-dialog .dialog-header-banner,
+  .v-dialog .dialog-header-workshop,
+  .v-dialog .sale-dialog-header-banner,
+  .v-dialog .product-quick-header,
+  .v-dialog .profile-header-banner,
+  .v-dialog [class*="dialog-header"],
+  .v-dialog [class*="header-primary"],
+  .custom-dialog-header-primary,
+  .custom-dialog-header {
+    border-top-left-radius: 20px !important;
+    border-top-right-radius: 20px !important;
+    border-bottom-left-radius: 0 !important;
+    border-bottom-right-radius: 0 !important;
+    background: linear-gradient(135deg, #666CFF 0%, #5B61EB 50%, #4F54E5 100%) !important;
+    color: #ffffff !important;
+    padding: 1.5rem 1.5rem 1.25rem 1.5rem !important;
+    position: relative !important;
+
+    // Textos, títulos y subtítulos en blanco puro
+    *,
+    h1,
+    h2,
+    h3,
+    h4,
+    h5,
+    h6,
+    .custom-dialog-title,
+    .custom-dialog-subtitle,
+    .dialog-title,
+    .dialog-subtitle,
+    p,
+    span,
+    label,
+    strong,
+    b,
+    div {
+      color: #ffffff !important;
+      -webkit-text-fill-color: #ffffff !important;
+    }
+
+    .custom-dialog-subtitle,
+    .dialog-subtitle {
+      color: rgba(255, 255, 255, 0.92) !important;
+      -webkit-text-fill-color: rgba(255, 255, 255, 0.92) !important;
+      opacity: 1 !important;
+    }
+
+    // Ícono Avatar Superior
+    .custom-dialog-avatar,
+    .header-avatar-badge {
+      background: rgba(255, 255, 255, 0.22) !important;
+      backdrop-filter: blur(8px) !important;
+      -webkit-backdrop-filter: blur(8px) !important;
+      border: 1.5px solid rgba(255, 255, 255, 0.45) !important;
+      border-radius: 16px !important;
+
+      .v-icon,
+      i,
+      svg {
+        color: #ffffff !important;
+        fill: #ffffff !important;
+        opacity: 1 !important;
+      }
+    }
+
+    // Botón "X" de cerrar superior derecho
+    .custom-dialog-close-btn,
+    .v-dialog-close-btn {
+      background: rgba(255, 255, 255, 0.22) !important;
+      border: 1px solid rgba(255, 255, 255, 0.38) !important;
+      border-radius: 10px !important;
+      color: #ffffff !important;
+      width: 36px !important;
+      height: 36px !important;
+      min-width: 36px !important;
+      display: inline-flex !important;
+      align-items: center !important;
+      justify-content: center !important;
+      opacity: 1 !important;
+      transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1) !important;
+
+      .v-icon,
+      i,
+      svg {
+        color: #ffffff !important;
+        fill: #ffffff !important;
+        font-size: 20px !important;
+        opacity: 1 !important;
+      }
+
+      &:hover {
+        background: rgba(255, 255, 255, 0.38) !important;
+        border-color: rgba(255, 255, 255, 0.65) !important;
+        transform: scale(1.08) !important;
+
+        .v-icon,
+        i,
+        svg {
+          color: #ffffff !important;
+          fill: #ffffff !important;
+        }
+      }
+    }
+
+    // Badges, Chips y Pills dentro de la cabecera (Activo, Cédula, Natural, etc.)
+    .v-chip,
+    .rounded-pill,
+    [class*="pill"],
+    [class*="chip"],
+    [class*="badge"],
+    .d-inline-flex.rounded-pill {
+      background: rgba(255, 255, 255, 0.22) !important;
+      border: 1px solid rgba(255, 255, 255, 0.38) !important;
+      backdrop-filter: blur(8px) !important;
+      -webkit-backdrop-filter: blur(8px) !important;
+      color: #ffffff !important;
+      -webkit-text-fill-color: #ffffff !important;
+
+      *,
+      span,
+      strong,
+      b,
+      div {
+        color: #ffffff !important;
+        -webkit-text-fill-color: #ffffff !important;
+      }
+
+      .v-icon,
+      i,
+      svg {
+        color: #ffffff !important;
+        fill: #ffffff !important;
+        opacity: 1 !important;
+      }
+
+      // Variantes de color en cabecera
+      &[style*="185, 129"],
+      &[style*="success"],
+      &.status-paid,
+      &.bg-success {
+        background: rgba(16, 185, 129, 0.35) !important;
+        border: 1px solid rgba(16, 185, 129, 0.60) !important;
+      }
+
+      &[style*="239, 68"],
+      &[style*="error"],
+      &.status-danger,
+      &.bg-error {
+        background: rgba(239, 68, 68, 0.35) !important;
+        border: 1px solid rgba(239, 68, 68, 0.60) !important;
+      }
+
+      &[style*="245, 158"],
+      &[style*="warning"],
+      &.status-warning,
+      &.bg-warning {
+        background: rgba(245, 158, 11, 0.35) !important;
+        border: 1px solid rgba(245, 158, 11, 0.60) !important;
+      }
+    }
+  }
+
+  // 2. PIE DE PÁGINA DE LOS V-DIALOGS (En todo el sistema)
+  .v-dialog .v-card-actions,
+  .v-dialog .v-card>.v-card-actions,
+  .custom-dialog-card .v-card-actions,
+  .v-dialog .dialog-footer,
+  .v-dialog .sticky-dialog-footer,
+  .v-dialog .dialog-actions-responsive,
+  .v-dialog .v-card-actions[style*="sticky"],
+  .v-card-actions.dialog-actions-responsive,
+  .v-dialog .v-card>div:last-child,
+  .v-dialog .v-card>footer:last-child {
+    border-bottom-left-radius: 20px !important;
+    border-bottom-right-radius: 20px !important;
+    border-top-left-radius: 0 !important;
+    border-top-right-radius: 0 !important;
+    clip-path: inset(0 0 0 0 round 0 0 20px 20px) !important;
+    -webkit-clip-path: inset(0 0 0 0 round 0 0 20px 20px) !important;
+    background: #ffffff !important;
+    border-top: 1px solid #e2e8f0 !important;
+    box-shadow: 0 -3px 12px rgba(0, 0, 0, 0.04) !important;
+    padding: 1rem 1.5rem !important;
+    overflow: hidden !important;
+  }
+
+  // Barra de metadatos previa al footer (ej. "Registrado por: ...")
+  .v-dialog .bg-card-footer {
+    background: #f8fafc !important;
+    border-top: 1px solid #e2e8f0 !important;
+    color: #64748b !important;
+
+    *,
+    span {
+      color: #64748b !important;
+    }
+
+    strong {
+      color: #1e293b !important;
+    }
+  }
+
+  // Botón de Cerrar / Secundario del pie de página (Modo Claro / Taller)
+  [data-theme="light"] .v-dialog .v-card-actions,
+  html[data-theme="light"] .v-dialog .v-card-actions,
+  body[data-theme="light"] .v-dialog .v-card-actions,
+  [data-theme="taller"] .v-dialog .v-card-actions,
+  html[data-theme="taller"] .v-dialog .v-card-actions,
+  body[data-theme="taller"] .v-dialog .v-card-actions,
+  .v-theme--light .v-dialog .v-card-actions,
+  .v-theme--taller .v-dialog .v-card-actions {
+
+    .btn-close-footer,
+    .v-btn.btn-close-footer,
+    .v-btn--variant-outlined,
+    .v-btn--variant-tonal,
+    .text-secondary,
+    .v-btn[color="secondary"],
+    .v-btn:not(.bg-primary):not([class*="bg-primary"]):not(.v-btn--variant-flat):not([class*="bg-info"]):not([class*="bg-success"]):not([class*="bg-error"]) {
+      background: #f8fafc !important;
+      background-color: #f8fafc !important;
+      border: 1.5px solid #cbd5e1 !important;
+      color: #0f172a !important;
+      -webkit-text-fill-color: #0f172a !important;
+      font-weight: 700 !important;
+      font-size: 0.875rem !important;
+      letter-spacing: 0.01em !important;
+      border-radius: 10px !important;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05) !important;
+      transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1) !important;
+
+      .v-btn__overlay,
+      .v-btn__underlay {
+        display: none !important;
+        opacity: 0 !important;
+      }
+
+      .v-btn__content,
+      .v-btn__content span,
+      .v-btn__content i,
+      .v-btn__content .v-icon,
+      i.v-icon {
+        color: #0f172a !important;
+        fill: #0f172a !important;
+        -webkit-text-fill-color: #0f172a !important;
+        opacity: 1 !important;
+        font-weight: 700 !important;
+      }
+
+      &:hover {
+        background: #e2e8f0 !important;
+        background-color: #e2e8f0 !important;
+        border-color: #94a3b8 !important;
+        color: #000000 !important;
+        -webkit-text-fill-color: #000000 !important;
+        transform: translateY(-1px) !important;
+        box-shadow: 0 3px 6px rgba(0, 0, 0, 0.08) !important;
+
+        .v-btn__content,
+        .v-btn__content span,
+        .v-btn__content i,
+        .v-btn__content .v-icon,
+        i.v-icon {
+          color: #000000 !important;
+          fill: #000000 !important;
+          -webkit-text-fill-color: #000000 !important;
+        }
+      }
+    }
+  }
+
+  // Botón primario de acción en el pie de página
+  .v-dialog .v-card-actions .v-btn.bg-primary,
+  .v-dialog .v-card-actions .v-btn[color="primary"]:not(.v-btn--variant-outlined) {
+    background: linear-gradient(135deg, #666CFF 0%, #5B61EB 100%) !important;
+    color: #ffffff !important;
+    font-weight: 700 !important;
+    border-radius: 10px !important;
+    border: none !important;
+    box-shadow: 0 3px 10px rgba(102, 108, 255, 0.35) !important;
+
+    .v-btn__overlay,
+    .v-btn__underlay {
+      display: none !important;
+      opacity: 0 !important;
+    }
+
+    .v-btn__content,
+    .v-btn__content span,
+    .v-btn__content i,
+    .v-btn__content .v-icon,
+    i.v-icon {
+      color: #ffffff !important;
+      fill: #ffffff !important;
+      -webkit-text-fill-color: #ffffff !important;
+    }
+
+    &:hover {
+      background: linear-gradient(135deg, #5B61EB 0%, #4F54E5 100%) !important;
+      box-shadow: 0 5px 14px rgba(102, 108, 255, 0.45) !important;
+      transform: translateY(-1px) !important;
+    }
+  }
+
+  // Soporte para Temas Oscuros en el footer de los V-Dialogs
+  .v-theme--dark,
+  [data-theme="dark"],
+  html[data-theme="dark"],
+  body[data-theme="dark"],
+  .theme-dark,
+  .v-theme--dark-glass,
+  [data-theme="dark-glass"],
+  html[data-theme="dark-glass"],
+  body[data-theme="dark-glass"],
+  .theme-dark-glass,
+  .v-theme--semi-dark-glass,
+  [data-theme="semi-dark-glass"],
+  html[data-theme="semi-dark-glass"],
+  body[data-theme="semi-dark-glass"],
+  .theme-semi-dark-glass {
+
+    .v-dialog .v-card-actions,
+    .v-dialog .v-card>.v-card-actions,
+    .custom-dialog-card .v-card-actions {
+      background: #181d2e !important;
+      background-color: #181d2e !important;
+      border-top: 1px solid rgba(255, 255, 255, 0.12) !important;
+    }
+
+    .v-dialog .bg-card-footer {
+      background: #141724 !important;
+      border-top: 1px solid rgba(255, 255, 255, 0.1) !important;
+      color: rgba(255, 255, 255, 0.7) !important;
+
+      *,
+      span {
+        color: rgba(255, 255, 255, 0.7) !important;
+      }
+
+      strong {
+        color: #ffffff !important;
+      }
+    }
+
+    .v-dialog .v-card-actions .btn-close-footer,
+    .v-dialog .v-card-actions .v-btn.btn-close-footer,
+    .v-dialog .v-card-actions .v-btn[color="secondary"],
+    .v-dialog .v-card-actions .v-btn.v-btn--variant-outlined,
+    .v-dialog .v-card-actions .v-btn.v-btn--variant-tonal,
+    .v-dialog .v-card-actions .v-btn:not(.bg-primary):not([class*="bg-primary"]):not(.v-btn--variant-flat):not([class*="bg-info"]):not([class*="bg-success"]):not([class*="bg-error"]),
+    .custom-dialog-card .v-card-actions .v-btn[color="secondary"],
+    .custom-dialog-card .v-card-actions .v-btn--variant-outlined,
+    .custom-dialog-card .v-card-actions .v-btn--variant-tonal,
+    .custom-dialog-card .v-card-actions .v-btn:not(.bg-primary):not([class*="bg-primary"]):not(.v-btn--variant-flat):not([class*="bg-info"]):not([class*="bg-success"]):not([class*="bg-error"]) {
+      background: rgba(255, 255, 255, 0.08) !important;
+      background-color: rgba(255, 255, 255, 0.08) !important;
+      border: 1.5px solid rgba(255, 255, 255, 0.28) !important;
+      color: #ffffff !important;
+      -webkit-text-fill-color: #ffffff !important;
+      font-weight: 700 !important;
+      border-radius: 10px !important;
+
+      .v-btn__overlay,
+      .v-btn__underlay {
+        display: none !important;
+        opacity: 0 !important;
+      }
+
+      .v-btn__content,
+      .v-btn__content span,
+      .v-btn__content i,
+      .v-btn__content .v-icon,
+      i.v-icon {
+        color: #ffffff !important;
+        fill: #ffffff !important;
+        -webkit-text-fill-color: #ffffff !important;
+        opacity: 1 !important;
+        font-weight: 700 !important;
+      }
+
+      &:hover {
+        background: rgba(255, 255, 255, 0.18) !important;
+        background-color: rgba(255, 255, 255, 0.18) !important;
+        border-color: rgba(255, 255, 255, 0.5) !important;
+        color: #ffffff !important;
+        -webkit-text-fill-color: #ffffff !important;
+
+        .v-btn__content,
+        .v-btn__content span,
+        .v-btn__content i,
+        .v-btn__content .v-icon,
+        i.v-icon {
+          color: #ffffff !important;
+          fill: #ffffff !important;
+          -webkit-text-fill-color: #ffffff !important;
+        }
+      }
+    }
+  }
+
+  // ==========================================================================
+  // BLINDAJE DINÁMICO DEL MENÚ LATERAL (SIDEBAR): COLOR Y TEMA EXACTO
+  // ==========================================================================
+  .layout-vertical-nav,
+  .layout-nav-type-vertical .layout-vertical-nav,
+  .v-navigation-drawer.layout-vertical-nav {
+    background: var(--bg-sidebar, var(--bg-header)) !important;
+    background-color: transparent !important;
+    border-right: 1px solid var(--border-glass, rgba(255, 255, 255, 0.15)) !important;
+    box-shadow: 4px 0 25px rgba(0, 0, 0, 0.18) !important;
+
+    .v-navigation-drawer__content,
+    .nav-items {
+      background: transparent !important;
+    }
+
+    .nav-header {
+      background: transparent !important;
+      border-bottom: 1px solid var(--border-glass, rgba(255, 255, 255, 0.15)) !important;
+
+      .app-logo-title {
+        color: #ffffff !important;
+      }
+    }
+
+    // Títulos de sección (COMERCIAL, FINANZAS, SERVICIOS, INVENTARIO, etc.)
+    .nav-section-title {
+      opacity: 1 !important;
+
+      .title-text {
+        color: #ffffff !important;
+        opacity: 0.92 !important;
+        font-weight: 800 !important;
+        text-shadow: 0 1px 2px rgba(0, 0, 0, 0.25) !important;
+        letter-spacing: 0.12em !important;
+        text-transform: uppercase !important;
+
+        &::before,
+        &::after {
+          border-color: rgba(255, 255, 255, 0.45) !important;
+          border-block-end-color: rgba(255, 255, 255, 0.45) !important;
+        }
+      }
+    }
+
+    // Enlaces de navegación e iconos
+    .nav-link a,
+    .nav-group-label {
       color: #ffffff !important;
 
-      .nav-item-icon,
+      *,
+      span,
       .nav-item-title,
+      .nav-item-icon,
+      .nav-group-arrow,
+      .v-icon {
+        color: #ffffff !important;
+        fill: #ffffff !important;
+        opacity: 1 !important;
+      }
+
+      &:hover {
+        background: rgba(255, 255, 255, 0.18) !important;
+        color: #ffffff !important;
+
+        *,
+        span,
+        .nav-item-title,
+        .nav-item-icon,
+        .nav-group-arrow,
+        .v-icon {
+          color: #ffffff !important;
+          fill: #ffffff !important;
+        }
+      }
+    }
+
+    // Submenús / Hijos de grupos
+    .nav-group.open>.nav-group-label {
+      background: rgba(255, 255, 255, 0.14) !important;
+      color: #ffffff !important;
+
+      *,
+      span,
+      .nav-item-title,
+      .nav-item-icon,
       .nav-group-arrow,
       .v-icon {
         color: #ffffff !important;
@@ -2003,6 +3839,8 @@ body[data-theme="light"],
       .nav-link a {
         color: rgba(255, 255, 255, 0.92) !important;
 
+        *,
+        span,
         .nav-item-icon,
         .nav-item-title {
           color: rgba(255, 255, 255, 0.92) !important;
@@ -2010,33 +3848,40 @@ body[data-theme="light"],
         }
 
         &:hover {
-          background: rgba(255, 255, 255, 0.14) !important;
+          background: rgba(255, 255, 255, 0.16) !important;
           color: #ffffff !important;
+
+          *,
+          span,
+          .nav-item-icon,
+          .nav-item-title {
+            color: #ffffff !important;
+            fill: #ffffff !important;
+          }
         }
       }
     }
 
-    // Elemento activo seleccionado (White pill con texto morado corporativo)
-    .nav-link > a.router-link-active,
-    .nav-link > a.router-link-exact-active,
-    .nav-link.router-link-active > a,
-    .nav-link.router-link-exact-active > a,
+    // Elemento activo seleccionado (adaptable a cada tema)
+    .nav-link>a.router-link-active,
+    .nav-link>a.router-link-exact-active,
+    .nav-link.router-link-active>a,
+    .nav-link.router-link-exact-active>a,
     .v-list-item--active {
-      background: #ffffff !important;
-      color: #5C61E6 !important;
+      background: var(--bg-active-item, #ffffff) !important;
+      color: var(--text-active, #5C61E6) !important;
       box-shadow: 0 4px 14px rgba(0, 0, 0, 0.18) !important;
       border: none !important;
 
-      * {
-        color: #5C61E6 !important;
-      }
-
+      *,
+      span,
       .nav-item-icon,
       .nav-item-title,
       .v-icon {
-        color: #5C61E6 !important;
-        fill: #5C61E6 !important;
+        color: var(--text-active, #5C61E6) !important;
+        fill: var(--text-active, #5C61E6) !important;
         font-weight: 800 !important;
+        -webkit-text-fill-color: var(--text-active, #5C61E6) !important;
       }
     }
 
@@ -2049,2646 +3894,1001 @@ body[data-theme="light"],
 
         .v-icon {
           color: #ffffff !important;
+          fill: #ffffff !important;
+        }
+
+        &:hover {
+          background: rgba(255, 255, 255, 0.22) !important;
+          color: #ffffff !important;
         }
       }
     }
   }
-}
 
-html[data-theme="light"]:not(.auth-page-root),
-body[data-theme="light"]:not(.auth-page-root),
-.v-application.v-theme--light:not(.auth-page-root) {
-  background-color: #F7F7F9 !important;
-}
+  // ==========================================================================
+  // BLINDAJE DINÁMICO DEL PANEL DE RECORDATORIOS (MaintenanceRemindersDrawer.vue)
+  // Respeto absoluto del tema activo: Taller, Dark, Dark-Glass, Semi-Dark, Light
+  // ==========================================================================
 
-[data-theme="dark"],
-html[data-theme="dark"],
-body[data-theme="dark"],
-.v-application.v-theme--dark,
-.theme-dark {
-  --bg-app: #282A42;
-  --bg-dialog: #2F3349;
-  --bg-surface: #2F3349;
-  --bg-sidebar: #2F3349;
-  --bg-header: #2F3349;
-  --border-glass: rgba(234, 234, 255, 0.12);
-  --text-primary: #ffffff;
-  --text-secondary: rgba(234, 234, 255, 0.78);
-  --text-muted: rgba(234, 234, 255, 0.50);
-  --bg-dialog-header: linear-gradient(180deg, rgba(255, 255, 255, 0.04) 0%, rgba(255, 255, 255, 0) 100%), #2F3349;
-  --border-dialog-header: rgba(234, 234, 255, 0.12);
-}
-
-// --------------------------------------------------------------------------
-// 8. TEMA DEL TALLER (taller) - REDISEÑADO Y BLINDADO
-// --------------------------------------------------------------------------
-.v-application.v-theme--taller,
-[data-theme="taller"],
-body[data-theme="taller"],
-.theme-taller {
-  --theme-wine: #8A1538;
-  --theme-wine-dark: #58081C;
-  --theme-wine-glow: rgba(138, 21, 56, 0.25);
-  --theme-slate-border: #e2e8f0;
-  --theme-white: #ffffff;
-  --theme-black: #0f172a;
-  --v-theme-primary: 138, 21, 56;
-  --v-theme-on-primary: 255, 255, 255;
-  --v-theme-primary-darken-1: 107, 14, 39;
-  
-  color: #0f172a; // 1. NAVBAR SUPERIOR
-
-  .layout-wrapper.layout-nav-type-vertical .layout-navbar,
-  .layout-navbar,
-  .v-app-bar {
-    background: linear-gradient(135deg, #8A1538 0%, #6B0E27 60%, #58081C 100%) !important;
-    background-color: transparent !important;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.15) !important;
-    box-shadow: 0 4px 20px rgba(138, 21, 56, 0.28) !important;
-
-    .navbar-brand-title,
-    .navbar-brand-subtitle,
-    .v-icon,
-    .v-btn,
-    .v-btn__content,
-    .icon-btn,
-    .IconBtn,
-    button {
-      color: #ffffff !important;
-
-      i,
-      svg {
-        color: #ffffff !important;
-        fill: #ffffff !important;
-      }
-    }
-
-    .theme-switcher-btn {
-      background: rgba(255, 255, 255, 0.12) !important;
-      border: 1px solid rgba(255, 255, 255, 0.22) !important;
-      color: #ffffff !important;
-
-      .v-icon,
-      i,
-      svg {
-        color: #ffffff !important;
-        fill: #ffffff !important;
-      }
-    }
-  }
-
-  // 2. SIDEBAR / DRAWER
-  .layout-vertical-nav,
-  .v-navigation-drawer,
-  .sidebar {
-    background: linear-gradient(180deg, #8A1538 0%, #6B0E27 60%, #58081C 100%) !important;
-    border-right: 1px solid rgba(255, 255, 255, 0.12) !important;
-    box-shadow: 4px 0 28px rgba(138, 21, 56, 0.25) !important;
-
-    .nav-section-title .title-text {
-      color: #ffffff !important;
-      font-weight: 800 !important;
-      letter-spacing: 1.5px !important;
-      text-transform: uppercase !important;
-      opacity: 1 !important;
-
-      &::before,
-      &::after {
-        border-color: rgba(255, 255, 255, 0.45) !important;
-      }
-    }
-
-    .nav-link a,
-    .nav-group-label {
-      color: #ffffff !important;
-
-      .nav-item-icon,
-      .nav-item-title,
-      .nav-group-arrow,
-      .v-icon,
-      i,
-      svg {
-        color: #ffffff !important;
-        fill: #ffffff !important;
-      }
-
-      &:hover {
-        background: rgba(255, 255, 255, 0.18) !important;
-        color: #ffffff !important;
-      }
-    }
-
-    .nav-link>a.router-link-active,
-    .nav-link>a.router-link-exact-active,
-    .nav-link.router-link-active>a,
-    .nav-link.router-link-exact-active>a,
-    .v-list-item--active {
+  // A. TEMA TALLER (Oficial Rojo Vino)
+  [data-theme="taller"],
+  html[data-theme="taller"],
+  body[data-theme="taller"] {
+    .maintenance-drawer {
       background: #ffffff !important;
-      color: #7A102B !important;
-      font-weight: 700 !important;
-      box-shadow: 0 4px 14px rgba(0, 0, 0, 0.18) !important;
-      border-radius: 8px !important;
-
-      &,
-      * {
-        color: #7A102B !important;
-      }
-
-      .nav-item-icon,
-      .v-icon,
-      i,
-      svg {
-        color: #7A102B !important;
-        fill: #7A102B !important;
-      }
-
-      .nav-item-title {
-        color: #7A102B !important;
-      }
-    }
-  }
-
-  // 3. TARJETAS Y CONTENEDORES (excluyendo tarjetas de métricas/KPIs degradadas)
-  .v-card:not(.v-navigation-drawer):not(.layout-vertical-nav):not(.pepa-kpi-card):not([class*="kpi-gradient"]),
-  .card:not(.pepa-kpi-card):not([class*="kpi-gradient"]),
-  .v-sheet:not(.v-navigation-drawer):not(.layout-vertical-nav):not(.pepa-kpi-card):not([class*="kpi-gradient"]) {
-    background: #ffffff !important;
-    background-color: #ffffff !important;
-    border: 1px solid #e2e8f0 !important;
-    border-radius: 12px !important;
-    box-shadow: 0 2px 10px rgba(15, 23, 42, 0.04) !important;
-    color: #0f172a !important;
-
-    h1,
-    h2,
-    h3,
-    h4,
-    h5,
-    h6,
-    .text-h4,
-    .text-h5,
-    .text-h6,
-    .text-slate-900,
-    .text-slate-800 {
       color: #0f172a !important;
-    }
+      border-left: 1px solid #e2e8f0 !important;
 
-    p,
-    .text-slate-600,
-    .text-slate-500 {
-      color: #334155 !important;
-    }
-
-    // Iconos en tarjetas del tema taller: Nítidos y con colores semánticos
-    .v-icon {
-      opacity: 1 !important;
-      visibility: visible !important;
-
-      &.text-primary,
-      &.v-icon--color-primary {
-        color: #8A1538 !important;
-        fill: #8A1538 !important;
-      }
-      &.text-info,
-      &.v-icon--color-info {
-        color: #0EA5E9 !important;
-        fill: #0EA5E9 !important;
-      }
-      &.text-success,
-      &.v-icon--color-success {
-        color: #10B981 !important;
-        fill: #10B981 !important;
-      }
-      &.text-warning,
-      &.v-icon--color-warning {
-        color: #F59E0B !important;
-        fill: #F59E0B !important;
-      }
-      &.text-error,
-      &.text-danger,
-      &.v-icon--color-error {
-        color: #EF4444 !important;
-        fill: #EF4444 !important;
-      }
-      &.text-white {
-        color: #ffffff !important;
-        fill: #ffffff !important;
-      }
-    }
-  }
-
-  // 4. BOTONES PRIMARIOS Y OUTLINED
-  .v-btn.bg-primary:not(.auth-submit-btn):not(.auth-submit-btn-white),
-  .v-btn.v-btn--color-primary:not(.v-btn--variant-outlined):not(.auth-submit-btn):not(.auth-submit-btn-white),
-  .v-btn--variant-elevated.v-btn--color-primary:not(.auth-submit-btn):not(.auth-submit-btn-white),
-  .v-btn--variant-flat.v-btn--color-primary:not(.auth-submit-btn):not(.auth-submit-btn-white) {
-    background: linear-gradient(135deg, #8A1538 0%, #600A1F 100%) !important;
-    color: #ffffff !important;
-    box-shadow: 0 4px 14px rgba(138, 21, 56, 0.35) !important;
-
-    * {
-      color: #ffffff !important;
-    }
-
-    &:hover {
-      background: linear-gradient(135deg, #A31842 0%, #720C25 100%) !important;
-      box-shadow: 0 6px 20px rgba(138, 21, 56, 0.45) !important;
-    }
-  }
-
-  .v-btn.v-btn--variant-outlined.v-btn--color-primary {
-    border: 1.5px solid #8A1538 !important;
-    color: #8A1538 !important;
-    background: transparent !important;
-
-    * {
-      color: #8A1538 !important;
-    }
-
-    &:hover {
-      background: rgba(138, 21, 56, 0.08) !important;
-    }
-  }
-
-  // 5. TABLAS DE DATOS
-  .v-table,
-  .v-data-table {
-    background: #ffffff !important;
-    color: #0f172a !important;
-
-    thead tr th {
-      background: #f8fafc !important;
-      color: #334155 !important;
-      font-weight: 700 !important;
-      border-bottom: 2px solid #8A1538 !important;
-
-      span,
-      div,
-      .v-data-table-header__content {
-        color: #334155 !important;
-      }
-    }
-
-    tbody tr {
-      &:hover {
-        background: rgba(138, 21, 56, 0.04) !important;
+      .drawer-header {
+        background: linear-gradient(135deg, #8A1538 0%, #600A1F 100%) !important;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.20) !important;
       }
 
-      td {
-        color: #0f172a !important;
-        border-bottom: 1px solid #e2e8f0 !important;
-      }
-    }
-  }
-
-  // 6. PAGINADOR EN TEMA TALLER
-  .v-pagination {
-    // Botón Activo: Fondo rojo vino con número blanco nítido y en negrita
-    .v-pagination__item .v-btn[aria-current="page"],
-    .v-pagination__item .v-btn[aria-label*="Current page"],
-    .v-pagination__item .v-btn[aria-label*="Página actual"],
-    .v-pagination__item .v-btn.v-btn--active,
-    .v-pagination__item--is-active,
-    .v-pagination__item--is-active .v-btn,
-    .v-btn.v-pagination__item--is-active {
-      background: linear-gradient(135deg, #8A1538 0%, #600A1F 100%) !important;
-      background-color: #8A1538 !important;
-      color: #ffffff !important;
-      border: 1px solid #8A1538 !important;
-      box-shadow: 0 4px 12px rgba(138, 21, 56, 0.35) !important;
-      opacity: 1 !important;
-
-      .v-btn__content {
-        color: #ffffff !important;
-        font-weight: 700 !important;
-        font-size: 0.95rem !important;
-        opacity: 1 !important;
-      }
-
-      * {
-        color: #ffffff !important;
-        opacity: 1 !important;
-      }
-    }
-
-    // Botones Inactivos: Fondo blanco limpio con números oscuros de alto contraste
-    .v-pagination__item .v-btn:not([aria-current="page"]):not([aria-label*="Current page"]):not([aria-label*="Página actual"]):not(.v-btn--active),
-    .v-pagination__prev .v-btn,
-    .v-pagination__next .v-btn {
-      background: #ffffff !important;
-      background-color: #ffffff !important;
-      border: 1px solid #e2e8f0 !important;
-      color: #1e293b !important;
-      opacity: 1 !important;
-
-      .v-btn__content {
-        color: #1e293b !important;
-        font-weight: 600 !important;
-        opacity: 1 !important;
-      }
-
-      .v-icon,
-      i,
-      svg {
-        color: #334155 !important;
-        fill: #334155 !important;
-        opacity: 1 !important;
-      }
-
-      &:hover {
+      .drawer-tabs {
         background: #f8fafc !important;
-        border-color: #cbd5e1 !important;
-        color: #8A1538 !important;
+        border-bottom: 1px solid #e2e8f0 !important;
 
-        .v-btn__content,
-        .v-icon,
-        i,
-        svg {
-          color: #8A1538 !important;
-          fill: #8A1538 !important;
+        .v-tab {
+          color: #64748b !important;
+
+          &.v-tab--selected {
+            background: #ffffff !important;
+            color: #8A1538 !important;
+
+            .v-btn__content,
+            >span:not(.drawer-tab-badge) {
+              color: #8A1538 !important;
+              -webkit-text-fill-color: #8A1538 !important;
+            }
+
+            .drawer-tab-badge {
+              background: #8A1538 !important;
+              color: #ffffff !important;
+              -webkit-text-fill-color: #ffffff !important;
+            }
+          }
         }
       }
-    }
-  }
-}
 
-html[data-theme="taller"]:not(.auth-page-root),
-body[data-theme="taller"]:not(.auth-page-root),
-.v-application.v-theme--taller:not(.auth-page-root) {
-  background-color: #f8fafc !important;
-}
-
-// --------------------------------------------------------------------------
-// 9. OVERRIDES DE NIVEL SUPERIOR (BODY LEVEL) PARA DIÁLOGOS Y POPUPS EN TALLER
-// --------------------------------------------------------------------------
-body[data-theme="taller"],
-[data-theme="taller"],
-.v-theme--taller {
-
-  // CORRECCIÓN CRÍTICA DE CAPAS FANTASMAS
-  .v-overlay:not(.v-overlay--active) {
-    display: none !important;
-    background: transparent !important;
-    opacity: 0 !important;
-    pointer-events: none !important;
-  }
-
-  // Quitar cualquier fondo sólido que Vuetify o el tema le ponga al overlay completo
-  .v-overlay--active.v-dialog,
-  .v-overlay--active.v-menu,
-  .v-overlay--active.v-select,
-  .v-overlay--active.v-autocomplete {
-    background: transparent !important;
-    background-color: transparent !important;
-  }
-
-  // El contenedor de contenido del diálogo no debe tener fondo para no crear un recuadro gris
-  .v-overlay--active.v-dialog > .v-overlay__content {
-    background: transparent !important;
-    background-color: transparent !important;
-    box-shadow: none !important;
-  }
-
-  // SCRIM / TELÓN DE FONDO SUAVE Y TRANSLÚCIDO
-  // Permite ver los demás componentes de la página detrás del diálogo con total claridad
-  .v-overlay--active.v-dialog > .v-overlay__scrim,
-  .v-overlay--active > .v-overlay__scrim {
-    display: block !important;
-    background: rgba(15, 23, 42, 0.25) !important;
-    background-color: rgba(15, 23, 42, 0.25) !important;
-    backdrop-filter: blur(1.5px) !important;
-    -webkit-backdrop-filter: blur(1.5px) !important;
-    opacity: 1 !important;
-  }
-
-  .v-overlay:not(.v-overlay--active) .v-overlay__scrim {
-    display: none !important;
-    opacity: 0 !important;
-    pointer-events: none !important;
-  }
-
-  // MODALES Y TARJETAS EN TALLER
-  .v-overlay--active.v-dialog > .v-overlay__content > .v-card,
-  .v-overlay--active.v-dialog .v-card,
-  .v-dialog .v-card,
-  [role="dialog"] .v-card {
-    background: #ffffff !important;
-    background-color: #ffffff !important;
-    backdrop-filter: none !important;
-    -webkit-backdrop-filter: none !important;
-    border: 1px solid #e2e8f0 !important;
-    border-radius: 16px !important;
-    box-shadow: 0 20px 60px rgba(15, 23, 42, 0.18) !important;
-    color: #0f172a !important;
-  }
-
-  // =========================================================================
-  // BLINDAJE ABSOLUTO DE CABECERA DE VDIALOG EN TEMA TALLER
-  // (Elimina fondos azules/violetas heredados y asegura rojo vino nítido)
-  // =========================================================================
-  .v-dialog .v-card-title.bg-primary,
-  .v-dialog .v-card-item.bg-primary,
-  .v-dialog .custom-dialog-header,
-  .v-dialog .custom-dialog-header-primary,
-  .v-dialog .custom-dialog-header-info,
-  .v-dialog .custom-dialog-header-secondary,
-  .v-dialog .dialog-header-banner,
-  .v-dialog .dialog-header-workshop,
-  .v-dialog .sale-dialog-header-banner,
-  .v-dialog .product-quick-header,
-  .v-dialog .profile-header-banner,
-  .v-dialog [class*="dialog-header"],
-  .v-dialog [class*="header-primary"],
-  .v-dialog .v-card > div:first-child[class*="header"],
-  .v-dialog .v-card > div:first-child[class*="banner"],
-  .v-dialog .v-card > .bg-primary:first-child,
-  .v-dialog .v-card > .v-card-title:first-child,
-  .v-overlay--active.v-dialog > .v-overlay__content .v-card-title.bg-primary,
-  .v-overlay--active.v-dialog > .v-overlay__content .v-card-item.bg-primary,
-  .custom-dialog-header-primary,
-  .custom-dialog-header {
-    background: linear-gradient(135deg, #8A1538 0%, #600A1F 100%) !important;
-    color: #ffffff !important;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.20) !important;
-    border-radius: 16px 16px 0 0 !important; // 1. TÍTULOS Y SUBTÍTULOS EN BLANCO PURO
-
-    *,
-    h1,
-    h2,
-    h3,
-    h4,
-    h5,
-    h6,
-    .v-card-title,
-    .v-card-subtitle,
-    .custom-dialog-title,
-    .custom-dialog-subtitle,
-    .dialog-title,
-    .dialog-subtitle,
-    p,
-    span,
-    label,
-    div {
-      color: #ffffff !important;
-      -webkit-text-fill-color: #ffffff !important;
-    }
-
-    // Subtítulo con ligera opacidad pero totalmente blanco y legible
-    .custom-dialog-subtitle,
-    .dialog-subtitle,
-    .v-card-subtitle,
-    p {
-      color: rgba(255, 255, 255, 0.90) !important;
-      -webkit-text-fill-color: rgba(255, 255, 255, 0.90) !important;
-    }
-
-    // 2. ICONOS DE CABECERA
-    .v-icon,
-    i,
-    svg {
-      color: #ffffff !important;
-      fill: #ffffff !important;
-      opacity: 1 !important;
-    }
-
-    // 3. AVATAR / ICONO CENTRAL
-    .custom-dialog-avatar,
-    .header-avatar-badge,
-    .v-avatar {
-      background: rgba(255, 255, 255, 0.18) !important;
-      border: 1.5px solid rgba(255, 255, 255, 0.35) !important;
-      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25) !important;
-
-      .v-icon,
-      i,
-      svg {
-        color: #ffffff !important;
-        fill: #ffffff !important;
-        opacity: 1 !important;
-      }
-    }
-
-    // 4. BOTÓN DE CERRAR (X) EN LA CABECERA
-    .custom-dialog-close-btn,
-    .v-dialog-close-btn {
-      position: absolute !important;
-      top: 14px !important;
-      right: 14px !important;
-      width: 34px !important;
-      height: 34px !important;
-      min-width: 34px !important;
-      color: #ffffff !important;
-      background: rgba(0, 0, 0, 0.25) !important;
-      border: 1px solid rgba(255, 255, 255, 0.3) !important;
-      border-radius: 8px !important;
-      opacity: 1 !important;
-      display: inline-flex !important;
-      align-items: center !important;
-      justify-content: center !important;
-      backdrop-filter: none !important;
-      -webkit-backdrop-filter: none !important;
-      cursor: pointer !important;
-      z-index: 10 !important;
-      padding: 0 !important;
-      box-shadow: none !important;
-
-      .v-btn__overlay,
-      .v-btn__underlay {
-        display: none !important;
+      .drawer-body {
+        background: #f8fafc !important;
       }
 
-      .v-btn__content {
-        color: #ffffff !important;
-        display: inline-flex !important;
-        align-items: center !important;
-        justify-content: center !important;
+      .empty-state-container {
+        .empty-avatar {
+          background: rgba(138, 21, 56, 0.12) !important;
+          border-color: rgba(138, 21, 56, 0.35) !important;
+
+          .v-icon {
+            color: #8A1538 !important;
+            fill: #8A1538 !important;
+          }
+        }
+
+        .empty-title {
+          color: #0f172a !important;
+        }
+
+        .empty-desc {
+          color: #64748b !important;
+        }
       }
 
-      *,
-      .v-icon,
-      i,
-      svg {
-        color: #ffffff !important;
-        fill: #ffffff !important;
-        font-size: 1.25rem !important;
-        opacity: 1 !important;
-        visibility: visible !important;
-      }
-
-      &:hover {
-        background: rgba(0, 0, 0, 0.45) !important;
-        border-color: rgba(255, 255, 255, 0.6) !important;
-        color: #ffffff !important;
-        transform: rotate(90deg) scale(1.05) !important;
-      }
-    }
-  }
-
-  // 5. BOTÓN DE CERRAR (X) EN MODALES SOBRE FONDO BLANCO (DialogCloseBtn o modales sin banner)
-  .v-dialog .v-card > .v-dialog-close-btn,
-  .v-dialog .v-card > .custom-dialog-close-btn,
-  .v-dialog .v-card > div:not([class*="header"]):not([class*="banner"]) .v-dialog-close-btn,
-  .v-dialog .v-card > div:not([class*="header"]):not([class*="banner"]) .custom-dialog-close-btn,
-  .v-dialog-close-btn:not([class*="header"] *):not([class*="banner"] *),
-  .custom-dialog-close-btn:not([class*="header"] *):not([class*="banner"] *) {
-    position: absolute !important;
-    top: 14px !important;
-    right: 14px !important;
-    width: 34px !important;
-    height: 34px !important;
-    min-width: 34px !important;
-    background: #f1f5f9 !important;
-    background-color: #f1f5f9 !important;
-    border: 1px solid #cbd5e1 !important;
-    border-radius: 8px !important;
-    color: #1e293b !important;
-    display: inline-flex !important;
-    align-items: center !important;
-    justify-content: center !important;
-    cursor: pointer !important;
-    z-index: 10 !important;
-    padding: 0 !important;
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08) !important;
-
-    .v-btn__overlay,
-    .v-btn__underlay {
-      display: none !important;
-    }
-
-    .v-btn__content {
-      color: #1e293b !important;
-      display: inline-flex !important;
-      align-items: center !important;
-      justify-content: center !important;
-    }
-
-    *,
-    .v-icon,
-    i,
-    svg {
-      color: #1e293b !important;
-      fill: #1e293b !important;
-      font-size: 1.25rem !important;
-      opacity: 1 !important;
-      visibility: visible !important;
-    }
-
-    &:hover {
-      background: #e2e8f0 !important;
-      background-color: #e2e8f0 !important;
-      border-color: #94a3b8 !important;
-      color: #0f172a !important;
-      transform: rotate(90deg) scale(1.05) !important;
-
-      *,
-      .v-icon,
-      i,
-      svg {
+      .reminder-card {
+        background: #ffffff !important;
+        border-color: #e2e8f0 !important;
         color: #0f172a !important;
-        fill: #0f172a !important;
-      }
-    }
-  }
-
-  // 6. ICONOS NÍTIDOS EN TEMA TALLER (Nunca transparentes ni atenuados)
-  .v-icon,
-  i.v-icon,
-  svg.v-icon,
-  .v-icon__svg,
-  .v-icon__component {
-    opacity: 1 !important;
-    visibility: visible !important;
-  }
-
-  .text-medium-emphasis {
-    color: #475569 !important;
-    opacity: 1 !important;
-  }
-
-  // Botones de acción en tablas con tonal: mayor contraste en el icono
-  .v-btn--variant-tonal {
-    &.v-btn--color-info {
-      color: #0284c7 !important;
-      background: rgba(14, 165, 233, 0.15) !important;
-      .v-icon { color: #0284c7 !important; opacity: 1 !important; }
-    }
-    &.v-btn--color-secondary {
-      color: #334155 !important;
-      background: rgba(71, 85, 105, 0.15) !important;
-      .v-icon { color: #334155 !important; opacity: 1 !important; }
-    }
-    &.v-btn--color-primary {
-      color: #8A1538 !important;
-      background: rgba(138, 21, 56, 0.15) !important;
-      .v-icon { color: #8A1538 !important; opacity: 1 !important; }
-    }
-    &.v-btn--color-success {
-      color: #059669 !important;
-      background: rgba(16, 185, 129, 0.15) !important;
-      .v-icon { color: #059669 !important; opacity: 1 !important; }
-    }
-    &.v-btn--color-warning {
-      color: #d97706 !important;
-      background: rgba(245, 158, 11, 0.15) !important;
-      .v-icon { color: #d97706 !important; opacity: 1 !important; }
-    }
-    &.v-btn--color-error {
-      color: #dc2626 !important;
-      background: rgba(239, 68, 68, 0.15) !important;
-      .v-icon { color: #dc2626 !important; opacity: 1 !important; }
-    }
-  }
-
-  // ESTILOS PARA EL CONTENIDO INTERNO DEL FORMULARIO DEL DIÁLOGO
-  .v-dialog .v-card-text,
-  [role="dialog"] .v-card-text {
-
-    // Encabezados de sección dentro del formulario (ej. 1. IDENTIFICACIÓN TRIBUTARIA)
-    .text-subtitle-2,
-    .font-weight-bold,
-    h6 {
-      color: #0f172a !important;
-    }
-
-    // Badges / iconos de las secciones (recuadros grises pequeños de números)
-    .v-avatar.v-avatar--variant-tonal,
-    .section-num-badge {
-      background: #f1f5f9 !important;
-      color: #8A1538 !important;
-      border: 1px solid #e2e8f0 !important;
-
-      .v-icon {
-        color: #8A1538 !important;
-        fill: #8A1538 !important;
-      }
-    }
-
-    // Campos de texto dentro del modal
-    .v-field {
-      background: #ffffff !important;
-      border: 1px solid #cbd5e1 !important;
-
-      .v-field__input {
-        color: #0f172a !important;
-      }
-
-      .v-label {
-        color: #475569 !important;
-      }
-
-      &.v-field--focused {
-        border-color: #8A1538 !important;
-      }
-    }
-  }
-
-  // MENÚS DESPLEGABLES TELEPORTADOS
-  .v-overlay--active.v-menu>.v-overlay__content>.v-list,
-  .v-select__content,
-  .v-autocomplete__content {
-    background: #ffffff !important;
-    border: 1px solid #e2e8f0 !important;
-    color: #0f172a !important;
-
-    .v-list-item {
-      color: #0f172a !important;
-
-      &:hover {
-        background: rgba(138, 21, 56, 0.08) !important;
-      }
-
-      &.v-list-item--active {
-        background: rgba(138, 21, 56, 0.12) !important;
-        color: #8A1538 !important;
 
         * {
-          color: #8A1538 !important;
+          color: #0f172a;
+        }
+
+        .text-medium-emphasis,
+        .text-caption {
+          color: #64748b !important;
         }
       }
     }
-  }
-}
 
-// ==========================================================================
-// 9. BLINDAJE TOTAL CONTRA FONDOS BLANCOS CON TEXTO BLANCO EN MODO OSCURO
-// ==========================================================================
-[data-theme="dark"],
-html[data-theme="dark"],
-body[data-theme="dark"],
-.v-theme--dark,
-.theme-dark,
-[data-theme="dark"],
-html[data-theme="dark"],
-body[data-theme="dark"],
-.theme-dark,
-.v-theme--dark,
-[data-theme="dark-glass"],
-html[data-theme="dark-glass"],
-body[data-theme="dark-glass"],
-.theme-dark-glass,
-[data-theme="semi-dark-glass"],
-html[data-theme="semi-dark-glass"],
-body[data-theme="semi-dark-glass"],
-.theme-semi-dark-glass {
-  // 1. Cabeceras y filas de tablas en cualquier página (facturas, ventas, etc.)
-  thead,
-  thead tr,
-  thead th,
-  .v-table thead,
-  .v-table thead tr,
-  .v-table thead th,
-  .v-data-table thead,
-  .v-data-table thead tr,
-  .v-data-table thead th,
-  .v-data-table__th,
-  .v-table tr.bg-grey-lighten-5,
-  .v-table tr.bg-grey-lighten-4,
-  .v-table tr.bg-grey-lighten-3,
-  .v-table tr.bg-slate-50,
-  .v-table tr.bg-slate-100,
-  .v-table thead.bg-grey-lighten-5,
-  .v-table thead.bg-grey-lighten-4,
-  tr.bg-grey-lighten-5,
-  tr.bg-grey-lighten-4,
-  tr.bg-grey-lighten-3,
-  tr.bg-slate-50,
-  tr.bg-slate-100,
-  .bg-grey-lighten-5 th,
-  .bg-grey-lighten-4 th,
-  .bg-grey-lighten-5 td,
-  .bg-grey-lighten-4 td {
-    background: var(--table-header-bg, #3A3E5B) !important;
-    background-color: var(--table-header-bg, #3A3E5B) !important;
-    color: var(--text-primary, #ffffff) !important;
-    border-color: var(--border-glass, rgba(255, 255, 255, 0.12)) !important;
-
-    .v-data-table-header__content,
-    span,
-    div {
-      color: var(--text-primary, #ffffff) !important;
+    .maintenance-fab-btn {
+      background: linear-gradient(135deg, #8A1538 0%, #600A1F 100%) !important;
     }
   }
 
-  // Soporte para módulo de Operaciones / Finanzas en temas oscuros
-  .operations-date-header {
-    background: rgba(255, 255, 255, 0.05) !important;
-    background-color: rgba(255, 255, 255, 0.05) !important;
-    border: 1px solid var(--border-glass, rgba(234, 234, 255, 0.14)) !important;
-    border-radius: 10px !important;
-
-    .date-icon-box {
-      background-color: rgba(102, 108, 255, 0.22) !important;
-      color: #a5b4fc !important;
-
-      .v-icon {
-        color: #a5b4fc !important;
-      }
-    }
-
-    .date-title-text {
-      color: #f8fafc !important;
-      font-weight: 700 !important;
-    }
-
-    .day-subtotal {
-      &.day-subtotal-income {
-        background-color: rgba(16, 185, 129, 0.18) !important;
-        color: #34d399 !important;
-        border: 1px solid rgba(16, 185, 129, 0.35) !important;
-      }
-
-      &.day-subtotal-expense {
-        background-color: rgba(239, 68, 68, 0.18) !important;
-        color: #f87171 !important;
-        border: 1px solid rgba(239, 68, 68, 0.35) !important;
-      }
-    }
-  }
-
-  .operations-movement-item {
-    background: var(--bg-surface, #2F3349) !important;
-    background-color: var(--bg-surface, #2F3349) !important;
-    border: 1px solid var(--border-glass, rgba(234, 234, 255, 0.12)) !important;
-    color: var(--text-primary, #ffffff) !important;
-
-    &:hover {
-      background: rgba(255, 255, 255, 0.08) !important;
-      border-color: rgba(102, 108, 255, 0.35) !important;
-    }
-
-    .movement-title-row {
+  // B. TEMA OSCURO (Dark)
+  [data-theme="dark"],
+  html[data-theme="dark"],
+  body[data-theme="dark"] {
+    .maintenance-drawer {
+      background: #2F3349 !important;
       color: #ffffff !important;
-      * {
+      border-left: 1px solid rgba(234, 234, 255, 0.12) !important;
+
+      .drawer-header {
+        background: #2F3349 !important;
+        border-bottom: 1px solid rgba(234, 234, 255, 0.12) !important;
+      }
+
+      .drawer-tabs {
+        background: #282A42 !important;
+        border-bottom: 1px solid rgba(234, 234, 255, 0.12) !important;
+
+        .v-tab {
+          color: rgba(234, 234, 255, 0.75) !important;
+
+          &.v-tab--selected {
+            background: #2F3349 !important;
+            color: #ffffff !important;
+
+            .v-btn__content,
+            >span:not(.drawer-tab-badge) {
+              color: #ffffff !important;
+              -webkit-text-fill-color: #ffffff !important;
+            }
+
+            .drawer-tab-badge {
+              background: rgba(102, 108, 255, 0.4) !important;
+              color: #ffffff !important;
+              -webkit-text-fill-color: #ffffff !important;
+            }
+          }
+        }
+      }
+
+      .drawer-body {
+        background: #282A42 !important;
+      }
+
+      .empty-state-container {
+        .empty-avatar {
+          background: rgba(102, 108, 255, 0.18) !important;
+          border-color: rgba(102, 108, 255, 0.35) !important;
+
+          .v-icon {
+            color: #ffffff !important;
+            fill: #ffffff !important;
+          }
+        }
+
+        .empty-title {
+          color: #ffffff !important;
+        }
+
+        .empty-desc {
+          color: rgba(234, 234, 255, 0.75) !important;
+        }
+      }
+
+      .reminder-card {
+        background: #2F3349 !important;
+        border-color: rgba(234, 234, 255, 0.12) !important;
         color: #ffffff !important;
+
+        * {
+          color: #ffffff;
+        }
+
+        .text-medium-emphasis,
+        .text-caption {
+          color: rgba(234, 234, 255, 0.70) !important;
+        }
+
+        .mileage-info-box {
+          background: rgba(255, 255, 255, 0.05) !important;
+          border-color: rgba(255, 255, 255, 0.12) !important;
+        }
       }
     }
 
-    .movement-client-row {
-      color: rgba(234, 234, 255, 0.75) !important;
-
-      .v-icon {
-        color: rgba(234, 234, 255, 0.60) !important;
-      }
-    }
-
-    .movement-direction-avatar {
-      &.avatar-income {
-        background-color: rgba(16, 185, 129, 0.18) !important;
-        color: #34d399 !important;
-        border: 1px solid rgba(16, 185, 129, 0.35) !important;
-      }
-
-      &.avatar-expense {
-        background-color: rgba(239, 68, 68, 0.18) !important;
-        color: #f87171 !important;
-        border: 1px solid rgba(239, 68, 68, 0.35) !important;
-      }
-
-      &.avatar-transfer {
-        background-color: rgba(14, 165, 233, 0.18) !important;
-        color: #38bdf8 !important;
-        border: 1px solid rgba(14, 165, 233, 0.35) !important;
-      }
+    .maintenance-fab-btn {
+      background: #2F3349 !important;
+      border: 1px solid rgba(255, 255, 255, 0.15) !important;
     }
   }
 
-  // 2. Estados Vacíos (Empty States como "No se encontraron facturas", etc.)
-  .v-card.bg-surface:not(.pepa-kpi-card):not([class*="kpi-gradient"]),
-  .v-card[class*="bg-surface"]:not(.pepa-kpi-card):not([class*="kpi-gradient"]),
-  .v-card.bg-white:not(.pepa-kpi-card):not([class*="kpi-gradient"]),
-  .v-card[class*="bg-white"]:not(.pepa-kpi-card):not([class*="kpi-gradient"]),
-  .empty-state-card {
-    background: var(--bg-surface, #2F3349) !important;
-    background-color: var(--bg-surface, #2F3349) !important;
-    color: var(--text-primary, #ffffff) !important;
-    border-color: var(--border-glass, rgba(255, 255, 255, 0.12)) !important;
-  }
+  // C. TEMA OSCURO TRASLÚCIDO (Dark-Glass)
+  [data-theme="dark-glass"],
+  html[data-theme="dark-glass"],
+  body[data-theme="dark-glass"] {
+    .maintenance-drawer {
+      background: rgba(16, 20, 36, 0.94) !important;
+      backdrop-filter: blur(25px) !important;
+      -webkit-backdrop-filter: blur(25px) !important;
+      color: #ffffff !important;
+      border-left: 1px solid rgba(255, 255, 255, 0.10) !important;
 
-  // 3. Status Pills en Listado de Facturas y Tablas
-  .status-paid,
-  .status-pill-clean.status-paid {
-    background-color: rgba(16, 185, 129, 0.18) !important;
-    color: #4ade80 !important;
-    border: 1px solid rgba(16, 185, 129, 0.40) !important;
+      .drawer-header {
+        background: rgba(12, 14, 25, 0.95) !important;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.10) !important;
+      }
 
-    .status-dot {
-      background-color: #10b981 !important;
+      .drawer-tabs {
+        background: rgba(10, 12, 22, 0.85) !important;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.10) !important;
+
+        .v-tab {
+          color: rgba(255, 255, 255, 0.75) !important;
+
+          &.v-tab--selected {
+            background: rgba(255, 255, 255, 0.12) !important;
+            color: #ffffff !important;
+
+            .v-btn__content,
+            >span:not(.drawer-tab-badge) {
+              color: #ffffff !important;
+              -webkit-text-fill-color: #ffffff !important;
+            }
+
+            .drawer-tab-badge {
+              background: rgba(115, 103, 240, 0.5) !important;
+              color: #ffffff !important;
+              -webkit-text-fill-color: #ffffff !important;
+            }
+          }
+        }
+      }
+
+      .drawer-body {
+        background: rgba(9, 10, 16, 0.88) !important;
+      }
+
+      .empty-state-container {
+        .empty-avatar {
+          background: rgba(115, 103, 240, 0.20) !important;
+          border-color: rgba(115, 103, 240, 0.40) !important;
+
+          .v-icon {
+            color: #ffffff !important;
+            fill: #ffffff !important;
+          }
+        }
+
+        .empty-title {
+          color: #ffffff !important;
+        }
+
+        .empty-desc {
+          color: rgba(255, 255, 255, 0.75) !important;
+        }
+      }
+
+      .reminder-card {
+        background: rgba(255, 255, 255, 0.05) !important;
+        border-color: rgba(255, 255, 255, 0.10) !important;
+        color: #ffffff !important;
+
+        * {
+          color: #ffffff;
+        }
+
+        .text-medium-emphasis,
+        .text-caption {
+          color: rgba(255, 255, 255, 0.70) !important;
+        }
+
+        .mileage-info-box {
+          background: rgba(255, 255, 255, 0.04) !important;
+          border-color: rgba(255, 255, 255, 0.10) !important;
+        }
+      }
+    }
+
+    .maintenance-fab-btn {
+      background: rgba(12, 14, 25, 0.92) !important;
+      border: 1px solid rgba(255, 255, 255, 0.15) !important;
     }
   }
 
-  .status-partial,
-  .status-pill-clean.status-partial {
-    background-color: rgba(245, 158, 11, 0.18) !important;
-    color: #fbbf24 !important;
-    border: 1px solid rgba(245, 158, 11, 0.40) !important;
+  // D. TEMA SEMI-OSCURO TRASLÚCIDO (Semi-Dark-Glass)
+  [data-theme="semi-dark-glass"],
+  html[data-theme="semi-dark-glass"],
+  body[data-theme="semi-dark-glass"] {
+    .maintenance-drawer {
+      background: rgba(22, 31, 52, 0.94) !important;
+      backdrop-filter: blur(20px) !important;
+      -webkit-backdrop-filter: blur(20px) !important;
+      color: #f8fafc !important;
+      border-left: 1px solid rgba(255, 255, 255, 0.10) !important;
 
-    .status-dot {
-      background-color: #f59e0b !important;
+      .drawer-header {
+        background: rgba(20, 27, 47, 0.95) !important;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.10) !important;
+      }
+
+      .drawer-tabs {
+        background: rgba(15, 23, 42, 0.85) !important;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.10) !important;
+
+        .v-tab {
+          color: rgba(241, 245, 249, 0.75) !important;
+
+          &.v-tab--selected {
+            background: rgba(255, 255, 255, 0.12) !important;
+            color: #ffffff !important;
+
+            .v-btn__content,
+            >span:not(.drawer-tab-badge) {
+              color: #ffffff !important;
+              -webkit-text-fill-color: #ffffff !important;
+            }
+
+            .drawer-tab-badge {
+              background: rgba(99, 102, 241, 0.5) !important;
+              color: #ffffff !important;
+              -webkit-text-fill-color: #ffffff !important;
+            }
+          }
+        }
+      }
+
+      .drawer-body {
+        background: rgba(15, 23, 42, 0.88) !important;
+      }
+
+      .empty-state-container {
+        .empty-avatar {
+          background: rgba(99, 102, 241, 0.20) !important;
+          border-color: rgba(129, 140, 248, 0.40) !important;
+
+          .v-icon {
+            color: #ffffff !important;
+            fill: #ffffff !important;
+          }
+        }
+
+        .empty-title {
+          color: #f8fafc !important;
+        }
+
+        .empty-desc {
+          color: rgba(241, 245, 249, 0.75) !important;
+        }
+      }
+
+      .reminder-card {
+        background: rgba(255, 255, 255, 0.06) !important;
+        border-color: rgba(255, 255, 255, 0.10) !important;
+        color: #f8fafc !important;
+
+        * {
+          color: #f8fafc;
+        }
+
+        .text-medium-emphasis,
+        .text-caption {
+          color: rgba(241, 245, 249, 0.70) !important;
+        }
+
+        .mileage-info-box {
+          background: rgba(255, 255, 255, 0.05) !important;
+          border-color: rgba(255, 255, 255, 0.10) !important;
+        }
+      }
+    }
+
+    .maintenance-fab-btn {
+      background: rgba(20, 27, 47, 0.92) !important;
+      border: 1px solid rgba(255, 255, 255, 0.15) !important;
     }
   }
 
-  // 4. Clases Utilitarias Blancas y Grises Claras en General
-  .bg-white:not(.v-btn--elevated):not(.v-btn--flat):not(.v-chip--color):not(.status-pill):not(.badge):not(.badge-sri):not(.badge-internal),
-  .bg-slate-50,
-  .bg-slate-100,
-  .bg-slate-200,
-  .bg-grey-lighten-5,
-  .bg-grey-lighten-4,
-  .bg-grey-lighten-3,
-  .bg-grey-lighten-2,
-  .bg-grey-lighten-1,
-  .bg-grey-50,
-  .bg-grey-100,
-  .bg-grey-200,
-  .bg-gray-50,
-  .bg-gray-100,
-  .bg-gray-200,
-  .bg-blue-50,
-  .bg-purple-lighten-5 {
-    background: var(--bg-surface, #2F3349) !important;
-    background-color: var(--bg-surface, #2F3349) !important;
-    color: var(--text-primary, #ffffff) !important;
-    border-color: var(--border-glass, rgba(255, 255, 255, 0.12)) !important;
-  }
+  // ==========================================================================
+  // ESTILOS GLOBALES PARA MENÚ DE PERFIL DE USUARIO (UserProfile.vue)
+  // Soluciona transparencia no deseada y letras negras en fondos oscuros
+  // ==========================================================================
 
-  // Cajas destacadas de totales (ej: Total con IVA en catálogo y ventas)
-  .total-with-iva-box,
-  .bg-emerald-50,
-  [class*="bg-emerald-50"] {
-    background: rgba(16, 185, 129, 0.16) !important;
-    background-color: rgba(16, 185, 129, 0.16) !important;
-    border: 1.5px solid rgba(16, 185, 129, 0.35) !important;
+  // 1. Temas Claros y Tema Taller
+  [data-theme="light"] .user-profile-menu-list,
+  html[data-theme="light"] .user-profile-menu-list,
+  body[data-theme="light"] .user-profile-menu-list,
+  [data-theme="taller"] .user-profile-menu-list,
+  html[data-theme="taller"] .user-profile-menu-list,
+  body[data-theme="taller"] .user-profile-menu-list {
+    background: #ffffff !important;
+    background-color: #ffffff !important;
+    border: 1px solid #e2e8f0 !important;
+    box-shadow: 0 14px 38px rgba(15, 23, 42, 0.12) !important;
 
-    .total-with-iva-title,
-    .text-emerald-800 {
-      color: #34d399 !important;
-      -webkit-text-fill-color: #34d399 !important;
+    .user-profile-name,
+    .text-h6 {
+      color: #0f172a !important;
+      -webkit-text-fill-color: #0f172a !important;
       font-weight: 800 !important;
     }
 
-    .iva-subcaption,
-    .text-emerald-700 {
-      color: rgba(52, 211, 153, 0.85) !important;
-      -webkit-text-fill-color: rgba(52, 211, 153, 0.85) !important;
+    .user-profile-email,
+    .text-caption {
+      color: #475569 !important;
+      -webkit-text-fill-color: #475569 !important;
     }
 
-    .total-price-val,
-    .text-emerald-900 {
-      color: #34d399 !important;
-      -webkit-text-fill-color: #34d399 !important;
-      font-weight: 900 !important;
-    }
-  }
-
-  .bg-amber-50,
-  [class*="bg-amber-50"] {
-    background: rgba(245, 158, 11, 0.16) !important;
-    background-color: rgba(245, 158, 11, 0.16) !important;
-    border: 1.5px solid rgba(245, 158, 11, 0.35) !important;
-    color: #fbbf24 !important;
-  }
-
-  // Status pills en temas oscuros para evitar pasteles blancos
-  .status-paid {
-    background-color: rgba(16, 185, 129, 0.16) !important;
-    color: #34d399 !important;
-    border-color: rgba(16, 185, 129, 0.35) !important;
-    -webkit-text-fill-color: #34d399 !important;
-  }
-
-  .status-partial {
-    background-color: rgba(245, 158, 11, 0.16) !important;
-    color: #fbbf24 !important;
-    border-color: rgba(245, 158, 11, 0.35) !important;
-    -webkit-text-fill-color: #fbbf24 !important;
-  }
-
-  .status-transfer {
-    background-color: rgba(59, 130, 246, 0.16) !important;
-    color: #60a5fa !important;
-    border-color: rgba(59, 130, 246, 0.35) !important;
-    -webkit-text-fill-color: #60a5fa !important;
-  }
-
-  // 5. Overrides para estilos en línea con fondos blancos
-  [style*="background-color: #ffffff"],
-  [style*="background-color: #fff"],
-  [style*="background: #ffffff"],
-  [style*="background: #fff"],
-  [style*="background: white"],
-  [style*="background-color: white"],
-  [style*="background-color: #f8fafc"],
-  [style*="background-color: #fafafa"],
-  [style*="background-color: #fbfbfb"],
-  [style*="background-color: #f1f5f9"],
-  [style*="background-color: #f0fdf4"],
-  [style*="background-color: #f0f9ff"],
-  [style*="background-color: #f0f1ff"],
-  [style*="background-color: #eff6ff"],
-  [style*="background-color: #fffbeb"],
-  [style*="background-color: #ecfdf5"],
-  [style*="background: #ecfdf5"] {
-    background: var(--bg-surface, #2F3349) !important;
-    background-color: var(--bg-surface, #2F3349) !important;
-    color: var(--text-primary, #ffffff) !important;
-    border-color: var(--border-glass, rgba(255, 255, 255, 0.12)) !important;
-
-    * {
-      color: var(--text-primary, #ffffff);
-    }
-  }
-}
-
-// 6. PROTECCIÓN TOTAL Y VITALICIA PARA TARJETAS KPI (Dashboard) EN CUALQUIER TEMA
-html body .v-application .pepa-kpi-card,
-html body .pepa-kpi-card,
-.v-card.pepa-kpi-card,
-.pepa-kpi-card {
-  color: #ffffff !important;
-  border: none !important;
-
-  &.kpi-gradient-primary,
-  &[class*="gradient-primary"] {
-    background: linear-gradient(135deg, #6366F1 0%, #8B5CF6 50%, #A855F7 100%) !important;
-    background-color: transparent !important;
-    box-shadow: 0 10px 28px rgba(99, 102, 241, 0.35) !important;
-  }
-
-  &.kpi-gradient-info,
-  &[class*="gradient-info"] {
-    background: linear-gradient(135deg, #0EA5E9 0%, #06B6D4 50%, #14B8A6 100%) !important;
-    background-color: transparent !important;
-    box-shadow: 0 10px 28px rgba(14, 165, 233, 0.35) !important;
-  }
-
-  &.kpi-gradient-success,
-  &[class*="gradient-success"] {
-    background: linear-gradient(135deg, #10B981 0%, #059669 50%, #047857 100%) !important;
-    background-color: transparent !important;
-    box-shadow: 0 10px 28px rgba(16, 185, 129, 0.35) !important;
-  }
-
-  &.kpi-gradient-warning,
-  &[class*="gradient-warning"] {
-    background: linear-gradient(135deg, #F59E0B 0%, #EA580C 50%, #D97706 100%) !important;
-    background-color: transparent !important;
-    box-shadow: 0 10px 28px rgba(245, 158, 11, 0.35) !important;
-  }
-
-  *,
-  h1, h2, h3, h4, h5, h6,
-  div, span, p,
-  .text-h4,
-  .text-caption,
-  .text-white,
-  .kpi-badge-pill,
-  .kpi-icon-bubble,
-  .v-icon,
-  i, svg {
-    color: #ffffff !important;
-    -webkit-text-fill-color: #ffffff !important;
-  }
-}
-
-// ==========================================================================
-// BLINDAJE DE TOOLTIPS: MÁXIMO CONTRASTE Y TEXTO BLANCO NÍTIDO
-// ==========================================================================
-.v-tooltip .v-overlay__content,
-.v-tooltip.v-overlay .v-overlay__content,
-.v-overlay--active.v-tooltip .v-overlay__content {
-  background: rgba(15, 23, 42, 0.96) !important;
-  color: #ffffff !important;
-  border: 1px solid rgba(255, 255, 255, 0.22) !important;
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.40) !important;
-  border-radius: 8px !important;
-  padding: 6px 12px !important;
-  font-size: 0.8125rem !important;
-  line-height: 1.4 !important;
-  z-index: 99999 !important;
-
-  *,
-  span,
-  strong,
-  p,
-  div {
-    color: #ffffff !important;
-    -webkit-text-fill-color: #ffffff !important;
-  }
-
-  strong {
-    color: #FBBF24 !important; // Amarillo dorado destacado para pendientes
-    -webkit-text-fill-color: #FBBF24 !important;
-    font-weight: 800 !important;
-  }
-}
-
-// ==========================================================================
-// BLINDAJE TOTAL DE DIÁLOGOS (V-DIALOG) EN TODO EL SISTEMA:
-// 1. Esquinas redondeadas perfectas (20px) tanto arriba como abajo sin cortes.
-// 2. Cabeceras con textos, iconos, badges, chips y botón cerrar en BLANCO PURO.
-// 3. Pie de página nítido con esquinas inferiores redondeadas y botón cerrar de alto contraste.
-// ==========================================================================
-
-// Contenedor del V-Dialog y Tarjeta (Card)
-.v-dialog .v-overlay__content,
-.v-overlay.v-dialog .v-overlay__content,
-.v-overlay--active.v-dialog .v-overlay__content,
-.v-dialog.v-overlay .v-overlay__content {
-  border-radius: 20px !important;
-  overflow: hidden !important;
-  clip-path: inset(0 round 20px) !important;
-  -webkit-clip-path: inset(0 round 20px) !important;
-}
-
-.v-dialog .v-card,
-.v-dialog .custom-dialog-card,
-.v-overlay.v-dialog .v-card,
-.v-overlay--active.v-dialog .v-card,
-.custom-dialog-card {
-  border-radius: 20px !important;
-  overflow: hidden !important;
-  clip-path: inset(0 round 20px) !important;
-  -webkit-clip-path: inset(0 round 20px) !important;
-  isolation: isolate !important;
-  -webkit-mask-image: -webkit-radial-gradient(white, black) !important;
-  box-shadow: 0 25px 70px rgba(15, 23, 42, 0.28) !important;
-}
-
-// 1. CABECERA DE LOS V-DIALOGS (En todo el sistema)
-.v-dialog .custom-dialog-header-primary,
-.v-dialog .custom-dialog-header,
-.v-dialog .custom-dialog-header-info,
-.v-dialog .custom-dialog-header-secondary,
-.v-dialog .dialog-header-banner,
-.v-dialog .dialog-header-workshop,
-.v-dialog .sale-dialog-header-banner,
-.v-dialog .product-quick-header,
-.v-dialog .profile-header-banner,
-.v-dialog [class*="dialog-header"],
-.v-dialog [class*="header-primary"],
-.custom-dialog-header-primary,
-.custom-dialog-header {
-  border-top-left-radius: 20px !important;
-  border-top-right-radius: 20px !important;
-  border-bottom-left-radius: 0 !important;
-  border-bottom-right-radius: 0 !important;
-  background: linear-gradient(135deg, #666CFF 0%, #5B61EB 50%, #4F54E5 100%) !important;
-  color: #ffffff !important;
-  padding: 1.5rem 1.5rem 1.25rem 1.5rem !important;
-  position: relative !important;
-
-  // Textos, títulos y subtítulos en blanco puro
-  *,
-  h1, h2, h3, h4, h5, h6,
-  .custom-dialog-title,
-  .custom-dialog-subtitle,
-  .dialog-title,
-  .dialog-subtitle,
-  p,
-  span,
-  label,
-  strong,
-  b,
-  div {
-    color: #ffffff !important;
-    -webkit-text-fill-color: #ffffff !important;
-  }
-
-  .custom-dialog-subtitle,
-  .dialog-subtitle {
-    color: rgba(255, 255, 255, 0.92) !important;
-    -webkit-text-fill-color: rgba(255, 255, 255, 0.92) !important;
-    opacity: 1 !important;
-  }
-
-  // Ícono Avatar Superior
-  .custom-dialog-avatar,
-  .header-avatar-badge {
-    background: rgba(255, 255, 255, 0.22) !important;
-    backdrop-filter: blur(8px) !important;
-    -webkit-backdrop-filter: blur(8px) !important;
-    border: 1.5px solid rgba(255, 255, 255, 0.45) !important;
-    border-radius: 16px !important;
-
-    .v-icon,
-    i,
-    svg {
-      color: #ffffff !important;
-      fill: #ffffff !important;
-      opacity: 1 !important;
-    }
-  }
-
-  // Botón "X" de cerrar superior derecho
-  .custom-dialog-close-btn,
-  .v-dialog-close-btn {
-    background: rgba(255, 255, 255, 0.22) !important;
-    border: 1px solid rgba(255, 255, 255, 0.38) !important;
-    border-radius: 10px !important;
-    color: #ffffff !important;
-    width: 36px !important;
-    height: 36px !important;
-    min-width: 36px !important;
-    display: inline-flex !important;
-    align-items: center !important;
-    justify-content: center !important;
-    opacity: 1 !important;
-    transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1) !important;
-
-    .v-icon,
-    i,
-    svg {
-      color: #ffffff !important;
-      fill: #ffffff !important;
-      font-size: 20px !important;
-      opacity: 1 !important;
-    }
-
-    &:hover {
-      background: rgba(255, 255, 255, 0.38) !important;
-      border-color: rgba(255, 255, 255, 0.65) !important;
-      transform: scale(1.08) !important;
-
-      .v-icon,
-      i,
-      svg {
-        color: #ffffff !important;
-        fill: #ffffff !important;
-      }
-    }
-  }
-
-  // Badges, Chips y Pills dentro de la cabecera (Activo, Cédula, Natural, etc.)
-  .v-chip,
-  .rounded-pill,
-  [class*="pill"],
-  [class*="chip"],
-  [class*="badge"],
-  .d-inline-flex.rounded-pill {
-    background: rgba(255, 255, 255, 0.22) !important;
-    border: 1px solid rgba(255, 255, 255, 0.38) !important;
-    backdrop-filter: blur(8px) !important;
-    -webkit-backdrop-filter: blur(8px) !important;
-    color: #ffffff !important;
-    -webkit-text-fill-color: #ffffff !important;
-
-    *,
-    span,
-    strong,
-    b,
-    div {
-      color: #ffffff !important;
-      -webkit-text-fill-color: #ffffff !important;
-    }
-
-    .v-icon,
-    i,
-    svg {
-      color: #ffffff !important;
-      fill: #ffffff !important;
-      opacity: 1 !important;
-    }
-
-    // Variantes de color en cabecera
-    &[style*="185, 129"],
-    &[style*="success"],
-    &.status-paid,
-    &.bg-success {
-      background: rgba(16, 185, 129, 0.35) !important;
-      border: 1px solid rgba(16, 185, 129, 0.60) !important;
-    }
-
-    &[style*="239, 68"],
-    &[style*="error"],
-    &.status-danger,
-    &.bg-error {
-      background: rgba(239, 68, 68, 0.35) !important;
-      border: 1px solid rgba(239, 68, 68, 0.60) !important;
-    }
-
-    &[style*="245, 158"],
-    &[style*="warning"],
-    &.status-warning,
-    &.bg-warning {
-      background: rgba(245, 158, 11, 0.35) !important;
-      border: 1px solid rgba(245, 158, 11, 0.60) !important;
-    }
-  }
-}
-
-// 2. PIE DE PÁGINA DE LOS V-DIALOGS (En todo el sistema)
-.v-dialog .v-card-actions,
-.v-dialog .v-card > .v-card-actions,
-.custom-dialog-card .v-card-actions,
-.v-dialog .dialog-footer,
-.v-dialog .sticky-dialog-footer,
-.v-dialog .dialog-actions-responsive,
-.v-dialog .v-card-actions[style*="sticky"],
-.v-card-actions.dialog-actions-responsive,
-.v-dialog .v-card > div:last-child,
-.v-dialog .v-card > footer:last-child {
-  border-bottom-left-radius: 20px !important;
-  border-bottom-right-radius: 20px !important;
-  border-top-left-radius: 0 !important;
-  border-top-right-radius: 0 !important;
-  clip-path: inset(0 0 0 0 round 0 0 20px 20px) !important;
-  -webkit-clip-path: inset(0 0 0 0 round 0 0 20px 20px) !important;
-  background: #ffffff !important;
-  border-top: 1px solid #e2e8f0 !important;
-  box-shadow: 0 -3px 12px rgba(0, 0, 0, 0.04) !important;
-  padding: 1rem 1.5rem !important;
-  overflow: hidden !important;
-}
-
-// Barra de metadatos previa al footer (ej. "Registrado por: ...")
-.v-dialog .bg-card-footer {
-  background: #f8fafc !important;
-  border-top: 1px solid #e2e8f0 !important;
-  color: #64748b !important;
-
-  *, span {
-    color: #64748b !important;
-  }
-
-  strong {
-    color: #1e293b !important;
-  }
-}
-
-// Botón de Cerrar / Secundario del pie de página (Modo Claro / Taller)
-[data-theme="light"] .v-dialog .v-card-actions,
-html[data-theme="light"] .v-dialog .v-card-actions,
-body[data-theme="light"] .v-dialog .v-card-actions,
-[data-theme="taller"] .v-dialog .v-card-actions,
-html[data-theme="taller"] .v-dialog .v-card-actions,
-body[data-theme="taller"] .v-dialog .v-card-actions,
-.v-theme--light .v-dialog .v-card-actions,
-.v-theme--taller .v-dialog .v-card-actions {
-  .btn-close-footer,
-  .v-btn.btn-close-footer,
-  .v-btn--variant-outlined,
-  .v-btn--variant-tonal,
-  .text-secondary,
-  .v-btn[color="secondary"],
-  .v-btn:not(.bg-primary):not([class*="bg-primary"]):not(.v-btn--variant-flat):not([class*="bg-info"]):not([class*="bg-success"]):not([class*="bg-error"]) {
-    background: #f8fafc !important;
-    background-color: #f8fafc !important;
-    border: 1.5px solid #cbd5e1 !important;
-    color: #0f172a !important;
-    -webkit-text-fill-color: #0f172a !important;
-    font-weight: 700 !important;
-    font-size: 0.875rem !important;
-    letter-spacing: 0.01em !important;
-    border-radius: 10px !important;
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05) !important;
-    transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1) !important;
-
-    .v-btn__overlay,
-    .v-btn__underlay {
-      display: none !important;
-      opacity: 0 !important;
-    }
-
-    .v-btn__content,
-    .v-btn__content span,
-    .v-btn__content i,
-    .v-btn__content .v-icon,
-    i.v-icon {
+    .user-profile-item-title,
+    .v-list-item-title {
       color: #0f172a !important;
-      fill: #0f172a !important;
       -webkit-text-fill-color: #0f172a !important;
-      opacity: 1 !important;
-      font-weight: 700 !important;
-    }
 
-    &:hover {
-      background: #e2e8f0 !important;
-      background-color: #e2e8f0 !important;
-      border-color: #94a3b8 !important;
-      color: #000000 !important;
-      -webkit-text-fill-color: #000000 !important;
-      transform: translateY(-1px) !important;
-      box-shadow: 0 3px 6px rgba(0, 0, 0, 0.08) !important;
-
-      .v-btn__content,
-      .v-btn__content span,
-      .v-btn__content i,
-      .v-btn__content .v-icon,
-      i.v-icon {
-        color: #000000 !important;
-        fill: #000000 !important;
-        -webkit-text-fill-color: #000000 !important;
+      * {
+        color: #0f172a !important;
+        -webkit-text-fill-color: #0f172a !important;
       }
     }
+
+    .user-profile-item-subtitle,
+    .v-list-item-subtitle {
+      color: #475569 !important;
+      -webkit-text-fill-color: #475569 !important;
+    }
+
+    .user-profile-arrow-icon {
+      color: #64748b !important;
+    }
+
+    .profile-menu-close-btn {
+      color: #64748b !important;
+    }
+
+    .theme-subitems-wrapper {
+      background: #f8fafc !important;
+      border-color: #e2e8f0 !important;
+    }
+
+    .theme-group-label {
+      color: #64748b !important;
+    }
+
+    .user-profile-footer {
+      background: #ffffff !important;
+      border-top: 1px solid #e2e8f0 !important;
+    }
   }
-}
 
-// Botón primario de acción en el pie de página
-.v-dialog .v-card-actions .v-btn.bg-primary,
-.v-dialog .v-card-actions .v-btn[color="primary"]:not(.v-btn--variant-outlined) {
-  background: linear-gradient(135deg, #666CFF 0%, #5B61EB 100%) !important;
-  color: #ffffff !important;
-  font-weight: 700 !important;
-  border-radius: 10px !important;
-  border: none !important;
-  box-shadow: 0 3px 10px rgba(102, 108, 255, 0.35) !important;
-
-  .v-btn__overlay,
-  .v-btn__underlay {
-    display: none !important;
-    opacity: 0 !important;
-  }
-
-  .v-btn__content,
-  .v-btn__content span,
-  .v-btn__content i,
-  .v-btn__content .v-icon,
-  i.v-icon {
-    color: #ffffff !important;
-    fill: #ffffff !important;
-    -webkit-text-fill-color: #ffffff !important;
-  }
-
-  &:hover {
-    background: linear-gradient(135deg, #5B61EB 0%, #4F54E5 100%) !important;
-    box-shadow: 0 5px 14px rgba(102, 108, 255, 0.45) !important;
-    transform: translateY(-1px) !important;
-  }
-}
-
-// Soporte para Temas Oscuros en el footer de los V-Dialogs
-.v-theme--dark,
-[data-theme="dark"],
-html[data-theme="dark"],
-body[data-theme="dark"],
-.theme-dark,
-.v-theme--dark-glass,
-[data-theme="dark-glass"],
-html[data-theme="dark-glass"],
-body[data-theme="dark-glass"],
-.theme-dark-glass,
-.v-theme--semi-dark-glass,
-[data-theme="semi-dark-glass"],
-html[data-theme="semi-dark-glass"],
-body[data-theme="semi-dark-glass"],
-.theme-semi-dark-glass {
-  .v-dialog .v-card-actions,
-  .v-dialog .v-card > .v-card-actions,
-  .custom-dialog-card .v-card-actions {
+  // 2. Temas Oscuros y Transparentes (Dark, Dark-Glass, Semi-Dark-Glass)
+  [data-theme="dark"] .user-profile-menu-list,
+  html[data-theme="dark"] .user-profile-menu-list,
+  body[data-theme="dark"] .user-profile-menu-list,
+  .v-theme--dark .user-profile-menu-list,
+  .theme-dark .user-profile-menu-list,
+  [data-theme="dark-glass"] .user-profile-menu-list,
+  html[data-theme="dark-glass"] .user-profile-menu-list,
+  body[data-theme="dark-glass"] .user-profile-menu-list,
+  .v-theme--dark-glass .user-profile-menu-list,
+  .theme-dark-glass .user-profile-menu-list,
+  [data-theme="semi-dark-glass"] .user-profile-menu-list,
+  html[data-theme="semi-dark-glass"] .user-profile-menu-list,
+  body[data-theme="semi-dark-glass"] .user-profile-menu-list,
+  .v-theme--semi-dark-glass .user-profile-menu-list,
+  .theme-semi-dark-glass .user-profile-menu-list {
     background: #181d2e !important;
     background-color: #181d2e !important;
-    border-top: 1px solid rgba(255, 255, 255, 0.12) !important;
-  }
-
-  .v-dialog .bg-card-footer {
-    background: #141724 !important;
-    border-top: 1px solid rgba(255, 255, 255, 0.1) !important;
-    color: rgba(255, 255, 255, 0.7) !important;
-
-    *, span {
-      color: rgba(255, 255, 255, 0.7) !important;
-    }
-
-    strong {
-      color: #ffffff !important;
-    }
-  }
-
-  .v-dialog .v-card-actions .btn-close-footer,
-  .v-dialog .v-card-actions .v-btn.btn-close-footer,
-  .v-dialog .v-card-actions .v-btn[color="secondary"],
-  .v-dialog .v-card-actions .v-btn.v-btn--variant-outlined,
-  .v-dialog .v-card-actions .v-btn.v-btn--variant-tonal,
-  .v-dialog .v-card-actions .v-btn:not(.bg-primary):not([class*="bg-primary"]):not(.v-btn--variant-flat):not([class*="bg-info"]):not([class*="bg-success"]):not([class*="bg-error"]),
-  .custom-dialog-card .v-card-actions .v-btn[color="secondary"],
-  .custom-dialog-card .v-card-actions .v-btn--variant-outlined,
-  .custom-dialog-card .v-card-actions .v-btn--variant-tonal,
-  .custom-dialog-card .v-card-actions .v-btn:not(.bg-primary):not([class*="bg-primary"]):not(.v-btn--variant-flat):not([class*="bg-info"]):not([class*="bg-success"]):not([class*="bg-error"]) {
-    background: rgba(255, 255, 255, 0.08) !important;
-    background-color: rgba(255, 255, 255, 0.08) !important;
-    border: 1.5px solid rgba(255, 255, 255, 0.28) !important;
+    backdrop-filter: blur(25px) !important;
+    -webkit-backdrop-filter: blur(25px) !important;
+    border: 1px solid rgba(255, 255, 255, 0.16) !important;
+    box-shadow: 0 18px 48px rgba(0, 0, 0, 0.65) !important;
     color: #ffffff !important;
-    -webkit-text-fill-color: #ffffff !important;
-    font-weight: 700 !important;
-    border-radius: 10px !important;
 
-    .v-btn__overlay,
-    .v-btn__underlay {
-      display: none !important;
-      opacity: 0 !important;
+    .user-profile-header {
+      background: linear-gradient(180deg, rgba(102, 108, 255, 0.20) 0%, rgba(24, 29, 46, 0.05) 100%) !important;
     }
 
-    .v-btn__content,
-    .v-btn__content span,
-    .v-btn__content i,
-    .v-btn__content .v-icon,
-    i.v-icon {
+    .user-profile-name,
+    .text-h6,
+    [class*="user-profile-name"] {
       color: #ffffff !important;
-      fill: #ffffff !important;
       -webkit-text-fill-color: #ffffff !important;
-      opacity: 1 !important;
+      font-weight: 800 !important;
+      font-size: 1.0625rem !important;
+    }
+
+    .user-profile-email,
+    .text-caption,
+    [class*="user-profile-email"] {
+      color: #cbd5e1 !important;
+      -webkit-text-fill-color: #cbd5e1 !important;
+      opacity: 0.9 !important;
+    }
+
+    .v-list-item {
+      color: #ffffff !important;
+
+      &:hover {
+        background: rgba(255, 255, 255, 0.09) !important;
+      }
+    }
+
+    .user-profile-item-title,
+    .v-list-item-title,
+    [class*="user-profile-item-title"] {
+      color: #ffffff !important;
+      -webkit-text-fill-color: #ffffff !important;
       font-weight: 700 !important;
-    }
 
-    &:hover {
-      background: rgba(255, 255, 255, 0.18) !important;
-      background-color: rgba(255, 255, 255, 0.18) !important;
-      border-color: rgba(255, 255, 255, 0.5) !important;
-      color: #ffffff !important;
-      -webkit-text-fill-color: #ffffff !important;
-
-      .v-btn__content,
-      .v-btn__content span,
-      .v-btn__content i,
-      .v-btn__content .v-icon,
-      i.v-icon {
+      * {
         color: #ffffff !important;
-        fill: #ffffff !important;
         -webkit-text-fill-color: #ffffff !important;
       }
     }
-  }
-}
 
-// ==========================================================================
-// BLINDAJE DINÁMICO DEL MENÚ LATERAL (SIDEBAR): COLOR Y TEMA EXACTO
-// ==========================================================================
-.layout-vertical-nav,
-.layout-nav-type-vertical .layout-vertical-nav,
-.v-navigation-drawer.layout-vertical-nav {
-  background: var(--bg-sidebar, var(--bg-header)) !important;
-  background-color: transparent !important;
-  border-right: 1px solid var(--border-glass, rgba(255, 255, 255, 0.15)) !important;
-  box-shadow: 4px 0 25px rgba(0, 0, 0, 0.18) !important;
-
-  .v-navigation-drawer__content,
-  .nav-items {
-    background: transparent !important;
-  }
-
-  .nav-header {
-    background: transparent !important;
-    border-bottom: 1px solid var(--border-glass, rgba(255, 255, 255, 0.15)) !important;
-
-    .app-logo-title {
-      color: #ffffff !important;
-    }
-  }
-
-  // Títulos de sección (COMERCIAL, FINANZAS, SERVICIOS, INVENTARIO, etc.)
-  .nav-section-title {
-    opacity: 1 !important;
-
-    .title-text {
-      color: #ffffff !important;
-      opacity: 0.92 !important;
-      font-weight: 800 !important;
-      text-shadow: 0 1px 2px rgba(0, 0, 0, 0.25) !important;
-      letter-spacing: 0.12em !important;
-      text-transform: uppercase !important;
-
-      &::before,
-      &::after {
-        border-color: rgba(255, 255, 255, 0.45) !important;
-        border-block-end-color: rgba(255, 255, 255, 0.45) !important;
-      }
-    }
-  }
-
-  // Enlaces de navegación e iconos
-  .nav-link a,
-  .nav-group-label {
-    color: #ffffff !important;
-
-    *,
-    span,
-    .nav-item-title,
-    .nav-item-icon,
-    .nav-group-arrow,
-    .v-icon {
-      color: #ffffff !important;
-      fill: #ffffff !important;
-      opacity: 1 !important;
+    .user-profile-item-subtitle,
+    .v-list-item-subtitle,
+    [class*="user-profile-item-subtitle"] {
+      color: #94a3b8 !important;
+      -webkit-text-fill-color: #94a3b8 !important;
+      opacity: 0.9 !important;
     }
 
-    &:hover {
-      background: rgba(255, 255, 255, 0.18) !important;
-      color: #ffffff !important;
-
-      *,
-      span,
-      .nav-item-title,
-      .nav-item-icon,
-      .nav-group-arrow,
-      .v-icon {
-        color: #ffffff !important;
-        fill: #ffffff !important;
-      }
-    }
-  }
-
-  // Submenús / Hijos de grupos
-  .nav-group.open > .nav-group-label {
-    background: rgba(255, 255, 255, 0.14) !important;
-    color: #ffffff !important;
-
-    *,
-    span,
-    .nav-item-title,
-    .nav-item-icon,
-    .nav-group-arrow,
-    .v-icon {
-      color: #ffffff !important;
-      fill: #ffffff !important;
-    }
-  }
-
-  .nav-group-children {
-    border-left: 1.5px solid rgba(255, 255, 255, 0.35) !important;
-
-    .nav-link a {
-      color: rgba(255, 255, 255, 0.92) !important;
-
-      *,
-      span,
-      .nav-item-icon,
-      .nav-item-title {
-        color: rgba(255, 255, 255, 0.92) !important;
-        fill: rgba(255, 255, 255, 0.92) !important;
-      }
-
-      &:hover {
-        background: rgba(255, 255, 255, 0.16) !important;
-        color: #ffffff !important;
-
-        *,
-        span,
-        .nav-item-icon,
-        .nav-item-title {
-          color: #ffffff !important;
-          fill: #ffffff !important;
-        }
-      }
-    }
-  }
-
-  // Elemento activo seleccionado (adaptable a cada tema)
-  .nav-link > a.router-link-active,
-  .nav-link > a.router-link-exact-active,
-  .nav-link.router-link-active > a,
-  .nav-link.router-link-exact-active > a,
-  .v-list-item--active {
-    background: var(--bg-active-item, #ffffff) !important;
-    color: var(--text-active, #5C61E6) !important;
-    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.18) !important;
-    border: none !important;
-
-    *,
-    span,
-    .nav-item-icon,
-    .nav-item-title,
-    .v-icon {
-      color: var(--text-active, #5C61E6) !important;
-      fill: var(--text-active, #5C61E6) !important;
-      font-weight: 800 !important;
-      -webkit-text-fill-color: var(--text-active, #5C61E6) !important;
-    }
-  }
-
-  .sidebar-collapse-footer {
-    border-top: 1px solid rgba(255, 255, 255, 0.15) !important;
-
-    .sidebar-footer-toggle-btn {
-      color: #ffffff !important;
-      background: rgba(255, 255, 255, 0.12) !important;
-
-      .v-icon {
-        color: #ffffff !important;
-        fill: #ffffff !important;
-      }
-
-      &:hover {
-        background: rgba(255, 255, 255, 0.22) !important;
-        color: #ffffff !important;
-      }
-    }
-  }
-}
-
-// ==========================================================================
-// BLINDAJE DINÁMICO DEL PANEL DE RECORDATORIOS (MaintenanceRemindersDrawer.vue)
-// Respeto absoluto del tema activo: Taller, Dark, Dark-Glass, Semi-Dark, Light
-// ==========================================================================
-
-// A. TEMA TALLER (Oficial Rojo Vino)
-[data-theme="taller"],
-html[data-theme="taller"],
-body[data-theme="taller"] {
-  .maintenance-drawer {
-    background: #ffffff !important;
-    color: #0f172a !important;
-    border-left: 1px solid #e2e8f0 !important;
-
-    .drawer-header {
-      background: linear-gradient(135deg, #8A1538 0%, #600A1F 100%) !important;
-      border-bottom: 1px solid rgba(255, 255, 255, 0.20) !important;
-    }
-
-    .drawer-tabs {
-      background: #f8fafc !important;
-      border-bottom: 1px solid #e2e8f0 !important;
-
-      .v-tab {
-        color: #64748b !important;
-
-        &.v-tab--selected {
-          background: #ffffff !important;
-          color: #8A1538 !important;
-
-          .v-btn__content,
-          > span:not(.drawer-tab-badge) {
-            color: #8A1538 !important;
-            -webkit-text-fill-color: #8A1538 !important;
-          }
-
-          .drawer-tab-badge {
-            background: #8A1538 !important;
-            color: #ffffff !important;
-            -webkit-text-fill-color: #ffffff !important;
-          }
-        }
-      }
-    }
-
-    .drawer-body {
-      background: #f8fafc !important;
-    }
-
-    .empty-state-container {
-      .empty-avatar {
-        background: rgba(138, 21, 56, 0.12) !important;
-        border-color: rgba(138, 21, 56, 0.35) !important;
-
-        .v-icon {
-          color: #8A1538 !important;
-          fill: #8A1538 !important;
-        }
-      }
-
-      .empty-title {
-        color: #0f172a !important;
-      }
-
-      .empty-desc {
-        color: #64748b !important;
-      }
-    }
-
-    .reminder-card {
-      background: #ffffff !important;
-      border-color: #e2e8f0 !important;
-      color: #0f172a !important;
-
-      * {
-        color: #0f172a;
-      }
-
-      .text-medium-emphasis,
-      .text-caption {
-        color: #64748b !important;
-      }
-    }
-  }
-
-  .maintenance-fab-btn {
-    background: linear-gradient(135deg, #8A1538 0%, #600A1F 100%) !important;
-  }
-}
-
-// B. TEMA OSCURO (Dark)
-[data-theme="dark"],
-html[data-theme="dark"],
-body[data-theme="dark"] {
-  .maintenance-drawer {
-    background: #2F3349 !important;
-    color: #ffffff !important;
-    border-left: 1px solid rgba(234, 234, 255, 0.12) !important;
-
-    .drawer-header {
-      background: #2F3349 !important;
-      border-bottom: 1px solid rgba(234, 234, 255, 0.12) !important;
-    }
-
-    .drawer-tabs {
-      background: #282A42 !important;
-      border-bottom: 1px solid rgba(234, 234, 255, 0.12) !important;
-
-      .v-tab {
-        color: rgba(234, 234, 255, 0.75) !important;
-
-        &.v-tab--selected {
-          background: #2F3349 !important;
-          color: #ffffff !important;
-
-          .v-btn__content,
-          > span:not(.drawer-tab-badge) {
-            color: #ffffff !important;
-            -webkit-text-fill-color: #ffffff !important;
-          }
-
-          .drawer-tab-badge {
-            background: rgba(102, 108, 255, 0.4) !important;
-            color: #ffffff !important;
-            -webkit-text-fill-color: #ffffff !important;
-          }
-        }
-      }
-    }
-
-    .drawer-body {
-      background: #282A42 !important;
-    }
-
-    .empty-state-container {
-      .empty-avatar {
-        background: rgba(102, 108, 255, 0.18) !important;
-        border-color: rgba(102, 108, 255, 0.35) !important;
-
-        .v-icon {
-          color: #ffffff !important;
-          fill: #ffffff !important;
-        }
-      }
-
-      .empty-title {
-        color: #ffffff !important;
-      }
-
-      .empty-desc {
-        color: rgba(234, 234, 255, 0.75) !important;
-      }
-    }
-
-    .reminder-card {
-      background: #2F3349 !important;
-      border-color: rgba(234, 234, 255, 0.12) !important;
-      color: #ffffff !important;
-
-      * {
-        color: #ffffff;
-      }
-
-      .text-medium-emphasis,
-      .text-caption {
-        color: rgba(234, 234, 255, 0.70) !important;
-      }
-
-      .mileage-info-box {
-        background: rgba(255, 255, 255, 0.05) !important;
-        border-color: rgba(255, 255, 255, 0.12) !important;
-      }
-    }
-  }
-
-  .maintenance-fab-btn {
-    background: #2F3349 !important;
-    border: 1px solid rgba(255, 255, 255, 0.15) !important;
-  }
-}
-
-// C. TEMA OSCURO TRASLÚCIDO (Dark-Glass)
-[data-theme="dark-glass"],
-html[data-theme="dark-glass"],
-body[data-theme="dark-glass"] {
-  .maintenance-drawer {
-    background: rgba(16, 20, 36, 0.94) !important;
-    backdrop-filter: blur(25px) !important;
-    -webkit-backdrop-filter: blur(25px) !important;
-    color: #ffffff !important;
-    border-left: 1px solid rgba(255, 255, 255, 0.10) !important;
-
-    .drawer-header {
-      background: rgba(12, 14, 25, 0.95) !important;
-      border-bottom: 1px solid rgba(255, 255, 255, 0.10) !important;
-    }
-
-    .drawer-tabs {
-      background: rgba(10, 12, 22, 0.85) !important;
-      border-bottom: 1px solid rgba(255, 255, 255, 0.10) !important;
-
-      .v-tab {
-        color: rgba(255, 255, 255, 0.75) !important;
-
-        &.v-tab--selected {
-          background: rgba(255, 255, 255, 0.12) !important;
-          color: #ffffff !important;
-
-          .v-btn__content,
-          > span:not(.drawer-tab-badge) {
-            color: #ffffff !important;
-            -webkit-text-fill-color: #ffffff !important;
-          }
-
-          .drawer-tab-badge {
-            background: rgba(115, 103, 240, 0.5) !important;
-            color: #ffffff !important;
-            -webkit-text-fill-color: #ffffff !important;
-          }
-        }
-      }
-    }
-
-    .drawer-body {
-      background: rgba(9, 10, 16, 0.88) !important;
-    }
-
-    .empty-state-container {
-      .empty-avatar {
-        background: rgba(115, 103, 240, 0.20) !important;
-        border-color: rgba(115, 103, 240, 0.40) !important;
-
-        .v-icon {
-          color: #ffffff !important;
-          fill: #ffffff !important;
-        }
-      }
-
-      .empty-title {
-        color: #ffffff !important;
-      }
-
-      .empty-desc {
-        color: rgba(255, 255, 255, 0.75) !important;
-      }
-    }
-
-    .reminder-card {
-      background: rgba(255, 255, 255, 0.05) !important;
-      border-color: rgba(255, 255, 255, 0.10) !important;
-      color: #ffffff !important;
-
-      * {
-        color: #ffffff;
-      }
-
-      .text-medium-emphasis,
-      .text-caption {
-        color: rgba(255, 255, 255, 0.70) !important;
-      }
-
-      .mileage-info-box {
-        background: rgba(255, 255, 255, 0.04) !important;
-        border-color: rgba(255, 255, 255, 0.10) !important;
-      }
-    }
-  }
-
-  .maintenance-fab-btn {
-    background: rgba(12, 14, 25, 0.92) !important;
-    border: 1px solid rgba(255, 255, 255, 0.15) !important;
-  }
-}
-
-// D. TEMA SEMI-OSCURO TRASLÚCIDO (Semi-Dark-Glass)
-[data-theme="semi-dark-glass"],
-html[data-theme="semi-dark-glass"],
-body[data-theme="semi-dark-glass"] {
-  .maintenance-drawer {
-    background: rgba(22, 31, 52, 0.94) !important;
-    backdrop-filter: blur(20px) !important;
-    -webkit-backdrop-filter: blur(20px) !important;
-    color: #f8fafc !important;
-    border-left: 1px solid rgba(255, 255, 255, 0.10) !important;
-
-    .drawer-header {
-      background: rgba(20, 27, 47, 0.95) !important;
-      border-bottom: 1px solid rgba(255, 255, 255, 0.10) !important;
-    }
-
-    .drawer-tabs {
-      background: rgba(15, 23, 42, 0.85) !important;
-      border-bottom: 1px solid rgba(255, 255, 255, 0.10) !important;
-
-      .v-tab {
-        color: rgba(241, 245, 249, 0.75) !important;
-
-        &.v-tab--selected {
-          background: rgba(255, 255, 255, 0.12) !important;
-          color: #ffffff !important;
-
-          .v-btn__content,
-          > span:not(.drawer-tab-badge) {
-            color: #ffffff !important;
-            -webkit-text-fill-color: #ffffff !important;
-          }
-
-          .drawer-tab-badge {
-            background: rgba(99, 102, 241, 0.5) !important;
-            color: #ffffff !important;
-            -webkit-text-fill-color: #ffffff !important;
-          }
-        }
-      }
-    }
-
-    .drawer-body {
-      background: rgba(15, 23, 42, 0.88) !important;
-    }
-
-    .empty-state-container {
-      .empty-avatar {
-        background: rgba(99, 102, 241, 0.20) !important;
-        border-color: rgba(129, 140, 248, 0.40) !important;
-
-        .v-icon {
-          color: #ffffff !important;
-          fill: #ffffff !important;
-        }
-      }
-
-      .empty-title {
-        color: #f8fafc !important;
-      }
-
-      .empty-desc {
-        color: rgba(241, 245, 249, 0.75) !important;
-      }
-    }
-
-    .reminder-card {
-      background: rgba(255, 255, 255, 0.06) !important;
-      border-color: rgba(255, 255, 255, 0.10) !important;
-      color: #f8fafc !important;
-
-      * {
-        color: #f8fafc;
-      }
-
-      .text-medium-emphasis,
-      .text-caption {
-        color: rgba(241, 245, 249, 0.70) !important;
-      }
-
-      .mileage-info-box {
-        background: rgba(255, 255, 255, 0.05) !important;
-        border-color: rgba(255, 255, 255, 0.10) !important;
-      }
-    }
-  }
-
-  .maintenance-fab-btn {
-    background: rgba(20, 27, 47, 0.92) !important;
-    border: 1px solid rgba(255, 255, 255, 0.15) !important;
-  }
-}
-
-// ==========================================================================
-// ESTILOS GLOBALES PARA MENÚ DE PERFIL DE USUARIO (UserProfile.vue)
-// Soluciona transparencia no deseada y letras negras en fondos oscuros
-// ==========================================================================
-
-// 1. Temas Claros y Tema Taller
-[data-theme="light"] .user-profile-menu-list,
-html[data-theme="light"] .user-profile-menu-list,
-body[data-theme="light"] .user-profile-menu-list,
-[data-theme="taller"] .user-profile-menu-list,
-html[data-theme="taller"] .user-profile-menu-list,
-body[data-theme="taller"] .user-profile-menu-list {
-  background: #ffffff !important;
-  background-color: #ffffff !important;
-  border: 1px solid #e2e8f0 !important;
-  box-shadow: 0 14px 38px rgba(15, 23, 42, 0.12) !important;
-
-  .user-profile-name,
-  .text-h6 {
-    color: #0f172a !important;
-    -webkit-text-fill-color: #0f172a !important;
-    font-weight: 800 !important;
-  }
-
-  .user-profile-email,
-  .text-caption {
-    color: #475569 !important;
-    -webkit-text-fill-color: #475569 !important;
-  }
-
-  .user-profile-item-title,
-  .v-list-item-title {
-    color: #0f172a !important;
-    -webkit-text-fill-color: #0f172a !important;
-
-    * {
-      color: #0f172a !important;
-      -webkit-text-fill-color: #0f172a !important;
-    }
-  }
-
-  .user-profile-item-subtitle,
-  .v-list-item-subtitle {
-    color: #475569 !important;
-    -webkit-text-fill-color: #475569 !important;
-  }
-
-  .user-profile-arrow-icon {
-    color: #64748b !important;
-  }
-
-  .profile-menu-close-btn {
-    color: #64748b !important;
-  }
-
-  .theme-subitems-wrapper {
-    background: #f8fafc !important;
-    border-color: #e2e8f0 !important;
-  }
-
-  .theme-group-label {
-    color: #64748b !important;
-  }
-
-  .user-profile-footer {
-    background: #ffffff !important;
-    border-top: 1px solid #e2e8f0 !important;
-  }
-}
-
-// 2. Temas Oscuros y Transparentes (Dark, Dark-Glass, Semi-Dark-Glass)
-[data-theme="dark"] .user-profile-menu-list,
-html[data-theme="dark"] .user-profile-menu-list,
-body[data-theme="dark"] .user-profile-menu-list,
-.v-theme--dark .user-profile-menu-list,
-.theme-dark .user-profile-menu-list,
-[data-theme="dark-glass"] .user-profile-menu-list,
-html[data-theme="dark-glass"] .user-profile-menu-list,
-body[data-theme="dark-glass"] .user-profile-menu-list,
-.v-theme--dark-glass .user-profile-menu-list,
-.theme-dark-glass .user-profile-menu-list,
-[data-theme="semi-dark-glass"] .user-profile-menu-list,
-html[data-theme="semi-dark-glass"] .user-profile-menu-list,
-body[data-theme="semi-dark-glass"] .user-profile-menu-list,
-.v-theme--semi-dark-glass .user-profile-menu-list,
-.theme-semi-dark-glass .user-profile-menu-list {
-  background: #181d2e !important;
-  background-color: #181d2e !important;
-  backdrop-filter: blur(25px) !important;
-  -webkit-backdrop-filter: blur(25px) !important;
-  border: 1px solid rgba(255, 255, 255, 0.16) !important;
-  box-shadow: 0 18px 48px rgba(0, 0, 0, 0.65) !important;
-  color: #ffffff !important;
-
-  .user-profile-header {
-    background: linear-gradient(180deg, rgba(102, 108, 255, 0.20) 0%, rgba(24, 29, 46, 0.05) 100%) !important;
-  }
-
-  .user-profile-name,
-  .text-h6,
-  [class*="user-profile-name"] {
-    color: #ffffff !important;
-    -webkit-text-fill-color: #ffffff !important;
-    font-weight: 800 !important;
-    font-size: 1.0625rem !important;
-  }
-
-  .user-profile-email,
-  .text-caption,
-  [class*="user-profile-email"] {
-    color: #cbd5e1 !important;
-    -webkit-text-fill-color: #cbd5e1 !important;
-    opacity: 0.9 !important;
-  }
-
-  .v-list-item {
-    color: #ffffff !important;
-
-    &:hover {
-      background: rgba(255, 255, 255, 0.09) !important;
-    }
-  }
-
-  .user-profile-item-title,
-  .v-list-item-title,
-  [class*="user-profile-item-title"] {
-    color: #ffffff !important;
-    -webkit-text-fill-color: #ffffff !important;
-    font-weight: 700 !important;
-
-    * {
-      color: #ffffff !important;
-      -webkit-text-fill-color: #ffffff !important;
-    }
-  }
-
-  .user-profile-item-subtitle,
-  .v-list-item-subtitle,
-  [class*="user-profile-item-subtitle"] {
-    color: #94a3b8 !important;
-    -webkit-text-fill-color: #94a3b8 !important;
-    opacity: 0.9 !important;
-  }
-
-  .user-profile-arrow-icon {
-    color: #cbd5e1 !important;
-  }
-
-  .profile-menu-close-btn {
-    color: rgba(255, 255, 255, 0.8) !important;
-
-    &:hover {
-      color: #ffffff !important;
-      background: rgba(255, 255, 255, 0.15) !important;
-    }
-  }
-
-  .theme-subitems-wrapper {
-    background: rgba(10, 14, 26, 0.65) !important;
-    border: 1px solid rgba(255, 255, 255, 0.12) !important;
-  }
-
-  .theme-group-label {
-    color: #94a3b8 !important;
-    font-weight: 800 !important;
-  }
-
-  .theme-subitems-wrapper .v-list-item-title {
-    color: #ffffff !important;
-
-    * {
-      color: #ffffff !important;
-      -webkit-text-fill-color: #ffffff !important;
-    }
-  }
-
-  .text-medium-emphasis {
-    color: rgba(255, 255, 255, 0.70) !important;
-    -webkit-text-fill-color: rgba(255, 255, 255, 0.70) !important;
-  }
-
-  .text-high-emphasis {
-    color: #ffffff !important;
-    -webkit-text-fill-color: #ffffff !important;
-  }
-
-  .v-divider {
-    border-color: rgba(255, 255, 255, 0.14) !important;
-  }
-
-  .user-profile-footer {
-    background: #141724 !important;
-    border-top: 1px solid rgba(255, 255, 255, 0.12) !important;
-  }
-}
-
-// ==========================================================================
-// BADGES DE DENOMINACIONES DE EFECTIVO (Arqueo de Caja)
-// ==========================================================================
-[data-theme="dark"],
-html[data-theme="dark"],
-body[data-theme="dark"],
-[data-theme="dark-glass"],
-html[data-theme="dark-glass"],
-body[data-theme="dark-glass"],
-[data-theme="semi-dark-glass"],
-html[data-theme="semi-dark-glass"],
-body[data-theme="semi-dark-glass"],
-[data-theme="taller"],
-html[data-theme="taller"],
-body[data-theme="taller"],
-.v-theme--dark,
-.v-theme--dark-glass,
-.v-theme--semi-dark-glass,
-.v-theme--taller {
-  .coin-badge {
-    background: rgba(245, 158, 11, 0.22) !important;
-    border: 1.5px solid rgba(251, 191, 36, 0.60) !important;
-    box-shadow: 0 0 12px rgba(245, 158, 11, 0.20) !important;
-
-    span,
-    .v-icon,
-    * {
-      color: #fde047 !important;
-      fill: #fde047 !important;
-      -webkit-text-fill-color: #fde047 !important;
-      font-weight: 900 !important;
-      opacity: 1 !important;
-    }
-  }
-
-  .bill-badge {
-    background: rgba(99, 102, 241, 0.22) !important;
-    border: 1.5px solid rgba(129, 140, 248, 0.60) !important;
-    box-shadow: 0 0 12px rgba(99, 102, 241, 0.20) !important;
-
-    span,
-    .v-icon,
-    * {
-      color: #bfdbfe !important;
-      fill: #bfdbfe !important;
-      -webkit-text-fill-color: #bfdbfe !important;
-      font-weight: 900 !important;
-      opacity: 1 !important;
-    }
-  }
-}
-
-[data-theme="light"],
-html[data-theme="light"],
-body[data-theme="light"],
-.v-theme--light {
-  .coin-badge {
-    background: #fef3c7 !important;
-    border: 1.5px solid #f59e0b !important;
-
-    span,
-    .v-icon,
-    * {
-      color: #78350f !important;
-      fill: #78350f !important;
-      -webkit-text-fill-color: #78350f !important;
-      font-weight: 900 !important;
-      opacity: 1 !important;
-    }
-  }
-
-  .bill-badge {
-    background: #e0e7ff !important;
-    border: 1.5px solid #6366f1 !important;
-
-    span,
-    .v-icon,
-    * {
-      color: #312e81 !important;
-      fill: #312e81 !important;
-      -webkit-text-fill-color: #312e81 !important;
-      font-weight: 900 !important;
-      opacity: 1 !important;
-    }
-  }
-}
-
-// --------------------------------------------------------------------------
-// ANIMACIONES Y UTILIDADES GLOBALES PARA VALIDACIÓN DE FORMULARIOS
-// --------------------------------------------------------------------------
-@keyframes alertPulseIn {
-  from {
-    opacity: 0;
-    transform: translateY(-8px) scale(0.98);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0) scale(1);
-  }
-}
-
-@keyframes errorFieldPulse {
-  0% { transform: translateX(0); }
-  20% { transform: translateX(-3px); }
-  40% { transform: translateX(3px); }
-  60% { transform: translateX(-2px); }
-  80% { transform: translateX(2px); }
-  100% { transform: translateX(0); }
-}
-
-.form-validation-alert {
-  animation: alertPulseIn 0.3s cubic-bezier(0.16, 1, 0.3, 1) !important;
-  box-shadow: 0 4px 20px rgba(239, 68, 68, 0.25) !important;
-  letter-spacing: 0.2px;
-}
-// REGLAS MINIMALISTAS Y ELEGANTES PARA VALERT DENTRO DE DIÁLOGOS
-.custom-dialog-card .v-alert,
-.v-dialog .v-card .v-alert {
-  border-radius: 8px !important;
-  font-size: 0.85rem !important;
-  box-shadow: none !important;
-  backdrop-filter: none !important;
-  -webkit-backdrop-filter: none !important;
-
-  &.v-alert--color-warning,
-  &.bg-warning {
-    background: rgba(245, 158, 11, 0.10) !important;
-    border: 1px solid rgba(245, 158, 11, 0.30) !important;
-    color: var(--text-primary) !important;
-  }
-
-  &.v-alert--color-error,
-  &.bg-error {
-    background: rgba(239, 68, 68, 0.10) !important;
-    border: 1px solid rgba(239, 68, 68, 0.30) !important;
-    color: var(--text-primary) !important;
-  }
-
-  &.v-alert--color-info,
-  &.bg-info {
-    background: rgba(59, 130, 246, 0.10) !important;
-    border: 1px solid rgba(59, 130, 246, 0.30) !important;
-    color: var(--text-primary) !important;
-  }
-}
-
-// ==========================================================================
-// BOTONES DE ACCIÓN TONAL EN TODAS LAS TABLAS Y LISTADOS (ALTO CONTRASTE)
-// ==========================================================================
-.v-btn.v-btn--variant-tonal.v-btn--icon,
-.v-table td .v-btn.v-btn--variant-tonal,
-td .d-flex .v-btn.v-btn--variant-tonal,
-.listing-item-actions .v-btn.v-btn--variant-tonal,
-.table-actions .v-btn.v-btn--variant-tonal,
-.action-btn {
-  border-radius: 8px !important;
-  width: 32px !important;
-  height: 32px !important;
-  min-width: 32px !important;
-  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1) !important;
-  box-shadow: none !important;
-
-  .v-btn__underlay {
-    display: none !important;
-  }
-  .v-btn__overlay {
-    opacity: 0 !important;
-  }
-
-  .v-icon {
-    font-size: 18px !important;
-    width: 18px !important;
-    height: 18px !important;
-    color: currentColor !important;
-    fill: currentColor !important;
-    opacity: 1 !important;
-    transition: transform 0.2s ease !important;
-  }
-
-  &:hover {
-    transform: translateY(-2px) !important;
-
-    .v-icon {
-      transform: scale(1.12) !important;
-    }
-  }
-
-  // 1. INFO: Ver Ficha / Detalle (Cian / Azul cielo nítido)
-  &.text-info,
-  &.bg-info,
-  &[color="info"] {
-    background-color: #e0f2fe !important;
-    color: #0284c7 !important;
-    border: 1px solid #bae6fd !important;
-
-    &:hover {
-      background-color: #bae6fd !important;
-      border-color: #0284c7 !important;
-      color: #0369a1 !important;
-      box-shadow: 0 4px 10px rgba(2, 132, 199, 0.25) !important;
-    }
-  }
-
-  // 2. WARNING: Editar Registro (Ámbar cálido visible)
-  &.text-warning,
-  &.bg-warning,
-  &[color="warning"] {
-    background-color: #fef3c7 !important;
-    color: #d97706 !important;
-    border: 1px solid #fde68a !important;
-
-    &:hover {
-      background-color: #fde68a !important;
-      border-color: #d97706 !important;
-      color: #b45309 !important;
-      box-shadow: 0 4px 10px rgba(217, 119, 6, 0.25) !important;
-    }
-  }
-
-  // 3. ERROR: Eliminar / Anular (Rojo carmesí visible)
-  &.text-error,
-  &.bg-error,
-  &[color="error"] {
-    background-color: #fee2e2 !important;
-    color: #dc2626 !important;
-    border: 1px solid #fecaca !important;
-
-    &:hover {
-      background-color: #fecaca !important;
-      border-color: #dc2626 !important;
-      color: #b91c1c !important;
-      box-shadow: 0 4px 10px rgba(220, 38, 38, 0.25) !important;
-    }
-  }
-
-  // 4. SUCCESS: WhatsApp / Completar / Cobrar (Verde esmeralda visible)
-  &.text-success,
-  &.bg-success,
-  &[color="success"] {
-    background-color: #dcfce7 !important;
-    color: #059669 !important;
-    border: 1px solid #bbf7d0 !important;
-
-    &:hover {
-      background-color: #bbf7d0 !important;
-      border-color: #059669 !important;
-      color: #047857 !important;
-      box-shadow: 0 4px 10px rgba(5, 150, 105, 0.25) !important;
-    }
-  }
-
-  // 5. PRIMARY: Historial / Acciones Principales (Índigo suave)
-  &.text-primary,
-  &.bg-primary,
-  &[color="primary"] {
-    background-color: #ede9fe !important;
-    color: #5C61E6 !important;
-    border: 1px solid #ddd6fe !important;
-
-    &:hover {
-      background-color: #ddd6fe !important;
-      border-color: #5C61E6 !important;
-      color: #4338ca !important;
-      box-shadow: 0 4px 10px rgba(92, 97, 230, 0.25) !important;
-    }
-  }
-
-  // 6. SECONDARY: Más Opciones (Pizarra suave)
-  &.text-secondary,
-  &.bg-secondary,
-  &[color="secondary"] {
-    background-color: #f1f5f9 !important;
-    color: #475569 !important;
-    border: 1px solid #e2e8f0 !important;
-
-    &:hover {
-      background-color: #e2e8f0 !important;
-      border-color: #475569 !important;
-      color: #1e293b !important;
-      box-shadow: 0 4px 10px rgba(71, 85, 105, 0.20) !important;
-    }
-  }
-}
-
-// Adaptación en Temas Oscuros
-[data-theme="dark"],
-[data-theme="dark-glass"],
-[data-theme="semi-dark-glass"],
-.v-application.v-theme--dark,
-.v-application.v-theme--dark-glass,
-.v-application.v-theme--semi-dark-glass {
-  .v-btn.v-btn--variant-tonal.v-btn--icon,
-  .v-table td .v-btn.v-btn--variant-tonal,
-  td .d-flex .v-btn.v-btn--variant-tonal,
-  .listing-item-actions .v-btn.v-btn--variant-tonal,
-  .table-actions .v-btn.v-btn--variant-tonal,
-  .action-btn {
-    &.text-info, &.bg-info, &[color="info"] {
-      background-color: rgba(56, 189, 248, 0.18) !important;
-      color: #38bdf8 !important;
-      border-color: rgba(56, 189, 248, 0.40) !important;
-      &:hover { background-color: rgba(56, 189, 248, 0.30) !important; border-color: #38bdf8 !important; }
-    }
-    &.text-warning, &.bg-warning, &[color="warning"] {
-      background-color: rgba(251, 191, 36, 0.18) !important;
-      color: #fbbf24 !important;
-      border-color: rgba(251, 191, 36, 0.40) !important;
-      &:hover { background-color: rgba(251, 191, 36, 0.30) !important; border-color: #fbbf24 !important; }
-    }
-    &.text-error, &.bg-error, &[color="error"] {
-      background-color: rgba(248, 113, 113, 0.18) !important;
-      color: #f87171 !important;
-      border-color: rgba(248, 113, 113, 0.40) !important;
-      &:hover { background-color: rgba(248, 113, 113, 0.30) !important; border-color: #f87171 !important; }
-    }
-    &.text-success, &.bg-success, &[color="success"] {
-      background-color: rgba(74, 222, 128, 0.18) !important;
-      color: #4ade80 !important;
-      border-color: rgba(74, 222, 128, 0.40) !important;
-      &:hover { background-color: rgba(74, 222, 128, 0.30) !important; border-color: #4ade80 !important; }
-    }
-    &.text-primary, &.bg-primary, &[color="primary"] {
-      background-color: rgba(167, 139, 250, 0.18) !important;
-      color: #a78bfa !important;
-      border-color: rgba(167, 139, 250, 0.40) !important;
-      &:hover { background-color: rgba(167, 139, 250, 0.30) !important; border-color: #a78bfa !important; }
-    }
-    &.text-secondary, &.bg-secondary, &[color="secondary"] {
-      background-color: rgba(148, 163, 184, 0.16) !important;
+    .user-profile-arrow-icon {
       color: #cbd5e1 !important;
-      border-color: rgba(148, 163, 184, 0.32) !important;
-      &:hover { background-color: rgba(148, 163, 184, 0.26) !important; border-color: #cbd5e1 !important; }
+    }
+
+    .profile-menu-close-btn {
+      color: rgba(255, 255, 255, 0.8) !important;
+
+      &:hover {
+        color: #ffffff !important;
+        background: rgba(255, 255, 255, 0.15) !important;
+      }
+    }
+
+    .theme-subitems-wrapper {
+      background: rgba(10, 14, 26, 0.65) !important;
+      border: 1px solid rgba(255, 255, 255, 0.12) !important;
+    }
+
+    .theme-group-label {
+      color: #94a3b8 !important;
+      font-weight: 800 !important;
+    }
+
+    .theme-subitems-wrapper .v-list-item-title {
+      color: #ffffff !important;
+
+      * {
+        color: #ffffff !important;
+        -webkit-text-fill-color: #ffffff !important;
+      }
+    }
+
+    .text-medium-emphasis {
+      color: rgba(255, 255, 255, 0.70) !important;
+      -webkit-text-fill-color: rgba(255, 255, 255, 0.70) !important;
+    }
+
+    .text-high-emphasis {
+      color: #ffffff !important;
+      -webkit-text-fill-color: #ffffff !important;
+    }
+
+    .v-divider {
+      border-color: rgba(255, 255, 255, 0.14) !important;
+    }
+
+    .user-profile-footer {
+      background: #141724 !important;
+      border-top: 1px solid rgba(255, 255, 255, 0.12) !important;
     }
   }
-}
 
-// Adaptación en Tema Taller
-[data-theme="taller"],
-.v-application.v-theme--taller {
+  // ==========================================================================
+  // BADGES DE DENOMINACIONES DE EFECTIVO (Arqueo de Caja)
+  // ==========================================================================
+  [data-theme="dark"],
+  html[data-theme="dark"],
+  body[data-theme="dark"],
+  [data-theme="dark-glass"],
+  html[data-theme="dark-glass"],
+  body[data-theme="dark-glass"],
+  [data-theme="semi-dark-glass"],
+  html[data-theme="semi-dark-glass"],
+  body[data-theme="semi-dark-glass"],
+  [data-theme="taller"],
+  html[data-theme="taller"],
+  body[data-theme="taller"],
+  .v-theme--dark,
+  .v-theme--dark-glass,
+  .v-theme--semi-dark-glass,
+  .v-theme--taller {
+    .coin-badge {
+      background: rgba(245, 158, 11, 0.22) !important;
+      border: 1.5px solid rgba(251, 191, 36, 0.60) !important;
+      box-shadow: 0 0 12px rgba(245, 158, 11, 0.20) !important;
+
+      span,
+      .v-icon,
+      * {
+        color: #fde047 !important;
+        fill: #fde047 !important;
+        -webkit-text-fill-color: #fde047 !important;
+        font-weight: 900 !important;
+        opacity: 1 !important;
+      }
+    }
+
+    .bill-badge {
+      background: rgba(99, 102, 241, 0.22) !important;
+      border: 1.5px solid rgba(129, 140, 248, 0.60) !important;
+      box-shadow: 0 0 12px rgba(99, 102, 241, 0.20) !important;
+
+      span,
+      .v-icon,
+      * {
+        color: #bfdbfe !important;
+        fill: #bfdbfe !important;
+        -webkit-text-fill-color: #bfdbfe !important;
+        font-weight: 900 !important;
+        opacity: 1 !important;
+      }
+    }
+  }
+
+  [data-theme="light"],
+  html[data-theme="light"],
+  body[data-theme="light"],
+  .v-theme--light {
+    .coin-badge {
+      background: #fef3c7 !important;
+      border: 1.5px solid #f59e0b !important;
+
+      span,
+      .v-icon,
+      * {
+        color: #78350f !important;
+        fill: #78350f !important;
+        -webkit-text-fill-color: #78350f !important;
+        font-weight: 900 !important;
+        opacity: 1 !important;
+      }
+    }
+
+    .bill-badge {
+      background: #e0e7ff !important;
+      border: 1.5px solid #6366f1 !important;
+
+      span,
+      .v-icon,
+      * {
+        color: #312e81 !important;
+        fill: #312e81 !important;
+        -webkit-text-fill-color: #312e81 !important;
+        font-weight: 900 !important;
+        opacity: 1 !important;
+      }
+    }
+  }
+
+  // --------------------------------------------------------------------------
+  // ANIMACIONES Y UTILIDADES GLOBALES PARA VALIDACIÓN DE FORMULARIOS
+  // --------------------------------------------------------------------------
+  @keyframes alertPulseIn {
+    from {
+      opacity: 0;
+      transform: translateY(-8px) scale(0.98);
+    }
+
+    to {
+      opacity: 1;
+      transform: translateY(0) scale(1);
+    }
+  }
+
+  @keyframes errorFieldPulse {
+    0% {
+      transform: translateX(0);
+    }
+
+    20% {
+      transform: translateX(-3px);
+    }
+
+    40% {
+      transform: translateX(3px);
+    }
+
+    60% {
+      transform: translateX(-2px);
+    }
+
+    80% {
+      transform: translateX(2px);
+    }
+
+    100% {
+      transform: translateX(0);
+    }
+  }
+
+  .form-validation-alert {
+    animation: alertPulseIn 0.3s cubic-bezier(0.16, 1, 0.3, 1) !important;
+    box-shadow: 0 4px 20px rgba(239, 68, 68, 0.25) !important;
+    letter-spacing: 0.2px;
+  }
+
+  // REGLAS MINIMALISTAS Y ELEGANTES PARA VALERT DENTRO DE DIÁLOGOS
+  .custom-dialog-card .v-alert,
+  .v-dialog .v-card .v-alert {
+    border-radius: 8px !important;
+    font-size: 0.85rem !important;
+    box-shadow: none !important;
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+
+    &.v-alert--color-warning,
+    &.bg-warning {
+      background: rgba(245, 158, 11, 0.10) !important;
+      border: 1px solid rgba(245, 158, 11, 0.30) !important;
+      color: var(--text-primary) !important;
+    }
+
+    &.v-alert--color-error,
+    &.bg-error {
+      background: rgba(239, 68, 68, 0.10) !important;
+      border: 1px solid rgba(239, 68, 68, 0.30) !important;
+      color: var(--text-primary) !important;
+    }
+
+    &.v-alert--color-info,
+    &.bg-info {
+      background: rgba(59, 130, 246, 0.10) !important;
+      border: 1px solid rgba(59, 130, 246, 0.30) !important;
+      color: var(--text-primary) !important;
+    }
+  }
+
+  // ==========================================================================
+  // BOTONES DE ACCIÓN TONAL EN TODAS LAS TABLAS Y LISTADOS (ALTO CONTRASTE)
+  // ==========================================================================
   .v-btn.v-btn--variant-tonal.v-btn--icon,
   .v-table td .v-btn.v-btn--variant-tonal,
   td .d-flex .v-btn.v-btn--variant-tonal,
   .listing-item-actions .v-btn.v-btn--variant-tonal,
   .table-actions .v-btn.v-btn--variant-tonal,
   .action-btn {
-    &.text-primary, &.bg-primary, &[color="primary"] {
-      background-color: #fae8ed !important;
-      color: #8A1538 !important;
-      border-color: #f3c2cf !important;
-      &:hover { background-color: #f3c2cf !important; border-color: #8A1538 !important; }
+    border-radius: 8px !important;
+    width: 32px !important;
+    height: 32px !important;
+    min-width: 32px !important;
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1) !important;
+    box-shadow: none !important;
+
+    .v-btn__underlay {
+      display: none !important;
+    }
+
+    .v-btn__overlay {
+      opacity: 0 !important;
+    }
+
+    .v-icon {
+      font-size: 18px !important;
+      width: 18px !important;
+      height: 18px !important;
+      color: currentColor !important;
+      fill: currentColor !important;
+      opacity: 1 !important;
+      transition: transform 0.2s ease !important;
+    }
+
+    &:hover {
+      transform: translateY(-2px) !important;
+
+      .v-icon {
+        transform: scale(1.12) !important;
+      }
+    }
+
+    // 1. INFO: Ver Ficha / Detalle (Cian / Azul cielo nítido)
+    &.text-info,
+    &.bg-info,
+    &[color="info"] {
+      background-color: #e0f2fe !important;
+      color: #0284c7 !important;
+      border: 1px solid #bae6fd !important;
+
+      &:hover {
+        background-color: #bae6fd !important;
+        border-color: #0284c7 !important;
+        color: #0369a1 !important;
+        box-shadow: 0 4px 10px rgba(2, 132, 199, 0.25) !important;
+      }
+    }
+
+    // 2. WARNING: Editar Registro (Ámbar cálido visible)
+    &.text-warning,
+    &.bg-warning,
+    &[color="warning"] {
+      background-color: #fef3c7 !important;
+      color: #d97706 !important;
+      border: 1px solid #fde68a !important;
+
+      &:hover {
+        background-color: #fde68a !important;
+        border-color: #d97706 !important;
+        color: #b45309 !important;
+        box-shadow: 0 4px 10px rgba(217, 119, 6, 0.25) !important;
+      }
+    }
+
+    // 3. ERROR: Eliminar / Anular (Rojo carmesí visible)
+    &.text-error,
+    &.bg-error,
+    &[color="error"] {
+      background-color: #fee2e2 !important;
+      color: #dc2626 !important;
+      border: 1px solid #fecaca !important;
+
+      &:hover {
+        background-color: #fecaca !important;
+        border-color: #dc2626 !important;
+        color: #b91c1c !important;
+        box-shadow: 0 4px 10px rgba(220, 38, 38, 0.25) !important;
+      }
+    }
+
+    // 4. SUCCESS: WhatsApp / Completar / Cobrar (Verde esmeralda visible)
+    &.text-success,
+    &.bg-success,
+    &[color="success"] {
+      background-color: #dcfce7 !important;
+      color: #059669 !important;
+      border: 1px solid #bbf7d0 !important;
+
+      &:hover {
+        background-color: #bbf7d0 !important;
+        border-color: #059669 !important;
+        color: #047857 !important;
+        box-shadow: 0 4px 10px rgba(5, 150, 105, 0.25) !important;
+      }
+    }
+
+    // 5. PRIMARY: Historial / Acciones Principales (Índigo suave)
+    &.text-primary,
+    &.bg-primary,
+    &[color="primary"] {
+      background-color: #ede9fe !important;
+      color: #5C61E6 !important;
+      border: 1px solid #ddd6fe !important;
+
+      &:hover {
+        background-color: #ddd6fe !important;
+        border-color: #5C61E6 !important;
+        color: #4338ca !important;
+        box-shadow: 0 4px 10px rgba(92, 97, 230, 0.25) !important;
+      }
+    }
+
+    // 6. SECONDARY: Más Opciones (Pizarra suave)
+    &.text-secondary,
+    &.bg-secondary,
+    &[color="secondary"] {
+      background-color: #f1f5f9 !important;
+      color: #475569 !important;
+      border: 1px solid #e2e8f0 !important;
+
+      &:hover {
+        background-color: #e2e8f0 !important;
+        border-color: #475569 !important;
+        color: #1e293b !important;
+        box-shadow: 0 4px 10px rgba(71, 85, 105, 0.20) !important;
+      }
     }
   }
-}
 
+  // Adaptación en Temas Oscuros
+  [data-theme="dark"],
+  [data-theme="dark-glass"],
+  [data-theme="semi-dark-glass"],
+  .v-application.v-theme--dark,
+  .v-application.v-theme--dark-glass,
+  .v-application.v-theme--semi-dark-glass {
+
+    .v-btn.v-btn--variant-tonal.v-btn--icon,
+    .v-table td .v-btn.v-btn--variant-tonal,
+    td .d-flex .v-btn.v-btn--variant-tonal,
+    .listing-item-actions .v-btn.v-btn--variant-tonal,
+    .table-actions .v-btn.v-btn--variant-tonal,
+    .action-btn {
+
+      &.text-info,
+      &.bg-info,
+      &[color="info"] {
+        background-color: rgba(56, 189, 248, 0.18) !important;
+        color: #38bdf8 !important;
+        border-color: rgba(56, 189, 248, 0.40) !important;
+
+        &:hover {
+          background-color: rgba(56, 189, 248, 0.30) !important;
+          border-color: #38bdf8 !important;
+        }
+      }
+
+      &.text-warning,
+      &.bg-warning,
+      &[color="warning"] {
+        background-color: rgba(251, 191, 36, 0.18) !important;
+        color: #fbbf24 !important;
+        border-color: rgba(251, 191, 36, 0.40) !important;
+
+        &:hover {
+          background-color: rgba(251, 191, 36, 0.30) !important;
+          border-color: #fbbf24 !important;
+        }
+      }
+
+      &.text-error,
+      &.bg-error,
+      &[color="error"] {
+        background-color: rgba(248, 113, 113, 0.18) !important;
+        color: #f87171 !important;
+        border-color: rgba(248, 113, 113, 0.40) !important;
+
+        &:hover {
+          background-color: rgba(248, 113, 113, 0.30) !important;
+          border-color: #f87171 !important;
+        }
+      }
+
+      &.text-success,
+      &.bg-success,
+      &[color="success"] {
+        background-color: rgba(74, 222, 128, 0.18) !important;
+        color: #4ade80 !important;
+        border-color: rgba(74, 222, 128, 0.40) !important;
+
+        &:hover {
+          background-color: rgba(74, 222, 128, 0.30) !important;
+          border-color: #4ade80 !important;
+        }
+      }
+
+      &.text-primary,
+      &.bg-primary,
+      &[color="primary"] {
+        background-color: rgba(167, 139, 250, 0.18) !important;
+        color: #a78bfa !important;
+        border-color: rgba(167, 139, 250, 0.40) !important;
+
+        &:hover {
+          background-color: rgba(167, 139, 250, 0.30) !important;
+          border-color: #a78bfa !important;
+        }
+      }
+
+      &.text-secondary,
+      &.bg-secondary,
+      &[color="secondary"] {
+        background-color: rgba(148, 163, 184, 0.16) !important;
+        color: #cbd5e1 !important;
+        border-color: rgba(148, 163, 184, 0.32) !important;
+
+        &:hover {
+          background-color: rgba(148, 163, 184, 0.26) !important;
+          border-color: #cbd5e1 !important;
+        }
+      }
+    }
+  }
+
+  // Adaptación en Tema Taller
+  [data-theme="taller"],
+  .v-application.v-theme--taller {
+
+    .v-btn.v-btn--variant-tonal.v-btn--icon,
+    .v-table td .v-btn.v-btn--variant-tonal,
+    td .d-flex .v-btn.v-btn--variant-tonal,
+    .listing-item-actions .v-btn.v-btn--variant-tonal,
+    .table-actions .v-btn.v-btn--variant-tonal,
+    .action-btn {
+
+      &.text-primary,
+      &.bg-primary,
+      &[color="primary"] {
+        background-color: #fae8ed !important;
+        color: #8A1538 !important;
+        border-color: #f3c2cf !important;
+
+        &:hover {
+          background-color: #f3c2cf !important;
+          border-color: #8A1538 !important;
+        }
+      }
+    }
+  }
