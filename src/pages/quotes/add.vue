@@ -490,41 +490,56 @@ onActivated(async () => {
       style="top: 0; left: 0; right: 0; z-index: 10;"
     />
 
-    <div class="d-flex align-center justify-space-between flex-wrap gap-4 mb-6 border-b pb-4">
-      <div>
-        <div class="d-flex align-center">
+    <!-- Header Principal Sticky -->
+    <VCard class="mb-6 rounded-xl border-light pa-3 pa-sm-4 elevation-1 sticky-header">
+      <div class="d-flex align-center justify-space-between flex-wrap gap-4">
+        <div class="d-flex align-center gap-3">
           <VAvatar
             color="primary"
             variant="tonal"
-            size="48"
-            class="mr-3"
+            rounded="lg"
+            size="44"
+            class="elevation-1"
           >
             <VIcon
               icon="ri-file-list-3-line"
-              size="32"
-              color="primary"
+              size="24"
             />
           </VAvatar>
-          <h1 class="text-h4 font-weight-bold mb-1">
-            Registrar Cotización
-          </h1>
+          <div>
+            <div class="d-flex align-center gap-2 flex-wrap">
+              <h1 class="text-h6 font-weight-bold text-high-emphasis mb-0 operations-page-title">
+                Registrar Cotización
+              </h1>
+              <VChip
+                color="primary"
+                size="small"
+                variant="tonal"
+                class="font-weight-bold"
+                prepend-icon="ri-file-text-line"
+              >
+                Presupuesto
+              </VChip>
+            </div>
+            <p class="text-body-2 text-medium-emphasis mb-0 mt-0 operations-page-subtitle">
+              Crea un presupuesto detallado para un cliente
+            </p>
+          </div>
         </div>
-        <p class="text-medium-emphasis mb-0">
-          Crea un presupuesto detallado para un cliente
-        </p>
+
+        <div class="d-flex align-center justify-end gap-2 flex-wrap ms-auto">
+          <VBtn
+            variant="outlined"
+            color="secondary"
+            prepend-icon="ri-arrow-left-line"
+            class="font-weight-medium"
+            @click="cancelAndReturn"
+          >
+            Volver al Listado
+          </VBtn>
+        </div>
       </div>
-      <div class="d-flex align-center justify-end gap-2 flex-wrap ms-auto">
-        <VBtn
-          color="secondary"
-          variant="outlined"
-          prepend-icon="ri-arrow-left-line"
-          class="bg-white"
-          @click="cancelAndReturn"
-        >
-          Volver al Listado
-        </VBtn>
-      </div>
-    </div>
+    </VCard>
 
     <!-- Form Skeleton loader -->
     <div
