@@ -646,23 +646,13 @@ watch([() => searchForm.value.search, () => searchForm.value.categorie_id, () =>
             <!-- Fila superior: Imagen + Info básica + Estado -->
             <div class="mobile-card-top">
               <div class="mobile-card-thumb cursor-pointer" @click="viewProduct(item)">
-                <img
-                  v-if="hasValidImage(item)"
-                  :src="item.imagen"
-                  :alt="decodeProductDescription(item.description)"
-                  loading="lazy"
-                  style="width: 100%; height: 100%; object-fit: cover;"
-                  @error="handleImageError(item.id)"
-                >
-                <div
-                  v-else
-                  class="w-100 h-100 d-flex align-center justify-center rounded-lg"
-                  :style="{
-                    backgroundColor: `rgba(var(--v-theme-${getProductAvatarColor(item.description)}), 0.14)`,
-                    color: `rgb(var(--v-theme-${getProductAvatarColor(item.description)}))`
-                  }"
-                  :title="decodeProductDescription(item.description)"
-                >
+                <img v-if="hasValidImage(item)" :src="item.imagen" :alt="decodeProductDescription(item.description)"
+                  loading="lazy" style="width: 100%; height: 100%; object-fit: cover;"
+                  @error="handleImageError(item.id)">
+                <div v-else class="w-100 h-100 d-flex align-center justify-center rounded-lg" :style="{
+                  backgroundColor: `rgba(var(--v-theme-${getProductAvatarColor(item.description)}), 0.14)`,
+                  color: `rgb(var(--v-theme-${getProductAvatarColor(item.description)}))`
+                }" :title="decodeProductDescription(item.description)">
                   <span class="font-weight-bold font-mono" style="font-size: 0.88rem; letter-spacing: 0.05em;">
                     {{ getProductInitials(item.description) }}
                   </span>
@@ -830,34 +820,16 @@ watch([() => searchForm.value.search, () => searchForm.value.categorie_id, () =>
               <tr v-for="item in products" :key="item.id" class="product-table-row">
                 <!-- Imagen o Iniciales -->
                 <td class="text-center py-3">
-                  <VAvatar
-                    v-if="hasValidImage(item)"
-                    size="38"
-                    rounded="lg"
-                    class="cursor-pointer border overflow-hidden"
-                    @click="openProductDialog(item)"
-                  >
-                    <img
-                      :src="item.imagen"
-                      :alt="decodeProductDescription(item.description)"
-                      loading="lazy"
-                      decoding="async"
-                      class="w-100 h-100"
-                      style="object-fit: cover;"
-                      @error="handleImageError(item.id)"
-                    >
+                  <VAvatar v-if="hasValidImage(item)" size="38" rounded="lg"
+                    class="cursor-pointer border overflow-hidden" @click="openProductDialog(item)">
+                    <img :src="item.imagen" :alt="decodeProductDescription(item.description)" loading="lazy"
+                      decoding="async" class="w-100 h-100" style="object-fit: cover;"
+                      @error="handleImageError(item.id)">
                   </VAvatar>
-                  <VAvatar
-                    v-else
-                    :color="getProductAvatarColor(item.description)"
-                    variant="tonal"
-                    size="38"
-                    rounded="lg"
-                    class="cursor-pointer font-weight-bold"
+                  <VAvatar v-else :color="getProductAvatarColor(item.description)" variant="tonal" size="38"
+                    rounded="lg" class="cursor-pointer font-weight-bold"
                     style="font-size: 0.82rem; letter-spacing: 0.04em;"
-                    :title="decodeProductDescription(item.description)"
-                    @click="openProductDialog(item)"
-                  >
+                    :title="decodeProductDescription(item.description)" @click="openProductDialog(item)">
                     <span class="font-mono">{{ getProductInitials(item.description) }}</span>
                   </VAvatar>
                 </td>
@@ -872,8 +844,10 @@ watch([() => searchForm.value.search, () => searchForm.value.categorie_id, () =>
                       {{ decodeProductDescription(item.description) }}
                     </div>
                     <div class="d-flex align-center gap-2 text-caption font-mono">
-                      <span class="text-medium-emphasis">SKU: <strong class="text-primary font-weight-bold">{{ item.sku || 'S/C' }}</strong></span>
-                      <span v-if="item.code_aux" class="text-medium-emphasis">• Cód. Aux.: <strong class="text-high-emphasis">{{ item.code_aux }}</strong></span>
+                      <span class="text-medium-emphasis">SKU: <strong class="text-primary font-weight-bold">{{ item.sku
+                          || 'S/C' }}</strong></span>
+                      <span v-if="item.code_aux" class="text-medium-emphasis">• Cód. Aux.: <strong
+                          class="text-high-emphasis">{{ item.code_aux }}</strong></span>
                     </div>
                   </div>
                 </td>
@@ -1004,117 +978,4 @@ watch([() => searchForm.value.search, () => searchForm.value.categorie_id, () =>
   </div>
 </template>
 
-<style scoped lang="scss">
-.kpi-stat-card {
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
-  border-color: rgba(var(--v-border-color), 0.1) !important;
 
-  &:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 6px 16px rgba(var(--v-theme-on-surface), 0.06);
-  }
-}
-
-.product-table-row {
-  transition: background-color 0.15s ease;
-
-  &:hover {
-    background-color: rgba(var(--v-theme-primary), 0.02) !important;
-  }
-}
-
-.font-mono {
-  font-family: 'Consolas', 'Monaco', 'Courier New', monospace !important;
-}
-
-.hover-underline:hover {
-  text-decoration: underline;
-}
-
-.shimmer-circle {
-  width: 40px;
-  height: 40px;
-  border-radius: 50%;
-  background: linear-gradient(90deg, rgba(var(--v-theme-on-surface), 0.05) 25%, rgba(var(--v-theme-on-surface), 0.12) 50%, rgba(var(--v-theme-on-surface), 0.05) 75%);
-  background-size: 200% 100%;
-  animation: loading-shimmer 1.5s infinite ease-in-out;
-}
-
-.shimmer-line {
-  height: 12px;
-  border-radius: 4px;
-  background: linear-gradient(90deg, rgba(var(--v-theme-on-surface), 0.05) 25%, rgba(var(--v-theme-on-surface), 0.12) 50%, rgba(var(--v-theme-on-surface), 0.05) 75%);
-  background-size: 200% 100%;
-  animation: loading-shimmer 1.5s infinite ease-in-out;
-}
-
-.shimmer-chip {
-  width: 60px;
-  height: 20px;
-  border-radius: 12px;
-  background: linear-gradient(90deg, rgba(var(--v-theme-on-surface), 0.05) 25%, rgba(var(--v-theme-on-surface), 0.12) 50%, rgba(var(--v-theme-on-surface), 0.05) 75%);
-  background-size: 200% 100%;
-  animation: loading-shimmer 1.5s infinite ease-in-out;
-}
-
-.shimmer-button {
-  width: 28px;
-  height: 28px;
-  border-radius: 4px;
-  background: linear-gradient(90deg, rgba(var(--v-theme-on-surface), 0.05) 25%, rgba(var(--v-theme-on-surface), 0.12) 50%, rgba(var(--v-theme-on-surface), 0.05) 75%);
-  background-size: 200% 100%;
-  animation: loading-shimmer 1.5s infinite ease-in-out;
-}
-
-// Status Pills (Estilo listado de clientes/compras)
-.status-pill-clean {
-  display: inline-flex !important;
-  align-items: center !important;
-  gap: 6px !important;
-  padding: 4px 10px !important;
-  border-radius: 9999px !important;
-  font-size: 0.74rem !important;
-  font-weight: 700 !important;
-  white-space: nowrap !important;
-  line-height: 1 !important;
-  letter-spacing: 0.03em !important;
-  text-transform: uppercase !important;
-
-  .status-dot {
-    width: 6px !important;
-    height: 6px !important;
-    border-radius: 50% !important;
-    flex-shrink: 0 !important;
-  }
-}
-
-.status-paid {
-  background-color: #ecfdf5 !important;
-  color: #065f46 !important;
-  border: 1px solid #a7f3d0 !important;
-
-  .status-dot {
-    background-color: #10b981 !important;
-  }
-}
-
-.status-pending {
-  background-color: #fef2f2 !important;
-  color: #991b1b !important;
-  border: 1px solid #fecaca !important;
-
-  .status-dot {
-    background-color: #ef4444 !important;
-  }
-}
-
-@keyframes loading-shimmer {
-  0% {
-    background-position: 200% 0;
-  }
-
-  100% {
-    background-position: -200% 0;
-  }
-}
-</style>

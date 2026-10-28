@@ -191,17 +191,8 @@ onMounted(() => {
     <div class="d-flex align-center justify-space-between flex-wrap gap-4 mb-5">
       <div>
         <h1 class="text-h5 text-sm-h4 font-weight-bold mb-1 d-flex align-center flex-wrap">
-          <VAvatar
-            size="42"
-            color="primary"
-            variant="tonal"
-            rounded="lg"
-            class="me-3 flex-shrink-0"
-          >
-            <VIcon
-              icon="ri-roadster-line"
-              size="26"
-            />
+          <VAvatar size="42" color="primary" variant="tonal" rounded="lg" class="me-3 flex-shrink-0">
+            <VIcon icon="ri-roadster-line" size="26" />
           </VAvatar>
           <span>Gestión de Repuestos</span>
         </h1>
@@ -211,14 +202,8 @@ onMounted(() => {
       </div>
 
       <div class="d-flex align-center justify-end gap-2 flex-wrap ms-auto crud-header-actions">
-        <VBtn
-          v-if="can('register_product')"
-          color="primary"
-          prepend-icon="ri-add-line"
-          class="elevation-2 font-weight-bold"
-          size="default"
-          @click="openCreate"
-        >
+        <VBtn v-if="can('register_product')" color="primary" prepend-icon="ri-add-line"
+          class="elevation-2 font-weight-bold" size="default" @click="openCreate">
           Registrar Búsqueda
         </VBtn>
       </div>
@@ -268,9 +253,8 @@ onMounted(() => {
 
           <!-- Año -->
           <VCol cols="12" sm="6" md="2">
-            <VTextField v-model.number="yearFilter" label="Año" type="number" placeholder="Ej: 2010"
-              clearable variant="outlined" density="comfortable" hide-details="auto"
-              prepend-inner-icon="ri-calendar-line" />
+            <VTextField v-model.number="yearFilter" label="Año" type="number" placeholder="Ej: 2010" clearable
+              variant="outlined" density="comfortable" hide-details="auto" prepend-inner-icon="ri-calendar-line" />
           </VCol>
         </VRow>
       </VCardText>
@@ -327,17 +311,9 @@ onMounted(() => {
               <!-- Bloque de Identificación del Vehículo (Marca, Modelo, Año, etc.) -->
               <div class="d-flex align-center flex-wrap gap-2 flex-grow-1">
                 <!-- Icono del Vehículo -->
-                <VAvatar
-                  size="28"
-                  rounded="md"
-                  :color="getBrandColor(item.brand)"
-                  variant="tonal"
-                  class="elevation-0 flex-shrink-0"
-                >
-                  <VIcon
-                    icon="ri-car-line"
-                    size="16"
-                  />
+                <VAvatar size="28" rounded="md" :color="getBrandColor(item.brand)" variant="tonal"
+                  class="elevation-0 flex-shrink-0">
+                  <VIcon icon="ri-car-line" size="16" />
                 </VAvatar>
 
                 <!-- Marca (ej. KIA) -->
@@ -346,77 +322,43 @@ onMounted(() => {
                 </span>
 
                 <!-- Modelo / Nombre (ej. RIO R) -->
-                <span class="text-body-1 font-weight-bold text-high-emphasis text-uppercase" style="letter-spacing: 0.3px;">
+                <span class="text-body-1 font-weight-bold text-high-emphasis text-uppercase"
+                  style="letter-spacing: 0.3px;">
                   {{ item.model }}
                 </span>
 
                 <!-- Año -->
                 <div class="status-pill-clean status-secondary flex-shrink-0">
-                  <VIcon
-                    icon="ri-calendar-line"
-                    size="12"
-                  />
+                  <VIcon icon="ri-calendar-line" size="12" />
                   <span>Año {{ item.year }}</span>
                 </div>
 
                 <!-- Tracción -->
-                <div
-                  v-if="item.traction"
-                  class="status-pill-clean status-info flex-shrink-0"
-                >
-                  <VIcon
-                    icon="ri-compass-3-line"
-                    size="12"
-                  />
+                <div v-if="item.traction" class="status-pill-clean status-info flex-shrink-0">
+                  <VIcon icon="ri-compass-3-line" size="12" />
                   <span>{{ item.traction }}</span>
                 </div>
 
                 <!-- Procedencia / País -->
-                <div
-                  v-if="item.origin_country"
-                  class="status-pill-clean status-partial flex-shrink-0"
-                >
-                  <VIcon
-                    icon="ri-earth-line"
-                    size="12"
-                  />
+                <div v-if="item.origin_country" class="status-pill-clean status-partial flex-shrink-0">
+                  <VIcon icon="ri-earth-line" size="12" />
                   <span>{{ item.origin_country }}</span>
                 </div>
               </div>
 
               <!-- Bloque de Acciones Rápidas (Organizado y sin distorsión) -->
               <div class="vehicle-header-actions d-flex align-center justify-end flex-nowrap gap-2 flex-shrink-0">
-                <VBtn
-                  size="small"
-                  color="info"
-                  variant="tonal"
-                  prepend-icon="ri-file-list-3-line"
-                  class="font-weight-medium px-2.5 flex-shrink-0"
-                  title="Ver Ficha Técnica Completa"
-                  @click="openDetail(item)"
-                >
+                <VBtn size="small" color="info" variant="tonal" prepend-icon="ri-file-list-3-line"
+                  class="font-weight-medium px-2.5 flex-shrink-0" title="Ver Ficha Técnica Completa"
+                  @click="openDetail(item)">
                   Ficha
                 </VBtn>
 
-                <VBtn
-                  size="small"
-                  color="warning"
-                  variant="tonal"
-                  icon="ri-edit-line"
-                  class="flex-shrink-0"
-                  title="Editar Registro"
-                  @click="openEdit(item)"
-                />
+                <VBtn size="small" color="warning" variant="tonal" icon="ri-edit-line" class="flex-shrink-0"
+                  title="Editar Registro" @click="openEdit(item)" />
 
-                <VBtn
-                  size="small"
-                  color="error"
-                  variant="tonal"
-                  icon="ri-delete-bin-line"
-                  class="flex-shrink-0"
-                  title="Eliminar Vehículo"
-                  @click="openDelete(item)"
-                />
+                <VBtn size="small" color="error" variant="tonal" icon="ri-delete-bin-line" class="flex-shrink-0"
+                  title="Eliminar Vehículo" @click="openDelete(item)" />
               </div>
             </div>
           </div>
@@ -430,7 +372,8 @@ onMounted(() => {
                   'row-highlighted': isMatchingCategory(subItem.category)
                 }">
                 <div class="d-flex align-start justify-space-between gap-2 mb-1.5">
-                  <div class="text-body-2 font-weight-bold text-uppercase text-high-emphasis flex-grow-1" style="line-height: 1.35;">
+                  <div class="text-body-2 font-weight-bold text-uppercase text-high-emphasis flex-grow-1"
+                    style="line-height: 1.35;">
                     {{ subItem.spare_parts_detail }}
                   </div>
                   <div class="status-pill-clean status-pill-compact flex-shrink-0 ms-1"
@@ -591,206 +534,3 @@ onMounted(() => {
   </div>
 </template>
 
-<style scoped lang="scss">
-.vehicle-block-card {
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
-  border-color: rgba(var(--v-border-color), 0.12) !important;
-
-  &:hover {
-    box-shadow: 0 6px 20px rgba(var(--v-theme-on-surface), 0.06) !important;
-  }
-}
-
-.vehicle-block-header {
-  background-color: #f1f5f9 !important;
-  border-bottom: 1.5px solid #e2e8f0 !important;
-}
-
-[data-theme="dark"] .vehicle-block-header,
-[data-theme="dark-glass"] .vehicle-block-header,
-[data-theme="semi-dark-glass"] .vehicle-block-header,
-[data-theme="taller"] .vehicle-block-header,
-.v-theme--dark .vehicle-block-header,
-.v-theme--dark-glass .vehicle-block-header,
-.v-theme--semi-dark-glass .vehicle-block-header,
-.v-theme--taller .vehicle-block-header {
-  background-color: rgba(var(--v-theme-surface), 0.95) !important;
-  border-bottom: 1.5px solid rgba(var(--v-border-color), 0.25) !important;
-}
-
-.brand-badge {
-  display: inline-flex;
-  align-items: center;
-  padding: 3px 10px;
-  border-radius: 6px;
-  background-color: rgba(var(--v-theme-primary), 0.12);
-  border: 1px solid rgba(var(--v-theme-primary), 0.25);
-  color: rgb(var(--v-theme-primary));
-  font-weight: 800;
-  font-size: 0.76rem;
-  letter-spacing: 0.6px;
-  line-height: 1.2;
-}
-
-.vehicle-title {
-  font-size: 1.15rem !important;
-  font-weight: 800 !important;
-  letter-spacing: 0.3px !important;
-  line-height: 1.25 !important;
-  color: rgba(var(--v-theme-on-surface), 0.92) !important;
-}
-
-.table-sub-header {
-  background-color: rgba(var(--v-theme-on-surface), 0.03);
-
-  th {
-    font-size: 0.8rem !important;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-    color: rgba(var(--v-theme-on-surface), 0.7) !important;
-    padding: 12px 16px !important;
-  }
-}
-
-.spare-part-table-row {
-  transition: background-color 0.15s ease;
-
-  td {
-    padding: 12px 16px !important;
-    border-bottom: 1px solid rgba(var(--v-border-color), 0.06) !important;
-  }
-
-  &:hover {
-    background-color: rgba(var(--v-theme-primary), 0.025) !important;
-  }
-}
-
-.row-highlighted {
-  background-color: rgba(var(--v-theme-primary), 0.08) !important;
-  border-left: 4px solid rgb(var(--v-theme-primary)) !important;
-}
-
-.index-pill {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 26px;
-  height: 26px;
-  border-radius: 50%;
-  background-color: rgba(var(--v-theme-on-surface), 0.06);
-  font-size: 0.75rem;
-}
-
-.font-family-mono {
-  font-family: 'Consolas', 'Monaco', 'Courier New', monospace !important;
-}
-
-.table-responsive {
-  width: 100%;
-  overflow-x: auto;
-}
-
-// Status Pills (Estilo listado de clientes / ventas)
-.status-pill-clean {
-  display: inline-flex !important;
-  align-items: center !important;
-  gap: 6px !important;
-  padding: 4px 10px !important;
-  border-radius: 9999px !important;
-  font-size: 0.74rem !important;
-  font-weight: 700 !important;
-  white-space: nowrap !important;
-  line-height: 1.2 !important;
-  letter-spacing: 0.03em !important;
-  text-transform: uppercase !important;
-  margin: 1px 0 !important;
-
-  .status-dot {
-    width: 6px !important;
-    height: 6px !important;
-    border-radius: 50% !important;
-    flex-shrink: 0 !important;
-  }
-}
-
-.status-paid {
-  background-color: #ecfdf5 !important;
-  color: #065f46 !important;
-  border: 1px solid #a7f3d0 !important;
-
-  .status-dot {
-    background-color: #10b981 !important;
-  }
-}
-
-.status-pending {
-  background-color: #fef2f2 !important;
-  color: #991b1b !important;
-  border: 1px solid #fecaca !important;
-
-  .status-dot {
-    background-color: #ef4444 !important;
-  }
-}
-
-.status-partial {
-  background-color: #fffbeb !important;
-  color: #92400e !important;
-  border: 1px solid #fde68a !important;
-
-  .status-dot {
-    background-color: #f59e0b !important;
-  }
-}
-
-.status-info {
-  background-color: #eff6ff !important;
-  color: #1e40af !important;
-  border: 1px solid #bfdbfe !important;
-
-  .status-dot {
-    background-color: #3b82f6 !important;
-  }
-}
-
-.status-secondary {
-  background-color: rgba(var(--v-theme-on-surface), 0.08) !important;
-  color: rgb(var(--v-theme-on-surface)) !important;
-  border: 1px solid rgba(var(--v-border-color), var(--v-border-opacity)) !important;
-
-  .status-dot {
-    background-color: rgba(var(--v-theme-on-surface), 0.6) !important;
-  }
-}
-
-.status-primary {
-  background-color: #eef2ff !important;
-  color: #4338ca !important;
-  border: 1px solid #c7d2fe !important;
-
-  .status-dot {
-    background-color: #6366f1 !important;
-  }
-}
-
-.status-pill-compact {
-  padding: 2px 7px !important;
-  font-size: 0.65rem !important;
-  font-weight: 700 !important;
-  gap: 4px !important;
-
-  .status-dot {
-    width: 5px !important;
-    height: 5px !important;
-  }
-}
-
-@media (max-width: 600px) {
-  .vehicle-header-actions {
-    width: 100%;
-    justify-content: flex-end !important;
-    padding-top: 6px;
-    border-top: 1px dashed rgba(var(--v-border-color), 0.15);
-  }
-}
-</style>

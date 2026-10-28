@@ -57,6 +57,4 @@ definePage({
   </div>
 </template>
 
-<style lang="scss">
-@use "@core/scss/template/pages/misc.scss";
-</style>
+

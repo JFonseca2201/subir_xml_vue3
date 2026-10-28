@@ -155,28 +155,30 @@ const getRelativeDaysText = (item) => {
       class="maintenance-drawer elevation-12"
       style="z-index: 2500;"
     >
-    <!-- CABECERA DEL DRAWER -->
-    <div class="drawer-header px-4 py-3.5 border-b d-flex align-center justify-space-between">
-      <div class="d-flex align-center gap-2.5">
-        <VAvatar color="white" variant="tonal" size="36" rounded="lg" class="drawer-header-avatar">
-          <VIcon icon="ri-calendar-check-line" size="20" color="white" />
-        </VAvatar>
+    <!-- CABECERA DEL DRAWER (Color según el tema del sistema) -->
+    <div class="drawer-header-themed d-flex align-center justify-space-between">
+      <div class="d-flex align-center gap-3">
+        <div class="drawer-avatar-wrap">
+          <VIcon icon="ri-calendar-check-line" size="22" />
+        </div>
         <div>
-          <div class="d-flex align-center gap-1.5">
-            <h3 class="text-subtitle-1 font-weight-bold drawer-header-title mb-0" style="line-height: 1.2;">
+          <div class="d-flex align-center gap-2">
+            <h4 class="drawer-header-title">
               Recordatorios 10k KM
-            </h3>
-            <VBadge
+            </h4>
+            <VChip
               v-if="counts.badge_total > 0"
               color="error"
-              :content="counts.badge_total"
-              inline
-              class="font-weight-black"
-            />
+              size="x-small"
+              variant="flat"
+              class="font-weight-bold px-1.5"
+            >
+              {{ counts.badge_total }}
+            </VChip>
           </div>
-          <span class="text-caption drawer-header-subtitle">
+          <p class="drawer-header-subtitle">
             Mantenimiento Preventivo Periódico
-          </span>
+          </p>
         </div>
       </div>
 
@@ -186,7 +188,7 @@ const getRelativeDaysText = (item) => {
           icon="ri-refresh-line"
           variant="text"
           size="small"
-          class="drawer-header-action-btn"
+          class="drawer-close-btn"
           :loading="isLoading"
           title="Actualizar recordatorios"
           @click="fetchDrawerReminders(false)"
@@ -197,42 +199,41 @@ const getRelativeDaysText = (item) => {
           icon="ri-close-line"
           variant="text"
           size="small"
-          class="drawer-header-action-btn"
+          class="drawer-close-btn"
           title="Cerrar panel"
           @click="closeDrawer"
         />
       </div>
     </div>
 
-    <!-- PESTAÑAS (3 PESTAÑAS: Hoy, Próximos 7 días, Vencidos) -->
+    <!-- PESTAÑAS (Sobrias con línea simple) -->
     <VTabs
       v-model="activeTab"
       grow
-      density="comfortable"
-      class="border-b drawer-tabs"
+      class="drawer-tabs-clean"
     >
-      <!-- Pestaña 1: Hoy -->
-      <VTab value="today" class="text-caption font-weight-bold drawer-tab-item">
-        <span>Hoy</span>
-        <span class="ms-1.5 drawer-tab-badge">
+      <VTab value="today" class="drawer-tab-item">
+        <VIcon icon="ri-calendar-line" size="17" class="me-1.5" />
+        <span class="tab-label-text">Hoy</span>
+        <span class="drawer-tab-badge">
           {{ counts.today }}
         </span>
       </VTab>
 
-      <!-- Pestaña 2: Próximos (7 días) -->
-      <VTab value="upcoming" class="text-caption font-weight-bold drawer-tab-item">
-        <span>Próximos (7d)</span>
-        <span class="ms-1.5 drawer-tab-badge">
+      <VTab value="upcoming" class="drawer-tab-item">
+        <VIcon icon="ri-time-line" size="17" class="me-1.5" />
+        <span class="tab-label-text">Próximos</span>
+        <span class="drawer-tab-badge">
           {{ counts.upcoming }}
         </span>
       </VTab>
 
-      <!-- Pestaña 3: Vencidos -->
-      <VTab value="overdue" class="text-caption font-weight-bold drawer-tab-item">
-        <span>Vencidos</span>
+      <VTab value="overdue" class="drawer-tab-item">
+        <VIcon icon="ri-error-warning-line" size="17" class="me-1.5" />
+        <span class="tab-label-text">Vencidos</span>
         <span
-          class="ms-1.5 drawer-tab-badge"
-          :class="{ 'badge-overdue': counts.overdue > 0 }"
+          class="drawer-tab-badge"
+          :class="{ 'badge-danger': counts.overdue > 0 }"
         >
           {{ counts.overdue }}
         </span>
@@ -243,39 +244,49 @@ const getRelativeDaysText = (item) => {
     <div class="drawer-body pa-3 overflow-y-auto" style="height: calc(100vh - 120px);">
       <!-- Loading Skeletons -->
       <div v-if="isLoading" class="d-flex flex-column gap-3">
-        <VCard v-for="n in 3" :key="n" elevation="0" class="border pa-3 rounded-lg" style="background: rgba(255, 255, 255, 0.12) !important;">
+        <VCard v-for="n in 3" :key="n" elevation="0" class="border pa-3 rounded-lg" style="background: rgba(255, 255, 255, 0.7) !important;">
           <div class="d-flex justify-space-between mb-2">
-            <div class="shimmer-line w-40" style="height: 14px; background: rgba(255, 255, 255, 0.25) !important;" />
-            <div class="shimmer-chip" style="width: 70px; height: 18px; background: rgba(255, 255, 255, 0.25) !important;" />
+            <div class="shimmer-line w-40" style="height: 14px; background: rgba(0, 0, 0, 0.08) !important;" />
+            <div class="shimmer-chip" style="width: 70px; height: 18px; background: rgba(0, 0, 0, 0.08) !important;" />
           </div>
-          <div class="shimmer-line w-75 mb-2" style="height: 16px; background: rgba(255, 255, 255, 0.25) !important;" />
-          <div class="shimmer-line w-50 mb-3" style="height: 12px; background: rgba(255, 255, 255, 0.25) !important;" />
+          <div class="shimmer-line w-75 mb-2" style="height: 16px; background: rgba(0, 0, 0, 0.08) !important;" />
+          <div class="shimmer-line w-50 mb-3" style="height: 12px; background: rgba(0, 0, 0, 0.08) !important;" />
           <div class="d-flex gap-2">
-            <div class="shimmer-button w-50" style="height: 30px; background: rgba(255, 255, 255, 0.25) !important;" />
-            <div class="shimmer-button w-50" style="height: 30px; background: rgba(255, 255, 255, 0.25) !important;" />
+            <div class="shimmer-button w-50" style="height: 30px; background: rgba(0, 0, 0, 0.08) !important;" />
+            <div class="shimmer-button w-50" style="height: 30px; background: rgba(0, 0, 0, 0.08) !important;" />
           </div>
         </VCard>
       </div>
 
-      <!-- Estado Vacío -->
+      <!-- Estado Vacío Sobrio y Amigable -->
       <div
         v-else-if="!currentList || currentList.length === 0"
-        class="empty-state-container d-flex flex-column align-center justify-center text-center py-12 px-4"
+        class="empty-state-clean d-flex flex-column align-center justify-center text-center py-12 px-6"
       >
-        <div class="empty-state-avatar-wrap mb-4">
-          <VAvatar size="68" class="empty-avatar">
-            <VIcon
-              :icon="activeTab === 'overdue' ? 'ri-shield-check-line' : (activeTab === 'today' ? 'ri-checkbox-circle-line' : 'ri-calendar-line')"
-              size="36"
-            />
-          </VAvatar>
+        <div class="empty-icon-circle">
+          <VIcon
+            :icon="activeTab === 'overdue' ? 'ri-shield-check-line' : (activeTab === 'today' ? 'ri-checkbox-circle-line' : 'ri-calendar-line')"
+            size="32"
+          />
         </div>
-        <h4 class="empty-title mb-2">
-          {{ activeTab === 'overdue' ? '¡Sin recordatorios vencidos!' : (activeTab === 'today' ? 'Al día por hoy' : 'Sin mantenimientos en los próximos 7 días') }}
+
+        <h4 class="empty-clean-title">
+          {{ activeTab === 'overdue' ? 'Sin recordatorios vencidos' : (activeTab === 'today' ? 'Todo al día por hoy' : 'Sin recordatorios próximos') }}
         </h4>
-        <p class="empty-desc mb-0" style="max-width: 300px;">
-          {{ activeTab === 'overdue' ? 'Todos los ciclos de 10.000 KM han sido atendidos oportunamente.' : (activeTab === 'today' ? 'No hay vehículos con ciclos cumplidos agendados para la fecha actual.' : 'Los próximos mantenimientos preventivos se proyectarán automáticamente.') }}
+
+        <p class="empty-clean-desc">
+          {{ activeTab === 'overdue' ? 'Todos los ciclos de 10.000 KM han sido atendidos oportunamente.' : (activeTab === 'today' ? 'No hay vehículos con mantenimientos programados para el día de hoy.' : 'No hay vehículos con ciclos por vencer en los próximos 7 días.') }}
         </p>
+
+        <VChip
+          size="small"
+          variant="tonal"
+          color="success"
+          prepend-icon="ri-check-line"
+          class="font-weight-medium"
+        >
+          Al día
+        </VChip>
       </div>
 
       <!-- Listado de Tarjetas de Recordatorio -->
@@ -701,284 +712,4 @@ const getRelativeDaysText = (item) => {
   </template>
 </template>
 
-<style scoped lang="scss">
-.maintenance-drawer {
-  background: var(--bg-dialog, #ffffff) !important;
-  color: var(--text-primary, #0f172a) !important;
-  backdrop-filter: var(--blur-glass, none);
-  -webkit-backdrop-filter: var(--blur-glass, none);
-  border-left: 1px solid var(--border-glass, #e2e8f0) !important;
-  box-shadow: -8px 0 32px rgba(0, 0, 0, 0.25) !important;
 
-  :deep(.v-navigation-drawer__content) {
-    background: transparent !important;
-  }
-
-  // 1. Cabecera del Drawer
-  .drawer-header {
-    border-bottom: 1px solid var(--border-dialog-header, rgba(255, 255, 255, 0.15)) !important;
-    background: var(--bg-header, var(--bg-dialog-header, linear-gradient(135deg, #666CFF 0%, #5C61E6 100%))) !important;
-
-    .drawer-header-avatar {
-      background: rgba(255, 255, 255, 0.22) !important;
-      border: 1.5px solid rgba(255, 255, 255, 0.40) !important;
-
-      .v-icon {
-        color: #ffffff !important;
-        fill: #ffffff !important;
-      }
-    }
-
-    .drawer-header-title {
-      color: #ffffff !important;
-      font-weight: 800 !important;
-      font-size: 1.05rem !important;
-      text-shadow: 0 1px 3px rgba(0, 0, 0, 0.25) !important;
-    }
-
-    .drawer-header-subtitle {
-      color: rgba(255, 255, 255, 0.88) !important;
-      font-size: 0.74rem !important;
-      font-weight: 500 !important;
-    }
-
-    .drawer-header-action-btn {
-      color: #ffffff !important;
-
-      .v-icon {
-        color: #ffffff !important;
-        fill: #ffffff !important;
-      }
-
-      &:hover {
-        background: rgba(255, 255, 255, 0.18) !important;
-      }
-    }
-  }
-
-  // 2. Pestañas de Navegación
-  .drawer-tabs {
-    border-bottom: 1px solid var(--border-glass, #e2e8f0) !important;
-    background: var(--table-header-bg, #f8fafc) !important;
-
-    :deep(.v-tab) {
-      color: var(--text-secondary, #64748b) !important;
-      font-weight: 700 !important;
-      letter-spacing: 0.02em;
-
-      .drawer-tab-badge {
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        background: rgba(var(--v-theme-on-surface), 0.10) !important;
-        color: var(--text-secondary, #475569) !important;
-        -webkit-text-fill-color: var(--text-secondary, #475569) !important;
-        font-weight: 800 !important;
-        font-size: 0.72rem !important;
-        padding: 1px 7px !important;
-        min-width: 22px !important;
-        height: 19px !important;
-        border-radius: 999px !important;
-        border: 1px solid var(--border-glass, rgba(0, 0, 0, 0.1)) !important;
-        line-height: 1 !important;
-
-        &.badge-overdue {
-          background: #ef4444 !important;
-          color: #ffffff !important;
-          -webkit-text-fill-color: #ffffff !important;
-          border-color: #f87171 !important;
-        }
-      }
-
-      &.v-tab--selected {
-        background: var(--bg-surface, #ffffff) !important;
-        opacity: 1 !important;
-        border-radius: 8px 8px 0 0 !important;
-
-        .v-btn__content,
-        > span:not(.drawer-tab-badge) {
-          color: var(--text-active, #5C61E6) !important;
-          -webkit-text-fill-color: var(--text-active, #5C61E6) !important;
-          font-weight: 900 !important;
-        }
-
-        .drawer-tab-badge {
-          background: var(--text-active, #5C61E6) !important;
-          color: #ffffff !important;
-          -webkit-text-fill-color: #ffffff !important;
-          border: none !important;
-          font-weight: 900 !important;
-
-          &.badge-overdue {
-            background: #ef4444 !important;
-          }
-        }
-      }
-    }
-  }
-
-  // 3. Cuerpo del Drawer
-  .drawer-body {
-    background: var(--bg-app, #f8fafc) !important;
-  }
-
-  // 4. Estado Vacío (Al día por hoy / Sin recordatorios)
-  .empty-state-container {
-    .empty-avatar {
-      background: var(--dialog-avatar-bg, rgba(102, 108, 255, 0.12)) !important;
-      border: 2px solid var(--dialog-avatar-border, rgba(102, 108, 255, 0.30)) !important;
-      box-shadow: 0 4px 18px rgba(0, 0, 0, 0.15) !important;
-
-      .v-icon {
-        color: var(--text-active, #5C61E6) !important;
-        fill: var(--text-active, #5C61E6) !important;
-        font-size: 34px !important;
-      }
-    }
-
-    .empty-title {
-      color: var(--text-primary, #0f172a) !important;
-      font-weight: 900 !important;
-      font-size: 1.25rem !important;
-      letter-spacing: 0.02em !important;
-      text-shadow: none !important;
-    }
-
-    .empty-desc {
-      color: var(--text-secondary, #64748b) !important;
-      font-size: 0.88rem !important;
-      line-height: 1.5 !important;
-      text-shadow: none !important;
-    }
-  }
-
-  // 5. Tarjetas de Recordatorio
-  .reminder-card {
-    background: var(--bg-surface, #ffffff) !important;
-    color: var(--text-primary, #0f172a) !important;
-    border: 1px solid var(--border-glass, #e2e8f0) !important;
-    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.08) !important;
-
-    * {
-      color: var(--text-primary, #0f172a);
-    }
-
-    .kardex-plate-badge {
-      background: var(--text-primary, #0f172a) !important;
-      color: #ffffff !important;
-      border-radius: 6px;
-      font-weight: 800;
-    }
-
-    .text-high-emphasis,
-    .text-body-2 {
-      color: var(--text-primary, #0f172a) !important;
-      font-weight: 700 !important;
-    }
-
-    .text-medium-emphasis,
-    .text-caption {
-      color: var(--text-secondary, #64748b) !important;
-    }
-
-    .mileage-info-box {
-      background: rgba(var(--v-theme-on-surface), 0.04) !important;
-      border: 1.5px dashed var(--border-glass, #cbd5e1) !important;
-
-      * {
-        color: var(--text-secondary, #334155);
-      }
-
-      .text-primary {
-        color: var(--text-active, #5C61E6) !important;
-        font-weight: 900 !important;
-      }
-
-      .text-error {
-        color: #ef4444 !important;
-      }
-
-      .text-warning {
-        color: #f59e0b !important;
-      }
-    }
-
-    .status-pill-clean {
-      font-weight: 700 !important;
-
-      &.status-paid {
-        background: rgba(16, 185, 129, 0.15) !important;
-        color: #10b981 !important;
-        border: 1px solid rgba(16, 185, 129, 0.35) !important;
-        .status-dot { background: #10b981 !important; }
-      }
-
-      &.status-pending {
-        background: rgba(239, 68, 68, 0.15) !important;
-        color: #ef4444 !important;
-        border: 1px solid rgba(239, 68, 68, 0.35) !important;
-        .status-dot { background: #ef4444 !important; }
-      }
-
-      &.status-partial {
-        background: rgba(245, 158, 11, 0.15) !important;
-        color: #f59e0b !important;
-        border: 1px solid rgba(245, 158, 11, 0.35) !important;
-        .status-dot { background: #f59e0b !important; }
-      }
-    }
-
-    &:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.16) !important;
-    }
-
-    &.reminder-card-overdue {
-      border-left: 5px solid #ef4444 !important;
-    }
-
-    &.reminder-card-today {
-      border-left: 5px solid var(--text-active, #666CFF) !important;
-    }
-  }
-}
-
-.maintenance-floating-fab-root {
-  position: fixed;
-  bottom: 88px;
-  right: 24px;
-  z-index: 1050;
-
-  .maintenance-fab-btn {
-    border-radius: 50% !important;
-    background: var(--bg-header, var(--v-theme-primary)) !important;
-    color: #ffffff !important;
-    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.30) !important;
-    transition: transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.25s ease;
-
-    &:hover {
-      transform: scale(1.10) translateY(-2px);
-      box-shadow: 0 12px 30px rgba(0, 0, 0, 0.45) !important;
-    }
-  }
-}
-
-:deep(.maintenance-fab-badge .v-badge__badge) {
-  font-size: 0.72rem !important;
-  font-weight: 800 !important;
-  height: 20px !important;
-  min-width: 20px !important;
-  padding: 0 5px !important;
-  box-shadow: 0 2px 8px rgba(239, 68, 68, 0.6) !important;
-  animation: pulse-fab-badge 2.2s infinite ease-in-out;
-}
-
-@keyframes pulse-fab-badge {
-  0%, 100% {
-    transform: scale(1);
-  }
-  50% {
-    transform: scale(1.15);
-  }
-}
-</style>

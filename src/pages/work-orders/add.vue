@@ -1652,17 +1652,3 @@ onActivated(async () => {
   </div>
 </template>
 
-<style scoped>
-.input-invalid-red {
-  border: 1.5px solid rgb(var(--v-theme-error)) !important;
-  background-color: rgba(var(--v-theme-error), 0.08) !important;
-  color: rgb(var(--v-theme-error)) !important;
-  border-radius: 4px;
-}
-
-.wrap-invalid-red {
-  border: 1.5px solid rgb(var(--v-theme-error)) !important;
-  border-radius: 6px;
-  background-color: rgba(var(--v-theme-error), 0.08) !important;
-}
-</style>

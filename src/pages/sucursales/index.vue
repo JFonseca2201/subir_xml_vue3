@@ -101,49 +101,49 @@ const rules = {
   phone: value => {
     if (!value) return 'El teléfono es requerido'
     if (!/^\d{10}$/.test(String(value).trim().replace(/\D/g, ''))) return 'El teléfono debe tener 10 dígitos'
-    
+
     return true
   },
   email: value => {
     if (!value) return 'El email es requerido'
     if (!/.+@.+\..+/.test(value)) return 'El email debe ser válido'
-    
+
     return true
   },
   numeric: value => {
     if (!value) return true // Permitir vacío si no es requerido
     if (!/^\d+$/.test(value)) return 'Este campo debe contener solo números'
-    
+
     return true
   },
   serieFactura: value => {
     if (!value) return true // Permitir vacío
     if (!/^[A-Za-z0-9\-]+$/.test(value)) return 'La serie debe contener solo letras, números y guiones'
-    
+
     return true
   },
   secuencial: value => {
     if (!value) return true
     if (!/^\d{9}$/.test(value)) return 'El secuencial debe tener 9 dígitos'
-    
+
     return true
   },
   establecimiento: value => {
     if (!value) return true
     if (!/^\d{3}$/.test(value)) return 'El establecimiento debe tener 3 dígitos'
-    
+
     return true
   },
   puntoEmision: value => {
     if (!value) return true
     if (!/^\d{3}$/.test(value)) return 'El punto de emisión debe tener 3 dígitos'
-    
+
     return true
   },
   contribuyenteEspecial: value => {
     if (!value) return true // Permitir vacío
     if (!/^\d+$/.test(value)) return 'El número de contribuyente especial debe contener solo números'
-    
+
     return true
   },
 }
@@ -229,7 +229,7 @@ const currentLoginBgUrl = computed(() => {
   if (sucursal.value?.login_background) {
     return getStorageUrl(sucursal.value.login_background)
   }
-  
+
   return null
 })
 
@@ -321,18 +321,10 @@ onMounted(() => {
     <!-- Overlay global -->
     <!-- Global loader in use -->
 
-    <VCard
-      elevation="8"
-      class="pa-8 rounded-xl border-thin max-w-4xl mx-auto"
-    >
+    <VCard elevation="8" class="pa-8 rounded-xl border-thin max-w-4xl mx-auto">
       <!-- Header -->
       <div class="text-center mb-8">
-        <VIcon
-          icon="ri-building-line"
-          size="64"
-          color="primary"
-          class="mb-4"
-        />
+        <VIcon icon="ri-building-line" size="64" color="primary" class="mb-4" />
         <h1 class="text-h3 font-weight-bold mb-2">
           Información de la Empresa
         </h1>
@@ -342,365 +334,161 @@ onMounted(() => {
       </div>
 
       <!-- Skeleton Loader al cargar inicialmente -->
-      <div
-        v-if="isLoading && !sucursal.name"
-        class="pa-4"
-      >
+      <div v-if="isLoading && !sucursal.name" class="pa-4">
         <VRow>
-          <VCol
-            cols="12"
-            class="mb-3"
-          >
+          <VCol cols="12" class="mb-3">
             <div class="shimmer-line w-40 mb-2" />
           </VCol>
-          <VCol
-            v-for="n in 6"
-            :key="n"
-            cols="12"
-            md="6"
-            class="mb-3"
-          >
+          <VCol v-for="n in 6" :key="n" cols="12" md="6" class="mb-3">
             <div class="shimmer-line w-30 mb-2" />
-            <div
-              class="shimmer-line w-100"
-              style="height: 44px; border-radius: 8px;"
-            />
+            <div class="shimmer-line w-100" style="height: 44px; border-radius: 8px;" />
           </VCol>
         </VRow>
       </div>
 
       <!-- Formulario -->
-      <VForm
-        v-else
-        ref="formRef"
-        @submit.prevent="saveSucursal"
-      >
+      <VForm v-else ref="formRef" @submit.prevent="saveSucursal">
         <VRow>
           <!-- Información Básica -->
           <VCol cols="12">
             <h5 class="text-h5 font-weight-bold mb-4 d-flex align-center">
-              <VIcon
-                icon="ri-information-line"
-                size="20"
-                class="me-2"
-              />
+              <VIcon icon="ri-information-line" size="20" class="me-2" />
               Información Básica
             </h5>
           </VCol>
 
-          <VCol
-            cols="12"
-            md="6"
-          >
-            <VTextField
-              v-model="sucursal.name"
-              label="Nombre de la Empresa"
-              variant="outlined"
-              density="comfortable"
-              prepend-inner-icon="ri-building-line"
-              hide-details="auto"
-              required
-              :disabled="!isEditing"
-              :rules="[rules.required]"
-            />
+          <VCol cols="12" md="6">
+            <VTextField v-model="sucursal.name" label="Nombre de la Empresa" variant="outlined" density="comfortable"
+              prepend-inner-icon="ri-building-line" hide-details="auto" required :disabled="!isEditing"
+              :rules="[rules.required]" />
           </VCol>
 
-          <VCol
-            cols="12"
-            md="6"
-          >
-            <VTextField
-              v-model="sucursal.trade_name"
-              label="Nombre Comercial"
-              variant="outlined"
-              density="comfortable"
-              prepend-inner-icon="ri-store-line"
-              hide-details="auto"
-              :disabled="!isEditing"
-              :rules="[rules.required]"
-            />
+          <VCol cols="12" md="6">
+            <VTextField v-model="sucursal.trade_name" label="Nombre Comercial" variant="outlined" density="comfortable"
+              prepend-inner-icon="ri-store-line" hide-details="auto" :disabled="!isEditing" :rules="[rules.required]" />
           </VCol>
 
-          <VCol
-            cols="12"
-            md="6"
-          >
-            <VTextField
-              v-model="sucursal.ruc"
-              label="RUC"
-              variant="outlined"
-              density="comfortable"
-              prepend-inner-icon="ri-file-text-line"
-              hide-details="auto"
-              required
-              :disabled="!isEditing"
-              :rules="[rules.ruc]"
-              maxlength="13"
-              @input="sucursal.ruc = sucursal.ruc.replace(/\D/g, '').slice(0, 13)"
-            />
+          <VCol cols="12" md="6">
+            <VTextField v-model="sucursal.ruc" label="RUC" variant="outlined" density="comfortable"
+              prepend-inner-icon="ri-file-text-line" hide-details="auto" required :disabled="!isEditing"
+              :rules="[rules.ruc]" maxlength="13"
+              @input="sucursal.ruc = sucursal.ruc.replace(/\D/g, '').slice(0, 13)" />
           </VCol>
 
-          <VCol
-            cols="12"
-            md="6"
-          >
-            <VTextField
-              v-model="sucursal.address"
-              label="Dirección"
-              variant="outlined"
-              density="comfortable"
-              prepend-inner-icon="ri-map-pin-line"
-              hide-details="auto"
-              required
-              :disabled="!isEditing"
-              :rules="[rules.required]"
-            />
+          <VCol cols="12" md="6">
+            <VTextField v-model="sucursal.address" label="Dirección" variant="outlined" density="comfortable"
+              prepend-inner-icon="ri-map-pin-line" hide-details="auto" required :disabled="!isEditing"
+              :rules="[rules.required]" />
           </VCol>
 
           <!-- Facturación -->
           <VCol cols="12">
             <h5 class="text-h5 font-weight-bold mb-4 d-flex align-center">
-              <VIcon
-                icon="ri-file-list-3-line"
-                size="20"
-                class="me-2"
-              />
+              <VIcon icon="ri-file-list-3-line" size="20" class="me-2" />
               Configuración de Facturación
             </h5>
           </VCol>
 
-          <VCol
-            cols="12"
-            md="3"
-          >
-            <VTextField
-              v-model="sucursal.serie_factura"
-              label="Serie Factura"
-              variant="outlined"
-              density="comfortable"
-              prepend-inner-icon="ri-hashtag"
-              hide-details="auto"
-              :disabled="!isEditing"
-              :rules="[rules.serieFactura]"
-            />
+          <VCol cols="12" md="3">
+            <VTextField v-model="sucursal.serie_factura" label="Serie Factura" variant="outlined" density="comfortable"
+              prepend-inner-icon="ri-hashtag" hide-details="auto" :disabled="!isEditing"
+              :rules="[rules.serieFactura]" />
           </VCol>
 
-          <VCol
-            cols="12"
-            md="3"
-          >
-            <VTextField
-              v-model="sucursal.secuencial_factura"
-              label="Secuencial"
-              variant="outlined"
-              density="comfortable"
-              prepend-inner-icon="ri-sort-asc"
-              hide-details="auto"
-              :disabled="!isEditing"
-              :rules="[rules.secuencial]"
-            />
+          <VCol cols="12" md="3">
+            <VTextField v-model="sucursal.secuencial_factura" label="Secuencial" variant="outlined"
+              density="comfortable" prepend-inner-icon="ri-sort-asc" hide-details="auto" :disabled="!isEditing"
+              :rules="[rules.secuencial]" />
           </VCol>
 
-          <VCol
-            cols="12"
-            md="3"
-          >
-            <VTextField
-              v-model="sucursal.establecimiento"
-              label="Establecimiento"
-              variant="outlined"
-              density="comfortable"
-              prepend-inner-icon="ri-building-2-line"
-              hide-details="auto"
-              :disabled="!isEditing"
-              :rules="[rules.establecimiento]"
-            />
+          <VCol cols="12" md="3">
+            <VTextField v-model="sucursal.establecimiento" label="Establecimiento" variant="outlined"
+              density="comfortable" prepend-inner-icon="ri-building-2-line" hide-details="auto" :disabled="!isEditing"
+              :rules="[rules.establecimiento]" />
           </VCol>
 
-          <VCol
-            cols="12"
-            md="3"
-          >
-            <VTextField
-              v-model="sucursal.punto_emision"
-              label="Punto Emisión"
-              variant="outlined"
-              density="comfortable"
-              prepend-inner-icon="ri-printer-line"
-              hide-details="auto"
-              :disabled="!isEditing"
-              :rules="[rules.puntoEmision]"
-            />
+          <VCol cols="12" md="3">
+            <VTextField v-model="sucursal.punto_emision" label="Punto Emisión" variant="outlined" density="comfortable"
+              prepend-inner-icon="ri-printer-line" hide-details="auto" :disabled="!isEditing"
+              :rules="[rules.puntoEmision]" />
           </VCol>
 
           <!-- Ambiente SRI -->
-          <VCol
-            cols="12"
-            md="6"
-          >
-            <VSelect
-              v-model="sucursal.ambiente"
-              :items="[
-                { title: 'Pruebas', value: '1' },
-                { title: 'Producción', value: '2' }
-              ]"
-              label="Ambiente SRI"
-              variant="outlined"
-              density="comfortable"
-              prepend-inner-icon="ri-cloud-line"
-              hide-details="auto"
-              :disabled="!isEditing"
-            />
+          <VCol cols="12" md="6">
+            <VSelect v-model="sucursal.ambiente" :items="[
+              { title: 'Pruebas', value: '1' },
+              { title: 'Producción', value: '2' }
+            ]" label="Ambiente SRI" variant="outlined" density="comfortable" prepend-inner-icon="ri-cloud-line"
+              hide-details="auto" :disabled="!isEditing" />
           </VCol>
 
-          <VCol
-            cols="12"
-            md="6"
-          >
-            <VSelect
-              v-model="sucursal.tipo_emision"
-              :items="[
-                { title: 'Normal', value: '1' },
-                { title: 'Contingencia', value: '2' }
-              ]"
-              label="Tipo Emisión"
-              variant="outlined"
-              density="comfortable"
-              prepend-inner-icon="ri-file-copy-line"
-              hide-details="auto"
-              :disabled="!isEditing"
-            />
+          <VCol cols="12" md="6">
+            <VSelect v-model="sucursal.tipo_emision" :items="[
+              { title: 'Normal', value: '1' },
+              { title: 'Contingencia', value: '2' }
+            ]" label="Tipo Emisión" variant="outlined" density="comfortable" prepend-inner-icon="ri-file-copy-line"
+              hide-details="auto" :disabled="!isEditing" />
           </VCol>
 
           <!-- Firma Electrónica -->
           <VCol cols="12">
             <h5 class="text-h5 font-weight-bold mb-4 d-flex align-center">
-              <VIcon
-                icon="ri-key-line"
-                size="20"
-                class="me-2"
-              />
+              <VIcon icon="ri-key-line" size="20" class="me-2" />
               Firma Electrónica
             </h5>
           </VCol>
 
-          <VCol
-            cols="12"
-            md="6"
-          >
-            <VFileInput
-              v-model="fileFirma"
-              label="Subir Firma (.p12 / .pfx)"
-              accept=".p12,.pfx"
-              variant="outlined"
-              density="comfortable"
-              prepend-inner-icon="ri-file-upload-line"
-              hide-details="auto"
-              :disabled="!isEditing"
-            />
-            <small
-              v-if="sucursal.firma_electronica"
-              class="text-caption text-success d-block mt-1"
-            >
+          <VCol cols="12" md="6">
+            <VFileInput v-model="fileFirma" label="Subir Firma (.p12 / .pfx)" accept=".p12,.pfx" variant="outlined"
+              density="comfortable" prepend-inner-icon="ri-file-upload-line" hide-details="auto"
+              :disabled="!isEditing" />
+            <small v-if="sucursal.firma_electronica" class="text-caption text-success d-block mt-1">
               Firma actual: {{ sucursal.firma_electronica }}
             </small>
           </VCol>
 
-          <VCol
-            cols="12"
-            md="6"
-          >
-            <VTextField
-              v-model="sucursal.password_firma"
-              label="Contraseña de la Firma (.p12)"
-              variant="outlined"
-              density="comfortable"
-              prepend-inner-icon="ri-lock-password-line"
-              hide-details="auto"
-              type="password"
-              :disabled="!isEditing"
-            />
+          <VCol cols="12" md="6">
+            <VTextField v-model="sucursal.password_firma" label="Contraseña de la Firma (.p12)" variant="outlined"
+              density="comfortable" prepend-inner-icon="ri-lock-password-line" hide-details="auto" type="password"
+              :disabled="!isEditing" />
           </VCol>
 
           <!-- Personalización Visual / Fondo del Login -->
           <VCol cols="12">
             <h5 class="text-h5 font-weight-bold mb-4 d-flex align-center">
-              <VIcon
-                icon="ri-image-line"
-                size="20"
-                class="me-2"
-                color="primary"
-              />
+              <VIcon icon="ri-image-line" size="20" class="me-2" color="primary" />
               Fondo de Pantalla del Login
             </h5>
           </VCol>
 
-          <VCol
-            cols="12"
-            md="7"
-          >
-            <VFileInput
-              v-model="fileLoginBg"
-              label="Seleccionar Imagen de Fondo (.jpg, .png, .webp)"
-              accept="image/jpeg,image/png,image/webp"
-              variant="outlined"
-              density="comfortable"
-              prepend-inner-icon="ri-image-add-line"
-              hide-details="auto"
-              :disabled="!isEditing"
-              clearable
-              @change="onLoginBgSelected"
-              @click:clear="clearLoginBg"
-            />
+          <VCol cols="12" md="7">
+            <VFileInput v-model="fileLoginBg" label="Seleccionar Imagen de Fondo (.jpg, .png, .webp)"
+              accept="image/jpeg,image/png,image/webp" variant="outlined" density="comfortable"
+              prepend-inner-icon="ri-image-add-line" hide-details="auto" :disabled="!isEditing" clearable
+              @change="onLoginBgSelected" @click:clear="clearLoginBg" />
             <div class="text-caption text-medium-emphasis mt-2 d-flex align-center gap-1.5">
-              <VIcon
-                icon="ri-information-line"
-                size="15"
-                color="primary"
-              />
-              <span>Esta imagen se mostrará como fondo en la pantalla de inicio de sesión con efecto translúcido en el formulario azul.</span>
+              <VIcon icon="ri-information-line" size="15" color="primary" />
+              <span>Esta imagen se mostrará como fondo en la pantalla de inicio de sesión con efecto translúcido en el
+                formulario azul.</span>
             </div>
           </VCol>
 
           <!-- Previsualización -->
-          <VCol
-            cols="12"
-            md="5"
-          >
-            <div
-              v-if="currentLoginBgUrl"
-              class="login-bg-preview-card rounded-xl border overflow-hidden position-relative"
-            >
-              <img
-                :src="currentLoginBgUrl"
-                alt="Fondo de Login"
-                class="login-bg-img"
-              >
+          <VCol cols="12" md="5">
+            <div v-if="currentLoginBgUrl"
+              class="login-bg-preview-card rounded-xl border overflow-hidden position-relative">
+              <img :src="currentLoginBgUrl" alt="Fondo de Login" class="login-bg-img">
               <div class="login-bg-overlay-badge d-flex align-center justify-space-between px-3 py-1.5">
                 <span class="text-caption text-white font-weight-bold">
                   {{ previewLoginBg ? 'Nueva imagen seleccionada' : 'Fondo actual del Login' }}
                 </span>
-                <VBtn
-                  v-if="isEditing"
-                  size="x-small"
-                  color="error"
-                  variant="elevated"
-                  icon="ri-delete-bin-line"
-                  class="rounded-circle"
-                  title="Quitar imagen"
-                  @click="clearLoginBg"
-                />
+                <VBtn v-if="isEditing" size="x-small" color="error" variant="elevated" icon="ri-delete-bin-line"
+                  class="rounded-circle" title="Quitar imagen" @click="clearLoginBg" />
               </div>
             </div>
-            <div
-              v-else
-              class="login-bg-placeholder rounded-xl border border-dashed pa-4 text-center d-flex flex-column align-center justify-center"
-            >
-              <VIcon
-                icon="ri-image-line"
-                size="32"
-                class="text-disabled mb-1"
-              />
+            <div v-else
+              class="login-bg-placeholder rounded-xl border border-dashed pa-4 text-center d-flex flex-column align-center justify-center">
+              <VIcon icon="ri-image-line" size="32" class="text-disabled mb-1" />
               <span class="text-caption text-disabled font-weight-medium">
                 Sin imagen personalizada (se usará el fondo predeterminado del taller)
               </span>
@@ -710,158 +498,66 @@ onMounted(() => {
           <!-- Contabilidad -->
           <VCol cols="12">
             <h5 class="text-h5 font-weight-bold mb-4 d-flex align-center">
-              <VIcon
-                icon="ri-calculator-line"
-                size="20"
-                class="me-2"
-              />
+              <VIcon icon="ri-calculator-line" size="20" class="me-2" />
               Contabilidad
             </h5>
           </VCol>
 
-          <VCol
-            cols="12"
-            md="4"
-          >
-            <VSelect
-              v-model="sucursal.obligado_contabilidad"
-              :items="[
-                { title: 'Sí', value: 'SI' },
-                { title: 'No', value: 'NO' }
-              ]"
-              label="Obligado a Contabilidad"
-              variant="outlined"
-              density="comfortable"
-              prepend-inner-icon="ri-checkbox-line"
-              hide-details="auto"
-              :disabled="!isEditing"
-            />
+          <VCol cols="12" md="4">
+            <VSelect v-model="sucursal.obligado_contabilidad" :items="[
+              { title: 'Sí', value: 'SI' },
+              { title: 'No', value: 'NO' }
+            ]" label="Obligado a Contabilidad" variant="outlined" density="comfortable"
+              prepend-inner-icon="ri-checkbox-line" hide-details="auto" :disabled="!isEditing" />
           </VCol>
 
-          <VCol
-            cols="12"
-            md="4"
-          >
-            <VTextField
-              v-model="sucursal.contribuyente_especial"
-              label="Contribuyente Especial"
-              variant="outlined"
-              density="comfortable"
-              prepend-inner-icon="ri-star-line"
-              hide-details="auto"
-              :disabled="!isEditing"
-              :rules="[rules.contribuyenteEspecial]"
-            />
+          <VCol cols="12" md="4">
+            <VTextField v-model="sucursal.contribuyente_especial" label="Contribuyente Especial" variant="outlined"
+              density="comfortable" prepend-inner-icon="ri-star-line" hide-details="auto" :disabled="!isEditing"
+              :rules="[rules.contribuyenteEspecial]" />
           </VCol>
 
-          <VCol
-            cols="12"
-            md="4"
-          >
-            <VSelect
-              v-model="sucursal.status"
-              :items="[
-                { title: 'Activo', value: '1' },
-                { title: 'Inactivo', value: '0' }
-              ]"
-              label="Estado"
-              variant="outlined"
-              density="comfortable"
-              prepend-inner-icon="ri-toggle-line"
-              hide-details="auto"
-              required
-              :disabled="!isEditing"
-            />
+          <VCol cols="12" md="4">
+            <VSelect v-model="sucursal.status" :items="[
+              { title: 'Activo', value: '1' },
+              { title: 'Inactivo', value: '0' }
+            ]" label="Estado" variant="outlined" density="comfortable" prepend-inner-icon="ri-toggle-line"
+              hide-details="auto" required :disabled="!isEditing" />
           </VCol>
 
-          <VCol
-            cols="12"
-            md="6"
-          >
-            <VTextField
-              v-model="sucursal.phone"
-              label="Teléfono"
-              variant="outlined"
-              density="comfortable"
-              prepend-inner-icon="ri-phone-line"
-              hide-details="auto"
-              required
-              :disabled="!isEditing"
-              :rules="[rules.phone]"
-              maxlength="10"
-              @input="sucursal.phone = sucursal.phone.replace(/\D/g, '').slice(0, 10)"
-            />
+          <VCol cols="12" md="6">
+            <VTextField v-model="sucursal.phone" label="Teléfono" variant="outlined" density="comfortable"
+              prepend-inner-icon="ri-phone-line" hide-details="auto" required :disabled="!isEditing"
+              :rules="[rules.phone]" maxlength="10"
+              @input="sucursal.phone = sucursal.phone.replace(/\D/g, '').slice(0, 10)" />
           </VCol>
 
-          <VCol
-            cols="12"
-            md="6"
-          >
-            <VTextField
-              v-model="sucursal.email"
-              label="Email"
-              variant="outlined"
-              density="comfortable"
-              prepend-inner-icon="ri-mail-line"
-              hide-details="auto"
-              required
-              :disabled="!isEditing"
-              :rules="[rules.email]"
-            />
+          <VCol cols="12" md="6">
+            <VTextField v-model="sucursal.email" label="Email" variant="outlined" density="comfortable"
+              prepend-inner-icon="ri-mail-line" hide-details="auto" required :disabled="!isEditing"
+              :rules="[rules.email]" />
           </VCol>
         </VRow>
 
         <!-- Acciones -->
-        <VCol
-          v-if="canEditSucursal"
-          cols="12"
-          class="d-flex justify-center gap-4 mt-6"
-        >
+        <VCol v-if="canEditSucursal" cols="12" class="d-flex justify-center gap-4 mt-6">
           <!-- Botón Editar (solo visible cuando no está editando) -->
-          <VBtn
-            v-if="!isEditing"
-            color="primary"
-            variant="elevated"
-            class="text-none px-8"
-            :disabled="isLoading"
-            @click="enableEditing"
-          >
-            <VIcon
-              start
-              icon="ri-edit-line"
-            />
+          <VBtn v-if="!isEditing" color="primary" variant="elevated" class="text-none px-8" :disabled="isLoading"
+            @click="enableEditing">
+            <VIcon start icon="ri-edit-line" />
             Editar Información
           </VBtn>
 
           <!-- Botones de edición (visibles solo cuando está editando) -->
-          <VBtn
-            v-if="isEditing"
-            variant="outlined"
-            color="secondary"
-            class="text-none px-8"
-            :disabled="isLoading"
-            @click="cancelEditing"
-          >
-            <VIcon
-              start
-              icon="ri-close-line"
-            />
+          <VBtn v-if="isEditing" variant="outlined" color="secondary" class="text-none px-8" :disabled="isLoading"
+            @click="cancelEditing">
+            <VIcon start icon="ri-close-line" />
             Cancelar
           </VBtn>
 
-          <VBtn
-            v-if="isEditing"
-            color="primary"
-            variant="elevated"
-            class="text-none px-8"
-            type="submit"
-            :loading="isLoading"
-            :disabled="isLoading"
-          >
-            <VIcon
-              start
-              icon="ri-save-line"
-            />
+          <VBtn v-if="isEditing" color="primary" variant="elevated" class="text-none px-8" type="submit"
+            :loading="isLoading" :disabled="isLoading">
+            <VIcon start icon="ri-save-line" />
             Guardar Cambios
           </VBtn>
         </VCol>
@@ -870,31 +566,4 @@ onMounted(() => {
   </div>
 </template>
 
-<style scoped lang="scss">
-.login-bg-preview-card {
-  height: 120px;
-  width: 100%;
-  background-color: rgba(var(--v-theme-on-surface), 0.04);
-  position: relative;
-}
 
-.login-bg-img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  display: block;
-}
-
-.login-bg-overlay-badge {
-  position: absolute;
-  inset-inline: 0;
-  bottom: 0;
-  background: linear-gradient(180deg, transparent 0%, rgba(0, 0, 0, 0.75) 100%);
-}
-
-.login-bg-placeholder {
-  height: 120px;
-  width: 100%;
-  background-color: rgba(var(--v-theme-on-surface), 0.02);
-}
-</style>

@@ -36,7 +36,7 @@ const isUserActive = user => {
   if (user.is_active !== undefined && user.is_active !== null) {
     return user.is_active === true || user.is_active === 1 || String(user.is_active) === '1'
   }
-  
+
   return true
 }
 
@@ -70,7 +70,7 @@ const formatDate = date => {
   const y = d.getFullYear()
   const m = String(d.getMonth() + 1).padStart(2, '0')
   const day = String(d.getDate()).padStart(2, '0')
-  
+
   return `${y}/${m}/${day}`
 }
 
@@ -84,7 +84,7 @@ const getUserInitials = (name, surname) => {
   const s = (surname || '').trim()
   if (n && s) return (n[0] + s[0]).toUpperCase()
   if (n) return n.slice(0, 2).toUpperCase()
-  
+
   return 'US'
 }
 
@@ -196,7 +196,7 @@ const editItem = item => {
 const deleteItem = item => {
   if (item.id === 1) {
     showNotification('No se puede eliminar al usuario con ID 1 (Super-Admin)', 'error')
-    
+
     return
   }
   user_selected_delete.value = item
@@ -235,17 +235,8 @@ onMounted(() => {
     <div class="d-flex align-center justify-space-between flex-wrap gap-4 mb-5">
       <div>
         <h1 class="text-h4 font-weight-bold mb-1 d-flex align-center">
-          <VAvatar
-            size="42"
-            color="primary"
-            variant="tonal"
-            rounded="lg"
-            class="me-3"
-          >
-            <VIcon
-              icon="ri-shield-user-line"
-              size="26"
-            />
+          <VAvatar size="42" color="primary" variant="tonal" rounded="lg" class="me-3">
+            <VIcon icon="ri-shield-user-line" size="26" />
           </VAvatar>
           Gestión de Usuarios
         </h1>
@@ -255,39 +246,19 @@ onMounted(() => {
       </div>
 
       <div class="d-flex align-center justify-end gap-2 flex-wrap ms-auto">
-        <VBtn
-          v-if="can('register_user')"
-          color="primary"
-          prepend-icon="ri-add-line"
-          class="elevation-2 font-weight-bold"
-          @click="isUserAddDialogVisible = true"
-        >
+        <VBtn v-if="can('register_user')" color="primary" prepend-icon="ri-add-line"
+          class="elevation-2 font-weight-bold" @click="isUserAddDialogVisible = true">
           Nuevo Usuario
         </VBtn>
       </div>
     </div>
 
     <!-- Barra de Métricas Rápidas (KPIs) -->
-    <VRow
-      class="mb-4 d-none d-sm-flex"
-      dense
-    >
-      <VCol
-        cols="12"
-        sm="4"
-      >
+    <VRow class="mb-4 d-none d-sm-flex" dense>
+      <VCol cols="12" sm="4">
         <VCard class="kpi-stat-card elevation-0 border rounded-xl pa-3.5 bg-surface d-flex align-center gap-3 h-100">
-          <VAvatar
-            size="44"
-            color="primary"
-            variant="tonal"
-            rounded="lg"
-            class="flex-shrink-0"
-          >
-            <VIcon
-              icon="ri-user-follow-line"
-              size="24"
-            />
+          <VAvatar size="44" color="primary" variant="tonal" rounded="lg" class="flex-shrink-0">
+            <VIcon icon="ri-user-follow-line" size="24" />
           </VAvatar>
           <div class="min-w-0 flex-grow-1">
             <div class="text-caption text-medium-emphasis font-weight-medium text-truncate">
@@ -300,22 +271,10 @@ onMounted(() => {
         </VCard>
       </VCol>
 
-      <VCol
-        cols="12"
-        sm="4"
-      >
+      <VCol cols="12" sm="4">
         <VCard class="kpi-stat-card elevation-0 border rounded-xl pa-3.5 bg-surface d-flex align-center gap-3 h-100">
-          <VAvatar
-            size="44"
-            color="success"
-            variant="tonal"
-            rounded="lg"
-            class="flex-shrink-0"
-          >
-            <VIcon
-              icon="ri-checkbox-circle-line"
-              size="24"
-            />
+          <VAvatar size="44" color="success" variant="tonal" rounded="lg" class="flex-shrink-0">
+            <VIcon icon="ri-checkbox-circle-line" size="24" />
           </VAvatar>
           <div class="min-w-0 flex-grow-1">
             <div class="text-caption text-medium-emphasis font-weight-medium text-truncate">
@@ -328,22 +287,10 @@ onMounted(() => {
         </VCard>
       </VCol>
 
-      <VCol
-        cols="12"
-        sm="4"
-      >
+      <VCol cols="12" sm="4">
         <VCard class="kpi-stat-card elevation-0 border rounded-xl pa-3.5 bg-surface d-flex align-center gap-3 h-100">
-          <VAvatar
-            size="44"
-            color="info"
-            variant="tonal"
-            rounded="lg"
-            class="flex-shrink-0"
-          >
-            <VIcon
-              icon="ri-shield-keyhole-line"
-              size="24"
-            />
+          <VAvatar size="44" color="info" variant="tonal" rounded="lg" class="flex-shrink-0">
+            <VIcon icon="ri-shield-keyhole-line" size="24" />
           </VAvatar>
           <div class="min-w-0 flex-grow-1">
             <div class="text-caption text-medium-emphasis font-weight-medium text-truncate">
@@ -362,44 +309,21 @@ onMounted(() => {
       <VCardText class="pa-4">
         <div class="d-flex align-center justify-space-between mb-3">
           <div class="d-flex align-center gap-2 text-subtitle-2 font-weight-bold text-high-emphasis">
-            <VIcon
-              icon="ri-filter-3-line"
-              size="18"
-              color="primary"
-            />
+            <VIcon icon="ri-filter-3-line" size="18" color="primary" />
             <span>Filtros de Búsqueda</span>
           </div>
 
-          <VBtn
-            v-if="hasActiveFilters"
-            variant="text"
-            color="error"
-            size="small"
-            prepend-icon="ri-filter-off-line"
-            class="font-weight-semibold"
-            @click="resetFilters"
-          >
+          <VBtn v-if="hasActiveFilters" variant="text" color="error" size="small" prepend-icon="ri-filter-off-line"
+            class="font-weight-semibold" @click="resetFilters">
             Limpiar Filtros
           </VBtn>
         </div>
 
-        <VRow
-          dense
-          class="gap-y-3"
-        >
+        <VRow dense class="gap-y-3">
           <VCol cols="12">
-            <VTextField
-              v-model="seachQuery"
-              label="Buscar usuario"
-              placeholder="Nombre, email, identificación..."
-              variant="outlined"
-              density="comfortable"
-              hide-details="auto"
-              clearable
-              color="primary"
-              :loading="isLoading || isSearching"
-              prepend-inner-icon="ri-search-2-line"
-            />
+            <VTextField v-model="seachQuery" label="Buscar usuario" placeholder="Nombre, email, identificación..."
+              variant="outlined" density="comfortable" hide-details="auto" clearable color="primary"
+              :loading="isLoading || isSearching" prepend-inner-icon="ri-search-2-line" />
           </VCol>
         </VRow>
       </VCardText>
@@ -409,52 +333,24 @@ onMounted(() => {
     <div v-if="isLoading">
       <!-- Skeleton Móvil -->
       <div class="d-md-none d-flex flex-column gap-3">
-        <VCard
-          v-for="n in 4"
-          :key="'mob-skel-usr-' + n"
-          class="mobile-user-card elevation-0 pa-4"
-        >
+        <VCard v-for="n in 4" :key="'mob-skel-usr-' + n" class="mobile-user-card elevation-0 pa-4">
           <div class="d-flex align-center justify-space-between mb-3 pb-2 border-b">
-            <div
-              class="shimmer-line"
-              style="width: 80px; height: 16px;"
-            />
+            <div class="shimmer-line" style="width: 80px; height: 16px;" />
             <div class="d-flex gap-1">
-              <div
-                class="shimmer-button rounded"
-                style="width: 28px; height: 28px;"
-              />
-              <div
-                class="shimmer-button rounded"
-                style="width: 28px; height: 28px;"
-              />
+              <div class="shimmer-button rounded" style="width: 28px; height: 28px;" />
+              <div class="shimmer-button rounded" style="width: 28px; height: 28px;" />
             </div>
           </div>
           <div class="d-flex align-center gap-3 mb-3">
-            <div
-              class="shimmer-circle"
-              style="width: 40px; height: 40px; border-radius: 8px;"
-            />
+            <div class="shimmer-circle" style="width: 40px; height: 40px; border-radius: 8px;" />
             <div class="flex-grow-1">
-              <div
-                class="shimmer-line w-75 mb-2"
-                style="height: 16px;"
-              />
-              <div
-                class="shimmer-line w-40"
-                style="height: 12px;"
-              />
+              <div class="shimmer-line w-75 mb-2" style="height: 16px;" />
+              <div class="shimmer-line w-40" style="height: 12px;" />
             </div>
           </div>
           <div class="d-flex justify-space-between pt-2 border-t">
-            <div
-              class="shimmer-line"
-              style="width: 70px; height: 16px;"
-            />
-            <div
-              class="shimmer-chip"
-              style="width: 70px; height: 24px;"
-            />
+            <div class="shimmer-line" style="width: 70px; height: 16px;" />
+            <div class="shimmer-chip" style="width: 70px; height: 24px;" />
           </div>
         </VCard>
       </div>
@@ -463,39 +359,24 @@ onMounted(() => {
       <VCard class="d-none d-md-block rounded-xl border overflow-hidden elevation-0 bg-surface">
         <VTable>
           <tbody>
-            <tr
-              v-for="n in 5"
-              :key="n"
-              class="skeleton-row align-middle"
-            >
-              <td
-                class="py-4"
-                style="width: 70px;"
-              >
+            <tr v-for="n in 5" :key="n" class="skeleton-row align-middle">
+              <td class="py-4" style="width: 70px;">
                 <div class="shimmer-line w-40" />
               </td>
               <td class="py-4">
-                <div class="shimmer-line w-75 mb-2" /><div class="shimmer-line w-40" />
+                <div class="shimmer-line w-75 mb-2" />
+                <div class="shimmer-line w-40" />
               </td>
               <td class="py-4">
                 <div class="shimmer-line w-60" />
               </td>
-              <td
-                class="py-4"
-                style="width: 140px;"
-              >
+              <td class="py-4" style="width: 140px;">
                 <div class="shimmer-chip" />
               </td>
-              <td
-                class="py-4"
-                style="width: 130px;"
-              >
+              <td class="py-4" style="width: 130px;">
                 <div class="shimmer-line w-50" />
               </td>
-              <td
-                class="py-4 text-center"
-                style="width: 130px;"
-              >
+              <td class="py-4 text-center" style="width: 130px;">
                 <div class="shimmer-button rounded mx-auto" />
               </td>
             </tr>
@@ -505,46 +386,24 @@ onMounted(() => {
     </div>
 
     <!-- ESTADO VACÍO -->
-    <VCard
-      v-else-if="!list_users || list_users.length === 0"
-      class="rounded-xl border elevation-0 pa-10 text-center bg-surface my-4"
-    >
-      <VAvatar
-        size="76"
-        color="primary"
-        variant="tonal"
-        class="mb-4"
-      >
-        <VIcon
-          size="38"
-          icon="ri-user-unfollow-line"
-        />
+    <VCard v-else-if="!list_users || list_users.length === 0"
+      class="rounded-xl border elevation-0 pa-10 text-center bg-surface my-4">
+      <VAvatar size="76" color="primary" variant="tonal" class="mb-4">
+        <VIcon size="38" icon="ri-user-unfollow-line" />
       </VAvatar>
       <h3 class="text-h5 font-weight-bold text-high-emphasis mb-2">
         No se encontraron usuarios
       </h3>
-      <p
-        class="text-body-1 text-medium-emphasis mb-5 mx-auto"
-        style="max-width: 480px;"
-      >
+      <p class="text-body-1 text-medium-emphasis mb-5 mx-auto" style="max-width: 480px;">
         Intenta ajustar los términos de búsqueda o registra un nuevo usuario al sistema.
       </p>
       <div class="d-flex justify-center gap-3">
-        <VBtn
-          v-if="hasActiveFilters"
-          variant="outlined"
-          color="secondary"
-          prepend-icon="ri-filter-off-line"
-          @click="resetFilters"
-        >
+        <VBtn v-if="hasActiveFilters" variant="outlined" color="secondary" prepend-icon="ri-filter-off-line"
+          @click="resetFilters">
           Restablecer Filtros
         </VBtn>
-        <VBtn
-          v-if="can('register_user')"
-          color="primary"
-          prepend-icon="ri-add-line"
-          @click="isUserAddDialogVisible = true"
-        >
+        <VBtn v-if="can('register_user')" color="primary" prepend-icon="ri-add-line"
+          @click="isUserAddDialogVisible = true">
           Nuevo Usuario
         </VBtn>
       </div>
@@ -554,74 +413,34 @@ onMounted(() => {
     <div v-else>
       <!-- VISTA MÓVIL: TARJETAS TOUCH-FRIENDLY (d-md-none) -->
       <div class="d-md-none d-flex flex-column gap-3 mb-4">
-        <VCard
-          v-for="user in list_users"
-          :key="'mob-user-' + user.id"
-          class="mobile-user-card elevation-0"
-        >
+        <VCard v-for="user in list_users" :key="'mob-user-' + user.id" class="mobile-user-card elevation-0">
           <!-- Cabecera Móvil: ID + Rol + Acciones Rápidas -->
           <div class="d-flex align-center justify-space-between gap-2 mb-2 pb-2 border-b">
             <div class="d-flex align-center gap-2 min-w-0">
               <span class="text-caption text-disabled font-weight-bold">#{{ user.id }}</span>
-              <VChip
-                size="x-small"
-                :color="user.role?.name?.toLowerCase().includes('admin') ? 'primary' : 'secondary'"
-                variant="tonal"
-                class="font-weight-semibold text-uppercase"
-              >
-                <VIcon
-                  icon="ri-shield-keyhole-line"
-                  size="12"
-                  class="me-1"
-                />
+              <VChip size="x-small" :color="user.role?.name?.toLowerCase().includes('admin') ? 'primary' : 'secondary'"
+                variant="tonal" class="font-weight-semibold text-uppercase">
+                <VIcon icon="ri-shield-keyhole-line" size="12" class="me-1" />
                 {{ user.role?.name || 'Sin rol' }}
               </VChip>
             </div>
 
             <!-- Botones de Acción Móvil -->
             <div class="d-flex align-center gap-1 flex-shrink-0">
-              <VBtn
-                size="x-small"
-                color="info"
-                variant="tonal"
-                icon="ri-eye-line"
-                title="Ver Ficha"
-                @click="viewItem(user)"
-              />
-              <VBtn
-                v-if="can('edit_user')"
-                size="x-small"
-                color="warning"
-                variant="tonal"
-                icon="ri-pencil-line"
-                title="Editar Usuario"
-                @click="editItem(user)"
-              />
-              <VBtn
-                v-if="can('delete_user') && user.id !== 1"
-                size="x-small"
-                color="error"
-                variant="tonal"
-                icon="ri-delete-bin-line"
-                title="Eliminar Usuario"
-                @click="deleteItem(user)"
-              />
+              <VBtn size="x-small" color="info" variant="tonal" icon="ri-eye-line" title="Ver Ficha"
+                @click="viewItem(user)" />
+              <VBtn v-if="can('edit_user')" size="x-small" color="warning" variant="tonal" icon="ri-pencil-line"
+                title="Editar Usuario" @click="editItem(user)" />
+              <VBtn v-if="can('delete_user') && user.id !== 1" size="x-small" color="error" variant="tonal"
+                icon="ri-delete-bin-line" title="Eliminar Usuario" @click="deleteItem(user)" />
             </div>
           </div>
 
           <!-- Usuario Nombre y Avatar -->
           <div class="d-flex align-start gap-3 mb-2">
-            <VAvatar
-              size="40"
-              rounded="lg"
-              color="primary"
-              variant="tonal"
-              class="font-weight-bold elevation-0 flex-shrink-0 mt-0.5"
-            >
-              <VImg
-                v-if="user.avatar"
-                :src="user.avatar"
-              />
+            <VAvatar size="40" rounded="lg" color="primary" variant="tonal"
+              class="font-weight-bold elevation-0 flex-shrink-0 mt-0.5">
+              <VImg v-if="user.avatar" :src="user.avatar" />
               <span v-else>{{ getUserInitials(user.name, user.surname) }}</span>
             </VAvatar>
             <div class="min-w-0 flex-grow-1">
@@ -629,11 +448,7 @@ onMounted(() => {
                 {{ user.name }} {{ user.surname || '' }}
               </div>
               <div class="text-caption text-medium-emphasis mt-0.5 d-flex align-center gap-1">
-                <VIcon
-                  icon="ri-mail-line"
-                  size="14"
-                  color="medium-emphasis"
-                />
+                <VIcon icon="ri-mail-line" size="14" color="medium-emphasis" />
                 <span class="text-truncate">{{ user.email }}</span>
               </div>
             </div>
@@ -644,10 +459,7 @@ onMounted(() => {
             <span class="text-caption text-disabled font-weight-medium">
               Reg: {{ formatDate(user.created_at) }}
             </span>
-            <div
-              class="status-pill-clean"
-              :class="isUserActive(user) ? 'status-paid' : 'status-pending'"
-            >
+            <div class="status-pill-clean" :class="isUserActive(user) ? 'status-paid' : 'status-pending'">
               <span class="status-dot" />
               <span>{{ isUserActive(user) ? 'Activo' : 'Inactivo' }}</span>
             </div>
@@ -657,62 +469,34 @@ onMounted(() => {
 
       <!-- VISTA ESCRITORIO: TABLA MODERNA (d-none d-md-block) -->
       <VCard class="d-none d-md-block rounded-xl border overflow-hidden elevation-0 bg-surface">
-        <VTable
-          hover
-          class="users-modern-table overflow-x-auto"
-        >
+        <VTable hover class="users-modern-table overflow-x-auto">
           <thead>
             <tr class="bg-grey-lighten-5">
-              <th
-                class="text-left font-weight-bold text-uppercase py-3"
-                style="width: 70px;"
-              >
+              <th class="text-left font-weight-bold text-uppercase py-3" style="width: 70px;">
                 ID
               </th>
-              <th
-                class="text-left font-weight-bold text-uppercase py-3"
-                style="min-width: 250px;"
-              >
+              <th class="text-left font-weight-bold text-uppercase py-3" style="min-width: 250px;">
                 Usuario
               </th>
-              <th
-                class="text-left font-weight-bold text-uppercase py-3"
-                style="width: 240px;"
-              >
+              <th class="text-left font-weight-bold text-uppercase py-3" style="width: 240px;">
                 Email
               </th>
-              <th
-                class="text-left font-weight-bold text-uppercase py-3"
-                style="width: 180px;"
-              >
+              <th class="text-left font-weight-bold text-uppercase py-3" style="width: 180px;">
                 Rol de Acceso
               </th>
-              <th
-                class="text-left font-weight-bold text-uppercase py-3"
-                style="width: 130px;"
-              >
+              <th class="text-left font-weight-bold text-uppercase py-3" style="width: 130px;">
                 Fecha Reg.
               </th>
-              <th
-                class="text-center font-weight-bold text-uppercase py-3"
-                style="width: 120px;"
-              >
+              <th class="text-center font-weight-bold text-uppercase py-3" style="width: 120px;">
                 Estado
               </th>
-              <th
-                class="text-center font-weight-bold text-uppercase py-3"
-                style="width: 130px;"
-              >
+              <th class="text-center font-weight-bold text-uppercase py-3" style="width: 130px;">
                 Acciones
               </th>
             </tr>
           </thead>
           <tbody>
-            <tr
-              v-for="user in list_users"
-              :key="user.id"
-              class="user-table-row"
-            >
+            <tr v-for="user in list_users" :key="user.id" class="user-table-row">
               <td class="font-weight-bold text-disabled">
                 #{{ user.id }}
               </td>
@@ -720,17 +504,8 @@ onMounted(() => {
               <!-- Usuario con Foto / Avatar -->
               <td class="py-3">
                 <div class="d-flex align-center gap-3">
-                  <VAvatar
-                    size="40"
-                    rounded="lg"
-                    color="primary"
-                    variant="tonal"
-                    class="font-weight-bold elevation-0"
-                  >
-                    <VImg
-                      v-if="user.avatar"
-                      :src="user.avatar"
-                    />
+                  <VAvatar size="40" rounded="lg" color="primary" variant="tonal" class="font-weight-bold elevation-0">
+                    <VImg v-if="user.avatar" :src="user.avatar" />
                     <span v-else>{{ getUserInitials(user.name, user.surname) }}</span>
                   </VAvatar>
                   <div>
@@ -743,28 +518,17 @@ onMounted(() => {
 
               <!-- Email -->
               <td class="py-3">
-                <span
-                  class="text-body-2 text-medium-emphasis text-truncate"
-                  style="max-width: 230px;"
-                  :title="user.email"
-                >
+                <span class="text-body-2 text-medium-emphasis text-truncate" style="max-width: 230px;"
+                  :title="user.email">
                   {{ user.email }}
                 </span>
               </td>
 
               <!-- Rol (Único VChip justificado) -->
               <td class="py-3">
-                <VChip
-                  size="small"
-                  :color="user.role?.name?.toLowerCase().includes('admin') ? 'primary' : 'secondary'"
-                  variant="tonal"
-                  class="font-weight-semibold text-uppercase"
-                >
-                  <VIcon
-                    icon="ri-shield-keyhole-line"
-                    size="14"
-                    class="me-1"
-                  />
+                <VChip size="small" :color="user.role?.name?.toLowerCase().includes('admin') ? 'primary' : 'secondary'"
+                  variant="tonal" class="font-weight-semibold text-uppercase">
+                  <VIcon icon="ri-shield-keyhole-line" size="14" class="me-1" />
                   {{ user.role?.name || 'Sin rol' }}
                 </VChip>
               </td>
@@ -777,14 +541,8 @@ onMounted(() => {
               </td>
 
               <!-- Estado (Pill limpia aceituna / pastel con punto) -->
-              <td
-                class="text-center py-3"
-                style="white-space: nowrap;"
-              >
-                <div
-                  class="status-pill-clean"
-                  :class="isUserActive(user) ? 'status-paid' : 'status-pending'"
-                >
+              <td class="text-center py-3" style="white-space: nowrap;">
+                <div class="status-pill-clean" :class="isUserActive(user) ? 'status-paid' : 'status-pending'">
                   <span class="status-dot" />
                   <span>{{ isUserActive(user) ? 'Activo' : 'Inactivo' }}</span>
                 </div>
@@ -793,32 +551,12 @@ onMounted(() => {
               <!-- Acciones -->
               <td class="text-center">
                 <div class="d-flex justify-center align-center gap-1">
-                  <VBtn
-                    size="small"
-                    color="info"
-                    variant="tonal"
-                    icon="ri-eye-line"
-                    title="Ver Ficha de Usuario"
-                    @click="viewItem(user)"
-                  />
-                  <VBtn
-                    v-if="can('edit_user')"
-                    size="small"
-                    color="warning"
-                    variant="tonal"
-                    icon="ri-pencil-line"
-                    title="Editar Usuario"
-                    @click="editItem(user)"
-                  />
-                  <VBtn
-                    v-if="can('delete_user') && user.id !== 1"
-                    size="small"
-                    color="error"
-                    variant="tonal"
-                    icon="ri-delete-bin-line"
-                    title="Eliminar Usuario"
-                    @click="deleteItem(user)"
-                  />
+                  <VBtn size="small" color="info" variant="tonal" icon="ri-eye-line" title="Ver Ficha de Usuario"
+                    @click="viewItem(user)" />
+                  <VBtn v-if="can('edit_user')" size="small" color="warning" variant="tonal" icon="ri-pencil-line"
+                    title="Editar Usuario" @click="editItem(user)" />
+                  <VBtn v-if="can('delete_user') && user.id !== 1" size="small" color="error" variant="tonal"
+                    icon="ri-delete-bin-line" title="Eliminar Usuario" @click="deleteItem(user)" />
                 </div>
               </td>
             </tr>
@@ -837,91 +575,17 @@ onMounted(() => {
     </div>
 
     <!-- DIÁLOGOS -->
-    <UserAddDialog
-      v-if="isUserAddDialogVisible"
-      v-model:isDialogVisible="isUserAddDialogVisible"
-      :roles="roles"
-      @add-user="addNewUser"
-    />
-    <UserViewDialog
-      v-if="isUserViewDialogVisible && user_selected_view"
-      v-model:isDialogVisible="isUserViewDialogVisible"
-      :user="user_selected_view"
-      :loading="viewLoading"
-    />
-    <UserEditDialog
-      v-if="isUserEditDialogVisible && user_selected_edit"
-      v-model:isDialogVisible="isUserEditDialogVisible"
-      :user-selected="user_selected_edit"
-      :roles="roles"
-      @edit-user="addEditUser"
-    />
-    <UserDeleteDialog
-      v-if="isUserDeleteDialogVisible && user_selected_delete"
-      v-model:isDialogVisible="isUserDeleteDialogVisible"
-      :user-selected="user_selected_delete"
-      @delete-user="addDeleteUser"
-    />
+    <UserAddDialog v-if="isUserAddDialogVisible" v-model:isDialogVisible="isUserAddDialogVisible" :roles="roles"
+      @add-user="addNewUser" />
+    <UserViewDialog v-if="isUserViewDialogVisible && user_selected_view"
+      v-model:isDialogVisible="isUserViewDialogVisible" :user="user_selected_view" :loading="viewLoading" />
+    <UserEditDialog v-if="isUserEditDialogVisible && user_selected_edit"
+      v-model:isDialogVisible="isUserEditDialogVisible" :user-selected="user_selected_edit" :roles="roles"
+      @edit-user="addEditUser" />
+    <UserDeleteDialog v-if="isUserDeleteDialogVisible && user_selected_delete"
+      v-model:isDialogVisible="isUserDeleteDialogVisible" :user-selected="user_selected_delete"
+      @delete-user="addDeleteUser" />
   </div>
 </template>
 
-<style scoped lang="scss">
-.kpi-stat-card {
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
-  border-color: rgba(var(--v-border-color), 0.1) !important;
 
-  &:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 6px 16px rgba(var(--v-theme-on-surface), 0.06);
-  }
-}
-
-.user-table-row {
-  transition: background-color 0.15s ease;
-  &:hover {
-    background-color: rgba(var(--v-theme-primary), 0.02) !important;
-  }
-}
-
-// Status Pills (Estilo listado de clientes/empleados/socios)
-.status-pill-clean {
-  display: inline-flex !important;
-  align-items: center !important;
-  gap: 6px !important;
-  padding: 4px 10px !important;
-  border-radius: 9999px !important;
-  font-size: 0.74rem !important;
-  font-weight: 700 !important;
-  white-space: nowrap !important;
-  line-height: 1 !important;
-  letter-spacing: 0.03em !important;
-  text-transform: uppercase !important;
-
-  .status-dot {
-    width: 6px !important;
-    height: 6px !important;
-    border-radius: 50% !important;
-    flex-shrink: 0 !important;
-  }
-}
-
-.status-paid {
-  background-color: #ecfdf5 !important;
-  color: #065f46 !important;
-  border: 1px solid #a7f3d0 !important;
-
-  .status-dot {
-    background-color: #10b981 !important;
-  }
-}
-
-.status-pending {
-  background-color: #fef2f2 !important;
-  color: #991b1b !important;
-  border: 1px solid #fecaca !important;
-
-  .status-dot {
-    background-color: #ef4444 !important;
-  }
-}
-</style>

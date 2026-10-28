@@ -528,7 +528,7 @@ onMounted(() => {
                 <div class="d-flex justify-space-between align-center pt-2.5 border-t">
                   <span class="text-caption text-medium-emphasis font-weight-medium">Total Cobrado</span>
                   <span class="text-subtitle-1 font-weight-bold text-success font-mono">{{ formatCurrency(s.total)
-                    }}</span>
+                  }}</span>
                 </div>
               </VCardText>
 
@@ -851,89 +851,3 @@ onMounted(() => {
   </div>
 </template>
 
-<style scoped>
-.border-light {
-  border: 1px solid rgba(var(--v-theme-on-surface), 0.08) !important;
-}
-
-.sticky-header {
-  position: sticky;
-  top: 12px;
-  z-index: 9;
-  backdrop-filter: blur(8px);
-}
-
-.operations-page-title {
-  letter-spacing: -0.3px;
-}
-
-.operations-page-subtitle {
-  font-size: 0.84rem;
-}
-
-.font-mono {
-  font-family: 'Consolas', 'Monaco', 'Courier New', monospace !important;
-}
-
-.hover-card {
-  transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
-  border-color: rgba(var(--v-border-color), 0.15) !important;
-}
-
-.hover-card:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 6px 16px rgba(var(--v-theme-on-surface), 0.08) !important;
-  border-color: rgba(var(--v-theme-primary), 0.4) !important;
-}
-
-.centered-input :deep(input) {
-  text-align: center !important;
-  font-weight: 700 !important;
-  padding: 4px 6px !important;
-}
-
-.shimmer-circle {
-  width: 40px;
-  height: 40px;
-  border-radius: 50%;
-  background: linear-gradient(90deg, rgba(var(--v-theme-on-surface), 0.05) 25%, rgba(var(--v-theme-on-surface), 0.12) 50%, rgba(var(--v-theme-on-surface), 0.05) 75%);
-  background-size: 200% 100%;
-  animation: loading-shimmer 1.5s infinite ease-in-out;
-}
-
-.shimmer-line {
-  height: 12px;
-  border-radius: 4px;
-  background: linear-gradient(90deg, rgba(var(--v-theme-on-surface), 0.05) 25%, rgba(var(--v-theme-on-surface), 0.12) 50%, rgba(var(--v-theme-on-surface), 0.05) 75%);
-  background-size: 200% 100%;
-  animation: loading-shimmer 1.5s infinite ease-in-out;
-}
-
-.shimmer-chip {
-  width: 60px;
-  height: 20px;
-  border-radius: 12px;
-  background: linear-gradient(90deg, rgba(var(--v-theme-on-surface), 0.05) 25%, rgba(var(--v-theme-on-surface), 0.12) 50%, rgba(var(--v-theme-on-surface), 0.05) 75%);
-  background-size: 200% 100%;
-  animation: loading-shimmer 1.5s infinite ease-in-out;
-}
-
-.shimmer-button {
-  width: 28px;
-  height: 28px;
-  border-radius: 4px;
-  background: linear-gradient(90deg, rgba(var(--v-theme-on-surface), 0.05) 25%, rgba(var(--v-theme-on-surface), 0.12) 50%, rgba(var(--v-theme-on-surface), 0.05) 75%);
-  background-size: 200% 100%;
-  animation: loading-shimmer 1.5s infinite ease-in-out;
-}
-
-@keyframes loading-shimmer {
-  0% {
-    background-position: 200% 0;
-  }
-
-  100% {
-    background-position: -200% 0;
-  }
-}
-</style>

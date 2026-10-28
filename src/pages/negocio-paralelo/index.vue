@@ -1669,26 +1669,4 @@ onMounted(() => {
   </VContainer>
 </template>
 
-<style lang="scss" scoped>
-.negocio-paralelo-container {
-  max-width: 1280px;
-  margin: 0 auto;
-}
 
-.negocio-table {
-  background: transparent !important;
-  width: 100% !important;
-}
-
-.gap-2 {
-  gap: 8px;
-}
-
-.gap-3 {
-  gap: 12px;
-}
-
-.border-b {
-  border-bottom: 1px solid rgba(var(--v-border-color), 0.12) !important;
-}
-</style>

@@ -1071,10 +1071,7 @@ onMounted(() => {
   </div>
 </template>
 
-<style scoped lang="scss">
-// Los estilos de esta vista, tarjetas KPI, widgets y lista de movimientos
-// se encuentran centralizados en src/assets/styles/inventory.scss (Sección 13)
-</style>
+
 
 <route lang="yaml">
 meta:

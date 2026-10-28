@@ -142,7 +142,7 @@ const addManualItem = async () => {
   const desc = (manualProduct.value.description || '').trim()
   if (!desc) {
     showNotification('La descripción del producto es requerida', 'warning')
-    
+
     return
   }
 
@@ -190,7 +190,7 @@ const addItem = prod => {
       selectedProductTemp.value = null
       productSearchQuery.value = ''
     })
-    
+
     return
   }
 
@@ -236,7 +236,7 @@ const subtotal = computed(() => {
   return quote.value.items.reduce((sum, item) => {
     const qty = Number(item.quantity) || 0
     const price = Number(item.price) || 0
-    
+
     return sum + (qty * price)
   }, 0)
 })
@@ -280,7 +280,7 @@ const loadQuoteData = async () => {
       if (res?.[key] && Array.isArray(res[key])) return res[key]
       if (res?.[key]?.data && Array.isArray(res[key].data)) return res[key].data
       if (res?.data && Array.isArray(res.data)) return res.data
-      
+
       return []
     }
 
@@ -291,7 +291,7 @@ const loadQuoteData = async () => {
       if (qData.converted_sale_id) {
         showNotification('Esta cotización ya fue convertida y no se puede editar.', 'warning')
         router.push('/quotes/list')
-        
+
         return
       }
 
@@ -315,7 +315,7 @@ const loadQuoteData = async () => {
         })) : [],
         converted_sale_id: qData.converted_sale_id,
       }
-      
+
       if (qData.client) selectedClient.value = qData.client
       if (qData.vehicle) selectedVehicle.value = qData.vehicle
     }
@@ -341,7 +341,7 @@ const submitForm = async () => {
       showValidationError.value = true
       validationErrorMessage.value = 'Por favor, complete todos los campos obligatorios marcados con *'
       showNotification('Por favor, complete todos los campos obligatorios marcados con *', 'warning')
-      
+
       return
     }
   }
@@ -350,7 +350,7 @@ const submitForm = async () => {
     showValidationError.value = true
     validationErrorMessage.value = 'Debe agregar al menos un producto o servicio'
     showNotification('Debe agregar al menos un producto o servicio', 'warning')
-    
+
     return
   }
 
@@ -393,30 +393,14 @@ onMounted(async () => {
 
 <template>
   <div class="pa-4 pa-sm-6 position-relative">
-    <VProgressLinear
-      v-if="isLoading"
-      v-slot
-      indeterminate
-      color="primary"
-      height="3"
-      class="position-absolute"
-      style="top: 0; left: 0; right: 0; z-index: 10;"
-    />
+    <VProgressLinear v-if="isLoading" v-slot indeterminate color="primary" height="3" class="position-absolute"
+      style="top: 0; left: 0; right: 0; z-index: 10;" />
 
     <div class="d-flex align-center justify-space-between flex-wrap gap-4 mb-6 border-b pb-4">
       <div>
         <div class="d-flex align-center">
-          <VAvatar
-            color="primary"
-            variant="tonal"
-            size="48"
-            class="mr-3"
-          >
-            <VIcon
-              icon="ri-file-list-3-line"
-              size="32"
-              color="primary"
-            />
+          <VAvatar color="primary" variant="tonal" size="48" class="mr-3">
+            <VIcon icon="ri-file-list-3-line" size="32" color="primary" />
           </VAvatar>
           <h1 class="text-h4 font-weight-bold mb-1">
             Editar Cotización
@@ -427,80 +411,35 @@ onMounted(async () => {
         </p>
       </div>
       <div class="d-flex align-center justify-end gap-2 flex-wrap ms-auto">
-        <VBtn
-          color="secondary"
-          variant="outlined"
-          prepend-icon="ri-arrow-left-line"
-          to="/quotes/list"
-          class="bg-white"
-        >
+        <VBtn color="secondary" variant="outlined" prepend-icon="ri-arrow-left-line" to="/quotes/list" class="bg-white">
           Volver al Listado
         </VBtn>
       </div>
     </div>
 
     <!-- Form Skeleton loader -->
-    <div
-      v-if="isLoading"
-      class="d-flex flex-column gap-6"
-    >
+    <div v-if="isLoading" class="d-flex flex-column gap-6">
       <VRow>
-        <VCol
-          cols="12"
-          md="8"
-        >
+        <VCol cols="12" md="8">
           <VCard class="pa-6 rounded-xl border-light mb-6">
-            <div
-              class="shimmer-line w-40 mb-6"
-              style="height: 24px;"
-            />
+            <div class="shimmer-line w-40 mb-6" style="height: 24px;" />
             <VRow class="mb-4">
-              <VCol
-                cols="12"
-                sm="6"
-              >
-                <div
-                  class="shimmer-line w-100 mb-2"
-                  style="height: 48px; border-radius: 8px;"
-                />
+              <VCol cols="12" sm="6">
+                <div class="shimmer-line w-100 mb-2" style="height: 48px; border-radius: 8px;" />
               </VCol>
-              <VCol
-                cols="12"
-                sm="6"
-              >
-                <div
-                  class="shimmer-line w-100 mb-2"
-                  style="height: 48px; border-radius: 8px;"
-                />
+              <VCol cols="12" sm="6">
+                <div class="shimmer-line w-100 mb-2" style="height: 48px; border-radius: 8px;" />
               </VCol>
             </VRow>
-            <div
-              class="shimmer-line w-100 mb-4"
-              style="height: 80px; border-radius: 8px;"
-            />
-            <div
-              class="shimmer-line w-100"
-              style="height: 120px; border-radius: 8px;"
-            />
+            <div class="shimmer-line w-100 mb-4" style="height: 80px; border-radius: 8px;" />
+            <div class="shimmer-line w-100" style="height: 120px; border-radius: 8px;" />
           </VCard>
         </VCol>
-        <VCol
-          cols="12"
-          md="4"
-        >
+        <VCol cols="12" md="4">
           <VCard class="pa-6 rounded-xl border-light mb-6">
-            <div
-              class="shimmer-line w-60 mb-6"
-              style="height: 24px;"
-            />
-            <div
-              class="shimmer-line w-100 mb-4"
-              style="height: 48px; border-radius: 8px;"
-            />
-            <div
-              class="shimmer-line w-100 mb-4"
-              style="height: 48px; border-radius: 8px;"
-            />
+            <div class="shimmer-line w-60 mb-6" style="height: 24px;" />
+            <div class="shimmer-line w-100 mb-4" style="height: 48px; border-radius: 8px;" />
+            <div class="shimmer-line w-100 mb-4" style="height: 48px; border-radius: 8px;" />
             <VDivider class="my-4" />
             <div class="d-flex justify-space-between mb-2">
               <div class="shimmer-line w-30" />
@@ -510,57 +449,27 @@ onMounted(async () => {
               <div class="shimmer-line w-40" />
               <div class="shimmer-line w-30" />
             </div>
-            <div
-              class="shimmer-line w-100"
-              style="height: 48px; border-radius: 8px;"
-            />
+            <div class="shimmer-line w-100" style="height: 48px; border-radius: 8px;" />
           </VCard>
         </VCol>
       </VRow>
     </div>
 
-    <VForm
-      v-else
-      ref="formRef"
-      @submit.prevent="submitForm"
-    >
+    <VForm v-else ref="formRef" @submit.prevent="submitForm">
       <VRow>
-        <VCol
-          cols="12"
-          md="8"
-        >
+        <VCol cols="12" md="8">
           <!-- Cabecera de la Cotización -->
           <VCard class="elevation-2 mb-6">
             <VCardText class="pa-6">
               <VRow>
-                <VCol
-                  cols="12"
-                  sm="6"
-                >
-                  <VTextField
-                    v-model="quote.document_number"
-                    label="Secuencial Cotización"
-                    variant="outlined"
-                    density="comfortable"
-                    :rules="[requiredRule]"
-                    readonly
-                    bg-color="grey-lighten-4"
-                    prepend-inner-icon="ri-hashtag"
-                  />
+                <VCol cols="12" sm="6">
+                  <VTextField v-model="quote.document_number" label="Secuencial Cotización" variant="outlined"
+                    density="comfortable" :rules="[requiredRule]" readonly bg-color="grey-lighten-4"
+                    prepend-inner-icon="ri-hashtag" />
                 </VCol>
-                <VCol
-                  cols="12"
-                  sm="6"
-                >
-                  <VTextField
-                    v-model="quote.service_date"
-                    type="date"
-                    label="Fecha"
-                    variant="outlined"
-                    density="comfortable"
-                    :rules="[requiredRule]"
-                    prepend-inner-icon="ri-calendar-line"
-                  />
+                <VCol cols="12" sm="6">
+                  <VTextField v-model="quote.service_date" type="date" label="Fecha" variant="outlined"
+                    density="comfortable" :rules="[requiredRule]" prepend-inner-icon="ri-calendar-line" />
                 </VCol>
               </VRow>
             </VCardText>
@@ -570,40 +479,20 @@ onMounted(async () => {
           <VCard class="elevation-2 mb-6">
             <VCardText class="pa-6">
               <h3 class="text-h6 font-weight-bold mb-4 d-flex align-center">
-                <VIcon
-                  icon="ri-user-settings-line"
-                  class="mr-2"
-                  color="primary"
-                />
+                <VIcon icon="ri-user-settings-line" class="mr-2" color="primary" />
                 Cliente y Vehículo
               </h3>
 
               <VRow>
                 <!-- Cliente -->
-                <VCol
-                  cols="12"
-                  sm="6"
-                >
+                <VCol cols="12" sm="6">
                   <div class="d-flex gap-2 align-center">
-                    <VSearch
-                      v-model="selectedClient"
-                      :return-object="true"
-                      endpoint="clients/search"
-                      item-title="full_name"
-                      label="Cliente *"
-                      icon="ri-user-line"
-                      :initial-item="selectedClient"
-                      :rules="[(v) => !!quote.client_id || 'Cliente es requerido']"
-                    >
+                    <VSearch v-model="selectedClient" :return-object="true" endpoint="clients/search"
+                      item-title="full_name" label="Cliente *" icon="ri-user-line" :initial-item="selectedClient"
+                      :rules="[(v) => !!quote.client_id || 'Cliente es requerido']">
                       <template #item="{ props, item }">
-                        <VListItem
-                          v-bind="props"
-                          :title="item.raw.full_name || item.raw.name"
-                        >
-                          <VListItemSubtitle
-                            v-if="item.raw.n_document"
-                            class="mt-1 text-grey"
-                          >
+                        <VListItem v-bind="props" :title="item.raw.full_name || item.raw.name">
+                          <VListItemSubtitle v-if="item.raw.n_document" class="mt-1 text-grey">
                             Documento: {{ item.raw.n_document }}
                           </VListItemSubtitle>
                         </VListItem>
@@ -611,95 +500,49 @@ onMounted(async () => {
                     </VSearch>
                     <VMenu>
                       <template #activator="{ props }">
-                        <VBtn
-                          icon="ri-add-line"
-                          color="primary"
-                          variant="tonal"
-                          v-bind="props"
-                          class="mb-5"
-                        />
+                        <VBtn icon="ri-add-line" color="primary" variant="tonal" v-bind="props" class="mb-5" />
                       </template>
                       <VList density="compact">
-                        <VListItem
-                          title="Persona Natural"
-                          prepend-icon="ri-user-line"
-                          @click="isClientFinalDialogVisible = true"
-                        />
-                        <VListItem
-                          title="Empresa / Jurídico"
-                          prepend-icon="ri-building-line"
-                          @click="isClientCompanyDialogVisible = true"
-                        />
+                        <VListItem title="Persona Natural" prepend-icon="ri-user-line"
+                          @click="isClientFinalDialogVisible = true" />
+                        <VListItem title="Empresa / Jurídico" prepend-icon="ri-building-line"
+                          @click="isClientCompanyDialogVisible = true" />
                       </VList>
                     </VMenu>
                   </div>
-                  <div
-                    v-if="selectedClient"
-                    class="text-caption text-grey mt-0 mb-3 ms-1"
-                  >
-                    <VIcon
-                      icon="ri-file-list-3-line"
-                      size="14"
-                      class="me-1"
-                    />
+                  <div v-if="selectedClient" class="text-caption text-grey mt-0 mb-3 ms-1">
+                    <VIcon icon="ri-file-list-3-line" size="14" class="me-1" />
                     Cédula/RUC: <span class="font-weight-semibold">{{ selectedClient.n_document || 'N/A' }}</span>
                   </div>
                 </VCol>
 
                 <!-- Vehículo -->
-                <VCol
-                  cols="12"
-                  sm="6"
-                >
+                <VCol cols="12" sm="6">
                   <div class="d-flex gap-2 align-center">
-                    <VSearch
-                      v-model="selectedVehicle"
-                      :return-object="true"
-                      endpoint="vehicles/search"
-                      item-title="license_plate"
-                      label="Vehículo (Opcional)"
-                      icon="ri-car-line"
+                    <VSearch v-model="selectedVehicle" :return-object="true" endpoint="vehicles/search"
+                      item-title="license_plate" label="Vehículo (Opcional)" icon="ri-car-line"
                       :initial-item="selectedVehicle"
-                      :extra-params="quote.client_id ? { client_id: quote.client_id } : {}"
-                    >
+                      :extra-params="quote.client_id ? { client_id: quote.client_id } : {}">
                       <template #item="{ props, item }">
-                        <VListItem
-                          v-bind="props"
-                          :title="item.raw.license_plate"
-                        >
+                        <VListItem v-bind="props" :title="item.raw.license_plate">
                           <VListItemSubtitle class="mt-1 text-grey">
                             <span>{{ item.raw.brand?.name || item.raw.brand || '' }} {{ item.raw.model || '' }}</span>
-                            <span
-                              v-if="item.raw.client"
-                              class="text-primary font-weight-medium ms-2"
-                            >
-                              • Propietario: {{ item.raw.client.full_name || (item.raw.client.name + ' ' + (item.raw.client.surname || '')) }}
+                            <span v-if="item.raw.client" class="text-primary font-weight-medium ms-2">
+                              • Propietario: {{ item.raw.client.full_name || (item.raw.client.name + ' ' +
+                                (item.raw.client.surname || '')) }}
                             </span>
                           </VListItemSubtitle>
                         </VListItem>
                       </template>
                     </VSearch>
-                    <VBtn
-                      icon="ri-add-line"
-                      color="primary"
-                      variant="tonal"
-                      class="mb-5"
-                      @click="isVehicleDialogVisible = true"
-                    />
+                    <VBtn icon="ri-add-line" color="primary" variant="tonal" class="mb-5"
+                      @click="isVehicleDialogVisible = true" />
                   </div>
                 </VCol>
 
                 <!-- Datos del Cliente (3 Relevantes) -->
-                <VCol
-                  v-if="selectedClient"
-                  cols="12"
-                  sm="6"
-                >
-                  <VCard
-                    variant="flat"
-                    color="grey-lighten-4"
-                    class="pa-4 rounded-lg"
-                  >
+                <VCol v-if="selectedClient" cols="12" sm="6">
+                  <VCard variant="flat" color="grey-lighten-4" class="pa-4 rounded-lg">
                     <div class="font-weight-bold text-subtitle-2 mb-2 text-grey-darken-3">
                       Datos del Cliente
                     </div>
@@ -712,16 +555,8 @@ onMounted(async () => {
                 </VCol>
 
                 <!-- Datos del Vehículo (3 Relevantes) -->
-                <VCol
-                  v-if="selectedVehicle"
-                  cols="12"
-                  sm="6"
-                >
-                  <VCard
-                    variant="flat"
-                    color="grey-lighten-4"
-                    class="pa-4 rounded-lg"
-                  >
+                <VCol v-if="selectedVehicle" cols="12" sm="6">
+                  <VCard variant="flat" color="grey-lighten-4" class="pa-4 rounded-lg">
                     <div class="font-weight-bold text-subtitle-2 mb-2 text-grey-darken-3">
                       Datos del Vehículo
                     </div>
@@ -747,70 +582,35 @@ onMounted(async () => {
             <VCardText class="pa-6">
               <div class="d-flex align-center justify-space-between mb-4 flex-wrap gap-2">
                 <h3 class="text-h6 font-weight-bold mb-0 d-flex align-center">
-                  <VIcon
-                    icon="ri-shopping-cart-line"
-                    class="mr-2"
-                    color="primary"
-                  />
+                  <VIcon icon="ri-shopping-cart-line" class="mr-2" color="primary" />
                   Servicios y Repuestos
                 </h3>
                 <div class="d-flex align-center gap-2">
-                  <VBtn
-                    color="primary"
-                    size="small"
-                    variant="tonal"
-                    prepend-icon="ri-add-circle-line"
-                    class="font-weight-medium"
-                    @click="openManualProductDialog"
-                  >
+                  <VBtn color="primary" size="small" variant="tonal" prepend-icon="ri-add-circle-line"
+                    class="font-weight-medium" @click="openManualProductDialog">
                     + Producto Manual
                   </VBtn>
-                  <VBtn
-                    color="secondary"
-                    size="small"
-                    variant="text"
-                    prepend-icon="ri-tools-line"
-                    @click="isAddServiceDialogVisible = true"
-                  >
+                  <VBtn color="secondary" size="small" variant="text" prepend-icon="ri-tools-line"
+                    @click="isAddServiceDialogVisible = true">
                     Servicio Express
                   </VBtn>
                 </div>
               </div>
 
-              <VSearch
-                v-model="selectedProductTemp"
-                endpoint="products/search"
-                item-title="description"
-                :return-object="true"
-                label="Buscar repuesto o servicio por SKU, código o nombre..."
-                icon="ri-search-line"
-                class="mb-6"
-                @change="addItem"
-              >
+              <VSearch v-model="selectedProductTemp" endpoint="products/search" item-title="description"
+                :return-object="true" label="Buscar repuesto o servicio por SKU, código o nombre..."
+                icon="ri-search-line" class="mb-6" @change="addItem">
                 <template #item="{ props, item }">
-                  <VListItem
-                    v-bind="props"
-                    :title="undefined"
-                  >
-                    <VListItemTitle
-                      style="white-space: normal !important; line-height: 1.4;"
-                      class="font-weight-medium"
-                    >
+                  <VListItem v-bind="props" :title="undefined">
+                    <VListItemTitle style="white-space: normal !important; line-height: 1.4;"
+                      class="font-weight-medium">
                       {{ item.raw.description || item.raw.name }}
                     </VListItemTitle>
-                    <VListItemSubtitle
-                      v-if="item.raw.code_aux || item.raw.sku"
-                      class="mt-1 text-grey"
-                    >
+                    <VListItemSubtitle v-if="item.raw.code_aux || item.raw.sku" class="mt-1 text-grey">
                       Código/SKU: {{ item.raw.code_aux || item.raw.sku }}
                     </VListItemSubtitle>
                     <template #append>
-                      <VChip
-                        size="small"
-                        color="success"
-                        variant="tonal"
-                        class="font-weight-bold"
-                      >
+                      <VChip size="small" color="success" variant="tonal" class="font-weight-bold">
                         ${{ getProductPriceWithTax(item.raw).toFixed(2) }}
                       </VChip>
                     </template>
@@ -819,123 +619,61 @@ onMounted(async () => {
               </VSearch>
 
               <!-- Tabla de Items Agregados -->
-              <VTable
-                v-if="quote.items.length > 0"
-                hover
-                class="border rounded"
-              >
+              <VTable v-if="quote.items.length > 0" hover class="border rounded">
                 <thead>
                   <tr>
                     <th class="text-left">
                       Item / Descripción
                     </th>
-                    <th
-                      class="text-center"
-                      style="width: 100px;"
-                    >
+                    <th class="text-center" style="width: 100px;">
                       Cant.
                     </th>
-                    <th
-                      class="text-right"
-                      style="width: 140px;"
-                    >
+                    <th class="text-right" style="width: 140px;">
                       PVP ($)
                     </th>
-                    <th
-                      class="text-right"
-                      style="width: 120px;"
-                    >
+                    <th class="text-right" style="width: 120px;">
                       Desc. ($)
                     </th>
-                    <th
-                      class="text-right"
-                      style="width: 120px;"
-                    >
+                    <th class="text-right" style="width: 120px;">
                       Total
                     </th>
-                    <th
-                      class="text-center"
-                      style="width: 60px;"
-                    />
+                    <th class="text-center" style="width: 60px;" />
                   </tr>
                 </thead>
                 <tbody>
-                  <tr
-                    v-for="(item, index) in quote.items"
-                    :key="index"
-                  >
+                  <tr v-for="(item, index) in quote.items" :key="index">
                     <td class="text-left font-weight-medium">
-                      <div
-                        v-if="item.product_id"
-                        class="d-flex flex-column"
-                      >
+                      <div v-if="item.product_id" class="d-flex flex-column">
                         <span>{{ item.description }}</span>
                         <div class="text-caption text-medium-emphasis">
                           {{ item.sku || 'Sin Código' }}
                         </div>
                       </div>
-                      <div
-                        v-else
-                        class="d-flex flex-column gap-1 py-1"
-                      >
+                      <div v-else class="d-flex flex-column gap-1 py-1">
                         <div class="d-flex align-center gap-2">
-                          <VChip
-                            size="x-small"
-                            color="primary"
-                            variant="tonal"
-                            class="font-weight-bold"
-                          >
+                          <VChip size="x-small" color="primary" variant="tonal" class="font-weight-bold">
                             {{ item.type === 'service' ? 'Servicio Manual' : 'Producto Manual' }}
                           </VChip>
-                          <span
-                            v-if="item.sku && item.sku !== 'MANUAL'"
-                            class="text-caption text-medium-emphasis font-weight-medium"
-                          >
+                          <span v-if="item.sku && item.sku !== 'MANUAL'"
+                            class="text-caption text-medium-emphasis font-weight-medium">
                             Ref: {{ item.sku }}
                           </span>
                         </div>
-                        <VTextField
-                          v-model="item.description"
-                          placeholder="Descripción del producto manual..."
-                          variant="underlined"
-                          density="compact"
-                          hide-details
-                          class="font-weight-medium mt-1"
-                        />
+                        <VTextField v-model="item.description" placeholder="Descripción del producto manual..."
+                          variant="underlined" density="compact" hide-details class="font-weight-medium mt-1" />
                       </div>
                     </td>
                     <td class="text-center">
-                      <VTextField
-                        v-model.number="item.quantity"
-                        type="number"
-                        min="1"
-                        variant="underlined"
-                        density="compact"
-                        hide-details
-                        class="text-center"
-                      />
+                      <VTextField v-model.number="item.quantity" type="number" min="1" variant="underlined"
+                        density="compact" hide-details class="text-center" />
                     </td>
                     <td class="text-right">
-                      <VTextField
-                        v-model.number="item.price"
-                        type="number"
-                        prefix="$"
-                        variant="underlined"
-                        density="compact"
-                        hide-details
-                        class="text-right"
-                      />
+                      <VTextField v-model.number="item.price" type="number" prefix="$" variant="underlined"
+                        density="compact" hide-details class="text-right" />
                     </td>
                     <td class="text-right">
-                      <VTextField
-                        v-model.number="item.discount"
-                        type="number"
-                        prefix="$"
-                        variant="underlined"
-                        density="compact"
-                        hide-details
-                        class="text-right"
-                      />
+                      <VTextField v-model.number="item.discount" type="number" prefix="$" variant="underlined"
+                        density="compact" hide-details class="text-right" />
                     </td>
                     <td class="text-right font-weight-bold">
                       ${{ (((Number(item.quantity) || 0) * (Number(item.price) || 0)) - (Number(item.discount) ||
@@ -943,28 +681,15 @@ onMounted(async () => {
                       }}
                     </td>
                     <td class="text-center">
-                      <VBtn
-                        icon="ri-delete-bin-line"
-                        color="error"
-                        variant="text"
-                        size="small"
-                        @click="removeItem(index)"
-                      />
+                      <VBtn icon="ri-delete-bin-line" color="error" variant="text" size="small"
+                        @click="removeItem(index)" />
                     </td>
                   </tr>
                 </tbody>
               </VTable>
 
-              <div
-                v-else
-                class="text-center py-10 border-2 border-dashed rounded bg-grey-lighten-5"
-              >
-                <VIcon
-                  icon="ri-inbox-line"
-                  size="40"
-                  color="grey-lighten-1"
-                  class="mb-2"
-                />
+              <div v-else class="text-center py-10 border-2 border-dashed rounded bg-grey-lighten-5">
+                <VIcon icon="ri-inbox-line" size="40" color="grey-lighten-1" class="mb-2" />
                 <div class="text-subtitle-1 text-medium-emphasis">
                   No hay repuestos o servicios agregados.
                 </div>
@@ -977,29 +702,17 @@ onMounted(async () => {
           </VCard>
         </VCol>
 
-        <VCol
-          cols="12"
-          md="4"
-        >
+        <VCol cols="12" md="4">
           <!-- Observaciones -->
           <VCard class="elevation-2 mb-6">
             <VCardText class="pa-6">
               <h3 class="text-subtitle-1 font-weight-bold mb-3 d-flex align-center">
-                <VIcon
-                  icon="ri-chat-1-line"
-                  class="mr-2"
-                  color="primary"
-                />
+                <VIcon icon="ri-chat-1-line" class="mr-2" color="primary" />
                 Observaciones del Presupuesto
               </h3>
-              <VTextarea
-                v-model="quote.observations"
-                rows="4"
-                placeholder="Indique términos, condiciones de garantía, validez de la cotización..."
-                variant="outlined"
-                density="comfortable"
-                hide-details
-              />
+              <VTextarea v-model="quote.observations" rows="4"
+                placeholder="Indique términos, condiciones de garantía, validez de la cotización..." variant="outlined"
+                density="comfortable" hide-details />
             </VCardText>
           </VCard>
 
@@ -1015,10 +728,7 @@ onMounted(async () => {
                 <span class="font-weight-medium text-grey-darken-4">${{ displaySubtotal.toFixed(2) }}</span>
               </div>
 
-              <div
-                v-if="totalDiscount > 0"
-                class="d-flex justify-space-between mb-3 text-body-1 text-error"
-              >
+              <div v-if="totalDiscount > 0" class="d-flex justify-space-between mb-3 text-body-1 text-error">
                 <span>Descuento (Sin IVA):</span>
                 <span class="font-weight-bold">-${{ displayDiscount.toFixed(2) }}</span>
               </div>
@@ -1040,16 +750,8 @@ onMounted(async () => {
                 <span class="text-h5 font-weight-black text-primary">${{ total.toFixed(2) }}</span>
               </div>
 
-              <VBtn
-                type="submit"
-                color="primary"
-                variant="elevated"
-                prepend-icon="ri-save-3-line"
-                :loading="isSubmitting"
-                size="large"
-                block
-                class="text-none font-weight-bold mb-3 elevation-2"
-              >
+              <VBtn type="submit" color="primary" variant="elevated" prepend-icon="ri-save-3-line"
+                :loading="isSubmitting" size="large" block class="text-none font-weight-bold mb-3 elevation-2">
                 Actualizar Cotización
               </VBtn>
             </VCardText>
@@ -1059,150 +761,62 @@ onMounted(async () => {
     </VForm>
 
     <!-- Dialogs -->
-    <ClientFinalAddDialog
-      v-if="isClientFinalDialogVisible"
-      v-model:isDialogVisible="isClientFinalDialogVisible"
-      @client-added="handleClientAdded"
-    />
-    <ClientCompanyAddDialog
-      v-if="isClientCompanyDialogVisible"
-      v-model:isDialogVisible="isClientCompanyDialogVisible"
-      @client-added="handleClientAdded"
-    />
-    <VehicleAddDialog
-      v-if="isVehicleDialogVisible"
-      v-model:isDialogVisible="isVehicleDialogVisible"
-      :client-selected-id="quote.client_id"
-      @vehicle-added="handleVehicleAdded"
-    />
-    <AddServiceDialog
-      v-if="isAddServiceDialogVisible"
-      v-model:isDialogVisible="isAddServiceDialogVisible"
-      @add-service="addCustomService"
-    />
+    <ClientFinalAddDialog v-if="isClientFinalDialogVisible" v-model:isDialogVisible="isClientFinalDialogVisible"
+      @client-added="handleClientAdded" />
+    <ClientCompanyAddDialog v-if="isClientCompanyDialogVisible" v-model:isDialogVisible="isClientCompanyDialogVisible"
+      @client-added="handleClientAdded" />
+    <VehicleAddDialog v-if="isVehicleDialogVisible" v-model:isDialogVisible="isVehicleDialogVisible"
+      :client-selected-id="quote.client_id" @vehicle-added="handleVehicleAdded" />
+    <AddServiceDialog v-if="isAddServiceDialogVisible" v-model:isDialogVisible="isAddServiceDialogVisible"
+      @add-service="addCustomService" />
 
     <!-- Modal de Producto / Ítem Manual -->
-    <VDialog
-      v-model="isManualProductDialogVisible"
-      max-width="540"
-      persistent
-    >
+    <VDialog v-model="isManualProductDialogVisible" max-width="540" persistent>
       <VCard class="rounded-xl overflow-hidden elevation-10">
         <VCardTitle class="pa-4 bg-primary d-flex align-center justify-space-between text-white">
           <div class="d-flex align-center gap-2">
-            <VIcon
-              icon="ri-file-add-line"
-              size="22"
-              color="white"
-            />
+            <VIcon icon="ri-file-add-line" size="22" color="white" />
             <span class="font-weight-bold text-subtitle-1 text-white">Agregar Producto Manual a Cotización</span>
           </div>
-          <VBtn
-            icon="ri-close-line"
-            variant="text"
-            color="white"
-            density="compact"
-            @click="isManualProductDialogVisible = false"
-          />
+          <VBtn icon="ri-close-line" variant="text" color="white" density="compact"
+            @click="isManualProductDialogVisible = false" />
         </VCardTitle>
 
         <VCardText class="pa-5">
-          <VForm
-            ref="manualFormRef"
-            @submit.prevent="addManualItem"
-          >
+          <VForm ref="manualFormRef" @submit.prevent="addManualItem">
             <VRow dense>
               <VCol cols="12">
-                <VTextField
-                  v-model="manualProduct.description"
-                  label="Descripción del Producto o Repuesto *"
-                  placeholder="Ej. Batería Bosch 75Ah, Pastillas Especiales..."
-                  variant="outlined"
-                  density="comfortable"
-                  :rules="[v => !!v || 'La descripción es obligatoria']"
-                  autofocus
-                />
+                <VTextField v-model="manualProduct.description" label="Descripción del Producto o Repuesto *"
+                  placeholder="Ej. Batería Bosch 75Ah, Pastillas Especiales..." variant="outlined" density="comfortable"
+                  :rules="[v => !!v || 'La descripción es obligatoria']" autofocus />
               </VCol>
 
-              <VCol
-                cols="12"
-                sm="6"
-              >
-                <VTextField
-                  v-model="manualProduct.sku"
-                  label="Código / Referencia (Opcional)"
-                  placeholder="Ej. BOSCH-75"
-                  variant="outlined"
-                  density="comfortable"
-                />
+              <VCol cols="12" sm="6">
+                <VTextField v-model="manualProduct.sku" label="Código / Referencia (Opcional)"
+                  placeholder="Ej. BOSCH-75" variant="outlined" density="comfortable" />
               </VCol>
 
-              <VCol
-                cols="12"
-                sm="6"
-              >
-                <VSelect
-                  v-model="manualProduct.type"
-                  label="Tipo de Ítem"
-                  :items="[
-                    { title: 'Producto / Repuesto', value: 'product' },
-                    { title: 'Servicio / Mano de Obra', value: 'service' }
-                  ]"
-                  item-title="title"
-                  item-value="value"
-                  variant="outlined"
-                  density="comfortable"
-                />
+              <VCol cols="12" sm="6">
+                <VSelect v-model="manualProduct.type" label="Tipo de Ítem" :items="[
+                  { title: 'Producto / Repuesto', value: 'product' },
+                  { title: 'Servicio / Mano de Obra', value: 'service' }
+                ]" item-title="title" item-value="value" variant="outlined" density="comfortable" />
               </VCol>
 
-              <VCol
-                cols="12"
-                sm="4"
-              >
-                <VTextField
-                  v-model.number="manualProduct.quantity"
-                  type="number"
-                  min="1"
-                  label="Cantidad *"
-                  variant="outlined"
-                  density="comfortable"
-                  :rules="[v => (Number(v) > 0) || 'Debe ser mayor a 0']"
-                />
+              <VCol cols="12" sm="4">
+                <VTextField v-model.number="manualProduct.quantity" type="number" min="1" label="Cantidad *"
+                  variant="outlined" density="comfortable" :rules="[v => (Number(v) > 0) || 'Debe ser mayor a 0']" />
               </VCol>
 
-              <VCol
-                cols="12"
-                sm="4"
-              >
-                <VTextField
-                  v-model.number="manualProduct.price"
-                  type="number"
-                  min="0"
-                  step="0.01"
-                  prefix="$"
-                  label="PVP Unitario ($) *"
-                  placeholder="0.00"
-                  variant="outlined"
-                  density="comfortable"
-                  :rules="[v => (v !== '' && v !== null && Number(v) >= 0) || 'Precio obligatorio']"
-                />
+              <VCol cols="12" sm="4">
+                <VTextField v-model.number="manualProduct.price" type="number" min="0" step="0.01" prefix="$"
+                  label="PVP Unitario ($) *" placeholder="0.00" variant="outlined" density="comfortable"
+                  :rules="[v => (v !== '' && v !== null && Number(v) >= 0) || 'Precio obligatorio']" />
               </VCol>
 
-              <VCol
-                cols="12"
-                sm="4"
-              >
-                <VTextField
-                  v-model.number="manualProduct.discount"
-                  type="number"
-                  min="0"
-                  step="0.01"
-                  prefix="$"
-                  label="Descuento ($)"
-                  placeholder="0.00"
-                  variant="outlined"
-                  density="comfortable"
-                />
+              <VCol cols="12" sm="4">
+                <VTextField v-model.number="manualProduct.discount" type="number" min="0" step="0.01" prefix="$"
+                  label="Descuento ($)" placeholder="0.00" variant="outlined" density="comfortable" />
               </VCol>
             </VRow>
           </VForm>
@@ -1211,20 +825,11 @@ onMounted(async () => {
         <VDivider />
 
         <VCardActions class="pa-4 bg-grey-lighten-4 d-flex justify-end gap-2">
-          <VBtn
-            variant="outlined"
-            color="secondary"
-            class="rounded-lg px-4"
-            @click="isManualProductDialogVisible = false"
-          >
+          <VBtn variant="outlined" color="secondary" class="rounded-lg px-4"
+            @click="isManualProductDialogVisible = false">
             Cancelar
           </VBtn>
-          <VBtn
-            color="primary"
-            variant="elevated"
-            class="rounded-lg px-6 font-weight-bold"
-            @click="addManualItem"
-          >
+          <VBtn color="primary" variant="elevated" class="rounded-lg px-6 font-weight-bold" @click="addManualItem">
             Agregar Ítem
           </VBtn>
         </VCardActions>
@@ -1233,48 +838,4 @@ onMounted(async () => {
   </div>
 </template>
 
-<style scoped>
-.shimmer-circle {
-  width: 40px;
-  height: 40px;
-  border-radius: 50%;
-  background: linear-gradient(90deg, rgba(var(--v-theme-on-surface), 0.05) 25%, rgba(var(--v-theme-on-surface), 0.12) 50%, rgba(var(--v-theme-on-surface), 0.05) 75%);
-  background-size: 200% 100%;
-  animation: loading-shimmer 1.5s infinite ease-in-out;
-}
 
-.shimmer-line {
-  height: 12px;
-  border-radius: 4px;
-  background: linear-gradient(90deg, rgba(var(--v-theme-on-surface), 0.05) 25%, rgba(var(--v-theme-on-surface), 0.12) 50%, rgba(var(--v-theme-on-surface), 0.05) 75%);
-  background-size: 200% 100%;
-  animation: loading-shimmer 1.5s infinite ease-in-out;
-}
-
-.shimmer-chip {
-  width: 60px;
-  height: 20px;
-  border-radius: 12px;
-  background: linear-gradient(90deg, rgba(var(--v-theme-on-surface), 0.05) 25%, rgba(var(--v-theme-on-surface), 0.12) 50%, rgba(var(--v-theme-on-surface), 0.05) 75%);
-  background-size: 200% 100%;
-  animation: loading-shimmer 1.5s infinite ease-in-out;
-}
-
-.shimmer-button {
-  width: 28px;
-  height: 28px;
-  border-radius: 4px;
-  background: linear-gradient(90deg, rgba(var(--v-theme-on-surface), 0.05) 25%, rgba(var(--v-theme-on-surface), 0.12) 50%, rgba(var(--v-theme-on-surface), 0.05) 75%);
-  background-size: 200% 100%;
-  animation: loading-shimmer 1.5s infinite ease-in-out;
-}
-
-@keyframes loading-shimmer {
-  0% {
-    background-position: 200% 0;
-  }
-  100% {
-    background-position: -200% 0;
-  }
-}
-</style>

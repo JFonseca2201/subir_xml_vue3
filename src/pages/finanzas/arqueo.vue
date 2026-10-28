@@ -322,7 +322,7 @@ const fetchStatus = async date => {
   loading.value = true
   try {
     const response = await $api('daily-cash-counts/status', {
-      params: { 
+      params: {
         date,
         _t: Date.now(),
       },
@@ -758,16 +758,9 @@ onActivated(() => {
       <!-- Acciones de Fecha e Historial -->
       <div class="d-flex align-center gap-2 flex-wrap ms-auto crud-header-actions">
         <!-- Botón Refrescar Saldos en Vivo -->
-        <VBtn
-          variant="tonal"
-          color="secondary"
-          size="small"
-          class="rounded-lg text-none font-weight-bold"
-          prepend-icon="ri-refresh-line"
-          :loading="loading"
-          title="Actualizar saldos de cuentas en tiempo real"
-          @click="fetchStatus(payload.count_date)"
-        >
+        <VBtn variant="tonal" color="secondary" size="small" class="rounded-lg text-none font-weight-bold"
+          prepend-icon="ri-refresh-line" :loading="loading" title="Actualizar saldos de cuentas en tiempo real"
+          @click="fetchStatus(payload.count_date)">
           Refrescar
         </VBtn>
 
@@ -1477,18 +1470,12 @@ onActivated(() => {
                   <label class="text-caption font-weight-bold text-slate-800">Banco Pichincha ($)</label>
                   <div class="d-flex align-center gap-1">
                     <span class="text-caption font-weight-medium text-slate-500">
-                      Sistema: <strong class="font-mono text-slate-900">{{ formatCurrency(systemBalances.pichincha) }}</strong>
+                      Sistema: <strong class="font-mono text-slate-900">{{ formatCurrency(systemBalances.pichincha)
+                        }}</strong>
                     </span>
-                    <VBtn
-                      v-if="!isSealed"
-                      variant="text"
-                      color="primary"
-                      size="x-small"
-                      density="compact"
-                      class="px-1 text-none font-weight-bold"
-                      title="Copiar saldo de sistema al conteo de hoy"
-                      @click="pichinchaVal = systemBalances.pichincha"
-                    >
+                    <VBtn v-if="!isSealed" variant="text" color="primary" size="x-small" density="compact"
+                      class="px-1 text-none font-weight-bold" title="Copiar saldo de sistema al conteo de hoy"
+                      @click="pichinchaVal = systemBalances.pichincha">
                       Copiar
                     </VBtn>
                   </div>
@@ -1509,18 +1496,12 @@ onActivated(() => {
                   <label class="text-caption font-weight-bold text-slate-800">Banco Guayaquil ($)</label>
                   <div class="d-flex align-center gap-1">
                     <span class="text-caption font-weight-medium text-slate-500">
-                      Sistema: <strong class="font-mono text-slate-900">{{ formatCurrency(systemBalances.guayaquil) }}</strong>
+                      Sistema: <strong class="font-mono text-slate-900">{{ formatCurrency(systemBalances.guayaquil)
+                        }}</strong>
                     </span>
-                    <VBtn
-                      v-if="!isSealed"
-                      variant="text"
-                      color="primary"
-                      size="x-small"
-                      density="compact"
-                      class="px-1 text-none font-weight-bold"
-                      title="Copiar saldo de sistema al conteo de hoy"
-                      @click="guayaquilVal = systemBalances.guayaquil"
-                    >
+                    <VBtn v-if="!isSealed" variant="text" color="primary" size="x-small" density="compact"
+                      class="px-1 text-none font-weight-bold" title="Copiar saldo de sistema al conteo de hoy"
+                      @click="guayaquilVal = systemBalances.guayaquil">
                       Copiar
                     </VBtn>
                   </div>
@@ -1558,32 +1539,16 @@ onActivated(() => {
 
           <!-- Botones de Acción -->
           <div class="arqueo-action-buttons d-flex flex-column flex-sm-row flex-md-column gap-2.5 w-100">
-            <VBtn
-              block
-              variant="elevated"
-              color="primary"
-              height="44"
+            <VBtn block variant="elevated" color="primary" height="44"
               class="arqueo-btn font-weight-bold elevation-1 text-none"
-              style="font-size: 0.95rem; letter-spacing: 0.2px;"
-              :loading="saving"
-              :disabled="saving || sealing || loading || isSealed"
-              prepend-icon="ri-save-3-line"
-              @click="saveArqueo"
-            >
+              style="font-size: 0.95rem; letter-spacing: 0.2px;" :loading="saving"
+              :disabled="saving || sealing || loading || isSealed" prepend-icon="ri-save-3-line" @click="saveArqueo">
               Guardar Arqueo Diario
             </VBtn>
-            <VBtn
-              block
-              variant="tonal"
-              color="primary"
-              height="44"
-              class="arqueo-btn font-weight-bold text-none"
-              style="font-size: 0.95rem; letter-spacing: 0.2px;"
-              :loading="sealing"
-              :disabled="sealing || saving || loading || isSealed"
-              prepend-icon="ri-lock-password-line"
-              @click="confirmSealDialog = true"
-            >
+            <VBtn block variant="tonal" color="primary" height="44" class="arqueo-btn font-weight-bold text-none"
+              style="font-size: 0.95rem; letter-spacing: 0.2px;" :loading="sealing"
+              :disabled="sealing || saving || loading || isSealed" prepend-icon="ri-lock-password-line"
+              @click="confirmSealDialog = true">
               Sellar Día
             </VBtn>
           </div>
@@ -2245,38 +2210,4 @@ meta:
   navActiveLink: 'finanzas-arqueo'
 </route>
 
-<style scoped lang="scss">
-.coin-badge,
-.bill-badge {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  min-width: 64px;
-  border-radius: 6px;
-  padding: 3px 8px;
-  font-family: 'Consolas', 'Monaco', 'Courier New', monospace;
-  font-weight: 800;
-  font-size: 0.82rem;
-  letter-spacing: 0.5px;
-  text-align: center;
-  box-sizing: border-box;
 
-  span,
-  .v-icon,
-  * {
-    font-weight: 900 !important;
-    opacity: 1 !important;
-  }
-}
-
-.observations-box {
-  background: rgba(255, 255, 255, 0.03);
-  border-color: rgba(255, 255, 255, 0.1) !important;
-
-  [data-theme="light"] &,
-  .v-theme--light & {
-    background: #f8fafc;
-    border-color: #e2e8f0 !important;
-  }
-}
-</style>
