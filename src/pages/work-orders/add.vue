@@ -146,12 +146,12 @@ const loadInitialData = async () => {
     const [employeesRes, productsRes] = await Promise.all([
       $api('employees', { params: { per_page: 1000 } }).catch(err => {
         console.warn('Error loading employees:', err)
-        
+
         return { data: [] }
       }),
       $api('products', { params: { per_page: 1000 } }).catch(err => {
         console.warn('Error loading products:', err)
-        
+
         return { data: [] }
       }),
       fetchNextWorkOrderNumber(),
@@ -426,7 +426,7 @@ const fetchClientVehicles = async clientId => {
   if (!clientId) {
     clientVehicles.value = []
     showVehicleSuggestionDialog.value = false
-    
+
     return
   }
   isLoadingClientVehicles.value = true
@@ -513,7 +513,7 @@ watch(() => selectedVehicle.value, async newVal => {
 const isVehicleOwnerDifferentFromClient = computed(() => {
   if (!selectedVehicle.value || !selectedClient.value) return false
   const vehicleClientId = selectedVehicle.value.client_id || selectedVehicle.value.client?.id
-  
+
   return !!(vehicleClientId && vehicleClientId !== selectedClient.value.id)
 })
 
@@ -523,7 +523,7 @@ const getVehicleOwnerName = computed(() => {
   if (owner) {
     return owner.full_name || (owner.name + (owner.surname ? ' ' + owner.surname : ''))
   }
-  
+
   return ''
 })
 
@@ -543,7 +543,7 @@ const isServiceItem = item => {
   const sku = item.sku || item.product?.sku || product?.sku || ''
   if (sku && String(sku).toUpperCase().startsWith('SRV-')) return true
   if (!item.product_id && !item.sku) return true
-  
+
   return false
 }
 
@@ -582,7 +582,7 @@ const getVehicleBrandModel = vehicle => {
   const brand = getBrandNameById(vehicle.brand?.name || vehicle.brand || vehicle.brand_id)
   const model = vehicle.model || ''
   if (brand && model) return `${brand} - ${model}`
-  
+
   return brand || model || 'Sin marca/modelo'
 }
 
@@ -862,17 +862,8 @@ onActivated(async () => {
     <VCard class="mb-6 rounded-xl border-light pa-3 pa-sm-4 elevation-1 sticky-header">
       <div class="d-flex align-center justify-space-between flex-wrap gap-4">
         <div class="d-flex align-center gap-3">
-          <VAvatar
-            color="primary"
-            variant="tonal"
-            rounded="lg"
-            size="44"
-            class="elevation-1"
-          >
-            <VIcon
-              icon="ri-draft-line"
-              size="24"
-            />
+          <VAvatar color="primary" variant="tonal" rounded="lg" size="44" class="elevation-1">
+            <VIcon icon="ri-draft-line" size="24" />
           </VAvatar>
           <div>
             <h1 class="text-h6 font-weight-bold text-high-emphasis mb-0 operations-page-title">
@@ -885,13 +876,8 @@ onActivated(async () => {
         </div>
 
         <div class="d-flex align-center justify-end gap-2 flex-wrap ms-auto">
-          <VBtn
-            variant="outlined"
-            color="secondary"
-            prepend-icon="ri-arrow-left-line"
-            class="font-weight-medium"
-            @click="cancel"
-          >
+          <VBtn variant="outlined" color="secondary" prepend-icon="ri-arrow-left-line" class="font-weight-medium"
+            @click="cancel">
             Volver al Listado
           </VBtn>
         </div>
@@ -899,38 +885,24 @@ onActivated(async () => {
     </VCard>
 
     <!-- Banner de Conversión desde Cotización -->
-    <VCard
-      v-if="workOrder.quote_number || workOrder.quote_id"
-      class="mb-6 rounded-xl border elevation-0 pa-4"
-      style="background: linear-gradient(135deg, rgba(var(--v-theme-primary), 0.08) 0%, rgba(var(--v-theme-surface), 1) 100%); border-color: rgba(var(--v-theme-primary), 0.35) !important;"
-    >
+    <VCard v-if="workOrder.quote_number || workOrder.quote_id" class="mb-6 rounded-xl border elevation-0 pa-4"
+      style="background: linear-gradient(135deg, rgba(var(--v-theme-primary), 0.08) 0%, rgba(var(--v-theme-surface), 1) 100%); border-color: rgba(var(--v-theme-primary), 0.35) !important;">
       <div class="d-flex align-center justify-space-between flex-wrap gap-3">
         <div class="d-flex align-center gap-3">
-          <VAvatar
-            color="primary"
-            variant="tonal"
-            rounded="lg"
-            size="40"
-          >
-            <VIcon
-              icon="ri-file-shield-2-line"
-              size="22"
-            />
+          <VAvatar color="primary" variant="tonal" rounded="lg" size="40">
+            <VIcon icon="ri-file-shield-2-line" size="22" />
           </VAvatar>
           <div>
             <div class="text-subtitle-2 font-weight-bold text-primary mb-0.5 d-flex align-center gap-2">
-              <span>⚡ Generando Orden de Trabajo desde Cotización #{{ workOrder.quote_number || workOrder.quote_id }}</span>
-              <VChip
-                size="x-small"
-                color="primary"
-                variant="elevated"
-                class="font-weight-bold"
-              >
+              <span>⚡ Generando Orden de Trabajo desde Cotización #{{ workOrder.quote_number || workOrder.quote_id
+              }}</span>
+              <VChip size="x-small" color="primary" variant="elevated" class="font-weight-bold">
                 EN CONVERSIÓN
               </VChip>
             </div>
             <p class="text-caption text-medium-emphasis mb-0">
-              Los datos del cliente, vehículo, repuestos y servicios han sido precargados. Al guardar esta Orden de Trabajo, la cotización quedará automáticamente <strong>sellada y atendida</strong>.
+              Los datos del cliente, vehículo, repuestos y servicios han sido precargados. Al guardar esta Orden de
+              Trabajo, la cotización quedará automáticamente <strong>sellada y atendida</strong>.
             </p>
           </div>
         </div>
@@ -938,67 +910,28 @@ onActivated(async () => {
     </VCard>
 
     <!-- Form Skeleton loader -->
-    <div
-      v-if="isLoading"
-      class="d-flex flex-column gap-6"
-    >
+    <div v-if="isLoading" class="d-flex flex-column gap-6">
       <VRow>
-        <VCol
-          cols="12"
-          lg="8"
-        >
+        <VCol cols="12" lg="8">
           <VCard class="pa-6 rounded-xl border-light mb-6">
-            <div
-              class="shimmer-line w-40 mb-6"
-              style="height: 24px;"
-            />
+            <div class="shimmer-line w-40 mb-6" style="height: 24px;" />
             <VRow class="mb-4">
-              <VCol
-                cols="12"
-                sm="6"
-              >
-                <div
-                  class="shimmer-line w-100 mb-2"
-                  style="height: 48px; border-radius: 8px;"
-                />
+              <VCol cols="12" sm="6">
+                <div class="shimmer-line w-100 mb-2" style="height: 48px; border-radius: 8px;" />
               </VCol>
-              <VCol
-                cols="12"
-                sm="6"
-              >
-                <div
-                  class="shimmer-line w-100 mb-2"
-                  style="height: 48px; border-radius: 8px;"
-                />
+              <VCol cols="12" sm="6">
+                <div class="shimmer-line w-100 mb-2" style="height: 48px; border-radius: 8px;" />
               </VCol>
             </VRow>
-            <div
-              class="shimmer-line w-100 mb-4"
-              style="height: 80px; border-radius: 8px;"
-            />
-            <div
-              class="shimmer-line w-100"
-              style="height: 120px; border-radius: 8px;"
-            />
+            <div class="shimmer-line w-100 mb-4" style="height: 80px; border-radius: 8px;" />
+            <div class="shimmer-line w-100" style="height: 120px; border-radius: 8px;" />
           </VCard>
         </VCol>
-        <VCol
-          cols="12"
-          lg="4"
-        >
+        <VCol cols="12" lg="4">
           <VCard class="pa-6 rounded-xl border-light mb-6">
-            <div
-              class="shimmer-line w-60 mb-6"
-              style="height: 24px;"
-            />
-            <div
-              class="shimmer-line w-100 mb-4"
-              style="height: 48px; border-radius: 8px;"
-            />
-            <div
-              class="shimmer-line w-100 mb-4"
-              style="height: 48px; border-radius: 8px;"
-            />
+            <div class="shimmer-line w-60 mb-6" style="height: 24px;" />
+            <div class="shimmer-line w-100 mb-4" style="height: 48px; border-radius: 8px;" />
+            <div class="shimmer-line w-100 mb-4" style="height: 48px; border-radius: 8px;" />
             <VDivider class="my-4" />
             <div class="d-flex justify-space-between mb-2">
               <div class="shimmer-line w-30" />
@@ -1008,42 +941,24 @@ onActivated(async () => {
               <div class="shimmer-line w-40" />
               <div class="shimmer-line w-30" />
             </div>
-            <div
-              class="shimmer-line w-100"
-              style="height: 48px; border-radius: 8px;"
-            />
+            <div class="shimmer-line w-100" style="height: 48px; border-radius: 8px;" />
           </VCard>
         </VCol>
       </VRow>
     </div>
 
     <!-- Formulario Principal -->
-    <VForm
-      v-else
-      ref="formRef"
-      @submit.prevent
-    >
+    <VForm v-else ref="formRef" @submit.prevent>
       <VRow>
         <!-- Columna Izquierda (8 cols): Cliente, Vehículo y Productos/Servicios -->
-        <VCol
-          cols="12"
-          lg="8"
-        >
+        <VCol cols="12" lg="8">
           <!-- Tarjeta 1: Información del Cliente y Vehículo -->
           <VCard class="rounded-xl border-light elevation-1 mb-6 overflow-hidden">
             <VCardItem class="bg-white py-3 px-4 border-b">
               <template #title>
                 <div class="d-flex align-center gap-3">
-                  <VAvatar
-                    size="36"
-                    color="primary"
-                    variant="tonal"
-                    class="rounded-lg"
-                  >
-                    <VIcon
-                      icon="ri-car-line"
-                      size="20"
-                    />
+                  <VAvatar size="36" color="primary" variant="tonal" class="rounded-lg">
+                    <VIcon icon="ri-car-line" size="20" />
                   </VAvatar>
                   <div>
                     <h3 class="text-subtitle-1 font-weight-bold text-slate-900 mb-0">
@@ -1060,101 +975,46 @@ onActivated(async () => {
             <VCardText class="pa-4 pa-sm-5 bg-white">
               <VRow>
                 <!-- Número de Orden -->
-                <VCol
-                  cols="12"
-                  sm="6"
-                >
-                  <VTextField
-                    v-model="workOrder.number"
-                    label="Número de Orden *"
-                    prepend-inner-icon="ri-hashtag"
-                    variant="outlined"
-                    density="comfortable"
-                    hide-details="auto"
-                    color="primary"
-                    :rules="[(v) => !!v || 'Número de orden es requerido']"
-                    :loading="isLoading || isNextNumberLoading"
+                <VCol cols="12" sm="6">
+                  <VTextField v-model="workOrder.number" label="Número de Orden *" prepend-inner-icon="ri-hashtag"
+                    variant="outlined" density="comfortable" hide-details="auto" color="primary"
+                    :rules="[(v) => !!v || 'Número de orden es requerido']" :loading="isLoading || isNextNumberLoading"
                     :error="showValidationError && (!workOrder.number || !String(workOrder.number).trim())"
                     :error-messages="showValidationError && (!workOrder.number || !String(workOrder.number).trim()) ? ['Número de orden es requerido'] : []"
-                    append-inner-icon="ri-refresh-line"
-                    @click:append-inner="fetchNextWorkOrderNumber(true)"
-                  />
+                    append-inner-icon="ri-refresh-line" @click:append-inner="fetchNextWorkOrderNumber(true)" />
                 </VCol>
 
                 <!-- Fecha -->
-                <VCol
-                  cols="12"
-                  sm="6"
-                >
-                  <VTextField
-                    v-model="workOrder.date"
-                    type="date"
-                    label="Fecha *"
-                    prepend-inner-icon="ri-calendar-line"
-                    variant="outlined"
-                    density="comfortable"
-                    hide-details="auto"
-                    color="primary"
-                    :rules="[(v) => !!v || 'Fecha es requerida']"
-                    :error="showValidationError && !workOrder.date"
-                    :error-messages="showValidationError && !workOrder.date ? ['Fecha es requerida'] : []"
-                  />
+                <VCol cols="12" sm="6">
+                  <VTextField v-model="workOrder.date" type="date" label="Fecha *" prepend-inner-icon="ri-calendar-line"
+                    variant="outlined" density="comfortable" hide-details="auto" color="primary"
+                    :rules="[(v) => !!v || 'Fecha es requerida']" :error="showValidationError && !workOrder.date"
+                    :error-messages="showValidationError && !workOrder.date ? ['Fecha es requerida'] : []" />
                 </VCol>
 
                 <!-- Cliente -->
-                <VCol
-                  cols="12"
-                  sm="6"
-                >
-                  <VSearch
-                    v-model="selectedClient"
-                    :return-object="true"
-                    endpoint="clients/search"
-                    item-title="full_name"
-                    label="Cliente *"
-                    icon="ri-user-line"
-                    :initial-item="selectedClient"
+                <VCol cols="12" sm="6">
+                  <VSearch v-model="selectedClient" :return-object="true" endpoint="clients/search"
+                    item-title="full_name" label="Cliente *" icon="ri-user-line" :initial-item="selectedClient"
                     :rules="[(v) => !!v || !!workOrder.client_id || 'Cliente es requerido']"
                     :error="showValidationError && (!selectedClient || !workOrder.client_id)"
-                    :error-messages="showValidationError && (!selectedClient || !workOrder.client_id) ? ['Cliente es requerido'] : []"
-                  >
+                    :error-messages="showValidationError && (!selectedClient || !workOrder.client_id) ? ['Cliente es requerido'] : []">
                     <template #item="{ props, item }">
-                      <VListItem
-                        v-bind="props"
-                        :title="item.raw.full_name || item.raw.name"
-                      >
-                        <VListItemSubtitle
-                          v-if="item.raw.n_document"
-                          class="mt-1 text-grey"
-                        >
+                      <VListItem v-bind="props" :title="item.raw.full_name || item.raw.name">
+                        <VListItemSubtitle v-if="item.raw.n_document" class="mt-1 text-grey">
                           Documento: {{ item.raw.n_document }}
                         </VListItemSubtitle>
                       </VListItem>
                     </template>
                     <template #append>
-                      <VBtn
-                        icon
-                        size="small"
-                        variant="tonal"
-                        color="primary"
-                        type="button"
-                      >
+                      <VBtn icon size="small" variant="tonal" color="primary" type="button">
                         <VIcon icon="ri-add-line" />
                         <VMenu activator="parent">
-                          <VList
-                            density="compact"
-                            class="rounded-lg elevation-4 border"
-                          >
-                            <VListItem
-                              prepend-icon="ri-user-line"
-                              title="Cliente Final"
-                              @click="showClientDialog = true"
-                            />
-                            <VListItem
-                              prepend-icon="ri-building-line"
-                              title="Cliente Empresa"
-                              @click="showCompanyDialog = true"
-                            />
+                          <VList density="compact" class="rounded-lg elevation-4 border">
+                            <VListItem prepend-icon="ri-user-line" title="Cliente Final"
+                              @click="showClientDialog = true" />
+                            <VListItem prepend-icon="ri-building-line" title="Cliente Empresa"
+                              @click="showCompanyDialog = true" />
                           </VList>
                         </VMenu>
                       </VBtn>
@@ -1163,54 +1023,49 @@ onActivated(async () => {
                 </VCol>
 
                 <!-- Vehículo -->
-                <VCol
-                  cols="12"
-                  sm="6"
-                >
+                <VCol cols="12" sm="6">
                   <div style="text-transform: uppercase;">
-                    <VSearch
-                      v-model="selectedVehicle"
-                      :return-object="true"
-                      endpoint="vehicles/search"
+                    <VSearch v-model="selectedVehicle" :return-object="true" endpoint="vehicles/search"
                       item-title="license_plate"
                       :label="hasServices ? 'Vehículo * (Obligatorio para servicios)' : 'Vehículo (Opcional)'"
-                      icon="ri-car-line"
-                      :initial-item="selectedVehicle"
+                      icon="ri-car-line" :initial-item="selectedVehicle"
                       :rules="[v => (!hasServices || !!v || !!workOrder.vehicle_id) || 'Debe asociar un vehículo obligatorio para servicios']"
                       :error="showValidationError && hasServices && (!selectedVehicle || !workOrder.vehicle_id)"
-                      :error-messages="showValidationError && hasServices && (!selectedVehicle || !workOrder.vehicle_id) ? ['Debe asociar un vehículo obligatorio para servicios'] : []"
-                    >
+                      :error-messages="showValidationError && hasServices && (!selectedVehicle || !workOrder.vehicle_id) ? ['Debe asociar un vehículo obligatorio para servicios'] : []">
+
                       <template #item="{ props, item }">
-                        <VListItem
-                          v-bind="props"
-                          :title="item.raw.license_plate"
-                        >
-                          <VListItemSubtitle class="mt-1 text-grey">
-                            <span>{{ getBrandNameById(item.raw.brand?.name || item.raw.brand || item.raw.brand_id) }} {{
-                              item.raw.model || '' }}</span>
-                            <span
-                              v-if="item.raw.color"
-                              class="ms-1"
-                            >• Color: {{ item.raw.color }}</span>
-                            <span
-                              v-if="item.raw.client"
-                              class="text-primary font-weight-medium ms-2"
-                            >
+                        <!-- Agregamos border-b para la línea separadora entre cada vehículo -->
+                        <VListItem v-bind="props" class="border-b py-2">
+                          <!-- Título principal: Placa -->
+                          <VListItemTitle class="font-weight-bold text-body-1">
+                            {{ item.raw.plate || item.raw.placa }}
+                          </VListItemTitle>
+
+                          <!-- Subtítulo: Marca, Color y Propietario en líneas separadas -->
+                          <VListItemSubtitle class="text-wrap mt-1">
+                            <!-- Línea 1: Marca y Color -->
+                            <div class="text-caption text-medium-emphasis">
+                              <span>
+                                {{ getBrandNameById(item.raw.brand?.name || item.raw.brand || item.raw.brand_id) }}
+                                {{ item.raw.model || '' }}
+                              </span>
+                              <span v-if="item.raw.color" class="ms-1">
+                                • Color: {{ item.raw.color }}
+                              </span>
+                            </div>
+
+                            <!-- Línea 2: Propietario justo ABAJO -->
+                            <div v-if="item.raw.client"
+                              class="text-primary font-weight-medium text-caption mt-1 d-block">
                               • Propietario: {{ item.raw.client.full_name || (item.raw.client.name + ' ' +
                                 (item.raw.client.surname || '')) }}
-                            </span>
+                            </div>
                           </VListItemSubtitle>
                         </VListItem>
                       </template>
                       <template #append>
-                        <VBtn
-                          icon
-                          size="small"
-                          variant="tonal"
-                          color="primary"
-                          type="button"
-                          @click="showVehicleDialog = true"
-                        >
+                        <VBtn icon size="small" variant="tonal" color="primary" type="button"
+                          @click="showVehicleDialog = true">
                           <VIcon icon="ri-add-line" />
                         </VBtn>
                       </template>
@@ -1218,74 +1073,41 @@ onActivated(async () => {
                   </div>
 
                   <!-- Sugerencias de Vehículos del Cliente cuando no se ha escogido un vehículo -->
-                  <div
-                    v-if="!selectedVehicle && clientVehicles.length > 0"
+                  <div v-if="!selectedVehicle && clientVehicles.length > 0"
                     class="mt-2.5 pa-3 rounded-xl border bg-slate-50 d-flex flex-column gap-2"
-                    style="border-color: rgba(var(--v-theme-primary), 0.3) !important;"
-                  >
+                    style="border-color: rgba(var(--v-theme-primary), 0.3) !important;">
                     <div class="d-flex align-center justify-space-between flex-wrap gap-2">
                       <div class="d-flex align-center gap-1.5 text-caption font-weight-bold text-primary">
-                        <VIcon
-                          icon="ri-lightbulb-line"
-                          size="16"
-                          color="primary"
-                        />
+                        <VIcon icon="ri-lightbulb-line" size="16" color="primary" />
                         <span>Vehículo(s) registrado(s) del cliente:</span>
                       </div>
-                      <VBtn
-                        v-if="clientVehicles.length > 1"
-                        size="x-small"
-                        variant="tonal"
-                        color="primary"
-                        prepend-icon="ri-list-check"
-                        class="font-weight-medium"
-                        @click="showVehicleSuggestionDialog = true"
-                      >
+                      <VBtn v-if="clientVehicles.length > 1" size="x-small" variant="tonal" color="primary"
+                        prepend-icon="ri-list-check" class="font-weight-medium"
+                        @click="showVehicleSuggestionDialog = true">
                         Ver lista ({{ clientVehicles.length }})
                       </VBtn>
                     </div>
 
                     <div class="d-flex flex-wrap gap-2 align-center">
-                      <VCard
-                        v-for="veh in clientVehicles"
-                        :key="veh.id"
+                      <VCard v-for="veh in clientVehicles" :key="veh.id"
                         class="pa-2 px-3 rounded-lg border bg-white cursor-pointer transition-all hover-elevate d-flex align-center gap-2 elevation-1"
-                        style="border-color: #cbd5e1 !important;"
-                        @click="selectSuggestedVehicle(veh)"
-                      >
-                        <VAvatar
-                          size="28"
-                          color="primary"
-                          variant="tonal"
-                          rounded="sm"
-                        >
-                          <VIcon
-                            icon="ri-car-fill"
-                            size="16"
-                          />
+                        style="border-color: #cbd5e1 !important;" @click="selectSuggestedVehicle(veh)">
+                        <VAvatar size="28" color="primary" variant="tonal" rounded="sm">
+                          <VIcon icon="ri-car-fill" size="16" />
                         </VAvatar>
                         <div class="d-flex flex-column">
                           <div class="d-flex align-center gap-1.5">
                             <span class="font-mono font-weight-bold text-slate-900 text-body-2">
                               {{ veh.license_plate }}
                             </span>
-                            <span
-                              v-if="veh.brand || veh.model"
-                              class="text-caption font-weight-medium text-slate-700"
-                            >
+                            <span v-if="veh.brand || veh.model" class="text-caption font-weight-medium text-slate-700">
                               • {{ getVehicleBrandModel(veh) }}
                             </span>
                           </div>
-                          <div
-                            v-if="veh.color || veh.year"
-                            class="text-caption text-medium-emphasis"
-                            style="font-size: 11px;"
-                          >
+                          <div v-if="veh.color || veh.year" class="text-caption text-medium-emphasis"
+                            style="font-size: 11px;">
                             <span v-if="veh.year">Año {{ veh.year }}</span>
-                            <span
-                              v-if="veh.color"
-                              class="ms-1"
-                            >• Color {{ veh.color }}</span>
+                            <span v-if="veh.color" class="ms-1">• Color {{ veh.color }}</span>
                           </div>
                         </div>
                       </VCard>
@@ -1296,73 +1118,33 @@ onActivated(async () => {
 
 
                 <!-- Panel Unificado y Elegante de Resumen Cliente / Vehículo (Sin redundancia) -->
-                <VCol
-                  v-if="selectedClient || selectedVehicle"
-                  cols="12"
-                  class="pt-0"
-                >
+                <VCol v-if="selectedClient || selectedVehicle" cols="12" class="pt-0">
                   <div class="rounded-xl border bg-slate-50 pa-3 pa-sm-4">
-                    <VRow
-                      dense
-                      class="align-center"
-                    >
+                    <VRow dense class="align-center">
                       <!-- Datos del Cliente -->
-                      <VCol
-                        cols="12"
-                        :sm="selectedVehicle ? 6 : 12"
-                        class="d-flex align-center gap-3"
-                      >
+                      <VCol cols="12" :sm="selectedVehicle ? 6 : 12" class="d-flex align-center gap-3">
                         <template v-if="selectedClient">
-                          <VAvatar
-                            color="primary"
-                            variant="tonal"
-                            size="38"
-                            class="rounded-lg shrink-0"
-                          >
-                            <VIcon
-                              icon="ri-id-card-line"
-                              size="20"
-                            />
+                          <VAvatar color="primary" variant="tonal" size="38" class="rounded-lg shrink-0">
+                            <VIcon icon="ri-id-card-line" size="20" />
                           </VAvatar>
                           <div class="d-flex flex-column overflow-hidden flex-grow-1">
                             <div class="d-flex align-center gap-2 flex-wrap">
                               <span class="font-mono font-weight-bold text-slate-800 text-body-2">
                                 {{ selectedClient.n_document || 'Sin Documento' }}
                               </span>
-                              <span
-                                v-if="selectedClient.type_client"
-                                class="text-caption text-medium-emphasis"
-                              >
+                              <span v-if="selectedClient.type_client" class="text-caption text-medium-emphasis">
                                 • {{ selectedClient.type_client == 2 ? 'Empresa' : 'Persona Natural' }}
                               </span>
                             </div>
                             <div class="d-flex align-center gap-3 mt-0.5 text-caption text-medium-emphasis flex-wrap">
-                              <span
-                                v-if="selectedClient.phone"
-                                class="d-flex align-center gap-1"
-                              >
-                                <VIcon
-                                  icon="ri-phone-line"
-                                  size="13"
-                                /> {{ selectedClient.phone }}
+                              <span v-if="selectedClient.phone" class="d-flex align-center gap-1">
+                                <VIcon icon="ri-phone-line" size="13" /> {{ selectedClient.phone }}
                               </span>
-                              <span
-                                v-if="selectedClient.email"
-                                class="d-flex align-center gap-1 text-truncate"
-                              >
-                                <VIcon
-                                  icon="ri-mail-line"
-                                  size="13"
-                                /> {{ selectedClient.email }}
+                              <span v-if="selectedClient.email" class="d-flex align-center gap-1 text-truncate">
+                                <VIcon icon="ri-mail-line" size="13" /> {{ selectedClient.email }}
                               </span>
-                              <span
-                                v-if="selectedClient.address"
-                                class="d-flex align-center gap-1 text-truncate"
-                              >
-                                <VIcon
-                                  icon="ri-map-pin-line"
-                                  size="13"
-                                /> {{ selectedClient.address }}
+                              <span v-if="selectedClient.address" class="d-flex align-center gap-1 text-truncate">
+                                <VIcon icon="ri-map-pin-line" size="13" /> {{ selectedClient.address }}
                               </span>
                             </div>
                           </div>
@@ -1375,24 +1157,11 @@ onActivated(async () => {
                       </VCol>
 
                       <!-- Datos del Vehículo -->
-                      <VCol
-                        v-if="selectedVehicle"
-                        cols="12"
-                        :sm="selectedClient ? 6 : 12"
+                      <VCol v-if="selectedVehicle" cols="12" :sm="selectedClient ? 6 : 12"
                         class="d-flex align-center gap-3"
-                        :class="[selectedClient ? 'border-s-sm ps-sm-4 mt-2 mt-sm-0' : '']"
-                      >
-                        <VAvatar
-                          color="secondary"
-                          variant="tonal"
-                          size="38"
-                          class="rounded-lg shrink-0"
-                        >
-                          <VIcon
-                            icon="ri-car-line"
-                            size="20"
-                            color="secondary"
-                          />
+                        :class="[selectedClient ? 'border-s-sm ps-sm-4 mt-2 mt-sm-0' : '']">
+                        <VAvatar color="secondary" variant="tonal" size="38" class="rounded-lg shrink-0">
+                          <VIcon icon="ri-car-line" size="20" color="secondary" />
                         </VAvatar>
                         <div class="d-flex flex-column flex-grow-1 overflow-hidden">
                           <div class="d-flex align-center gap-2 flex-wrap">
@@ -1402,45 +1171,25 @@ onActivated(async () => {
                             <span class="text-body-2 text-slate-700 font-weight-medium text-truncate">
                               • {{ getVehicleBrandModel(selectedVehicle) }}
                             </span>
-                            <span
-                              v-if="selectedVehicle.color"
-                              class="text-caption text-slate-500"
-                            >
+                            <span v-if="selectedVehicle.color" class="text-caption text-slate-500">
                               • {{ selectedVehicle.color }}
                             </span>
                             <span
                               v-if="selectedVehicle.year && !getVehicleBrandModel(selectedVehicle).includes(selectedVehicle.year)"
-                              class="text-caption text-slate-500"
-                            >
+                              class="text-caption text-slate-500">
                               ({{ selectedVehicle.year }})
                             </span>
                           </div>
 
                           <!-- Dueño diferente del cliente asignado -->
-                          <div
-                            v-if="isVehicleOwnerDifferentFromClient"
-                            class="d-flex align-center justify-space-between gap-2 mt-1 px-2 py-0.5 rounded border border-warning bg-amber-50"
-                          >
-                            <span
-                              class="text-caption text-amber-900 text-truncate"
-                              style="font-size: 0.75rem;"
-                            >
-                              <VIcon
-                                icon="ri-user-shared-line"
-                                size="13"
-                                color="warning"
-                                class="me-1"
-                              />
+                          <div v-if="isVehicleOwnerDifferentFromClient"
+                            class="d-flex align-center justify-space-between gap-2 mt-1 px-2 py-0.5 rounded border border-warning bg-amber-50">
+                            <span class="text-caption text-amber-900 text-truncate" style="font-size: 0.75rem;">
+                              <VIcon icon="ri-user-shared-line" size="13" color="warning" class="me-1" />
                               Dueño: <strong>{{ getVehicleOwnerName || 'Otro cliente' }}</strong>
                             </span>
-                            <VBtn
-                              size="x-small"
-                              variant="text"
-                              color="warning"
-                              density="compact"
-                              class="font-weight-bold text-none px-1"
-                              @click="setClientToVehicleOwner"
-                            >
+                            <VBtn size="x-small" variant="text" color="warning" density="compact"
+                              class="font-weight-bold text-none px-1" @click="setClientToVehicleOwner">
                               Asignar
                             </VBtn>
                           </div>
@@ -1458,16 +1207,8 @@ onActivated(async () => {
             <VCardItem class="bg-white py-3 px-4 border-b">
               <template #title>
                 <div class="d-flex align-center gap-3">
-                  <VAvatar
-                    size="36"
-                    color="warning"
-                    variant="tonal"
-                    class="rounded-lg"
-                  >
-                    <VIcon
-                      icon="ri-tools-line"
-                      size="20"
-                    />
+                  <VAvatar size="36" color="warning" variant="tonal" class="rounded-lg">
+                    <VIcon icon="ri-tools-line" size="20" />
                   </VAvatar>
                   <div>
                     <h3 class="text-subtitle-1 font-weight-bold text-slate-900 mb-0">
@@ -1484,74 +1225,33 @@ onActivated(async () => {
             <VCardText class="pa-4 pa-sm-5 bg-white">
               <VRow>
                 <!-- Kilometraje -->
-                <VCol
-                  cols="12"
-                  sm="4"
-                >
+                <VCol cols="12" sm="4">
                   <label class="text-caption font-weight-bold text-slate-800 mb-1 d-block">Kilometraje</label>
-                  <VTextField
-                    v-model.number="workOrder.mileage"
-                    type="number"
-                    placeholder="Ej: 45000"
-                    prepend-inner-icon="ri-speed-line"
-                    variant="outlined"
-                    density="comfortable"
-                    hide-details="auto"
-                    color="primary"
-                  />
+                  <VTextField v-model.number="workOrder.mileage" type="number" placeholder="Ej: 45000"
+                    prepend-inner-icon="ri-speed-line" variant="outlined" density="comfortable" hide-details="auto"
+                    color="primary" />
                 </VCol>
 
                 <!-- Nivel de Combustible -->
-                <VCol
-                  cols="12"
-                  sm="4"
-                >
+                <VCol cols="12" sm="4">
                   <label class="text-caption font-weight-bold text-slate-800 mb-1 d-block">Nivel de Combustible</label>
-                  <VSelect
-                    v-model="workOrder.fuel_level"
-                    :items="fuelLevels"
-                    placeholder="Seleccionar nivel"
-                    prepend-inner-icon="ri-gas-station-line"
-                    variant="outlined"
-                    density="comfortable"
-                    hide-details="auto"
-                    color="primary"
-                    clearable
-                  />
+                  <VSelect v-model="workOrder.fuel_level" :items="fuelLevels" placeholder="Seleccionar nivel"
+                    prepend-inner-icon="ri-gas-station-line" variant="outlined" density="comfortable"
+                    hide-details="auto" color="primary" clearable />
                 </VCol>
 
                 <!-- Técnicos Asignados -->
-                <VCol
-                  cols="12"
-                  sm="4"
-                >
+                <VCol cols="12" sm="4">
                   <label class="text-caption font-weight-bold text-slate-800 mb-1 d-block">Técnicos (máximo 2)</label>
-                  <VAutocomplete
-                    v-model="workOrder.technicians"
-                    :items="employees"
+                  <VAutocomplete v-model="workOrder.technicians" :items="employees"
                     :item-title="(item) => `${item.first_name} ${item.last_name} - ${item.position || ''}`"
-                    item-value="id"
-                    placeholder="Seleccionar técnicos..."
-                    prepend-inner-icon="ri-user-settings-line"
-                    variant="outlined"
-                    density="comfortable"
-                    hide-details="auto"
-                    color="primary"
-                    clearable
-                    :loading="isLoading"
-                    multiple
-                    chips
-                    :rules="[(v) => !v || v.length <= 2 || 'Máximo 2 técnicos']"
-                    class="fix-notch-bug"
-                  >
+                    item-value="id" placeholder="Seleccionar técnicos..." prepend-inner-icon="ri-user-settings-line"
+                    variant="outlined" density="comfortable" hide-details="auto" color="primary" clearable
+                    :loading="isLoading" multiple chips :rules="[(v) => !v || v.length <= 2 || 'Máximo 2 técnicos']"
+                    class="fix-notch-bug">
                     <template #chip="{ props, item }">
-                      <VChip
-                        v-bind="props"
-                        size="small"
-                        color="primary"
-                        variant="tonal"
-                        :text="`${item.raw.first_name} ${item.raw.last_name}`"
-                      />
+                      <VChip v-bind="props" size="small" color="primary" variant="tonal"
+                        :text="`${item.raw.first_name} ${item.raw.last_name}`" />
                     </template>
                   </VAutocomplete>
                 </VCol>
@@ -1565,16 +1265,8 @@ onActivated(async () => {
               <template #title>
                 <div class="d-flex align-center justify-space-between flex-wrap gap-2">
                   <div class="d-flex align-center gap-3">
-                    <VAvatar
-                      size="36"
-                      color="success"
-                      variant="tonal"
-                      class="rounded-lg"
-                    >
-                      <VIcon
-                        icon="ri-shopping-bag-3-line"
-                        size="20"
-                      />
+                    <VAvatar size="36" color="success" variant="tonal" class="rounded-lg">
+                      <VIcon icon="ri-shopping-bag-3-line" size="20" />
                     </VAvatar>
                     <div>
                       <h3 class="text-subtitle-1 font-weight-bold text-slate-900 mb-0">
@@ -1586,24 +1278,12 @@ onActivated(async () => {
                     </div>
                   </div>
                   <div class="d-flex gap-2">
-                    <VBtn
-                      size="small"
-                      color="primary"
-                      variant="tonal"
-                      prepend-icon="ri-box-3-line"
-                      class="font-weight-semibold"
-                      @click="addTemporaryProduct"
-                    >
+                    <VBtn size="small" color="primary" variant="tonal" prepend-icon="ri-box-3-line"
+                      class="font-weight-semibold" @click="addTemporaryProduct">
                       Producto Temporal
                     </VBtn>
-                    <VBtn
-                      size="small"
-                      color="info"
-                      variant="tonal"
-                      prepend-icon="ri-tools-line"
-                      class="font-weight-semibold"
-                      @click="showAddServiceDialog = true"
-                    >
+                    <VBtn size="small" color="info" variant="tonal" prepend-icon="ri-tools-line"
+                      class="font-weight-semibold" @click="showAddServiceDialog = true">
                       Servicio Express
                     </VBtn>
                   </div>
@@ -1614,54 +1294,25 @@ onActivated(async () => {
             <VCardText class="pa-4 pa-sm-5 bg-white">
               <!-- Cuadro de búsqueda de productos -->
               <div class="mb-4">
-                <VSearch
-                  v-model="productSearch"
-                  endpoint="products/search"
-                  item-title="description"
-                  :return-object="true"
-                  label="Buscar y agregar producto por nombre, código o SKU..."
-                  icon="ri-search-line"
-                  class="mb-0"
-                  hide-details
-                  @change="addProductFromSearch"
-                >
+                <VSearch v-model="productSearch" endpoint="products/search" item-title="description"
+                  :return-object="true" label="Buscar y agregar producto por nombre, código o SKU..."
+                  icon="ri-search-line" class="mb-0" hide-details @change="addProductFromSearch">
                   <template #item="{ props, item }">
-                    <VListItem
-                      v-bind="props"
-                      :title="undefined"
-                    >
+                    <VListItem v-bind="props" :title="undefined">
                       <template #prepend>
-                        <VAvatar
-                          size="32"
-                          color="primary"
-                          variant="tonal"
-                          class="rounded-lg"
-                        >
-                          <VIcon
-                            icon="ri-box-3-line"
-                            size="18"
-                          />
+                        <VAvatar size="32" color="primary" variant="tonal" class="rounded-lg">
+                          <VIcon icon="ri-box-3-line" size="18" />
                         </VAvatar>
                       </template>
-                      <VListItemTitle
-                        style="white-space: normal !important; line-height: 1.4;"
-                        class="font-weight-medium text-body-2"
-                      >
+                      <VListItemTitle style="white-space: normal !important; line-height: 1.4;"
+                        class="font-weight-medium text-body-2">
                         {{ item.raw.description || item.raw.name }}
                       </VListItemTitle>
-                      <VListItemSubtitle
-                        v-if="item.raw.code_aux || item.raw.sku"
-                        class="mt-1 text-grey"
-                      >
+                      <VListItemSubtitle v-if="item.raw.code_aux || item.raw.sku" class="mt-1 text-grey">
                         Código/SKU: {{ item.raw.code_aux || item.raw.sku }}
                       </VListItemSubtitle>
                       <template #append>
-                        <VChip
-                          size="small"
-                          color="success"
-                          variant="tonal"
-                          class="font-weight-bold"
-                        >
+                        <VChip size="small" color="success" variant="tonal" class="font-weight-bold">
                           ${{ getProductPriceWithTax(item.raw).toFixed(2) }}
                         </VChip>
                       </template>
@@ -1671,107 +1322,60 @@ onActivated(async () => {
               </div>
 
               <!-- Tabla de items -->
-              <div
-                v-if="workOrder.items.length > 0"
-                class="rounded-xl border overflow-hidden"
-              >
+              <div v-if="workOrder.items.length > 0" class="rounded-xl border overflow-hidden">
                 <VTable class="custom-items-table w-100">
                   <thead>
                     <tr class="bg-slate-50 text-caption font-weight-bold">
                       <th class="text-left font-weight-bold text-slate-700">
                         Ítem / Descripción
                       </th>
-                      <th
-                        class="text-center font-weight-bold text-slate-700"
-                        style="width: 95px;"
-                      >
+                      <th class="text-center font-weight-bold text-slate-700" style="width: 95px;">
                         Cant.
                       </th>
-                      <th
-                        class="text-center font-weight-bold text-slate-700"
-                        style="width: 95px;"
-                      >
+                      <th class="text-center font-weight-bold text-slate-700" style="width: 95px;">
                         P. Unit.
                       </th>
-                      <th
-                        class="text-center font-weight-bold text-slate-700"
-                        style="width: 85px;"
-                      >
+                      <th class="text-center font-weight-bold text-slate-700" style="width: 85px;">
                         Desc.
                       </th>
-                      <th
-                        class="text-center font-weight-bold text-slate-700"
-                        style="width: 90px;"
-                      >
+                      <th class="text-center font-weight-bold text-slate-700" style="width: 90px;">
                         Subtotal
                       </th>
-                      <th
-                        class="text-center font-weight-bold text-slate-700"
-                        style="width: 44px;"
-                      />
+                      <th class="text-center font-weight-bold text-slate-700" style="width: 44px;" />
                     </tr>
                   </thead>
                   <tbody>
-                    <tr
-                      v-for="(item, index) in workOrder.items"
-                      :key="item.id || item.product_id || index"
-                      class="hover-row"
-                    >
+                    <tr v-for="(item, index) in workOrder.items" :key="item.id || item.product_id || index"
+                      class="hover-row">
                       <td class="py-2">
                         <div class="d-flex align-center gap-2.5">
-                          <VAvatar
-                            size="24"
-                            :color="item.type === 'service' ? 'info' : 'primary'"
-                            variant="tonal"
-                            class="rounded-md flex-shrink-0"
-                          >
-                            <VIcon
-                              :icon="item.type === 'service' ? 'ri-tools-line' : 'ri-box-3-line'"
-                              size="13"
-                            />
+                          <VAvatar size="24" :color="item.type === 'service' ? 'info' : 'primary'" variant="tonal"
+                            class="rounded-md flex-shrink-0">
+                            <VIcon :icon="item.type === 'service' ? 'ri-tools-line' : 'ri-box-3-line'" size="13" />
                           </VAvatar>
                           <div class="flex-grow-1 min-w-0">
-                            <input
-                              v-model="item.description"
-                              type="text"
-                              placeholder="Descripción del ítem..."
-                              class="wo-item-desc-input font-weight-bold text-slate-900"
-                            >
+                            <input v-model="item.description" type="text" placeholder="Descripción del ítem..."
+                              class="wo-item-desc-input font-weight-bold text-slate-900">
                             <div class="text-caption text-medium-emphasis mt-0.5 d-flex align-center flex-wrap gap-1.5">
                               <!-- Código / SKU en Primer Lugar -->
-                              <span
-                                v-if="getItemCode(item)"
+                              <span v-if="getItemCode(item)"
                                 class="font-mono font-weight-bold text-slate-800 px-1.5 py-0.5 rounded bg-slate-100 border border-slate-300 d-inline-flex align-center"
-                                style="font-size: 0.68rem; line-height: 1.2;"
-                              >
-                                <VIcon
-                                  icon="ri-barcode-line"
-                                  size="12"
-                                  class="me-1 text-slate-500"
-                                />
+                                style="font-size: 0.68rem; line-height: 1.2;">
+                                <VIcon icon="ri-barcode-line" size="12" class="me-1 text-slate-500" />
                                 {{ getItemCode(item) }}
                               </span>
 
                               <!-- Tipo de Item (Servicio / Producto) -->
-                              <span
-                                class="text-uppercase font-weight-bold"
+                              <span class="text-uppercase font-weight-bold"
                                 :class="isServiceItem(item) ? 'text-info' : 'text-secondary'"
-                                style="font-size: 0.65rem;"
-                              >
+                                style="font-size: 0.65rem;">
                                 {{ isServiceItem(item) ? 'Servicio' : 'Producto' }}
                               </span>
 
                               <!-- Stock si es producto -->
-                              <span
-                                v-if="!isServiceItem(item)"
-                                class="stock-tag"
-                                :class="{ 'stock-low': item.quantity > getProductStock(item.product_id, item) }"
-                              >
-                                <VIcon
-                                  icon="ri-stack-line"
-                                  size="11"
-                                  class="mr-0.5"
-                                />
+                              <span v-if="!isServiceItem(item)" class="stock-tag"
+                                :class="{ 'stock-low': item.quantity > getProductStock(item.product_id, item) }">
+                                <VIcon icon="ri-stack-line" size="11" class="mr-0.5" />
                                 {{ getProductStock(item.product_id, item) }} stock
                               </span>
                             </div>
@@ -1780,66 +1384,35 @@ onActivated(async () => {
                       </td>
                       <td class="text-center py-2">
                         <div class="wo-qty-box">
-                          <button
-                            type="button"
-                            class="wo-qty-btn"
-                            :disabled="item.quantity <= 1"
-                            @click="item.quantity--"
-                          >
-                            <VIcon
-                              icon="ri-subtract-line"
-                              size="13"
-                            />
+                          <button type="button" class="wo-qty-btn" :disabled="item.quantity <= 1"
+                            @click="item.quantity--">
+                            <VIcon icon="ri-subtract-line" size="13" />
                           </button>
-                          <input
-                            v-model.number="item.quantity"
-                            type="number"
-                            min="1"
-                            max="999"
+                          <input v-model.number="item.quantity" type="number" min="1" max="999"
                             class="wo-qty-val font-mono"
                             :class="{ 'input-invalid-red': showValidationError && (!item.quantity || item.quantity <= 0) }"
                             @input="item.quantity > 999 ? item.quantity = 999 : null"
-                            @blur="(!item.quantity || item.quantity < 1) ? item.quantity = 1 : null"
-                          >
-                          <button
-                            type="button"
-                            class="wo-qty-btn"
-                            :disabled="item.quantity >= 999"
-                            @click="item.quantity++"
-                          >
-                            <VIcon
-                              icon="ri-add-line"
-                              size="13"
-                            />
+                            @blur="(!item.quantity || item.quantity < 1) ? item.quantity = 1 : null">
+                          <button type="button" class="wo-qty-btn" :disabled="item.quantity >= 999"
+                            @click="item.quantity++">
+                            <VIcon icon="ri-add-line" size="13" />
                           </button>
                         </div>
                       </td>
                       <td class="text-center py-2">
-                        <div
-                          class="wo-compact-input-wrap"
-                          :class="{ 'wrap-invalid-red': showValidationError && (item.unit_price === null || item.unit_price === undefined || item.unit_price < 0) }"
-                        >
+                        <div class="wo-compact-input-wrap"
+                          :class="{ 'wrap-invalid-red': showValidationError && (item.unit_price === null || item.unit_price === undefined || item.unit_price < 0) }">
                           <span class="wo-currency">$</span>
-                          <input
-                            v-model.number="item.unit_price"
-                            type="number"
-                            step="0.01"
-                            min="0"
+                          <input v-model.number="item.unit_price" type="number" step="0.01" min="0"
                             class="wo-compact-input font-mono font-weight-bold text-slate-800"
-                            :class="{ 'input-invalid-red': showValidationError && (item.unit_price === null || item.unit_price === undefined || item.unit_price < 0) }"
-                          >
+                            :class="{ 'input-invalid-red': showValidationError && (item.unit_price === null || item.unit_price === undefined || item.unit_price < 0) }">
                         </div>
                       </td>
                       <td class="text-center py-2">
                         <div class="wo-compact-input-wrap">
                           <span class="wo-currency">$</span>
-                          <input
-                            v-model.number="item.discount"
-                            type="number"
-                            step="0.01"
-                            min="0"
-                            class="wo-compact-input font-mono font-weight-medium text-error"
-                          >
+                          <input v-model.number="item.discount" type="number" step="0.01" min="0"
+                            class="wo-compact-input font-mono font-weight-medium text-error">
                         </div>
                       </td>
                       <td class="text-center py-2">
@@ -1848,14 +1421,8 @@ onActivated(async () => {
                         </span>
                       </td>
                       <td class="text-center py-2">
-                        <VBtn
-                          icon="ri-delete-bin-line"
-                          size="x-small"
-                          color="error"
-                          variant="text"
-                          class="delete-btn"
-                          @click="removeItem(index)"
-                        />
+                        <VBtn icon="ri-delete-bin-line" size="x-small" color="error" variant="text" class="delete-btn"
+                          @click="removeItem(index)" />
                       </td>
                     </tr>
                   </tbody>
@@ -1863,28 +1430,20 @@ onActivated(async () => {
               </div>
 
               <!-- Estado Vacío -->
-              <div
-                v-else
-                class="text-center pa-10 rounded-xl transition-all"
+              <div v-else class="text-center pa-10 rounded-xl transition-all"
                 :class="showValidationError && (!workOrder.items || workOrder.items.length === 0) ? 'border-2 border-dashed bg-red-50' : 'bg-slate-50 border border-dashed'"
-                :style="showValidationError && (!workOrder.items || workOrder.items.length === 0) ? 'border-color: rgb(var(--v-theme-error)) !important;' : ''"
-              >
+                :style="showValidationError && (!workOrder.items || workOrder.items.length === 0) ? 'border-color: rgb(var(--v-theme-error)) !important;' : ''">
                 <VAvatar
                   :color="showValidationError && (!workOrder.items || workOrder.items.length === 0) ? 'error' : 'primary'"
-                  variant="tonal"
-                  size="64"
-                  class="mb-3"
-                >
+                  variant="tonal" size="64" class="mb-3">
                   <VIcon
                     :icon="showValidationError && (!workOrder.items || workOrder.items.length === 0) ? 'ri-error-warning-line' : 'ri-shopping-bag-3-line'"
-                    size="32"
-                  />
+                    size="32" />
                 </VAvatar>
-                <div
-                  class="text-subtitle-1 font-weight-bold"
-                  :class="showValidationError && (!workOrder.items || workOrder.items.length === 0) ? 'text-error' : 'text-slate-900'"
-                >
-                  {{ showValidationError && (!workOrder.items || workOrder.items.length === 0) ? '¡Debe agregar al menos un producto o servicio!' : 'No hay productos o servicios agregados' }}
+                <div class="text-subtitle-1 font-weight-bold"
+                  :class="showValidationError && (!workOrder.items || workOrder.items.length === 0) ? 'text-error' : 'text-slate-900'">
+                  {{ showValidationError && (!workOrder.items || workOrder.items.length === 0) ?
+                    '¡Debe agregar al menos un producto o servicio!' : 'No hay productos o servicios agregados' }}
                 </div>
                 <div class="text-body-2 text-medium-emphasis mt-1">
                   Usa el buscador para agregar ítems o crea un producto/servicio temporal.
@@ -1895,26 +1454,15 @@ onActivated(async () => {
         </VCol>
 
         <!-- Columna Derecha (4 cols): Observaciones y Resumen -->
-        <VCol
-          cols="12"
-          lg="4"
-        >
+        <VCol cols="12" lg="4">
           <div class="d-flex flex-column gap-6">
             <!-- Tarjeta 4: Observaciones -->
             <VCard class="rounded-xl border-light elevation-1 overflow-hidden">
               <VCardItem class="bg-white py-3 px-4 border-b">
                 <template #title>
                   <div class="d-flex align-center gap-3">
-                    <VAvatar
-                      size="36"
-                      color="secondary"
-                      variant="tonal"
-                      class="rounded-lg"
-                    >
-                      <VIcon
-                        icon="ri-file-text-line"
-                        size="20"
-                      />
+                    <VAvatar size="36" color="secondary" variant="tonal" class="rounded-lg">
+                      <VIcon icon="ri-file-text-line" size="20" />
                     </VAvatar>
                     <div>
                       <h3 class="text-subtitle-1 font-weight-bold text-slate-900 mb-0">
@@ -1928,15 +1476,9 @@ onActivated(async () => {
                 </template>
               </VCardItem>
               <VCardText class="pa-4 bg-white">
-                <VTextarea
-                  v-model="workOrder.observations"
-                  rows="3"
-                  variant="outlined"
-                  density="comfortable"
-                  placeholder="Describe cualquier novedad u observación del vehículo..."
-                  hide-details="auto"
-                  color="primary"
-                />
+                <VTextarea v-model="workOrder.observations" rows="3" variant="outlined" density="comfortable"
+                  placeholder="Describe cualquier novedad u observación del vehículo..." hide-details="auto"
+                  color="primary" />
               </VCardText>
             </VCard>
 
@@ -1945,23 +1487,16 @@ onActivated(async () => {
               <VCardItem class="bg-white py-3 px-4 border-b">
                 <template #title>
                   <div class="d-flex align-center gap-3">
-                    <VAvatar
-                      size="36"
-                      color="primary"
-                      variant="tonal"
-                      class="rounded-lg"
-                    >
-                      <VIcon
-                        icon="ri-money-dollar-circle-line"
-                        size="20"
-                      />
+                    <VAvatar size="36" color="primary" variant="tonal" class="rounded-lg">
+                      <VIcon icon="ri-money-dollar-circle-line" size="20" />
                     </VAvatar>
                     <div>
                       <h3 class="text-subtitle-1 font-weight-bold text-slate-900 mb-0">
                         Resumen de la Orden
                       </h3>
                       <p class="text-caption text-medium-emphasis mb-0">
-                        {{ workOrder.items.length }} {{ workOrder.items.length === 1 ? 'ítem agregado' : 'ítems agregados' }}
+                        {{ workOrder.items.length }} {{ workOrder.items.length === 1 ? 'ítem agregado'
+                          : 'ítems agregados' }}
                       </p>
                     </div>
                   </div>
@@ -1971,12 +1506,7 @@ onActivated(async () => {
               <VCardText class="pa-4 bg-white d-flex flex-column gap-3">
                 <div class="d-flex justify-space-between align-center">
                   <span class="text-body-2 text-slate-600 font-weight-medium">Items en Orden:</span>
-                  <VChip
-                    size="small"
-                    color="primary"
-                    variant="tonal"
-                    class="font-weight-bold"
-                  >
+                  <VChip size="small" color="primary" variant="tonal" class="font-weight-bold">
                     {{ workOrder.items.length }} ítems
                   </VChip>
                 </div>
@@ -1990,16 +1520,8 @@ onActivated(async () => {
                       ${{ calculateTotal().toFixed(2) }}
                     </div>
                   </div>
-                  <VAvatar
-                    color="primary"
-                    variant="tonal"
-                    size="44"
-                    class="rounded-xl"
-                  >
-                    <VIcon
-                      icon="ri-wallet-3-line"
-                      size="24"
-                    />
+                  <VAvatar color="primary" variant="tonal" size="44" class="rounded-xl">
+                    <VIcon icon="ri-wallet-3-line" size="24" />
                   </VAvatar>
                 </div>
               </VCardText>
@@ -2007,45 +1529,20 @@ onActivated(async () => {
               <VDivider />
 
               <VCardActions class="pa-4 bg-white d-flex flex-column gap-2">
-                <VBtn
-                  block
-                  color="primary"
-                  variant="elevated"
-                  height="44"
-                  prepend-icon="ri-save-3-line"
+                <VBtn block color="primary" variant="elevated" height="44" prepend-icon="ri-save-3-line"
                   class="rounded-lg font-weight-bold elevation-2 text-none"
-                  style="font-size: 0.95rem; letter-spacing: 0.3px;"
-                  :loading="isSubmitting"
-                  @click="saveWorkOrder"
-                >
+                  style="font-size: 0.95rem; letter-spacing: 0.3px;" :loading="isSubmitting" @click="saveWorkOrder">
                   Guardar Orden
                 </VBtn>
-                
-                <div
-                  class="d-flex align-center gap-2 w-100 mt-1"
-                  style="gap: 8px;"
-                >
-                  <VBtn
-                    color="secondary"
-                    variant="tonal"
-                    height="38"
-                    prepend-icon="ri-draft-line"
-                    class="rounded-lg font-weight-semibold text-none"
-                    style="flex: 1;"
-                    :loading="isSavingDraft"
-                    @click="saveDraft"
-                  >
+
+                <div class="d-flex align-center gap-2 w-100 mt-1" style="gap: 8px;">
+                  <VBtn color="secondary" variant="tonal" height="38" prepend-icon="ri-draft-line"
+                    class="rounded-lg font-weight-semibold text-none" style="flex: 1;" :loading="isSavingDraft"
+                    @click="saveDraft">
                     Borrador
                   </VBtn>
-                  <VBtn
-                    color="secondary"
-                    variant="outlined"
-                    height="38"
-                    prepend-icon="ri-close-line"
-                    class="rounded-lg font-weight-medium text-none"
-                    style="flex: 1;"
-                    @click="cancel"
-                  >
+                  <VBtn color="secondary" variant="outlined" height="38" prepend-icon="ri-close-line"
+                    class="rounded-lg font-weight-medium text-none" style="flex: 1;" @click="cancel">
                     Cancelar
                   </VBtn>
                 </div>
@@ -2057,53 +1554,28 @@ onActivated(async () => {
     </VForm>
 
     <!-- Dialog para agregar cliente -->
-    <ClientFinalAddDialog
-      :is-dialog-visible="showClientDialog"
-      @update:is-dialog-visible="showClientDialog = $event"
-      @add-client-final="onClientAdded"
-    />
+    <ClientFinalAddDialog :is-dialog-visible="showClientDialog" @update:is-dialog-visible="showClientDialog = $event"
+      @add-client-final="onClientAdded" />
 
     <!-- Dialog para agregar cliente empresa -->
-    <ClientCompanyAddDialog
-      :is-dialog-visible="showCompanyDialog"
-      @update:is-dialog-visible="showCompanyDialog = $event"
-      @add-client-company="onCompanyAdded"
-    />
+    <ClientCompanyAddDialog :is-dialog-visible="showCompanyDialog"
+      @update:is-dialog-visible="showCompanyDialog = $event" @add-client-company="onCompanyAdded" />
 
     <!-- Dialog para agregar vehículo -->
-    <VehicleAddDialog
-      :is-dialog-visible="showVehicleDialog"
-      :client-selected-id="workOrder.client_id"
-      @update:is-dialog-visible="showVehicleDialog = $event"
-      @add-vehicle="onVehicleAdded"
-    />
+    <VehicleAddDialog :is-dialog-visible="showVehicleDialog" :client-selected-id="workOrder.client_id"
+      @update:is-dialog-visible="showVehicleDialog = $event" @add-vehicle="onVehicleAdded" />
 
     <!-- Dialog para agregar servicio express -->
-    <AddServiceDialog
-      v-model:isDialogVisible="showAddServiceDialog"
-      @service-added="handleServiceAdded"
-    />
+    <AddServiceDialog v-model:isDialogVisible="showAddServiceDialog" @service-added="handleServiceAdded" />
 
     <!-- Diálogo para escoger vehículo cuando el cliente tiene múltiples vehículos -->
-    <VDialog
-      v-model="showVehicleSuggestionDialog"
-      max-width="520"
-      scrollable
-    >
+    <VDialog v-model="showVehicleSuggestionDialog" max-width="520" scrollable>
       <VCard class="rounded-xl border elevation-4">
         <VCardItem class="bg-slate-50 py-3 px-4 border-b">
           <template #title>
             <div class="d-flex align-center gap-3">
-              <VAvatar
-                size="36"
-                color="primary"
-                variant="tonal"
-                class="rounded-lg"
-              >
-                <VIcon
-                  icon="ri-car-line"
-                  size="20"
-                />
+              <VAvatar size="36" color="primary" variant="tonal" class="rounded-lg">
+                <VIcon icon="ri-car-line" size="20" />
               </VAvatar>
               <div>
                 <h3 class="text-subtitle-1 font-weight-bold text-slate-900 mb-0">
@@ -2116,28 +1588,14 @@ onActivated(async () => {
             </div>
           </template>
           <template #append>
-            <VBtn
-              icon="ri-close-line"
-              variant="text"
-              size="small"
-              @click="showVehicleSuggestionDialog = false"
-            />
+            <VBtn icon="ri-close-line" variant="text" size="small" @click="showVehicleSuggestionDialog = false" />
           </template>
         </VCardItem>
 
-        <VCardText
-          class="pa-4 bg-white"
-          style="max-height: 420px;"
-        >
-          <div
-            v-if="selectedClient"
-            class="mb-3 text-caption text-slate-700 bg-slate-100 pa-2.5 rounded-lg border d-flex align-center gap-2"
-          >
-            <VIcon
-              icon="ri-user-line"
-              size="16"
-              color="primary"
-            />
+        <VCardText class="pa-4 bg-white" style="max-height: 420px;">
+          <div v-if="selectedClient"
+            class="mb-3 text-caption text-slate-700 bg-slate-100 pa-2.5 rounded-lg border d-flex align-center gap-2">
+            <VIcon icon="ri-user-line" size="16" color="primary" />
             <div>
               Cliente: <strong>{{ selectedClient.full_name || selectedClient.name }}</strong>
               <span class="ms-1 text-disabled">({{ clientVehicles.length }} vehículos encontrados)</span>
@@ -2145,58 +1603,33 @@ onActivated(async () => {
           </div>
 
           <div class="d-flex flex-column gap-2.5">
-            <VCard
-              v-for="veh in clientVehicles"
-              :key="veh.id"
+            <VCard v-for="veh in clientVehicles" :key="veh.id"
               class="pa-3 rounded-xl border bg-white cursor-pointer transition-all hover-elevate d-flex align-center justify-space-between elevation-1"
-              style="border-color: #cbd5e1 !important;"
-              @click="selectSuggestedVehicle(veh)"
-            >
+              style="border-color: #cbd5e1 !important;" @click="selectSuggestedVehicle(veh)">
               <div class="d-flex align-center gap-3">
-                <VAvatar
-                  size="40"
-                  color="primary"
-                  variant="tonal"
-                  class="rounded-lg"
-                >
-                  <VIcon
-                    icon="ri-car-fill"
-                    size="22"
-                  />
+                <VAvatar size="40" color="primary" variant="tonal" class="rounded-lg">
+                  <VIcon icon="ri-car-fill" size="22" />
                 </VAvatar>
                 <div>
                   <div class="d-flex align-center gap-2">
                     <span class="font-mono font-weight-bold text-slate-900 text-body-2">
                       {{ veh.license_plate }}
                     </span>
-                    <VChip
-                      size="x-small"
-                      color="primary"
-                      variant="tonal"
-                      class="font-weight-medium"
-                    >
+                    <VChip size="x-small" color="primary" variant="tonal" class="font-weight-medium">
                       {{ getBrandNameById(veh.brand?.name || veh.brand || veh.brand_id) }}
                     </VChip>
                   </div>
                   <div class="text-caption text-slate-700 font-weight-medium mt-0.5">
                     {{ veh.model || 'Sin modelo especificado' }}
                   </div>
-                  <div
-                    class="d-flex align-center gap-2 mt-0.5 text-caption text-medium-emphasis"
-                    style="font-size: 11px;"
-                  >
+                  <div class="d-flex align-center gap-2 mt-0.5 text-caption text-medium-emphasis"
+                    style="font-size: 11px;">
                     <span v-if="veh.year">Año: {{ veh.year }}</span>
                     <span v-if="veh.color">• Color: {{ veh.color }}</span>
                   </div>
                 </div>
               </div>
-              <VBtn
-                size="small"
-                variant="tonal"
-                color="primary"
-                append-icon="ri-check-line"
-                class="font-weight-bold"
-              >
+              <VBtn size="small" variant="tonal" color="primary" append-icon="ri-check-line" class="font-weight-bold">
                 Elegir
               </VBtn>
             </VCard>
@@ -2206,21 +1639,11 @@ onActivated(async () => {
         <VDivider />
 
         <VCardActions class="pa-3 px-4 bg-slate-50 d-flex justify-space-between flex-wrap gap-2">
-          <VBtn
-            variant="text"
-            color="primary"
-            size="small"
-            prepend-icon="ri-add-line"
-            @click="showVehicleSuggestionDialog = false; showVehicleDialog = true"
-          >
+          <VBtn variant="text" color="primary" size="small" prepend-icon="ri-add-line"
+            @click="showVehicleSuggestionDialog = false; showVehicleDialog = true">
             Registrar Nuevo Vehículo
           </VBtn>
-          <VBtn
-            variant="tonal"
-            color="secondary"
-            size="small"
-            @click="showVehicleSuggestionDialog = false"
-          >
+          <VBtn variant="tonal" color="secondary" size="small" @click="showVehicleSuggestionDialog = false">
             Continuar sin vehículo
           </VBtn>
         </VCardActions>
@@ -2243,4 +1666,3 @@ onActivated(async () => {
   background-color: rgba(var(--v-theme-error), 0.08) !important;
 }
 </style>
-

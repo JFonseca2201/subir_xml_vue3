@@ -324,8 +324,8 @@ const onConfirm = () => {
 
       <VCardText class="pa-5 bg-background d-flex flex-column gap-4">
         <!-- 2. Resumen de la Factura (Cliente, RUC, Ambiente SRI, Total) -->
-        <VCard class="pa-4 rounded-lg border elevation-0 bg-surface">
-          <div class="d-flex justify-space-between align-center pb-2 border-b mb-2.5">
+        <VCard class="confirm-section-card pa-4 rounded-xl border elevation-0 bg-surface">
+          <div class="confirm-detail-row d-flex justify-space-between align-center">
             <span class="text-caption text-medium-emphasis font-weight-bold text-uppercase">CLIENTE</span>
             <span class="text-body-2 font-weight-bold text-high-emphasis text-right text-truncate ms-2"
               style="max-width: 330px;">
@@ -333,21 +333,21 @@ const onConfirm = () => {
             </span>
           </div>
 
-          <div v-if="client?.n_document" class="d-flex justify-space-between align-center pb-2 border-b mb-2.5">
+          <div v-if="client?.n_document" class="confirm-detail-row d-flex justify-space-between align-center">
             <span class="text-caption text-medium-emphasis font-weight-bold text-uppercase">RUC / CÉDULA</span>
             <span class="text-body-2 font-weight-bold text-primary font-mono">
               {{ client.n_document }}
             </span>
           </div>
 
-          <div v-if="vehicle" class="d-flex justify-space-between align-center pb-2 border-b mb-2.5">
-            <span class="text-caption text-medium-emphasis font-weight-bold text-uppercase">VEHÍCULO</span>
-            <span class="text-body-2 font-weight-semibold text-high-emphasis">
+          <div v-if="vehicle" class="confirm-detail-row d-flex justify-space-between align-start gap-2">
+            <span class="text-caption text-medium-emphasis font-weight-bold text-uppercase shrink-0 pt-0.5">VEHÍCULO</span>
+            <span class="text-body-2 font-weight-semibold text-high-emphasis text-right">
               {{ vehicle.license_plate }} ({{ getBrandNameById(vehicle.brand) }} {{ vehicle.model }})
             </span>
           </div>
 
-          <div class="d-flex justify-space-between align-center py-2 border-b mb-2.5">
+          <div class="confirm-detail-row d-flex justify-space-between align-center">
             <span class="text-caption text-medium-emphasis font-weight-bold text-uppercase">AMBIENTE SRI</span>
             <VChip size="small" :color="sriEnvironmentInfo.isProd ? 'success' : 'warning'" variant="flat"
               class="font-weight-bold text-white px-3">
@@ -356,7 +356,7 @@ const onConfirm = () => {
             </VChip>
           </div>
 
-          <div class="d-flex justify-space-between align-center pt-1">
+          <div class="confirm-total-row d-flex justify-space-between align-center pt-3.5 pb-1">
             <span class="text-subtitle-1 font-weight-bold text-high-emphasis">TOTAL A FACTURAR</span>
             <span class="text-h5 font-weight-black text-primary font-mono">
               ${{ Number(total || 0).toFixed(2) }}
@@ -365,9 +365,9 @@ const onConfirm = () => {
         </VCard>
 
         <!-- 3. Sección Forma de Pago -->
-        <VCard class="pa-4 rounded-lg border elevation-0 bg-surface">
+        <VCard class="confirm-section-card pa-4 rounded-xl border elevation-0 bg-surface">
           <!-- Cabecera con solo el signo de MÁS en la esquina superior derecha -->
-          <div class="d-flex justify-space-between align-center mb-3">
+          <div class="d-flex justify-space-between align-center mb-3.5 pb-3 border-b">
             <div class="d-flex align-center gap-2">
               <VIcon icon="ri-wallet-3-line" size="20" color="primary" />
               <span class="text-subtitle-1 font-weight-bold text-high-emphasis">
@@ -486,6 +486,54 @@ const onConfirm = () => {
 </template>
 
 <style scoped lang="scss">
+.confirm-section-card {
+  border: 1px solid var(--border-glass, #cbd5e1) !important;
+  border-radius: 12px !important;
+  background-color: var(--bg-surface, #ffffff) !important;
+  box-shadow: 0 1px 3px rgba(15, 23, 42, 0.05) !important;
+}
+
+.confirm-detail-row {
+  padding-top: 13px;
+  padding-bottom: 13px;
+  border-bottom: 1px solid var(--border-glass, #e2e8f0) !important;
+
+  &:first-child {
+    padding-top: 2px;
+  }
+}
+
+.confirm-total-row {
+  padding-top: 14px;
+}
+
+.confirm-section-card .border-b,
+.border-b {
+  border-bottom: 1px solid var(--border-glass, #e2e8f0) !important;
+}
+
+:global([data-theme="dark"]) .confirm-section-card,
+:global([data-theme="dark-glass"]) .confirm-section-card,
+:global([data-theme="semi-dark-glass"]) .confirm-section-card,
+:global(.v-theme--dark) .confirm-section-card {
+  border-color: rgba(255, 255, 255, 0.08) !important;
+}
+
+:global([data-theme="dark"]) .confirm-detail-row,
+:global([data-theme="dark"]) .confirm-section-card .border-b,
+:global([data-theme="dark"]) .border-b,
+:global([data-theme="dark-glass"]) .confirm-detail-row,
+:global([data-theme="dark-glass"]) .confirm-section-card .border-b,
+:global([data-theme="dark-glass"]) .border-b,
+:global([data-theme="semi-dark-glass"]) .confirm-detail-row,
+:global([data-theme="semi-dark-glass"]) .confirm-section-card .border-b,
+:global([data-theme="semi-dark-glass"]) .border-b,
+:global(.v-theme--dark) .confirm-detail-row,
+:global(.v-theme--dark) .confirm-section-card .border-b,
+:global(.v-theme--dark) .border-b {
+  border-bottom-color: rgba(255, 255, 255, 0.08) !important;
+}
+
 .letter-spacing-normal {
   letter-spacing: 0.015em !important;
 }

@@ -245,8 +245,8 @@ const timelineSteps = computed(() => {
 
               <!-- Botón de acción si es el paso activo -->
               <div v-if="step.status === 'active' && step.action" class="mt-3">
-                <VBtn :color="step.action.color" variant="elevated" size="small"
-                  class="text-none rounded-lg action-btn font-weight-bold" :prepend-icon="step.action.icon"
+                <VBtn :color="step.action.color" variant="elevated"
+                  class="text-none rounded-lg font-weight-bold timeline-action-btn px-4 text-white" :prepend-icon="step.action.icon"
                   :loading="props.isUpdating" @click="step.action.handler">
                   {{ step.action.label }}
                 </VBtn>
@@ -417,5 +417,18 @@ const timelineSteps = computed(() => {
 
 .hover\:text-red-500:hover {
   color: #ef4444 !important;
+}
+
+.timeline-action-btn {
+  height: 38px !important;
+  font-size: 0.875rem !important;
+  letter-spacing: 0.3px;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.15) !important;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1) !important;
+}
+
+.timeline-action-btn:hover {
+  transform: translateY(-2px) !important;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.22) !important;
 }
 </style>
