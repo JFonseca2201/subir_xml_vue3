@@ -904,159 +904,176 @@ onMounted(() => {
                   v-for="(day, dayIdx) in filteredGroupedMovements"
                   :key="day.dateKey"
                 >
-                  <!-- Cabecera de Fecha Separada y Espaciosa -->
-                  <div
-                    class="operations-date-header d-flex flex-column flex-sm-row align-start align-sm-center justify-space-between px-3 px-sm-4 py-2 mb-2.5 gap-2"
-                    :class="dayIdx === 0 ? 'mt-1' : 'mt-4'"
+                  <!-- VCard Unificada por Día (Fecha en cabecera y facturas separadas por Divider) -->
+                  <VCard
+                    elevation="0"
+                    class="operations-day-card border rounded-xl overflow-hidden"
+                    :class="dayIdx === 0 ? 'mt-1 mb-4' : 'mb-4'"
                   >
-                    <!-- Fecha y Calendario -->
-                    <div class="d-flex align-center gap-2">
-                      <div class="date-icon-box">
-                        <VIcon
-                          icon="ri-calendar-event-line"
-                          size="15"
-                        />
+                    <!-- Cabecera de Fecha Integrada -->
+                    <div
+                      class="operations-date-header d-flex flex-column flex-sm-row align-start align-sm-center justify-space-between px-3 px-sm-4 py-2.5 gap-2"
+                    >
+                      <!-- Fecha y Calendario -->
+                      <div class="d-flex align-center gap-2">
+                        <div class="date-icon-box">
+                          <VIcon
+                            icon="ri-calendar-event-line"
+                            size="15"
+                          />
+                        </div>
+                        <span class="date-title-text font-weight-bold text-uppercase tracking-wider">
+                          {{ day.date }}
+                        </span>
                       </div>
-                      <span class="date-title-text font-weight-bold text-uppercase tracking-wider">
-                        {{ day.date }}
-                      </span>
+
+                      <!-- Resumen del día: Subtotales + Conteo de Movimientos -->
+                      <div class="d-flex align-center gap-1.5 flex-wrap ms-auto ms-sm-0">
+                        <span
+                          v-if="day.totalIncome > 0"
+                          class="day-subtotal day-subtotal-income"
+                        >
+                          +{{ formatCurrency(day.totalIncome) }}
+                        </span>
+                        <span
+                          v-if="day.totalExpense > 0"
+                          class="day-subtotal day-subtotal-expense"
+                        >
+                          -{{ formatCurrency(day.totalExpense) }}
+                        </span>
+                        <span class="status-pill-clean status-transfer">
+                          <span class="status-dot" />
+                          <span>{{ day.movements.length }} mov.</span>
+                        </span>
+                      </div>
                     </div>
 
-                    <!-- Resumen del día: Subtotales + Conteo de Movimientos (Sin duplicados) -->
-                    <div class="d-flex align-center gap-1.5 flex-wrap ms-auto ms-sm-0">
-                      <span
-                        v-if="day.totalIncome > 0"
-                        class="day-subtotal day-subtotal-income"
-                      >
-                        +{{ formatCurrency(day.totalIncome) }}
-                      </span>
-                      <span
-                        v-if="day.totalExpense > 0"
-                        class="day-subtotal day-subtotal-expense"
-                      >
-                        -{{ formatCurrency(day.totalExpense) }}
-                      </span>
-                      <span class="status-pill-clean status-transfer">
-                        <span class="status-dot" />
-                        <span>{{ day.movements.length }} mov.</span>
-                      </span>
-                    </div>
-                  </div>
+                    <VDivider class="mx-3 mx-sm-4" />
 
-                  <!-- Tarjetas de Movimiento Espaciosas -->
-                  <div
-                    v-for="movement in day.movements"
-                    :key="movement.id"
-                    class="operations-movement-item d-flex align-center justify-space-between gap-3 mb-2.5 rounded-xl border bg-white"
-                  >
-                    <!-- Izquierda: Avatar Icono + Información -->
-                    <div class="d-flex align-start gap-2.5 overflow-hidden flex-grow-1 min-w-0">
+                    <!-- Movimientos/Facturas del día dentro de la misma tarjeta, separados por Divider -->
+                    <template
+                      v-for="(movement, movIdx) in day.movements"
+                      :key="movement.id"
+                    >
                       <div
-                        class="movement-direction-avatar shrink-0 mt-0.5"
-                        :class="`avatar-${movement.type}`"
+                        class="operations-movement-item d-flex align-center justify-space-between gap-3 px-3 px-sm-4 py-3"
                       >
-                        <VIcon
-                          :icon="movement.type === 'transfer' ? 'ri-arrow-left-right-line' : (movement.type === 'income' ? 'ri-arrow-down-line' : 'ri-arrow-up-line')"
-                          size="18"
-                        />
-                      </div>
+                        <!-- Izquierda: Avatar Icono + Información -->
+                        <div class="d-flex align-start gap-2.5 overflow-hidden flex-grow-1 min-w-0">
+                          <div
+                            class="movement-direction-avatar shrink-0 mt-0.5"
+                            :class="`avatar-${movement.type}`"
+                          >
+                            <VIcon
+                              :icon="movement.type === 'transfer' ? 'ri-arrow-left-right-line' : (movement.type === 'income' ? 'ri-arrow-down-line' : 'ri-arrow-up-line')"
+                              size="18"
+                            />
+                          </div>
 
-                      <div class="d-flex flex-column text-left min-w-0 flex-grow-1">
-                        <!-- Línea 1: Título claro + Monto en Móvil -->
-                        <div class="d-flex align-center justify-space-between gap-2">
-                          <span class="text-body-2 font-weight-bold text-slate-900 text-truncate">
-                            {{ movement.displayTitle }}
-                          </span>
-                          <!-- Monto en móvil arriba a la derecha -->
+                          <div class="d-flex flex-column text-left min-w-0 flex-grow-1">
+                            <!-- Línea 1: Título claro + Monto en Móvil -->
+                            <div class="d-flex align-center justify-space-between gap-2">
+                              <span class="text-body-2 font-weight-bold text-slate-900 text-truncate">
+                                {{ movement.displayTitle }}
+                              </span>
+                              <!-- Monto en móvil arriba a la derecha -->
+                              <span
+                                class="text-body-2 font-weight-bold amount-display d-sm-none shrink-0"
+                                :class="movement.type === 'transfer' ? 'text-info' : (movement.type === 'income' ? 'text-emerald' : 'text-rose')"
+                              >
+                                {{ movement.type === 'transfer' ? '' : (movement.type === 'income' ? '+' : '-') }}
+                                {{ formatCurrency(movement.amount) }}
+                              </span>
+                            </div>
+
+                            <!-- Línea 2: Datos del Cliente con Icono (si existen) -->
+                            <div
+                              v-if="movement.clientName"
+                              class="movement-client-row d-flex align-center gap-1.5 text-caption font-weight-medium my-0.5 text-truncate"
+                            >
+                              <VIcon
+                                icon="ri-user-3-line"
+                                size="13"
+                                class="text-slate-400 shrink-0"
+                              />
+                              <span class="text-slate-700 text-truncate font-weight-semibold">
+                                {{ movement.clientName }}
+                              </span>
+                            </div>
+
+                            <!-- Línea 3: Badges ordenados compactos -->
+                            <div class="movement-badges-row d-flex align-center flex-wrap gap-1 mt-1 text-caption">
+                              <!-- Módulo Origen -->
+                              <span class="status-pill-clean status-canceled">
+                                <span class="status-dot" />
+                                <span>{{ movement.module }}</span>
+                              </span>
+
+                              <!-- Badge de Orden de Trabajo si existe -->
+                              <span
+                                v-if="movement.workOrderNumber"
+                                class="ot-chip-badge d-inline-flex align-center gap-1"
+                                title="Orden de Trabajo Asociada"
+                              >
+                                <VIcon
+                                  icon="ri-tools-line"
+                                  size="11"
+                                />
+                                <span>{{ movement.workOrderNumber }}</span>
+                              </span>
+
+                              <!-- Badge de Placa Vehicular si existe -->
+                              <span
+                                v-if="movement.licensePlate"
+                                class="license-plate-badge"
+                                title="Vehículo"
+                              >
+                                {{ movement.licensePlate.toUpperCase() }}
+                              </span>
+
+                              <!-- Método de Pago / Banco Específico -->
+                              <span
+                                class="payment-method-chip d-inline-flex align-center gap-1"
+                                :class="movement.methodInfo.badgeClass"
+                              >
+                                <VIcon
+                                  :icon="movement.methodInfo.icon"
+                                  size="12"
+                                />
+                                <span>{{ movement.methodInfo.label }}</span>
+                              </span>
+
+                              <!-- Hora -->
+                              <span class="movement-time-chip text-slate-400 d-inline-flex align-center gap-1 font-weight-medium">
+                                <VIcon
+                                  icon="ri-time-line"
+                                  size="12"
+                                />
+                                {{ movement.time }}
+                              </span>
+                            </div>
+                          </div>
+                        </div>
+
+                        <!-- Derecha: Monto Destacado en Desktop -->
+                        <div class="movement-amount-container text-right shrink-0 ps-3 d-none d-sm-block">
                           <span
-                            class="text-body-2 font-weight-bold amount-display d-sm-none shrink-0"
+                            class="text-body-1 font-weight-bold amount-display"
                             :class="movement.type === 'transfer' ? 'text-info' : (movement.type === 'income' ? 'text-emerald' : 'text-rose')"
                           >
                             {{ movement.type === 'transfer' ? '' : (movement.type === 'income' ? '+' : '-') }}
                             {{ formatCurrency(movement.amount) }}
                           </span>
                         </div>
-
-                        <!-- Línea 2: Datos del Cliente con Icono (si existen) -->
-                        <div
-                          v-if="movement.clientName"
-                          class="movement-client-row d-flex align-center gap-1.5 text-caption font-weight-medium my-0.5 text-truncate"
-                        >
-                          <VIcon
-                            icon="ri-user-3-line"
-                            size="13"
-                            class="text-slate-400 shrink-0"
-                          />
-                          <span class="text-slate-700 text-truncate font-weight-semibold">
-                            {{ movement.clientName }}
-                          </span>
-                        </div>
-
-                        <!-- Línea 3: Badges ordenados compactos -->
-                        <div class="movement-badges-row d-flex align-center flex-wrap gap-1 mt-1 text-caption">
-                          <!-- Módulo Origen -->
-                          <span class="status-pill-clean status-canceled">
-                            <span class="status-dot" />
-                            <span>{{ movement.module }}</span>
-                          </span>
-
-                          <!-- Badge de Orden de Trabajo si existe -->
-                          <span
-                            v-if="movement.workOrderNumber"
-                            class="ot-chip-badge d-inline-flex align-center gap-1"
-                            title="Orden de Trabajo Asociada"
-                          >
-                            <VIcon
-                              icon="ri-tools-line"
-                              size="11"
-                            />
-                            <span>{{ movement.workOrderNumber }}</span>
-                          </span>
-
-                          <!-- Badge de Placa Vehicular si existe -->
-                          <span
-                            v-if="movement.licensePlate"
-                            class="license-plate-badge"
-                            title="Vehículo"
-                          >
-                            {{ movement.licensePlate.toUpperCase() }}
-                          </span>
-
-                          <!-- Método de Pago / Banco Específico -->
-                          <span
-                            class="payment-method-chip d-inline-flex align-center gap-1"
-                            :class="movement.methodInfo.badgeClass"
-                          >
-                            <VIcon
-                              :icon="movement.methodInfo.icon"
-                              size="12"
-                            />
-                            <span>{{ movement.methodInfo.label }}</span>
-                          </span>
-
-                          <!-- Hora -->
-                          <span class="movement-time-chip text-slate-400 d-inline-flex align-center gap-1 font-weight-medium">
-                            <VIcon
-                              icon="ri-time-line"
-                              size="12"
-                            />
-                            {{ movement.time }}
-                          </span>
-                        </div>
                       </div>
-                    </div>
 
-                    <!-- Derecha: Monto Destacado en Desktop -->
-                    <div class="movement-amount-container text-right shrink-0 ps-3 d-none d-sm-block">
-                      <span
-                        class="text-body-1 font-weight-bold amount-display"
-                        :class="movement.type === 'transfer' ? 'text-info' : (movement.type === 'income' ? 'text-emerald' : 'text-rose')"
-                      >
-                        {{ movement.type === 'transfer' ? '' : (movement.type === 'income' ? '+' : '-') }}
-                        {{ formatCurrency(movement.amount) }}
-                      </span>
-                    </div>
-                  </div>
+                      <!-- Divider entre movimientos (excepto después del último) -->
+                      <VDivider
+                        v-if="movIdx < day.movements.length - 1"
+                        class="mx-3 mx-sm-4"
+                      />
+                    </template>
+                  </VCard>
                 </template>
               </div>
             </div>

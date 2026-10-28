@@ -4638,14 +4638,28 @@ html.dark {
   background-color: #f8fafc !important;
 }
 
-// Cabecera de fecha: Separación amplia entre días distintos y diseño sobrio
+// Tarjeta unificada por día
+.operations-day-card {
+  background-color: var(--bg-surface, #ffffff) !important;
+  border: 1px solid rgba(var(--v-border-color), var(--v-border-opacity, 0.12)) !important;
+  border-radius: 14px !important;
+  box-shadow: 0 1px 3px rgba(15, 23, 42, 0.04) !important;
+  margin-bottom: 16px !important;
+  overflow: hidden !important;
+
+  &:last-child {
+    margin-bottom: 0 !important;
+  }
+}
+
+// Cabecera de fecha: integrada como cabecera superior de la tarjeta del día
 .operations-date-header {
-  background-color: #ffffff !important;
-  border: 1px solid #e2e8f0 !important;
-  border-radius: 10px !important;
-  box-shadow: 0 1px 2px rgba(15, 23, 42, 0.02) !important;
-  padding: 8px 14px !important;
-  margin-bottom: 10px !important;
+  background-color: rgba(var(--v-theme-on-surface), 0.025) !important;
+  border: none !important;
+  border-radius: 0 !important;
+  box-shadow: none !important;
+  padding: 10px 16px !important;
+  margin-bottom: 0 !important;
   transition: background-color 0.2s ease !important;
 
   .date-icon-box {
@@ -4690,20 +4704,18 @@ html.dark {
   }
 }
 
-// Tarjeta individual de movimiento: Espaciosa, sobria y limpia
+// Item individual de movimiento dentro de la tarjeta del día
 .operations-movement-item {
-  background-color: #ffffff !important;
-  border: 1px solid #e2e8f0 !important;
-  border-radius: 12px !important;
-  padding: 16px 20px !important;
-  margin-bottom: 14px !important;
-  box-shadow: 0 1px 3px rgba(15, 23, 42, 0.02) !important;
-  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1) !important;
+  background-color: var(--bg-surface, #ffffff) !important;
+  border: none !important;
+  border-radius: 0 !important;
+  padding: 14px 18px !important;
+  margin-bottom: 0 !important;
+  box-shadow: none !important;
+  transition: background-color 0.15s ease !important;
 
   &:hover {
-    transform: translateY(-1px) !important;
-    box-shadow: 0 4px 14px rgba(15, 23, 42, 0.05) !important;
-    border-color: #cbd5e1 !important;
+    background-color: rgba(var(--v-theme-on-surface), 0.02) !important;
   }
 
   // Dirección y Avatar del movimiento (Ingreso / Egreso / Transferencia)
@@ -4888,7 +4900,6 @@ html.dark {
   .operations-date-header {
     padding: 8px 12px !important;
     gap: 6px !important;
-    border-radius: 8px !important;
 
     .day-subtotal {
       font-size: 0.68rem !important;
@@ -4898,7 +4909,7 @@ html.dark {
 
   .operations-movement-item {
     padding: 10px 12px !important;
-    margin-bottom: 8px !important;
+    margin-bottom: 0 !important;
     gap: 10px !important;
 
     .movement-direction-avatar {
