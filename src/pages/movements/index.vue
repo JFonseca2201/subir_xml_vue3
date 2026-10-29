@@ -1607,10 +1607,10 @@ onMounted(() => {
                 <!-- Adjuntar Comprobantes -->
                 <VBtn
                   v-if="movement.type !== 'transfer'"
-                  icon="ri-attachment-line"
+                  icon="ri-attachment-2"
                   size="small"
                   variant="tonal"
-                  color="secondary"
+                  color="primary"
                   class="rounded-lg"
                   title="Comprobantes"
                   @click="openAttachDialog(movement)"
@@ -1989,17 +1989,26 @@ onMounted(() => {
                   </div>
 
                   <!-- Si no tiene comprobante aún -->
-                  <div v-else>
+                  <div
+                    v-else
+                    class="d-flex justify-center align-center"
+                  >
                     <VBtn
                       v-if="movement.type !== 'transfer'"
-                      size="x-small"
+                      size="small"
                       variant="tonal"
-                      color="secondary"
-                      prepend-icon="ri-attachment-line"
-                      class="text-caption text-none font-weight-medium"
+                      color="primary"
+                      rounded="pill"
+                      class="btn-attach-comprobante"
+                      title="Adjuntar foto o comprobante"
                       @click="openAttachDialog(movement)"
                     >
-                      Adjuntar
+                      <VIcon
+                        icon="ri-attachment-2"
+                        size="15"
+                        class="me-1 shrink-0"
+                      />
+                      <span>Adjuntar</span>
                     </VBtn>
                     <span
                       v-else

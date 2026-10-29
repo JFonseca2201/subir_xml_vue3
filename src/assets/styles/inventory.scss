@@ -6369,6 +6369,137 @@ html.dark {
   line-height: 1;
 }
 
+// Botón elegante para Adjuntar Comprobante en Movimientos (Evita overflow y fija dimensiones ideales)
+.btn-attach-comprobante,
+.v-table td .v-btn.btn-attach-comprobante,
+td .d-flex .v-btn.btn-attach-comprobante,
+.v-btn.btn-attach-comprobante {
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  flex-direction: row !important;
+  flex-wrap: nowrap !important;
+  white-space: nowrap !important;
+  gap: 5px !important;
+  width: auto !important;
+  min-width: 90px !important;
+  max-width: none !important;
+  height: 28px !important;
+  min-height: 28px !important;
+  max-height: 28px !important;
+  padding: 0 12px !important;
+  border-radius: 9999px !important;
+  font-size: 0.75rem !important;
+  font-weight: 700 !important;
+  letter-spacing: 0.02em !important;
+  text-transform: none !important;
+  background: rgba(var(--v-theme-primary), 0.08) !important;
+  border: 1px dashed rgba(var(--v-theme-primary), 0.45) !important;
+  color: rgb(var(--v-theme-primary)) !important;
+  box-shadow: none !important;
+  cursor: pointer !important;
+  user-select: none !important;
+  overflow: visible !important;
+  transition: all 0.22s cubic-bezier(0.16, 1, 0.3, 1) !important;
+
+  .v-btn__content {
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    flex-direction: row !important;
+    flex-wrap: nowrap !important;
+    gap: 5px !important;
+    color: inherit !important;
+    font-size: 0.75rem !important;
+    font-weight: 700 !important;
+    white-space: nowrap !important;
+    width: auto !important;
+    min-width: auto !important;
+    max-width: none !important;
+    overflow: visible !important;
+
+    span {
+      white-space: nowrap !important;
+      display: inline-block !important;
+      line-height: 1 !important;
+    }
+  }
+
+  .v-btn__prepend {
+    margin-inline-end: 4px !important;
+    margin-inline-start: 0 !important;
+    display: inline-flex !important;
+    align-items: center !important;
+  }
+
+  .v-icon {
+    font-size: 15px !important;
+    width: 15px !important;
+    height: 15px !important;
+    color: inherit !important;
+    flex-shrink: 0 !important;
+    transition: transform 0.22s cubic-bezier(0.16, 1, 0.3, 1) !important;
+  }
+
+  .v-btn__overlay,
+  .v-btn__underlay {
+    opacity: 0 !important;
+    display: none !important;
+  }
+
+  &:hover {
+    background: rgba(var(--v-theme-primary), 0.16) !important;
+    border-color: rgb(var(--v-theme-primary)) !important;
+    border-style: solid !important;
+    color: rgb(var(--v-theme-primary)) !important;
+    transform: translateY(-1px) !important;
+    box-shadow: 0 3px 10px rgba(var(--v-theme-primary), 0.22) !important;
+
+    .v-icon {
+      transform: rotate(-12deg) scale(1.15) !important;
+    }
+  }
+
+  &:active {
+    transform: translateY(0) !important;
+    box-shadow: 0 1px 4px rgba(var(--v-theme-primary), 0.15) !important;
+  }
+}
+
+// Adaptación de temas para .btn-attach-comprobante
+[data-theme="dark"] .btn-attach-comprobante,
+.v-theme--dark .btn-attach-comprobante,
+[data-theme="dark-glass"] .btn-attach-comprobante,
+[data-theme="semi-dark-glass"] .btn-attach-comprobante,
+[data-theme="ocean-glass"] .btn-attach-comprobante,
+[data-theme="emerald-glass"] .btn-attach-comprobante,
+[data-theme="purple-glass"] .btn-attach-comprobante {
+  background: rgba(102, 108, 255, 0.15) !important;
+  border-color: rgba(102, 108, 255, 0.5) !important;
+  color: #a5a9ff !important;
+
+  &:hover {
+    background: rgba(102, 108, 255, 0.28) !important;
+    border-color: #8b90ff !important;
+    color: #ffffff !important;
+    box-shadow: 0 4px 12px rgba(102, 108, 255, 0.35) !important;
+  }
+}
+
+[data-theme="taller"] .btn-attach-comprobante,
+.v-theme--taller .btn-attach-comprobante {
+  background: rgba(138, 21, 56, 0.08) !important;
+  border-color: rgba(138, 21, 56, 0.4) !important;
+  color: #8A1538 !important;
+
+  &:hover {
+    background: rgba(138, 21, 56, 0.16) !important;
+    border-color: #8A1538 !important;
+    color: #8A1538 !important;
+    box-shadow: 0 3px 10px rgba(138, 21, 56, 0.25) !important;
+  }
+}
+
 // 4. Badges y Chips para Movimientos & Finanzas
 .ot-chip-badge {
   background-color: #f1f5f9;
@@ -10311,8 +10442,8 @@ td .d-flex .v-btn,
 // Alto contraste, iconos claros y retroalimentación interactiva
 // --------------------------------------------------------------------------
 .v-btn.v-btn--variant-tonal.v-btn--icon,
-.v-table td .v-btn.v-btn--variant-tonal,
-td .d-flex .v-btn.v-btn--variant-tonal,
+.v-table td .v-btn.v-btn--variant-tonal.v-btn--icon:not(.btn-attach-comprobante),
+td .d-flex .v-btn.v-btn--variant-tonal.v-btn--icon:not(.btn-attach-comprobante),
 .listing-item-actions .v-btn.v-btn--variant-tonal,
 .table-actions .v-btn.v-btn--variant-tonal,
 .v-btn.v-btn--icon.action-btn,
@@ -10456,8 +10587,8 @@ td .d-flex .v-btn.v-btn--variant-tonal,
 .v-application.v-theme--dark-glass,
 .v-application.v-theme--semi-dark-glass {
   .v-btn.v-btn--variant-tonal.v-btn--icon,
-  .v-table td .v-btn.v-btn--variant-tonal,
-  td .d-flex .v-btn.v-btn--variant-tonal,
+  .v-table td .v-btn.v-btn--variant-tonal.v-btn--icon:not(.btn-attach-comprobante),
+  td .d-flex .v-btn.v-btn--variant-tonal.v-btn--icon:not(.btn-attach-comprobante),
   .listing-item-actions .v-btn.v-btn--variant-tonal,
   .table-actions .v-btn.v-btn--variant-tonal,
   .v-btn.v-btn--icon.action-btn,
@@ -10547,8 +10678,8 @@ td .d-flex .v-btn.v-btn--variant-tonal,
 [data-theme="taller"],
 .v-application.v-theme--taller {
   .v-btn.v-btn--variant-tonal.v-btn--icon,
-  .v-table td .v-btn.v-btn--variant-tonal,
-  td .d-flex .v-btn.v-btn--variant-tonal,
+  .v-table td .v-btn.v-btn--variant-tonal.v-btn--icon:not(.btn-attach-comprobante),
+  td .d-flex .v-btn.v-btn--variant-tonal.v-btn--icon:not(.btn-attach-comprobante),
   .listing-item-actions .v-btn.v-btn--variant-tonal,
   .table-actions .v-btn.v-btn--variant-tonal,
   .v-btn.v-btn--icon.action-btn,
