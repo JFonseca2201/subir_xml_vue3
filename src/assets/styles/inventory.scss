@@ -8941,6 +8941,9 @@ body[data-theme="taller"] {
   align-items: center !important;
   flex-wrap: nowrap !important;
   user-select: none !important;
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
 
   .v-pagination__list {
     display: inline-flex !important;
@@ -8949,8 +8952,11 @@ body[data-theme="taller"] {
     margin: 0 !important;
     padding: 0 !important;
     list-style: none !important;
+    border: none !important;
+    background: transparent !important;
   }
 
+  // Elementos contenedores (li): CERO bordes, CERO recuadros, CERO sombras
   .v-pagination__item,
   .v-pagination__first,
   .v-pagination__prev,
@@ -8960,30 +8966,47 @@ body[data-theme="taller"] {
     align-items: center !important;
     justify-content: center !important;
     margin: 0 !important;
+    padding: 0 !important;
+    border: none !important;
+    outline: none !important;
+    background: transparent !important;
+    background-color: transparent !important;
+    box-shadow: none !important;
+    backdrop-filter: none !important;
+
+    &.v-pagination__item--is-active {
+      border: none !important;
+      outline: none !important;
+      background: transparent !important;
+      background-color: transparent !important;
+      box-shadow: none !important;
+    }
   }
 
-  // Todos los botones de paginación: circulares, compactos y sin deformaciones
+  // Todos los botones de paginación: perfectamente circulares y sin bordes/recuadros
   .v-btn {
-    width: 34px !important;
-    min-width: 34px !important;
-    max-width: 34px !important;
-    height: 34px !important;
-    min-height: 34px !important;
-    max-height: 34px !important;
+    width: 36px !important;
+    min-width: 36px !important;
+    max-width: 36px !important;
+    height: 36px !important;
+    min-height: 36px !important;
+    max-height: 36px !important;
     border-radius: 50% !important;
     padding: 0 !important;
     margin: 0 !important;
-    font-size: 0.85rem !important;
+    font-size: 0.875rem !important;
     font-weight: 600 !important;
-    flex: 0 0 34px !important;
+    flex: 0 0 36px !important;
     box-shadow: none !important;
-    border: 1px solid var(--border-glass, rgba(0, 0, 0, 0.08)) !important;
-    background: var(--bg-surface, #ffffff) !important;
+    border: none !important;
+    outline: none !important;
+    background: transparent !important;
+    background-color: transparent !important;
     color: var(--text-primary, #334155) !important;
     transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1) !important;
 
     .v-btn__content {
-      font-size: 0.85rem !important;
+      font-size: 0.875rem !important;
       line-height: 1 !important;
       color: inherit !important;
     }
@@ -8991,92 +9014,225 @@ body[data-theme="taller"] {
     .v-btn__overlay,
     .v-btn__underlay {
       opacity: 0 !important;
+      display: none !important;
     }
 
     &:hover:not(:disabled) {
       background: rgba(102, 108, 255, 0.1) !important;
-      border-color: rgba(102, 108, 255, 0.4) !important;
       color: var(--text-active, #5C61E6) !important;
       transform: translateY(-1px);
     }
 
     &:disabled {
-      opacity: 0.4 !important;
+      opacity: 0.35 !important;
       cursor: not-allowed !important;
-      border-color: rgba(0, 0, 0, 0.05) !important;
     }
   }
 
   // Ítem ACTIVO (Seleccionado): Círculo coloreado según el tema con número blanco
   .v-pagination__item--is-active .v-btn,
+  .v-pagination__item .v-btn[aria-current="page"],
+  .v-pagination__item .v-btn[aria-label*="Current page"],
+  .v-pagination__item .v-btn[aria-label*="Página actual"],
+  .v-pagination__item .v-btn.v-btn--active,
+  .v-btn.v-pagination__item--is-active {
+    width: 36px !important;
+    min-width: 36px !important;
+    max-width: 36px !important;
+    height: 36px !important;
+    min-height: 36px !important;
+    max-height: 36px !important;
+    border-radius: 50% !important;
+    border: none !important;
+    outline: none !important;
+    background: rgb(var(--v-theme-primary, 102, 108, 255)) !important;
+    background-color: rgb(var(--v-theme-primary, 102, 108, 255)) !important;
+    color: #ffffff !important;
+    box-shadow: 0 3px 10px rgba(var(--v-theme-primary, 102, 108, 255), 0.35) !important;
+    transform: none !important;
+
+    .v-btn__content {
+      color: #ffffff !important;
+      -webkit-text-fill-color: #ffffff !important;
+      font-weight: 700 !important;
+      font-size: 0.875rem !important;
+    }
+
+    * {
+      color: #ffffff !important;
+      -webkit-text-fill-color: #ffffff !important;
+    }
+  }
+}
+
+// Adaptación por temas de la paginación:
+// En tema oscuro predeterminado y transparentes oscuros: números blancos y sin bordes
+[data-theme="dark"] .v-pagination,
+.v-theme--dark .v-pagination,
+[data-theme="dark-glass"] .v-pagination,
+[data-theme="semi-dark-glass"] .v-pagination,
+[data-theme="ocean-glass"] .v-pagination,
+[data-theme="emerald-glass"] .v-pagination,
+[data-theme="purple-glass"] .v-pagination {
+  .v-pagination__item,
+  .v-pagination__first,
+  .v-pagination__prev,
+  .v-pagination__next,
+  .v-pagination__last {
+    border: none !important;
+    background: transparent !important;
+  }
+
+  .v-btn {
+    background: transparent !important;
+    border: none !important;
+    outline: none !important;
+    color: rgba(255, 255, 255, 0.85) !important;
+
+    .v-btn__content {
+      color: rgba(255, 255, 255, 0.85) !important;
+    }
+
+    .v-icon,
+    i,
+    svg {
+      color: rgba(255, 255, 255, 0.85) !important;
+      fill: rgba(255, 255, 255, 0.85) !important;
+    }
+
+    &:hover:not(:disabled) {
+      background: rgba(255, 255, 255, 0.12) !important;
+      color: #ffffff !important;
+
+      .v-btn__content,
+      .v-icon,
+      i,
+      svg {
+        color: #ffffff !important;
+        fill: #ffffff !important;
+      }
+    }
+  }
+
+  .v-pagination__item--is-active .v-btn,
+  .v-pagination__item .v-btn[aria-current="page"],
+  .v-pagination__item .v-btn[aria-label*="Current page"],
+  .v-pagination__item .v-btn[aria-label*="Página actual"],
+  .v-pagination__item .v-btn.v-btn--active,
   .v-btn.v-pagination__item--is-active {
     background: rgb(var(--v-theme-primary, 102, 108, 255)) !important;
     background-color: rgb(var(--v-theme-primary, 102, 108, 255)) !important;
     color: #ffffff !important;
-    border-color: rgb(var(--v-theme-primary, 102, 108, 255)) !important;
-    box-shadow: 0 3px 10px rgba(102, 108, 255, 0.35) !important;
+    border: none !important;
+    outline: none !important;
+    border-radius: 50% !important;
 
     .v-btn__content {
       color: #ffffff !important;
       -webkit-text-fill-color: #ffffff !important;
-      font-weight: 800 !important;
+      font-weight: 700 !important;
+    }
+
+    * {
+      color: #ffffff !important;
+      -webkit-text-fill-color: #ffffff !important;
     }
   }
 }
 
-// Adaptación por temas de la paginación activa
-[data-theme="dark"] .v-pagination,
-[data-theme="semi-dark-glass"] .v-pagination {
+// Tema Claro Transparente
+[data-theme="light-glass"] .v-pagination {
+  .v-pagination__item,
+  .v-pagination__first,
+  .v-pagination__prev,
+  .v-pagination__next,
+  .v-pagination__last {
+    border: none !important;
+    background: transparent !important;
+  }
+
   .v-btn {
-    background: rgba(255, 255, 255, 0.06) !important;
-    border-color: rgba(255, 255, 255, 0.12) !important;
-    color: rgba(255, 255, 255, 0.85) !important;
+    background: transparent !important;
+    border: none !important;
+    outline: none !important;
+    color: #1e293b !important;
 
     &:hover:not(:disabled) {
-      background: rgba(255, 255, 255, 0.15) !important;
-      color: #ffffff !important;
+      background: rgba(0, 0, 0, 0.06) !important;
+      color: #0f172a !important;
     }
   }
 
-  .v-pagination__item--is-active .v-btn {
+  .v-pagination__item--is-active .v-btn,
+  .v-pagination__item .v-btn[aria-current="page"],
+  .v-pagination__item .v-btn[aria-label*="Current page"],
+  .v-pagination__item .v-btn[aria-label*="Página actual"],
+  .v-pagination__item .v-btn.v-btn--active,
+  .v-btn.v-pagination__item--is-active {
     background: rgb(var(--v-theme-primary, 102, 108, 255)) !important;
     color: #ffffff !important;
-    border-color: transparent !important;
+    border: none !important;
+    outline: none !important;
+    border-radius: 50% !important;
 
     .v-btn__content {
+      color: #ffffff !important;
+      -webkit-text-fill-color: #ffffff !important;
+      font-weight: 700 !important;
+    }
+
+    * {
       color: #ffffff !important;
       -webkit-text-fill-color: #ffffff !important;
     }
   }
 }
 
-[data-theme="light-glass"] .v-pagination {
+// Tema Taller (taller): Circular con fondo vino y número blanco
+[data-theme="taller"] .v-pagination,
+.v-theme--taller .v-pagination {
+  .v-pagination__item,
+  .v-pagination__first,
+  .v-pagination__prev,
+  .v-pagination__next,
+  .v-pagination__last {
+    border: none !important;
+    background: transparent !important;
+  }
+
   .v-btn {
-    background: rgba(255, 255, 255, 0.7) !important;
-    border-color: rgba(0, 0, 0, 0.12) !important;
-    color: #0f172a !important;
+    background: transparent !important;
+    border: none !important;
+    outline: none !important;
+    color: #1e293b !important;
+
+    &:hover:not(:disabled) {
+      background: rgba(138, 21, 56, 0.08) !important;
+      color: #8A1538 !important;
+    }
   }
 
-  .v-pagination__item--is-active .v-btn {
-    background: #0f172a !important;
+  .v-pagination__item--is-active .v-btn,
+  .v-pagination__item .v-btn[aria-current="page"],
+  .v-pagination__item .v-btn[aria-label*="Current page"],
+  .v-pagination__item .v-btn[aria-label*="Página actual"],
+  .v-pagination__item .v-btn.v-btn--active,
+  .v-btn.v-pagination__item--is-active {
+    background: linear-gradient(135deg, #8A1538 0%, #600A1F 100%) !important;
+    background-color: #8A1538 !important;
+    border: none !important;
+    outline: none !important;
+    border-radius: 50% !important;
     color: #ffffff !important;
-    border-color: #0f172a !important;
+    box-shadow: 0 3px 10px rgba(138, 21, 56, 0.35) !important;
 
     .v-btn__content {
       color: #ffffff !important;
       -webkit-text-fill-color: #ffffff !important;
+      font-weight: 700 !important;
     }
-  }
-}
 
-[data-theme="taller"] .v-pagination {
-  .v-pagination__item--is-active .v-btn {
-    background: #800020 !important;
-    border-color: #800020 !important;
-    color: #ffffff !important;
-    box-shadow: 0 3px 10px rgba(128, 0, 32, 0.35) !important;
-
-    .v-btn__content {
+    * {
       color: #ffffff !important;
       -webkit-text-fill-color: #ffffff !important;
     }
