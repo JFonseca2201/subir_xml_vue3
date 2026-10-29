@@ -359,33 +359,94 @@
 
   th,
   td {
-    padding-left: 8px !important;
-    padding-right: 8px !important;
+    padding-left: 10px !important;
+    padding-right: 10px !important;
     overflow: hidden !important;
     text-overflow: ellipsis !important;
     box-sizing: border-box !important;
   }
 
   .vehicle-model-small {
-    font-size: 0.7rem;
-    line-height: 1.15;
-    white-space: nowrap !important;
-    overflow: hidden !important;
-    text-overflow: ellipsis !important;
-    display: block !important;
-    width: 100% !important;
-  }
-
-  .vehicle-plate-large {
-    font-size: 0.82rem;
-    font-weight: 700;
-    letter-spacing: 0.04em;
+    font-size: 0.72rem;
     line-height: 1.2;
     white-space: nowrap !important;
     overflow: hidden !important;
     text-overflow: ellipsis !important;
     display: block !important;
     width: 100% !important;
+    color: rgba(var(--v-theme-on-surface), 0.65);
+  }
+
+  .vehicle-plate-pill {
+    display: inline-flex;
+    align-items: center;
+    font-size: 0.75rem;
+    font-weight: 700;
+    letter-spacing: 0.05em;
+    padding: 2px 7px;
+    border-radius: 4px;
+    line-height: 1.1;
+    background: rgba(var(--v-theme-on-surface), 0.05);
+    border: 1px solid rgba(var(--v-theme-on-surface), 0.14);
+    color: rgb(var(--v-theme-on-surface));
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.03);
+
+    &.vehicle-plate-active {
+      font-weight: 700;
+    }
+
+    &.vehicle-plate-none {
+      opacity: 0.6;
+      border-style: dashed;
+    }
+  }
+
+  .doc-type-badge {
+    display: inline-block;
+    font-size: 0.62rem;
+    font-weight: 700;
+    letter-spacing: 0.03em;
+    padding: 1px 6px;
+    border-radius: 4px;
+    line-height: 1.2;
+
+    &.doc-type-invoice {
+      background: rgba(var(--v-theme-primary), 0.09);
+      color: rgb(var(--v-theme-primary));
+      border: 1px solid rgba(var(--v-theme-primary), 0.22);
+    }
+
+    &.doc-type-note {
+      background: rgba(var(--v-theme-success), 0.09);
+      color: rgb(var(--v-theme-success));
+      border: 1px solid rgba(var(--v-theme-success), 0.22);
+    }
+
+    &.doc-type-canceled {
+      background: rgba(var(--v-theme-on-surface), 0.06);
+      color: rgba(var(--v-theme-on-surface), 0.45);
+      border: 1px solid rgba(var(--v-theme-on-surface), 0.12);
+    }
+  }
+
+  .ot-badge {
+    display: inline-flex;
+    align-items: center;
+    font-size: 0.72rem;
+    font-weight: 600;
+    padding: 2px 7px;
+    border-radius: 4px;
+    line-height: 1.15;
+    background: rgba(var(--v-theme-primary), 0.07);
+    color: rgb(var(--v-theme-primary));
+    border: 1px dashed rgba(var(--v-theme-primary), 0.35);
+    transition: all 0.15s ease;
+
+    &:hover {
+      background: rgba(var(--v-theme-primary), 0.15);
+      border-style: solid;
+      text-decoration: underline;
+    }
   }
 }
 

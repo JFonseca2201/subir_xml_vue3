@@ -619,6 +619,7 @@ declare module 'vue' {
     readonly useFocus: UnwrapRef<typeof import('@vueuse/core')['useFocus']>
     readonly useFocusWithin: UnwrapRef<typeof import('@vueuse/core')['useFocusWithin']>
     readonly useFormDraft: UnwrapRef<typeof import('./src/composables/useFormDraft.js')['useFormDraft']>
+    readonly useFormValidation: UnwrapRef<typeof import('./src/composables/useFormValidation.js')['useFormValidation']>
     readonly useFps: UnwrapRef<typeof import('@vueuse/core')['useFps']>
     readonly useFullscreen: UnwrapRef<typeof import('@vueuse/core')['useFullscreen']>
     readonly useGamepad: UnwrapRef<typeof import('@vueuse/core')['useGamepad']>
@@ -984,6 +985,7 @@ declare module '@vue/runtime-core' {
     readonly useFocus: UnwrapRef<typeof import('@vueuse/core')['useFocus']>
     readonly useFocusWithin: UnwrapRef<typeof import('@vueuse/core')['useFocusWithin']>
     readonly useFormDraft: UnwrapRef<typeof import('./src/composables/useFormDraft.js')['useFormDraft']>
+    readonly useFormValidation: UnwrapRef<typeof import('./src/composables/useFormValidation.js')['useFormValidation']>
     readonly useFps: UnwrapRef<typeof import('@vueuse/core')['useFps']>
     readonly useFullscreen: UnwrapRef<typeof import('@vueuse/core')['useFullscreen']>
     readonly useGamepad: UnwrapRef<typeof import('@vueuse/core')['useGamepad']>

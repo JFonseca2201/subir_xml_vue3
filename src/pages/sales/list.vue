@@ -1528,30 +1528,30 @@ onActivated(() => {
         </template>
       </div>
 
-      <!-- VISTA ESCRITORIO: TABLA MODERNA (d-none d-md-block) -->
-      <VCard class="rounded-xl border elevation-0 bg-surface table-card-responsive d-none d-md-block">
+      <!-- VISTA ESCRITORIO: TABLA MODERNA SOBRIA (d-none d-md-block) -->
+      <VCard class="rounded-xl border elevation-0 bg-surface table-card-responsive d-none d-md-block overflow-hidden">
         <VTable hover class="sales-modern-table">
           <thead>
             <tr class="bg-grey-lighten-5">
-              <th class="text-left font-weight-bold text-uppercase py-3" style="width: 9%; white-space: nowrap;">
+              <th class="text-left font-weight-bold text-uppercase py-3" style="width: 10%; white-space: nowrap;">
                 Documento
               </th>
-              <th class="text-center font-weight-bold text-uppercase py-3" style="width: 7%; white-space: nowrap;">
+              <th class="text-center font-weight-bold text-uppercase py-3" style="width: 8%; white-space: nowrap;">
                 O. T.
               </th>
-              <th class="text-left font-weight-bold text-uppercase py-3" style="width: 24%;">
+              <th class="text-left font-weight-bold text-uppercase py-3" style="width: 23%;">
                 Cliente
               </th>
-              <th class="text-left font-weight-bold text-uppercase py-3" style="width: 20%;">
+              <th class="text-left font-weight-bold text-uppercase py-3" style="width: 19%;">
                 Vehículo
               </th>
-              <th class="text-left font-weight-bold text-uppercase py-3" style="width: 11%; white-space: nowrap;">
+              <th class="text-left font-weight-bold text-uppercase py-3" style="width: 12%; white-space: nowrap;">
                 Fecha
               </th>
-              <th class="text-right font-weight-bold text-uppercase py-3" style="width: 9%; white-space: nowrap;">
+              <th class="text-right font-weight-bold text-uppercase py-3" style="width: 10%; white-space: nowrap;">
                 Total
               </th>
-              <th class="text-left font-weight-bold text-uppercase py-3" style="width: 13%; white-space: nowrap;">
+              <th class="text-left font-weight-bold text-uppercase py-3" style="width: 11%; white-space: nowrap;">
                 Estado
               </th>
               <th class="text-center font-weight-bold text-uppercase py-3" style="width: 7%; white-space: nowrap;">
@@ -1563,28 +1563,35 @@ onActivated(() => {
             <!-- Skeleton Rows en tabla de escritorio -->
             <template v-if="loading">
               <tr v-for="n in 5" :key="'skel-row-' + n" class="skeleton-row align-middle">
-                <td class="py-4" style="width: 9%;">
-                  <div class="shimmer-line w-75" />
-                </td>
-                <td class="py-4 text-center" style="width: 7%;">
-                  <div class="shimmer-line w-60 mx-auto" />
-                </td>
-                <td class="py-4" style="width: 24%;">
-                  <div class="shimmer-line w-75 mb-2" />
-                  <div class="shimmer-line w-40" />
-                </td>
-                <td class="py-4" style="width: 20%;">
-                  <div class="shimmer-line w-60 mb-2" />
-                  <div class="shimmer-line w-40" />
-                </td>
-                <td class="py-4" style="width: 11%;">
+                <td class="py-4" style="width: 10%;">
+                  <div class="shimmer-line w-75 mb-1.5" />
                   <div class="shimmer-line w-50" />
                 </td>
-                <td class="py-4 text-right" style="width: 9%;">
-                  <div class="shimmer-line w-60 ms-auto" />
+                <td class="py-4 text-center" style="width: 8%;">
+                  <div class="shimmer-line w-60 mx-auto" />
                 </td>
-                <td class="py-4 text-left" style="width: 13%;">
-                  <div class="shimmer-chip" />
+                <td class="py-4" style="width: 23%;">
+                  <div class="d-flex align-center gap-2">
+                    <div class="shimmer-button rounded-lg flex-shrink-0" style="width: 34px; height: 34px;" />
+                    <div class="flex-grow-1">
+                      <div class="shimmer-line w-75 mb-2" />
+                      <div class="shimmer-line w-40" />
+                    </div>
+                  </div>
+                </td>
+                <td class="py-4" style="width: 19%;">
+                  <div class="shimmer-line w-40 mb-1.5" />
+                  <div class="shimmer-line w-70" />
+                </td>
+                <td class="py-4" style="width: 12%;">
+                  <div class="shimmer-line w-60" />
+                </td>
+                <td class="py-4 text-right" style="width: 10%;">
+                  <div class="shimmer-line w-60 ms-auto mb-1.5" />
+                  <div class="shimmer-line w-40 ms-auto" />
+                </td>
+                <td class="py-4 text-left" style="width: 11%;">
+                  <div class="shimmer-chip mb-1" />
                 </td>
                 <td class="py-4 text-center" style="width: 7%;">
                   <div class="shimmer-button rounded mx-auto" />
@@ -1592,29 +1599,43 @@ onActivated(() => {
               </tr>
             </template>
 
-            <!-- Filas reales de ventas -->
+            <!-- Sin resultados -->
+            <template v-else-if="displayedSales.length === 0">
+              <tr>
+                <td colspan="8" class="text-center py-12 text-medium-emphasis">
+                  <VAvatar color="primary" variant="tonal" size="56" class="mb-3">
+                    <VIcon icon="ri-file-list-3-line" size="28" color="primary" />
+                  </VAvatar>
+                  <div class="text-subtitle-1 font-weight-bold text-high-emphasis">
+                    No se encontraron comprobantes de venta
+                  </div>
+                  <div class="text-caption text-medium-emphasis mt-1">
+                    Prueba cambiando los filtros de búsqueda o limpia el filtro aplicado.
+                  </div>
+                </td>
+              </tr>
+            </template>
+
+            <!-- Filas reales de ventas en listado limpio y sobrio -->
             <template v-else>
               <tr v-for="(item, index) in displayedSales" :key="item?.id || index" class="sale-table-row">
                 <!-- Documento -->
                 <td class="py-3" style="white-space: nowrap;">
                   <div class="d-flex flex-column gap-0.5">
                     <div class="d-flex align-center gap-1">
-                      <VIcon
-                        :icon="item.document_type === 'invoice' ? 'ri-file-shield-2-line' : (item.document_type === 'sale_note' ? 'ri-file-paper-2-line' : 'ri-file-list-3-line')"
-                        size="12" class="flex-shrink-0"
-                        :color="isSaleCanceled(item) ? 'grey' : (item.document_type === 'invoice' ? 'primary' : 'success')" />
-                      <span class="text-caption font-weight-bold text-uppercase"
-                        style="font-size: 0.62rem; letter-spacing: 0.02em;"
-                        :class="isSaleCanceled(item) ? 'text-disabled' : (item.document_type === 'invoice' ? 'text-primary' : 'text-success')">
+                      <span
+                        class="doc-type-badge font-weight-bold text-uppercase"
+                        :class="isSaleCanceled(item) ? 'doc-type-canceled' : (item.document_type === 'invoice' ? 'doc-type-invoice' : 'doc-type-note')"
+                      >
                         {{ getDocumentTypeInfo(item.document_type)?.text }}
                       </span>
                     </div>
-                    <div class="font-mono text-body-1 font-weight-bold" :class="[
-                      isSaleCanceled(item)
-                        ? 'doc-number-canceled cursor-pointer'
-                        : 'text-primary cursor-pointer hover-underline'
-                    ]" :title="isSaleCanceled(item) ? 'Documento Anulado (Clic para más información)' : 'Ver Detalle'"
-                      @click="viewSale(item)">
+                    <div
+                      class="font-mono text-body-1 font-weight-bold cursor-pointer hover-underline text-high-emphasis"
+                      :class="{ 'doc-number-canceled': isSaleCanceled(item) }"
+                      :title="isSaleCanceled(item) ? 'Documento Anulado (Clic para más información)' : 'Ver Detalle'"
+                      @click="viewSale(item)"
+                    >
                       {{ formatDocumentNumber(item.document_number) }}
                     </div>
                   </div>
@@ -1624,13 +1645,14 @@ onActivated(() => {
                 <td class="text-center py-3" style="white-space: nowrap;">
                   <span
                     v-if="item.work_order_id || item.work_order?.id || item.workOrder?.id || item.work_order?.number || item.workOrder?.number"
-                    class="font-mono text-caption font-weight-bold text-primary bg-primary-lighten-5 px-2 py-0.5 rounded cursor-pointer hover-underline"
-                    :title="`Ver Detalle de Orden de Trabajo #${item.work_order?.number || item.workOrder?.number || item.work_order_number || item.work_order_id}`"
-                    @click="openWorkOrderView(item.work_order_id || item.work_order?.id || item.workOrder?.id || item.work_order_number)">
-                    {{ formatWorkOrderNumber(item.work_order?.number || item.workOrder?.number || item.work_order_number
-                      || item.work_order_id) }}
+                    class="ot-badge font-mono cursor-pointer"
+                    :title="`Ver Orden de Trabajo #${item.work_order?.number || item.workOrder?.number || item.work_order_number || item.work_order_id}`"
+                    @click="openWorkOrderView(item.work_order_id || item.work_order?.id || item.workOrder?.id || item.work_order_number)"
+                  >
+                    <VIcon icon="ri-tools-line" size="11" class="me-1" />
+                    <span>{{ formatWorkOrderNumber(item.work_order?.number || item.workOrder?.number || item.work_order_number || item.work_order_id) }}</span>
                   </span>
-                  <span v-else class="text-disabled text-caption">—</span>
+                  <span v-else class="text-disabled text-caption font-weight-bold">—</span>
                 </td>
 
                 <!-- Cliente -->
@@ -1661,63 +1683,59 @@ onActivated(() => {
                   </div>
                 </td>
 
-                <!-- Vehículo -->
+                <!-- Vehículo (Placa vehicular sobria y modelo, sin avatar redundante) -->
                 <td class="py-3" style="overflow: hidden;">
-                  <div v-if="item.vehicle" class="d-flex align-center gap-2 overflow-hidden w-100">
-                    <VAvatar size="34" color="secondary" variant="tonal" rounded="lg" class="elevation-0 flex-shrink-0">
-                      <VIcon icon="ri-car-line" size="18" color="secondary" />
-                    </VAvatar>
-                    <div class="min-w-0 flex-grow-1 overflow-hidden" style="width: 0;">
-                      <span class="font-mono"
-                        :class="(item.vehicle.plate || item.vehicle.license_plate) ? 'vehicle-plate-large text-high-emphasis' : 'text-body-2 font-weight-medium text-disabled'"
-                        style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis; display: block;"
-                        :title="(item.vehicle.plate || item.vehicle.license_plate || '').toUpperCase() || 'Sin placa'">
+                  <div v-if="item.vehicle" class="d-flex flex-column gap-0.5 overflow-hidden w-100">
+                    <div class="d-flex align-center gap-1.5">
+                      <span
+                        class="vehicle-plate-pill font-mono"
+                        :class="(item.vehicle.plate || item.vehicle.license_plate) ? 'vehicle-plate-active' : 'vehicle-plate-none'"
+                        :title="(item.vehicle.plate || item.vehicle.license_plate || '').toUpperCase() || 'Sin placa'"
+                      >
                         {{ (item.vehicle.plate || item.vehicle.license_plate || '').toUpperCase() || 'SIN PLACA' }}
                       </span>
-                      <span class="text-uppercase font-weight-medium text-medium-emphasis vehicle-model-small"
-                        style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis; display: block;"
-                        :title="formatVehicleInfo(item.vehicle)">
-                        {{ formatVehicleInfo(item.vehicle) }}
-                      </span>
                     </div>
+                    <span
+                      class="text-uppercase text-medium-emphasis vehicle-model-small"
+                      :title="formatVehicleInfo(item.vehicle)"
+                    >
+                      {{ formatVehicleInfo(item.vehicle) }}
+                    </span>
                   </div>
-                  <div v-else class="d-flex align-center gap-2 text-disabled text-caption overflow-hidden w-100">
-                    <VAvatar size="34" color="secondary" variant="tonal" rounded="lg"
-                      class="elevation-0 flex-shrink-0 opacity-40">
-                      <VIcon icon="ri-car-line" size="18" />
-                    </VAvatar>
-                    <span class="text-truncate">Sin vehículo</span>
+                  <div v-else class="text-disabled text-caption">
+                    Sin vehículo
                   </div>
                 </td>
 
                 <!-- Fecha -->
                 <td class="py-3" style="white-space: nowrap;">
-                  <div class="d-flex align-center text-body-2 text-medium-emphasis text-no-wrap"
-                    style="white-space: nowrap;">
-                    <VIcon icon="ri-calendar-line" size="16" color="medium-emphasis" class="me-1 flex-shrink-0" />
+                  <div class="d-flex align-center text-body-2 text-medium-emphasis text-no-wrap" style="white-space: nowrap;">
+                    <VIcon icon="ri-calendar-line" size="15" color="medium-emphasis" class="me-1.5 flex-shrink-0 opacity-70" />
                     <div class="d-flex flex-column">
-                      <span class="text-no-wrap font-weight-medium" style="white-space: nowrap;">{{
-                        formatDate(item.service_date || item.created_at) }}</span>
+                      <span class="text-no-wrap font-weight-medium text-high-emphasis" style="white-space: nowrap;">
+                        {{ formatDate(item.service_date || item.created_at) }}
+                      </span>
                       <span
                         v-if="(item.work_order?.date || item.workOrder?.date) && formatDate(item.work_order?.date || item.workOrder?.date) !== formatDate(item.service_date || item.created_at)"
                         class="text-caption text-disabled font-weight-medium"
-                        style="font-size: 0.68rem; line-height: 1;" title="Fecha de creación de la Orden de Trabajo">
+                        style="font-size: 0.68rem; line-height: 1;"
+                        title="Fecha de creación de la Orden de Trabajo"
+                      >
                         OT: {{ formatDate(item.work_order?.date || item.workOrder?.date) }}
                       </span>
                     </div>
                   </div>
                 </td>
 
-                <!-- Total -->
+                <!-- Total & Método -->
                 <td class="py-3 text-right" style="white-space: nowrap;">
                   <div class="d-flex flex-column align-end gap-0.5">
                     <span class="font-mono font-weight-bold text-body-1 text-high-emphasis">
                       ${{ parseFloat(item.total || 0).toFixed(2) }}
                     </span>
-                    <!-- Tipo de movimiento (Efectivo / Transferencia) en letras pequeñas -->
                     <div v-if="!isSaleCanceled(item) && item.document_type !== 'quote'"
                       class="d-flex align-center text-medium-emphasis"
-                      style="font-size: 0.68rem; line-height: 1.1; margin-top: 1px;">
+                      style="font-size: 0.7rem; line-height: 1.1; margin-top: 1px;">
                       <VIcon :icon="getPaymentMethodIcon(item)" size="11" class="me-1 text-disabled flex-shrink-0" />
                       <span class="font-weight-medium text-capitalize"
                         :title="`Método de pago: ${getPaymentMethodText(item)}`">
@@ -1727,10 +1745,10 @@ onActivated(() => {
                   </div>
                 </td>
 
-                <!-- Estado -->
+                <!-- Estado (Pago y SRI) -->
                 <td class="text-left py-3" style="white-space: nowrap;">
                   <div v-if="item" class="d-flex flex-column align-start" style="gap: 4px;">
-                    <!-- Factura / Documento Anulado (NUNCA mostrar como pendiente) -->
+                    <!-- Factura / Documento Anulado -->
                     <div v-if="isSaleCanceled(item)" class="status-pill-clean status-canceled">
                       <span class="status-dot" />
                       <span>Anulada</span>
@@ -1837,8 +1855,7 @@ onActivated(() => {
                 </td>
               </tr>
             </template>
-          </tbody>
-        </VTable>
+          </tbody>        </VTable>
       </VCard>
 
       <!-- Paginación -->
