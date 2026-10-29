@@ -1539,13 +1539,13 @@ onActivated(() => {
 
           <!-- Botones de Acción -->
           <div class="arqueo-action-buttons d-flex flex-column flex-sm-row flex-md-column gap-2.5 w-100">
-            <VBtn block variant="elevated" color="primary" height="44"
+            <VBtn variant="elevated" color="primary" height="44"
               class="arqueo-btn font-weight-bold elevation-1 text-none"
               style="font-size: 0.95rem; letter-spacing: 0.2px;" :loading="saving"
               :disabled="saving || sealing || loading || isSealed" prepend-icon="ri-save-3-line" @click="saveArqueo">
               Guardar Arqueo Diario
             </VBtn>
-            <VBtn block variant="tonal" color="primary" height="44" class="arqueo-btn font-weight-bold text-none"
+            <VBtn variant="tonal" color="primary" height="44" class="arqueo-btn font-weight-bold text-none"
               style="font-size: 0.95rem; letter-spacing: 0.2px;" :loading="sealing"
               :disabled="sealing || saving || loading || isSealed" prepend-icon="ri-lock-password-line"
               @click="confirmSealDialog = true">
@@ -1724,29 +1724,21 @@ onActivated(() => {
 
     <!-- Modal de Búsqueda e Historial de Cuadres -->
     <VDialog v-model="historyDialog" max-width="1200" :fullscreen="$vuetify.display.smAndDown" scrollable>
-      <VCard class="rounded-xl overflow-hidden">
-        <!-- Header del Modal -->
-        <VCardItem class="bg-primary text-white py-4 px-6">
-          <template #prepend>
-            <VAvatar color="white" variant="tonal" size="40" class="mr-3 text-white">
-              <VIcon icon="ri-history-line" size="22" />
-            </VAvatar>
-          </template>
-          <template #title>
-            <span class="text-h6 font-weight-bold text-white">
-              Historial y Búsqueda de Cuadres de Caja
-            </span>
-          </template>
-          <template #subtitle>
-            <span class="text-caption text-white opacity-90">
-              Consulta los arqueos guardados, fechas, observaciones y billetes registrados
-            </span>
-          </template>
-          <template #append>
-            <VBtn icon="ri-close-line" variant="text" color="white" density="comfortable"
-              @click="historyDialog = false" />
-          </template>
-        </VCardItem>
+      <VCard class="custom-dialog-card rounded-xl overflow-hidden">
+        <!-- Header del Modal con estilo estándar del tema -->
+        <div class="custom-dialog-header-primary">
+          <VBtn icon="ri-close-line" variant="text" size="small" class="custom-dialog-close-btn"
+            @click="historyDialog = false" />
+          <div class="custom-dialog-avatar">
+            <VIcon icon="ri-history-line" size="24" />
+          </div>
+          <h3 class="custom-dialog-title">
+            Historial y Búsqueda de Cuadres de Caja
+          </h3>
+          <p class="custom-dialog-subtitle">
+            Consulta los arqueos guardados, fechas, observaciones y billetes registrados
+          </p>
+        </div>
 
         <VDivider />
 
@@ -2024,20 +2016,15 @@ onActivated(() => {
         <VDivider />
 
         <!-- Footer con Paginación -->
-        <VCardActions class="pa-4 bg-white d-flex justify-space-between align-center flex-wrap gap-2">
+        <div class="pa-4 bg-white d-flex justify-space-between align-center flex-wrap gap-3 border-t">
           <span class="text-caption text-medium-emphasis">
-            Total de registros: <strong>{{ historyTotal }}</strong>
+            Total de registros: <strong class="text-high-emphasis">{{ historyTotal }}</strong>
           </span>
-          <div class="d-flex align-center gap-2">
-            <VPagination v-if="historyLastPage > 1" v-model="historyPage" :length="historyLastPage"
-              :disabled="historyLoading" :total-visible="$vuetify.display.xs ? 3 : 5" density="compact" size="small"
-              @update:model-value="fetchHistory" />
-            <VBtn variant="outlined" color="secondary" class="rounded-lg px-4 font-weight-medium" height="36"
-              @click="historyDialog = false">
-              Cerrar
-            </VBtn>
-          </div>
-        </VCardActions>
+          <VPagination v-if="historyLastPage > 1" v-model="historyPage" :length="historyLastPage"
+            :disabled="historyLoading" rounded="circle" :total-visible="$vuetify.display.xs ? 4 : 7"
+            density="comfortable" color="primary" class="my-0"
+            @update:model-value="fetchHistory" />
+        </div>
       </VCard>
     </VDialog>
 

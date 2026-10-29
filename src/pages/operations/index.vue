@@ -32,6 +32,11 @@ const pdfLoading = ref(false)
 const movementFilter = ref('all') // 'all' | 'income' | 'expense' | 'transfer'
 const movementSearch = ref('')
 
+const resetFilters = () => {
+  movementFilter.value = 'all'
+  movementSearch.value = ''
+}
+
 // Órdenes de trabajo
 const workOrdersStats = ref({
   in_progress: 0,
@@ -824,18 +829,30 @@ onMounted(() => {
                 </button>
               </div>
 
-              <!-- Input de Búsqueda Rápida -->
-              <div class="movement-search-input flex-grow-1 flex-sm-grow-0">
-                <VTextField
-                  v-model="movementSearch"
-                  density="compact"
-                  variant="outlined"
-                  placeholder="Buscar movimiento, OT, placa..."
-                  prepend-inner-icon="ri-search-line"
-                  hide-details
-                  clearable
-                  class="search-field"
-                />
+              <!-- Input de Búsqueda Rápida y Limpiar Filtros -->
+              <div class="d-flex align-center gap-2 flex-grow-1 flex-sm-grow-0">
+                <div class="movement-search-input flex-grow-1 flex-sm-grow-0">
+                  <VTextField
+                    v-model="movementSearch"
+                    density="compact"
+                    variant="outlined"
+                    placeholder="Buscar movimiento, OT, placa..."
+                    prepend-inner-icon="ri-search-line"
+                    hide-details
+                    clearable
+                    class="search-field"
+                  />
+                </div>
+                <VBtn
+                  variant="text"
+                  color="error"
+                  size="small"
+                  prepend-icon="ri-filter-off-line"
+                  class="font-weight-semibold shrink-0"
+                  @click="resetFilters"
+                >
+                  Limpiar Filtros
+                </VBtn>
               </div>
             </div>
 

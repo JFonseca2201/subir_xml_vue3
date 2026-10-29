@@ -434,12 +434,12 @@ definePage({ meta: { permission: 'kardex' } })
     <!-- Encabezado de la página -->
     <div class="d-flex align-center justify-space-between flex-wrap gap-4 mb-6">
       <div>
-        <h1 class="text-h4 font-weight-bold mb-1 d-flex align-center">
+        <h1 class="text-h5 font-weight-bold mb-1 d-flex align-center">
           <VIcon
             icon="ri-file-list-3-line"
             color="primary"
             class="me-2"
-            size="28"
+            size="24"
           />
           Kardex
         </h1>
@@ -723,18 +723,18 @@ definePage({ meta: { permission: 'kardex' } })
       >
         <!-- Encabezado del Producto con Resumen -->
         <VCard class="rounded-lg border-light border overflow-hidden elevation-0 mb-2 day-header">
-          <VCardText class="pa-4">
+          <VCardText class="py-3 px-4">
             <div class="d-flex flex-column flex-md-row justify-space-between align-start align-md-center gap-4">
               <div>
-                <h2 class="text-h6 font-weight-bold mb-1 d-flex align-center gap-2">
+                <div class="text-subtitle-1 font-weight-bold text-high-emphasis mb-1 d-flex align-center gap-2">
                   <VIcon
                     :icon="group.isProduct ? 'ri-box-3-line' : 'ri-wallet-3-line'"
                     color="primary"
-                    size="24"
+                    size="20"
                   />
                   <span>{{ group.name }}</span>
-                </h2>
-                <div class="d-flex align-center gap-2 flex-wrap text-body-2 text-medium-emphasis mt-1">
+                </div>
+                <div class="d-flex align-center gap-2 flex-wrap text-caption text-medium-emphasis mt-1">
                   <div
                     v-if="group.isProduct && group.sku && group.sku !== 'N/A'"
                     class="status-pill-clean status-primary"
@@ -755,7 +755,7 @@ definePage({ meta: { permission: 'kardex' } })
                   <div class="text-caption text-medium-emphasis">
                     Und. Compradas
                   </div>
-                  <div class="text-h6 font-weight-bold text-success">
+                  <div class="text-body-2 font-weight-bold text-success">
                     {{ formatQuantity(group.totalEntradasFisicas) }}
                   </div>
                 </div>
@@ -766,7 +766,7 @@ definePage({ meta: { permission: 'kardex' } })
                   <div class="text-caption text-medium-emphasis">
                     Und. Vendidas
                   </div>
-                  <div class="text-h6 font-weight-bold text-error">
+                  <div class="text-body-2 font-weight-bold text-error">
                     {{ formatQuantity(group.totalSalidasFisicas) }}
                   </div>
                 </div>
@@ -774,7 +774,7 @@ definePage({ meta: { permission: 'kardex' } })
                   <div class="text-caption text-medium-emphasis">
                     Ingresos ($)
                   </div>
-                  <div class="text-h6 font-weight-bold text-success">
+                  <div class="text-body-2 font-weight-bold text-success">
                     {{ formatCurrency(group.totalEntradasFinancieras) }}
                   </div>
                 </div>
@@ -782,7 +782,7 @@ definePage({ meta: { permission: 'kardex' } })
                   <div class="text-caption text-medium-emphasis">
                     Egresos ($)
                   </div>
-                  <div class="text-h6 font-weight-bold text-error">
+                  <div class="text-body-2 font-weight-bold text-error">
                     {{ formatCurrency(group.totalSalidasFinancieras) }}
                   </div>
                 </div>

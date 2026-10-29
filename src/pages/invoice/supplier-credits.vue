@@ -273,6 +273,18 @@ onMounted(() => {
     <!-- Filtros -->
     <VCard class="mb-6 rounded-xl border border-light elevation-0">
       <VCardText class="pa-4 bg-grey-lighten-5">
+        <div class="d-flex align-center justify-space-between mb-3">
+          <div class="d-flex align-center gap-2 text-subtitle-2 font-weight-bold text-high-emphasis">
+            <VIcon icon="ri-filter-3-line" size="18" color="primary" />
+            <span>Filtros de Búsqueda</span>
+          </div>
+
+          <VBtn variant="text" color="error" size="small" prepend-icon="ri-filter-off-line"
+            class="font-weight-semibold" @click="resetFilters">
+            Limpiar Filtros
+          </VBtn>
+        </div>
+
         <VRow
           dense
           class="align-center"
@@ -360,22 +372,7 @@ onMounted(() => {
             />
           </VCol>
 
-          <!-- Botón Limpiar -->
-          <VCol
-            cols="12"
-            sm="6"
-            md="1"
-            class="text-right"
-          >
-            <VBtn
-              variant="text"
-              color="secondary"
-              density="compact"
-              icon="ri-filter-off-line"
-              title="Limpiar Filtros"
-              @click="resetFilters"
-            />
-          </VCol>
+
         </VRow>
       </VCardText>
     </VCard>

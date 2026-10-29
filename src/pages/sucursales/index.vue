@@ -323,12 +323,12 @@ onMounted(() => {
 
     <VCard elevation="8" class="pa-8 rounded-xl border-thin max-w-4xl mx-auto">
       <!-- Header -->
-      <div class="text-center mb-8">
-        <VIcon icon="ri-building-line" size="64" color="primary" class="mb-4" />
-        <h1 class="text-h3 font-weight-bold mb-2">
+      <div class="text-center mb-6">
+        <VIcon icon="ri-building-line" size="44" color="primary" class="mb-2" />
+        <h1 class="text-h5 font-weight-bold mb-1">
           Información de la Empresa
         </h1>
-        <p class="text-body-1 text-medium-emphasis">
+        <p class="text-body-2 text-medium-emphasis mb-0">
           Gestiona los datos de tu empresa y sucursal
         </p>
       </div>
@@ -351,10 +351,10 @@ onMounted(() => {
         <VRow>
           <!-- Información Básica -->
           <VCol cols="12">
-            <h5 class="text-h5 font-weight-bold mb-4 d-flex align-center">
-              <VIcon icon="ri-information-line" size="20" class="me-2" />
+            <div class="text-subtitle-1 font-weight-bold text-high-emphasis mb-3 d-flex align-center">
+              <VIcon icon="ri-information-line" size="18" class="me-2" color="primary" />
               Información Básica
-            </h5>
+            </div>
           </VCol>
 
           <VCol cols="12" md="6">
@@ -383,10 +383,10 @@ onMounted(() => {
 
           <!-- Facturación -->
           <VCol cols="12">
-            <h5 class="text-h5 font-weight-bold mb-4 d-flex align-center">
-              <VIcon icon="ri-file-list-3-line" size="20" class="me-2" />
+            <div class="text-subtitle-1 font-weight-bold text-high-emphasis mb-3 d-flex align-center">
+              <VIcon icon="ri-file-list-3-line" size="18" class="me-2" color="primary" />
               Configuración de Facturación
-            </h5>
+            </div>
           </VCol>
 
           <VCol cols="12" md="3">
@@ -432,10 +432,10 @@ onMounted(() => {
 
           <!-- Firma Electrónica -->
           <VCol cols="12">
-            <h5 class="text-h5 font-weight-bold mb-4 d-flex align-center">
-              <VIcon icon="ri-key-line" size="20" class="me-2" />
+            <div class="text-subtitle-1 font-weight-bold text-high-emphasis mb-3 d-flex align-center">
+              <VIcon icon="ri-key-line" size="18" class="me-2" color="primary" />
               Firma Electrónica
-            </h5>
+            </div>
           </VCol>
 
           <VCol cols="12" md="6">
@@ -455,10 +455,10 @@ onMounted(() => {
 
           <!-- Personalización Visual / Fondo del Login -->
           <VCol cols="12">
-            <h5 class="text-h5 font-weight-bold mb-4 d-flex align-center">
-              <VIcon icon="ri-image-line" size="20" class="me-2" color="primary" />
+            <div class="text-subtitle-1 font-weight-bold text-high-emphasis mb-3 d-flex align-center">
+              <VIcon icon="ri-image-line" size="18" class="me-2" color="primary" />
               Fondo de Pantalla del Login
-            </h5>
+            </div>
           </VCol>
 
           <VCol cols="12" md="7">
@@ -497,10 +497,10 @@ onMounted(() => {
 
           <!-- Contabilidad -->
           <VCol cols="12">
-            <h5 class="text-h5 font-weight-bold mb-4 d-flex align-center">
-              <VIcon icon="ri-calculator-line" size="20" class="me-2" />
+            <div class="text-subtitle-1 font-weight-bold text-high-emphasis mb-3 d-flex align-center">
+              <VIcon icon="ri-calculator-line" size="18" class="me-2" color="primary" />
               Contabilidad
-            </h5>
+            </div>
           </VCol>
 
           <VCol cols="12" md="4">

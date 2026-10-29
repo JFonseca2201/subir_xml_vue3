@@ -190,12 +190,12 @@ definePage({ meta: { permission: 'kardex' } })
     <!-- Encabezado -->
     <div class="d-flex align-center justify-space-between flex-wrap gap-4 mb-6">
       <div>
-        <h1 class="text-h4 font-weight-bold mb-1 d-flex align-center">
+        <h1 class="text-h5 font-weight-bold mb-1 d-flex align-center">
           <VIcon
             icon="ri-draft-line"
             color="primary"
             class="me-2"
-            size="28"
+            size="24"
           />
           Kardex por Producto y Servicio
         </h1>
@@ -374,17 +374,17 @@ definePage({ meta: { permission: 'kardex' } })
       >
         <!-- Encabezado del Mes -->
         <VCard class="rounded-lg border-light border overflow-hidden day-header elevation-0 mb-2">
-          <VCardText class="pa-4 d-flex align-center justify-space-between">
-            <h2 class="text-h5 font-weight-bold mb-0 d-flex align-center">
+          <VCardText class="py-3 px-4 d-flex align-center justify-space-between">
+            <div class="text-subtitle-1 font-weight-bold text-high-emphasis mb-0 d-flex align-center">
               <VIcon
                 icon="ri-calendar-event-line"
                 color="primary"
                 class="me-2"
-                size="24"
+                size="20"
               />
               {{ monthName }}
-            </h2>
-            <div class="text-body-2 text-medium-emphasis font-weight-medium">
+            </div>
+            <div class="text-caption text-medium-emphasis font-weight-medium">
               {{ kardexData.itemsGrouped[monthName]?.length || 0 }} productos/servicios con actividad
             </div>
           </VCardText>

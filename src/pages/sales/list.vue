@@ -1224,7 +1224,7 @@ onActivated(() => {
         <div class="d-flex align-center justify-space-between mb-3">
           <div class="d-flex align-center gap-2 text-subtitle-2 font-weight-bold text-high-emphasis">
             <VIcon icon="ri-filter-3-line" size="18" color="primary" />
-            <span>Filtros de Ventas</span>
+            <span>Filtros de Búsqueda</span>
           </div>
 
           <VBtn variant="text" color="error" size="small" prepend-icon="ri-filter-off-line" class="font-weight-semibold"

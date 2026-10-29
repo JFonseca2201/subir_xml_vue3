@@ -8745,8 +8745,8 @@ body[data-theme="taller"] {
     flex-wrap: nowrap !important;
     padding: 0.85rem 1.25rem !important;
 
-    > .v-btn,
-    .v-btn {
+    > .v-btn:not(.v-pagination *),
+    .v-btn:not(.v-pagination *) {
       min-height: 40px !important;
       height: 40px !important;
       width: auto !important;
@@ -8813,8 +8813,8 @@ body[data-theme="taller"] {
     box-sizing: border-box !important;
 
     // Par de botones ocupan exactamente 50% cada uno sin descuadre
-    > .v-btn,
-    .v-btn {
+    > .v-btn:not(.v-pagination *),
+    .v-btn:not(.v-pagination *) {
       flex: 1 1 0 !important;
       width: 100% !important;
       min-width: 0 !important;
@@ -8920,12 +8920,188 @@ body[data-theme="taller"] {
 @media (min-width: 601px) and (max-width: 960px) {
   .arqueo-action-buttons {
     flex-direction: row !important;
+    gap: 0.75rem !important;
 
     > .v-btn,
     .v-btn,
     .arqueo-btn {
       flex: 1 1 0 !important;
+      min-width: 0 !important;
+      max-width: 50% !important;
       width: 100% !important;
+    }
+  }
+}
+
+// ==========================================================================
+// ESTANDARIZACIÓN GLOBAL DE PAGINACIÓN (.v-pagination)
+// ==========================================================================
+.v-pagination {
+  display: inline-flex !important;
+  align-items: center !important;
+  flex-wrap: nowrap !important;
+  user-select: none !important;
+
+  .v-pagination__list {
+    display: inline-flex !important;
+    align-items: center !important;
+    gap: 6px !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    list-style: none !important;
+  }
+
+  .v-pagination__item,
+  .v-pagination__first,
+  .v-pagination__prev,
+  .v-pagination__next,
+  .v-pagination__last {
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    margin: 0 !important;
+  }
+
+  // Todos los botones de paginación: circulares, compactos y sin deformaciones
+  .v-btn {
+    width: 34px !important;
+    min-width: 34px !important;
+    max-width: 34px !important;
+    height: 34px !important;
+    min-height: 34px !important;
+    max-height: 34px !important;
+    border-radius: 50% !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    font-size: 0.85rem !important;
+    font-weight: 600 !important;
+    flex: 0 0 34px !important;
+    box-shadow: none !important;
+    border: 1px solid var(--border-glass, rgba(0, 0, 0, 0.08)) !important;
+    background: var(--bg-surface, #ffffff) !important;
+    color: var(--text-primary, #334155) !important;
+    transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1) !important;
+
+    .v-btn__content {
+      font-size: 0.85rem !important;
+      line-height: 1 !important;
+      color: inherit !important;
+    }
+
+    .v-btn__overlay,
+    .v-btn__underlay {
+      opacity: 0 !important;
+    }
+
+    &:hover:not(:disabled) {
+      background: rgba(102, 108, 255, 0.1) !important;
+      border-color: rgba(102, 108, 255, 0.4) !important;
+      color: var(--text-active, #5C61E6) !important;
+      transform: translateY(-1px);
+    }
+
+    &:disabled {
+      opacity: 0.4 !important;
+      cursor: not-allowed !important;
+      border-color: rgba(0, 0, 0, 0.05) !important;
+    }
+  }
+
+  // Ítem ACTIVO (Seleccionado): Círculo coloreado según el tema con número blanco
+  .v-pagination__item--is-active .v-btn,
+  .v-btn.v-pagination__item--is-active {
+    background: rgb(var(--v-theme-primary, 102, 108, 255)) !important;
+    background-color: rgb(var(--v-theme-primary, 102, 108, 255)) !important;
+    color: #ffffff !important;
+    border-color: rgb(var(--v-theme-primary, 102, 108, 255)) !important;
+    box-shadow: 0 3px 10px rgba(102, 108, 255, 0.35) !important;
+
+    .v-btn__content {
+      color: #ffffff !important;
+      -webkit-text-fill-color: #ffffff !important;
+      font-weight: 800 !important;
+    }
+  }
+}
+
+// Adaptación por temas de la paginación activa
+[data-theme="dark"] .v-pagination,
+[data-theme="semi-dark-glass"] .v-pagination {
+  .v-btn {
+    background: rgba(255, 255, 255, 0.06) !important;
+    border-color: rgba(255, 255, 255, 0.12) !important;
+    color: rgba(255, 255, 255, 0.85) !important;
+
+    &:hover:not(:disabled) {
+      background: rgba(255, 255, 255, 0.15) !important;
+      color: #ffffff !important;
+    }
+  }
+
+  .v-pagination__item--is-active .v-btn {
+    background: rgb(var(--v-theme-primary, 102, 108, 255)) !important;
+    color: #ffffff !important;
+    border-color: transparent !important;
+
+    .v-btn__content {
+      color: #ffffff !important;
+      -webkit-text-fill-color: #ffffff !important;
+    }
+  }
+}
+
+[data-theme="light-glass"] .v-pagination {
+  .v-btn {
+    background: rgba(255, 255, 255, 0.7) !important;
+    border-color: rgba(0, 0, 0, 0.12) !important;
+    color: #0f172a !important;
+  }
+
+  .v-pagination__item--is-active .v-btn {
+    background: #0f172a !important;
+    color: #ffffff !important;
+    border-color: #0f172a !important;
+
+    .v-btn__content {
+      color: #ffffff !important;
+      -webkit-text-fill-color: #ffffff !important;
+    }
+  }
+}
+
+[data-theme="taller"] .v-pagination {
+  .v-pagination__item--is-active .v-btn {
+    background: #800020 !important;
+    border-color: #800020 !important;
+    color: #ffffff !important;
+    box-shadow: 0 3px 10px rgba(128, 0, 32, 0.35) !important;
+
+    .v-btn__content {
+      color: #ffffff !important;
+      -webkit-text-fill-color: #ffffff !important;
+    }
+  }
+}
+
+@media (max-width: 600px) {
+  .v-pagination {
+    .v-pagination__list {
+      gap: 3px !important;
+    }
+
+    .v-btn {
+      width: 30px !important;
+      min-width: 30px !important;
+      max-width: 30px !important;
+      height: 30px !important;
+      min-height: 30px !important;
+      max-height: 30px !important;
+      font-size: 0.75rem !important;
+      flex: 0 0 30px !important;
+
+      .v-btn__content {
+        font-size: 0.75rem !important;
+      }
     }
   }
 }

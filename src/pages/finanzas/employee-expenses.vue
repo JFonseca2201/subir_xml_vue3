@@ -34,6 +34,11 @@ const selectedType = ref('all')
 const searchQuery = ref('')
 const loading = ref(false)
 
+const resetFilters = () => {
+  searchQuery.value = ''
+  selectedType.value = 'all'
+}
+
 // Dialog state
 const showAddPaymentDialog = ref(false)
 const showEditPaymentDialog = ref(false)
@@ -595,6 +600,28 @@ onMounted(() => {
 
     <!-- Barra de Filtros y Búsqueda -->
     <VCard class="pa-4 mb-5 rounded-xl border elevation-0 bg-surface">
+      <div class="d-flex align-center justify-space-between mb-3">
+        <div class="d-flex align-center gap-2 text-subtitle-2 font-weight-bold text-high-emphasis">
+          <VIcon
+            icon="ri-filter-3-line"
+            size="18"
+            color="primary"
+          />
+          <span>Filtros de Búsqueda</span>
+        </div>
+
+        <VBtn
+          variant="text"
+          color="error"
+          size="small"
+          prepend-icon="ri-filter-off-line"
+          class="font-weight-semibold"
+          @click="resetFilters"
+        >
+          Limpiar Filtros
+        </VBtn>
+      </div>
+
       <VRow
         align="center"
         justify="space-between"

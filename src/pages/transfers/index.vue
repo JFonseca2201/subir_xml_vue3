@@ -69,6 +69,11 @@ const openAttachDialog = transfer => {
 const searchQuery = ref('')
 const selectedFilter = ref('all') // 'all', 'today', 'month'
 
+const resetFilters = () => {
+  searchQuery.value = ''
+  selectedFilter.value = 'all'
+}
+
 const loadTransfers = async () => {
   loading.value = true
 
@@ -563,6 +568,28 @@ onMounted(() => {
 
     <!-- Barra de Búsqueda y Filtros Rápidos -->
     <VCard class="pa-4 mb-6 rounded-xl border-light elevation-1">
+      <div class="d-flex align-center justify-space-between mb-3">
+        <div class="d-flex align-center gap-2 text-subtitle-2 font-weight-bold text-high-emphasis">
+          <VIcon
+            icon="ri-filter-3-line"
+            size="18"
+            color="primary"
+          />
+          <span>Filtros de Búsqueda</span>
+        </div>
+
+        <VBtn
+          variant="text"
+          color="error"
+          size="small"
+          prepend-icon="ri-filter-off-line"
+          class="font-weight-semibold"
+          @click="resetFilters"
+        >
+          Limpiar Filtros
+        </VBtn>
+      </div>
+
       <VRow
         align="center"
         justify="space-between"

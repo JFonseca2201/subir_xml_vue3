@@ -47,6 +47,13 @@ const rangeDate = ref(null)
 const filterType = ref('')
 const filterMonth = ref('')
 
+const resetFilters = () => {
+  searchWorkOrder.value = ''
+  rangeDate.value = null
+  filterType.value = ''
+  filterMonth.value = ''
+}
+
 const backendTotals = ref({
   income: 0,
   expense: 0,
@@ -1195,6 +1202,28 @@ onMounted(() => {
 
     <!-- Barra de Filtros de Búsqueda -->
     <VCard class="pa-4 mb-6 rounded-xl border-light elevation-1">
+      <div class="d-flex align-center justify-space-between mb-3">
+        <div class="d-flex align-center gap-2 text-subtitle-2 font-weight-bold text-high-emphasis">
+          <VIcon
+            icon="ri-filter-3-line"
+            size="18"
+            color="primary"
+          />
+          <span>Filtros de Búsqueda</span>
+        </div>
+
+        <VBtn
+          variant="text"
+          color="error"
+          size="small"
+          prepend-icon="ri-filter-off-line"
+          class="font-weight-semibold"
+          @click="resetFilters"
+        >
+          Limpiar Filtros
+        </VBtn>
+      </div>
+
       <VRow
         align="center"
         density="comfortable"

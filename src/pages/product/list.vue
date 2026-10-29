@@ -181,6 +181,7 @@ const hasActiveFilters = computed(() => {
 })
 
 const resetFilters = () => {
+  clearSearch()
 }
 
 // Decodificar entidades HTML (&eacute;, &#XE9;, &#233;, etc.) para mostrar texto limpio
@@ -557,10 +558,10 @@ watch([() => searchForm.value.search, () => searchForm.value.categorie_id, () =>
         <div class="d-flex align-center justify-space-between mb-3">
           <div class="d-flex align-center gap-2 text-subtitle-2 font-weight-bold text-high-emphasis">
             <VIcon icon="ri-filter-3-line" size="18" color="primary" />
-            <span>Filtros de Productos</span>
+            <span>Filtros de Búsqueda</span>
           </div>
 
-          <VBtn v-if="hasActiveFilters" variant="text" color="error" size="small" prepend-icon="ri-filter-off-line"
+          <VBtn variant="text" color="error" size="small" prepend-icon="ri-filter-off-line"
             class="font-weight-semibold" @click="resetFilters">
             Limpiar Filtros
           </VBtn>
@@ -845,7 +846,7 @@ watch([() => searchForm.value.search, () => searchForm.value.categorie_id, () =>
                     </div>
                     <div class="d-flex align-center gap-2 text-caption font-mono">
                       <span class="text-medium-emphasis">SKU: <strong class="text-primary font-weight-bold">{{ item.sku
-                          || 'S/C' }}</strong></span>
+                        || 'S/C' }}</strong></span>
                       <span v-if="item.code_aux" class="text-medium-emphasis">• Cód. Aux.: <strong
                           class="text-high-emphasis">{{ item.code_aux }}</strong></span>
                     </div>
@@ -977,5 +978,3 @@ watch([() => searchForm.value.search, () => searchForm.value.categorie_id, () =>
       :product="selectedStockProduct" @updated="handleProductUpdated" />
   </div>
 </template>
-
-
