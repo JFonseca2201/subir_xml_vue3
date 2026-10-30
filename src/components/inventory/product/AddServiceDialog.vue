@@ -21,6 +21,7 @@ const formRef = ref(null)
 const categories = ref([])
 const defaultCategorieId = ref(null)
 const defaultUnitId = ref(null)
+const defaultWarehouseId = ref(null)
 
 const notificationShow = ref(false)
 const notificationMessage = ref('')
@@ -73,7 +74,11 @@ const loadConfig = async () => {
       if (units.length > 0) {
         defaultUnitId.value = units[0].id
       } else {
-        defaultUnitId.value = 1
+        defaultUnitId.value = null
+      }
+      const whList = resp.data.warehouses || []
+      if (whList.length > 0) {
+        defaultWarehouseId.value = whList[0].id
       }
     }
   } catch (err) {
@@ -114,8 +119,8 @@ const saveService = async () => {
   const payload = {
     description: serviceForm.value.description.toUpperCase().trim(),
     sku: autoSku,
-    product_categorie_id: defaultCategorieId.value || 1,
-    unit_id: defaultUnitId.value || 1,
+    product_categorie_id: defaultCategorieId.value || null,
+    unit_id: defaultUnitId.value || null,
     price: finalPrice,
     price_sale: finalPrice,
     purchase_price: 0.00,
@@ -124,7 +129,7 @@ const saveService = async () => {
     discount_percentage: 0.00,
     stock: 0.00,
     item_type: 2, // Servicio / Mano de Obra
-    warehouse_id: 1, // Bodega 1 por defecto para servicios
+    warehouse_id: defaultWarehouseId.value || null,
     min_stock: 0.00,
     max_stock: 0.00,
     is_taxable: serviceForm.value.is_taxable ? 1 : 2,

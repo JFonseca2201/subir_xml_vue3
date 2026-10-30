@@ -163,7 +163,7 @@ const saveAccount = async () => {
     closeDialog()
   } catch (error) {
     console.error('Error al guardar cuenta:', error)
-    showNotification('Error al guardar la cuenta', 'error')
+    showNotification(error?.data?.message || error?.message || 'Error al guardar la cuenta', 'error')
   } finally {
     loader.stop()
   }

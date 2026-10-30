@@ -506,7 +506,7 @@ const store = async () => {
     }
   }
 
-  if (product.value.item_type !== '2') {
+  if (String(product.value.item_type) !== '2') {
     const minStock = parseFloat(product.value.min_stock) || 0
     const maxStock = parseFloat(product.value.max_stock) || 0
     if (maxStock > 0 && minStock > maxStock) {
@@ -1102,7 +1102,7 @@ const loadInitialData = async () => {
 
                     <!-- Marca -->
                     <VCol
-                      v-if="product.item_type !== '2'"
+                      v-if="String(product.item_type) !== '2'"
                       cols="12"
                       sm="6"
                       class="mt-2"
@@ -1245,7 +1245,7 @@ const loadInitialData = async () => {
 
           <!-- Tarjeta 3: Control de Stock e Inventario (Solo productos físicos y herramientas) -->
           <VCard
-            v-if="product.item_type !== '2'"
+            v-if="String(product.item_type) !== '2'"
             class="rounded-xl border-light elevation-1 mb-6 overflow-hidden"
           >
             <VCardItem class="bg-white py-3 px-4 border-b">
@@ -1607,7 +1607,7 @@ const loadInitialData = async () => {
           <div class="d-flex flex-column gap-4 sticky-sidebar">
             <!-- Tarjeta 1: Clasificación y Ubicación en Bodega -->
             <VCard
-              v-if="product.item_type !== '2'"
+              v-if="String(product.item_type) !== '2'"
               class="rounded-xl border-light elevation-1 overflow-hidden"
             >
               <VCardItem class="bg-white py-3 px-4 border-b">
@@ -1668,7 +1668,7 @@ const loadInitialData = async () => {
                       :items="warehouses"
                       item-title="name"
                       item-value="id"
-                      :rules="product.item_type === '2' ? [] : [requiredRule]"
+                      :rules="String(product.item_type) === '2' ? [] : [requiredRule]"
                       density="comfortable"
                       variant="outlined"
                       label="Almacén / Bodega *"

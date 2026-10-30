@@ -635,7 +635,7 @@ const loadInitialData = async () => {
       Promise.resolve([]),
       $api('employees', { params: { per_page: 1000 } }),
       $api('sales/next-number?document_type=' + (route.query.doc_type || route.query.type || sale.value.document_type || 'invoice')),
-      $api('sucursales/1').catch(() => null),
+      $api(`sucursales/${JSON.parse(localStorage.getItem('user') || '{}')?.sucursale_id || localStorage.getItem('sucursal_id') || 1}`).catch(() => null),
     ])
 
     if (sucursalRes?.sucursal?.ambiente) {
@@ -815,7 +815,7 @@ const onPaymentMethodChange = (dist, newMethod) => {
   dist.payment_method = newMethod
   if (newMethod === 'Efectivo') {
     // Caja Chica (account_id 1 o cuenta tipo cash)
-    const cajaChica = accounts.value.find(acc => acc.id === 1 || acc.name?.toLowerCase().includes('caja')) || accounts.value.find(acc => acc.type === 'cash')
+    const cajaChica = accounts.value.find(acc => acc.type === 'cash' || acc.name?.toLowerCase().includes('caja') || acc.name?.toLowerCase().includes('efectivo')) || accounts.value.find(acc => acc.id === 1)
 
     dist.account_id = cajaChica ? cajaChica.id : (accounts.value[0]?.id || null)
   } else if (newMethod === 'Transferencia') {
@@ -830,7 +830,7 @@ const onPaymentMethodChange = (dist, newMethod) => {
 // Watch para asignar cuenta automáticamente cuando se inicializa un pago
 const initializePaymentAccount = dist => {
   if (dist.payment_method === 'Efectivo' && !dist.account_id) {
-    const cajaChica = accounts.value.find(acc => acc.id === 1 || acc.name?.toLowerCase().includes('caja')) || accounts.value.find(acc => acc.type === 'cash')
+    const cajaChica = accounts.value.find(acc => acc.type === 'cash' || acc.name?.toLowerCase().includes('caja') || acc.name?.toLowerCase().includes('efectivo')) || accounts.value.find(acc => acc.id === 1)
 
     dist.account_id = cajaChica ? cajaChica.id : (accounts.value[0]?.id || null)
   }
@@ -1192,7 +1192,7 @@ const submitForm = async () => {
 
       // Asegurar cuenta para efectivo si no estaba asignada
       if (dist.payment_method === 'Efectivo' && !dist.account_id) {
-        const cajaChica = accounts.value.find(acc => acc.id === 1 || acc.name?.toLowerCase().includes('caja')) || accounts.value.find(acc => acc.type === 'cash')
+        const cajaChica = accounts.value.find(acc => acc.type === 'cash' || acc.name?.toLowerCase().includes('caja') || acc.name?.toLowerCase().includes('efectivo')) || accounts.value.find(acc => acc.id === 1)
 
         dist.account_id = cajaChica ? cajaChica.id : (accounts.value[0]?.id || null)
       }

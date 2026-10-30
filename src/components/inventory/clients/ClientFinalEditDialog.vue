@@ -472,10 +472,10 @@ onMounted(() => {
     // o cargar explícitamente las provincias y distritos
     setTimeout(async () => {
       if (props.clientData.ubigeo_region) {
-        provinces.value = await $api(`geographic/provinces/${props.clientData.ubigeo_region}`, { method: 'GET' })
+        provinces.value = await $api(`geographic/provinces/${props.clientData.ubigeo_region}`, { method: 'GET' }).catch(() => [])
       }
       if (props.clientData.ubigeo_provincia) {
-        districts.value = await $api(`geographic/cities/${props.clientData.ubigeo_provincia}`, { method: 'GET' })
+        districts.value = await $api(`geographic/cities/${props.clientData.ubigeo_provincia}`, { method: 'GET' }).catch(() => [])
       }
     }, 100)
   }

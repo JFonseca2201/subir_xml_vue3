@@ -199,7 +199,7 @@ const save = async () => {
   } catch (error) {
     console.error('Error al guardar la búsqueda de repuesto:', error)
 
-    const errorMsg = error.response?._data?.message || 'Error al guardar el registro'
+    const errorMsg = error.data?.message || error.response?._data?.message || error.message || 'Error al guardar el registro'
 
     showNotification(errorMsg, 'error')
   } finally {
