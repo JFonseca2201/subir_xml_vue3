@@ -347,15 +347,29 @@ const removeItem = async index => {
 const isServiceItem = item => {
   if (!item) return false
   if (item.type === 'service') return true
+  if (item.type === 'product') return false
   if (item.item_type === 2) return true
+  if (item.item_type === 1) return false
   if (item.product?.item_type === 2) return true
+  if (item.product?.item_type === 1) return false
   const product = products.value.find(p => p.id === item.product_id)
   if (product && (product.item_type === 2 || product.type === 'service')) return true
+  if (product && product.item_type === 1) return false
   const sku = item.sku || item.product?.sku || product?.sku || ''
   if (sku && String(sku).toUpperCase().startsWith('SRV-')) return true
-  if (!item.product_id && !item.sku) return true
   
   return false
+}
+
+const toggleItemType = item => {
+  if (!item) return
+  if (isServiceItem(item)) {
+    item.type = 'product'
+    item.item_type = 1
+  } else {
+    item.type = 'service'
+    item.item_type = 2
+  }
 }
 
 const getProductStock = (productId, item = null) => {
@@ -942,11 +956,11 @@ const submitForm = async () => {
     return
   }
 
-  // Validar vehículo si hay servicios
-  if (hasServices.value && !sale.value.vehicle_id) {
+  // Validar vehículo SOLO si proviene de una Orden de Trabajo
+  if (isLinkedToWorkOrder.value && !sale.value.vehicle_id) {
     await assignDefaultVehicle()
     if (!sale.value.vehicle_id) {
-      triggerValidationError('El comprobante incluye servicios y requiere asociar un vehículo.')
+      triggerValidationError('Esta venta proviene de una Orden de Trabajo y requiere asociar un vehículo obligatorio.')
 
       return
     }
@@ -1773,9 +1787,12 @@ onMounted(() => {
                         :return-object="true"
                         endpoint="vehicles/search"
                         item-title="license_plate"
-                        label="Vehículo (Opcional)"
+                        :label="isLinkedToWorkOrder ? 'Vehículo * (Obligatorio para Orden de Trabajo)' : 'Vehículo (Opcional)'"
                         icon="ri-car-line"
                         :initial-item="selectedVehicle"
+                        :rules="[v => (!isLinkedToWorkOrder || !!v || !!sale.vehicle_id) || 'Debe asociar un vehículo obligatorio para órdenes de trabajo']"
+                        :error="showValidationError && isLinkedToWorkOrder && (!selectedVehicle || !sale.vehicle_id)"
+                        :error-messages="showValidationError && isLinkedToWorkOrder && (!selectedVehicle || !sale.vehicle_id) ? ['Debe asociar un vehículo obligatorio para órdenes de trabajo'] : []"
                       >
                         <template #item="{ props, item }">
                           <VListItem
@@ -2216,8 +2233,10 @@ onMounted(() => {
                               >
                               <div class="item-meta-row mt-0.5">
                                 <span
-                                  class="meta-tag"
+                                  class="meta-tag cursor-pointer"
                                   :class="isServiceItem(item) ? 'tag-service' : 'tag-product'"
+                                  title="Clic para alternar entre Producto y Servicio"
+                                  @click="toggleItemType(item)"
                                 >
                                   {{ isServiceItem(item) ? 'Servicio' : 'Producto' }}
                                 </span>

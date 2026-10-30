@@ -745,8 +745,11 @@ const addTemporaryProduct = () => {
 const isServiceItem = item => {
   if (!item) return false
   if (item.type === 'service') return true
+  if (item.type === 'product') return false
   if (item.item_type === 2) return true
+  if (item.item_type === 1) return false
   if (item.product?.item_type === 2) return true
+  if (item.product?.item_type === 1) return false
   const itemSku = item.sku || item.product?.sku || ''
 
   const product = products.value.find(p =>
@@ -755,10 +758,21 @@ const isServiceItem = item => {
   )
 
   if (product && (product.item_type === 2 || product.type === 'service')) return true
+  if (product && product.item_type === 1) return false
   if (itemSku && String(itemSku).toUpperCase().startsWith('SRV-')) return true
-  if (!item.product_id && !itemSku) return true
 
   return false
+}
+
+const toggleItemType = item => {
+  if (!item) return
+  if (isServiceItem(item)) {
+    item.type = 'product'
+    item.item_type = 1
+  } else {
+    item.type = 'service'
+    item.item_type = 2
+  }
 }
 
 const getProductStock = (productId, item = null) => {
@@ -1029,11 +1043,11 @@ const submitForm = async () => {
     return
   }
 
-  // Validar vehículo si hay servicios
-  if (hasServices.value && !sale.value.vehicle_id) {
+  // Validar vehículo SOLO si proviene de una Orden de Trabajo
+  if (isLinkedToWorkOrder.value && !sale.value.vehicle_id) {
     await assignDefaultVehicle()
     if (!sale.value.vehicle_id) {
-      triggerValidationError('El comprobante incluye servicios y requiere asociar un vehículo.')
+      triggerValidationError('Esta venta proviene de una Orden de Trabajo y requiere asociar un vehículo obligatorio.')
 
       return
     }
@@ -1357,7 +1371,7 @@ const saveDraft = async () => {
     return
   }
 
-  if (hasServices.value && !sale.value.vehicle_id) {
+  if (isLinkedToWorkOrder.value && !sale.value.vehicle_id) {
     await assignDefaultVehicle()
   }
 
@@ -1425,11 +1439,11 @@ const dispatchSale = async () => {
     return
   }
 
-  // Validar vehículo si hay servicios
-  if (hasServices.value && !sale.value.vehicle_id) {
+  // Validar vehículo SOLO si proviene de una Orden de Trabajo
+  if (isLinkedToWorkOrder.value && !sale.value.vehicle_id) {
     await assignDefaultVehicle()
     if (!sale.value.vehicle_id) {
-      triggerValidationError('El comprobante incluye servicios y requiere asociar un vehículo.')
+      triggerValidationError('Esta venta proviene de una Orden de Trabajo y requiere asociar un vehículo obligatorio.')
 
       return
     }
@@ -1580,35 +1594,49 @@ const loadQuoteData = async quoteId => {
       // Importar items de la cotización
       if (quote.details && quote.details.length > 0) {
         sale.value.items = quote.details.map(item => {
-          if (item.product) {
-            const existingIdx = products.value.findIndex(p => p.id === item.product.id)
+          let matchedProduct = item.product || null
+          if (!matchedProduct && item.product_id) {
+            matchedProduct = products.value.find(p => p.id === item.product_id)
+          }
+          if (!matchedProduct && item.description) {
+            const cleanDesc = item.description.trim().toLowerCase()
+            matchedProduct = products.value.find(p =>
+              p.description && p.description.trim().toLowerCase() === cleanDesc
+            )
+          }
+
+          if (matchedProduct) {
+            const existingIdx = products.value.findIndex(p => p.id === matchedProduct.id)
             if (existingIdx >= 0) {
-              products.value[existingIdx] = { ...products.value[existingIdx], ...item.product }
+              products.value[existingIdx] = { ...products.value[existingIdx], ...matchedProduct }
             } else {
-              products.value.push(item.product)
+              products.value.push(matchedProduct)
             }
           }
 
-          const isService = item.type === 'service' ||
+          const rawType = item.type || (matchedProduct?.item_type === 2 ? 'service' : (matchedProduct?.item_type === 1 ? 'product' : null))
+
+          const isService = rawType === 'service' ||
             item.item_type === 2 ||
-            item.product?.item_type === 2 ||
+            matchedProduct?.item_type === 2 ||
             (item.sku && String(item.sku).toUpperCase().startsWith('SRV-')) ||
-            (item.product?.sku && String(item.product.sku).toUpperCase().startsWith('SRV-')) ||
-            (!item.product_id && !item.sku)
+            (matchedProduct?.sku && String(matchedProduct.sku).toUpperCase().startsWith('SRV-')) ||
+            (matchedProduct?.categorie && matchedProduct.categorie.title && matchedProduct.categorie.title.includes('SERVICIO'))
 
           return {
-            product_id: item.product_id,
+            product_id: matchedProduct ? matchedProduct.id : (item.product_id || null),
             description: item.description,
             quantity: item.quantity,
             price: item.price || item.unit_price || 0,
             discount: item.discount || 0,
             subtotal: item.subtotal,
             type: isService ? 'service' : 'product',
-            sku: item.product?.sku || item.product?.code || item.sku || '',
-            stock: item.product?.stock !== undefined ? item.product.stock : item.stock,
-            product: item.product || null,
-            unit_id: item.unit_id || item.product?.unit_id || null,
-            unit: item.unit || item.product?.unit || null,
+            item_type: isService ? 2 : 1,
+            sku: matchedProduct?.sku || matchedProduct?.code || item.sku || '',
+            stock: matchedProduct?.stock !== undefined ? matchedProduct.stock : item.stock,
+            product: matchedProduct || null,
+            unit_id: item.unit_id || matchedProduct?.unit_id || null,
+            unit: item.unit || matchedProduct?.unit || null,
           }
         })
         initializePaymentDistribution()
@@ -1972,11 +2000,11 @@ onActivated(async () => {
                   <div class="d-flex align-center gap-2" style="text-transform: uppercase;">
                     <VSearch v-model="selectedVehicle" :return-object="true" endpoint="vehicles/search"
                       item-title="license_plate"
-                      :label="hasServices ? 'Vehículo * (Obligatorio para servicios)' : 'Vehículo (Opcional)'"
+                      :label="isLinkedToWorkOrder ? 'Vehículo * (Obligatorio para Orden de Trabajo)' : 'Vehículo (Opcional)'"
                       icon="ri-car-line" :initial-item="selectedVehicle"
-                      :rules="[v => (!hasServices || !!v || !!sale.vehicle_id) || 'Debe asociar un vehículo obligatorio para servicios']"
-                      :error="showValidationError && hasServices && (!selectedVehicle || !sale.vehicle_id)"
-                      :error-messages="showValidationError && hasServices && (!selectedVehicle || !sale.vehicle_id) ? ['Debe asociar un vehículo obligatorio para servicios'] : []">
+                      :rules="[v => (!isLinkedToWorkOrder || !!v || !!sale.vehicle_id) || 'Debe asociar un vehículo obligatorio para órdenes de trabajo']"
+                      :error="showValidationError && isLinkedToWorkOrder && (!selectedVehicle || !sale.vehicle_id)"
+                      :error-messages="showValidationError && isLinkedToWorkOrder && (!selectedVehicle || !sale.vehicle_id) ? ['Debe asociar un vehículo obligatorio para órdenes de trabajo'] : []">
                       <template #item="{ props, item }">
                         <VListItem v-bind="props" :title="item.raw.license_plate">
                           <VListItemSubtitle class="mt-1 text-grey">
@@ -2203,7 +2231,9 @@ onActivated(async () => {
                             <input v-model="item.description" type="text" placeholder="Descripción del ítem..."
                               class="item-title-input" :title="item.description">
                             <div class="item-meta-row mt-0.5">
-                              <span class="meta-tag" :class="isServiceItem(item) ? 'tag-service' : 'tag-product'">
+                              <span class="meta-tag cursor-pointer" :class="isServiceItem(item) ? 'tag-service' : 'tag-product'"
+                                title="Clic para alternar entre Producto y Servicio"
+                                @click="toggleItemType(item)">
                                 {{ isServiceItem(item) ? 'Servicio' : 'Producto' }}
                               </span>
                               <span v-if="!isServiceItem(item) && sale.document_type !== 'quote'" class="meta-stock"

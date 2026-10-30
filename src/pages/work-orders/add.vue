@@ -536,15 +536,29 @@ const setClientToVehicleOwner = () => {
 const isServiceItem = item => {
   if (!item) return false
   if (item.type === 'service') return true
+  if (item.type === 'product') return false
   if (item.item_type === 2) return true
+  if (item.item_type === 1) return false
   if (item.product?.item_type === 2) return true
+  if (item.product?.item_type === 1) return false
   const product = products.value.find(p => p.id === item.product_id)
   if (product && (product.item_type === 2 || product.type === 'service' || product.product_type == 2)) return true
+  if (product && (product.item_type === 1 || product.product_type == 1)) return false
   const sku = item.sku || item.product?.sku || product?.sku || ''
   if (sku && String(sku).toUpperCase().startsWith('SRV-')) return true
-  if (!item.product_id && !item.sku) return true
 
   return false
+}
+
+const toggleItemType = item => {
+  if (!item) return
+  if (isServiceItem(item)) {
+    item.type = 'product'
+    item.item_type = 1
+  } else {
+    item.type = 'service'
+    item.item_type = 2
+  }
 }
 
 const hasServices = computed(() => {
@@ -791,33 +805,47 @@ const loadQuoteForOrder = async quoteId => {
 
       if (quote.details && quote.details.length > 0) {
         workOrder.value.items = quote.details.map(item => {
-          if (item.product) {
-            const existingIdx = products.value.findIndex(p => p.id === item.product.id)
+          let matchedProduct = item.product || null
+          if (!matchedProduct && item.product_id) {
+            matchedProduct = products.value.find(p => p.id === item.product_id)
+          }
+          if (!matchedProduct && item.description) {
+            const cleanDesc = item.description.trim().toLowerCase()
+            matchedProduct = products.value.find(p =>
+              p.description && p.description.trim().toLowerCase() === cleanDesc
+            )
+          }
+
+          if (matchedProduct) {
+            const existingIdx = products.value.findIndex(p => p.id === matchedProduct.id)
             if (existingIdx >= 0) {
-              products.value[existingIdx] = { ...products.value[existingIdx], ...item.product }
+              products.value[existingIdx] = { ...products.value[existingIdx], ...matchedProduct }
             } else {
-              products.value.push(item.product)
+              products.value.push(matchedProduct)
             }
           }
 
-          const isService = item.type === 'service' ||
+          const rawType = item.type || (matchedProduct?.item_type === 2 ? 'service' : (matchedProduct?.item_type === 1 ? 'product' : null))
+
+          const isService = rawType === 'service' ||
             item.item_type === 2 ||
-            item.product?.item_type === 2 ||
+            matchedProduct?.item_type === 2 ||
             (item.sku && String(item.sku).toUpperCase().startsWith('SRV-')) ||
-            (item.product?.sku && String(item.product.sku).toUpperCase().startsWith('SRV-')) ||
-            (!item.product_id && !item.sku)
+            (matchedProduct?.sku && String(matchedProduct.sku).toUpperCase().startsWith('SRV-')) ||
+            (matchedProduct?.categorie && matchedProduct.categorie.title && matchedProduct.categorie.title.includes('SERVICIO'))
 
           return {
-            product_id: item.product_id,
+            product_id: matchedProduct ? matchedProduct.id : (item.product_id || null),
             description: item.description,
             quantity: item.quantity,
             unit_price: item.price || item.unit_price || 0,
             discount: item.discount || 0,
             subtotal: item.subtotal,
             type: isService ? 'service' : 'product',
-            sku: item.product?.sku || item.product?.code || item.sku || '',
-            stock: item.product?.stock !== undefined ? item.product.stock : item.stock,
-            product: item.product || null,
+            item_type: isService ? 2 : 1,
+            sku: matchedProduct?.sku || matchedProduct?.code || item.sku || '',
+            stock: matchedProduct?.stock !== undefined ? matchedProduct.stock : item.stock,
+            product: matchedProduct || null,
           }
         })
       }
@@ -1366,9 +1394,11 @@ onActivated(async () => {
                               </span>
 
                               <!-- Tipo de Item (Servicio / Producto) -->
-                              <span class="text-uppercase font-weight-bold"
+                              <span class="text-uppercase font-weight-bold cursor-pointer"
                                 :class="isServiceItem(item) ? 'text-info' : 'text-secondary'"
-                                style="font-size: 0.65rem;">
+                                style="font-size: 0.65rem;"
+                                title="Clic para alternar entre Producto y Servicio"
+                                @click="toggleItemType(item)">
                                 {{ isServiceItem(item) ? 'Servicio' : 'Producto' }}
                               </span>
 

@@ -461,15 +461,29 @@ const setClientToVehicleOwner = () => {
 const isServiceItem = item => {
   if (!item) return false
   if (item.type === 'service') return true
+  if (item.type === 'product') return false
   if (item.item_type === 2) return true
+  if (item.item_type === 1) return false
   if (item.product?.item_type === 2) return true
+  if (item.product?.item_type === 1) return false
   const product = products.value.find(p => p.id === item.product_id)
   if (product && (product.item_type === 2 || product.type === 'service' || product.product_type == 2)) return true
+  if (product && (product.item_type === 1 || product.product_type == 1)) return false
   const sku = item.sku || item.product?.sku || product?.sku || ''
   if (sku && String(sku).toUpperCase().startsWith('SRV-')) return true
-  if (!item.product_id && !item.sku) return true
   
   return false
+}
+
+const toggleItemType = item => {
+  if (!item) return
+  if (isServiceItem(item)) {
+    item.type = 'product'
+    item.item_type = 1
+  } else {
+    item.type = 'service'
+    item.item_type = 2
+  }
 }
 
 const hasServices = computed(() => {
