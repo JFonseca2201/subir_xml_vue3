@@ -28,7 +28,7 @@ const selectedSupplierId = ref('all')
 const selectedCategory = ref('ALL')
 const selectedStockStatus = ref('ALL')
 const currentPage = ref(1)
-const perPage = ref(15)
+const perPage = ref(10)
 const totalItems = ref(0)
 const totalPages = ref(1)
 
@@ -153,6 +153,11 @@ watch(currentPage, () => {
   loadCatalog()
 })
 
+watch(perPage, () => {
+  currentPage.value = 1
+  loadCatalog()
+})
+
 // Cálculos de precios con margen y con IVA
 const calculateQuotedPrice = costPrice => {
   const cost = Number(costPrice) || 0
@@ -165,6 +170,16 @@ const calculateQuotedPrice = costPrice => {
   const priceWithTax = priceBeforeTax * (1 + (taxPercent / 100))
 
   return parseFloat(priceWithTax.toFixed(2))
+}
+
+const getStockPillClass = status => {
+  if (!status) return 'status-paid'
+  const s = status.toLowerCase()
+  if (s.includes('disponible') || s.includes('en stock')) return 'status-paid'
+  if (s.includes('stock <=') || s.includes('bajo') || s.includes('10')) return 'status-partial'
+  if (s.includes('agotado') || s.includes('sin stock')) return 'status-pending'
+  if (s.includes('tránsito') || s.includes('transito') || s.includes('pedido')) return 'status-transfer'
+  return 'status-quote'
 }
 
 const getStockBadgeColor = status => {
@@ -197,7 +212,6 @@ const addToQuote = item => {
   }
 
   emit('addItem', itemPayload)
-  showNotification(`"${item.description}" agregado a la cotización`, 'success')
 }
 
 watch(() => props.isDialogVisible, val => {
@@ -224,45 +238,35 @@ onMounted(() => {
 <template>
   <VDialog
     :model-value="props.isDialogVisible"
-    max-width="1150"
+    max-width="1200"
+    width="96vw"
     scrollable
     @update:model-value="closeDialog"
   >
-    <VCard class="catalog-search-card rounded-xl">
-      <!-- Cabecera del diálogo -->
-      <VCardItem class="custom-dialog-header-banner bg-primary py-4 px-6 text-white position-relative">
-        <div class="d-flex align-center justify-space-between w-100">
-          <div class="d-flex align-center gap-3">
-            <VAvatar
-              size="42"
-              color="white"
-              variant="tonal"
-              class="rounded-lg"
-            >
-              <VIcon
-                icon="ri-store-2-line"
-                size="24"
-                color="white"
-              />
-            </VAvatar>
-            <div>
-              <h2 class="text-h6 font-weight-bold text-white mb-0">
-                Catálogo de Distribuidores y Proveedores
-              </h2>
-              <p class="text-caption text-white opacity-80 mb-0">
-                Consulte repuestos disponibles con precios mayoristas y agréguelos con margen a la cotización
-              </p>
-            </div>
-          </div>
-          <VBtn
-            icon="ri-close-line"
-            variant="text"
-            color="white"
-            density="comfortable"
-            @click="closeDialog"
+    <VCard class="custom-dialog-card catalog-search-card rounded-xl">
+      <!-- Cabecera del diálogo según el estándar del sistema -->
+      <div class="custom-dialog-header-primary">
+        <VBtn
+          icon="ri-close-line"
+          variant="text"
+          size="small"
+          class="custom-dialog-close-btn"
+          aria-label="Cerrar catálogo"
+          @click="closeDialog"
+        />
+        <div class="custom-dialog-avatar">
+          <VIcon
+            icon="ri-store-2-line"
+            size="26"
           />
         </div>
-      </VCardItem>
+        <h3 class="custom-dialog-title">
+          Catálogo de Distribuidores y Proveedores
+        </h3>
+        <p class="custom-dialog-subtitle">
+          Consulte repuestos disponibles con precios mayoristas y agréguelos con margen a la cotización
+        </p>
+      </div>
 
       <VCardText class="pa-5">
         <!-- Barra de Búsqueda y Filtros -->
@@ -384,26 +388,26 @@ onMounted(() => {
             class="catalog-items-table"
           >
             <thead>
-              <tr class="bg-light-subtle">
-                <th class="text-left py-3 font-weight-bold" style="min-width: 130px;">
+              <tr class="bg-light-subtle text-caption">
+                <th class="text-left py-3 font-weight-bold" style="width: 15%; min-width: 110px;">
                   Distribuidor
                 </th>
-                <th class="text-left py-3 font-weight-bold" style="min-width: 130px;">
+                <th class="text-left py-3 font-weight-bold" style="width: 13%; min-width: 100px;">
                   Código / SKU
                 </th>
-                <th class="text-left py-3 font-weight-bold" style="min-width: 250px;">
+                <th class="text-left py-3 font-weight-bold" style="width: 32%;">
                   Descripción / Repuesto
                 </th>
-                <th class="text-center py-3 font-weight-bold" style="min-width: 110px;">
+                <th class="text-center py-3 font-weight-bold" style="width: 12%; min-width: 95px;">
                   Estado / Stock
                 </th>
-                <th class="text-right py-3 font-weight-bold" style="min-width: 100px;">
+                <th class="text-right py-3 font-weight-bold" style="width: 9%; min-width: 75px;">
                   Costo Prov.
                 </th>
-                <th class="text-right py-3 font-weight-bold text-primary" style="min-width: 120px;">
+                <th class="text-right py-3 font-weight-bold text-primary" style="width: 10%; min-width: 85px;">
                   PVP Cotizado
                 </th>
-                <th class="text-center py-3 font-weight-bold" style="width: 120px;">
+                <th class="text-center py-3 font-weight-bold" style="width: 9%; min-width: 85px;">
                   Acción
                 </th>
               </tr>
@@ -431,20 +435,37 @@ onMounted(() => {
                 :key="item.id"
                 class="catalog-item-row"
               >
-                <!-- Distribuidor -->
-                <td>
-                  <VChip
-                    size="small"
-                    variant="tonal"
-                    color="primary"
-                    class="font-weight-medium"
-                  >
-                    {{ item.supplier?.name || item.supplier_name || 'Proveedor' }}
-                  </VChip>
+                <!-- Distribuidor (Avatar + Nombre limpio sin chip genérico) -->
+                <td class="py-3">
+                  <div class="d-flex align-center gap-2">
+                    <VAvatar
+                      size="28"
+                      color="primary"
+                      variant="tonal"
+                      rounded="md"
+                      class="flex-shrink-0 font-weight-bold"
+                    >
+                      <VIcon icon="ri-store-2-line" size="14" />
+                    </VAvatar>
+                    <div class="min-w-0">
+                      <div
+                        class="font-weight-semibold text-body-2 text-truncate"
+                        :title="item.supplier?.name || item.supplier_name || 'Proveedor'"
+                      >
+                        {{ item.supplier?.name || item.supplier_name || 'Proveedor' }}
+                      </div>
+                      <div
+                        v-if="item.supplier?.code || item.supplier?.ruc"
+                        class="text-caption text-disabled font-monospace"
+                      >
+                        {{ item.supplier?.code || item.supplier?.ruc }}
+                      </div>
+                    </div>
+                  </div>
                 </td>
 
                 <!-- Código / SKU -->
-                <td>
+                <td class="py-3">
                   <div class="font-weight-medium text-body-2 font-monospace">
                     {{ item.code || '-' }}
                   </div>
@@ -457,7 +478,7 @@ onMounted(() => {
                 </td>
 
                 <!-- Descripción -->
-                <td>
+                <td class="py-3">
                   <div class="font-weight-medium text-body-2 line-clamp-2">
                     {{ item.description }}
                   </div>
@@ -469,25 +490,24 @@ onMounted(() => {
                   </div>
                 </td>
 
-                <!-- Estado / Stock -->
-                <td class="text-center">
-                  <VChip
-                    size="small"
-                    :color="getStockBadgeColor(item.stock_status)"
-                    variant="tonal"
-                    class="font-weight-medium"
+                <!-- Estado / Stock (Pill limpia acorde al sistema con status-dot) -->
+                <td class="text-center py-3">
+                  <div
+                    class="status-pill-clean mx-auto"
+                    :class="getStockPillClass(item.stock_status)"
                   >
-                    {{ item.stock_status || 'Disponible' }}
-                  </VChip>
+                    <span class="status-dot" />
+                    <span>{{ item.stock_status || 'Disponible' }}</span>
+                  </div>
                 </td>
 
                 <!-- Costo Mayorista -->
-                <td class="text-right text-body-2 text-medium-emphasis">
+                <td class="text-right py-3 text-body-2 text-medium-emphasis">
                   ${{ (Number(item.price) || 0).toFixed(2) }}
                 </td>
 
                 <!-- PVP Cotizado (Costo + Margen + IVA 15%) -->
-                <td class="text-right">
+                <td class="text-right py-3">
                   <div class="font-weight-bold text-body-2 text-primary">
                     ${{ calculateQuotedPrice(item.price).toFixed(2) }}
                   </div>
@@ -496,14 +516,14 @@ onMounted(() => {
                   </div>
                 </td>
 
-                <!-- Botón Agregar -->
-                <td class="text-center">
+                <!-- Botón Cotizar estilizado -->
+                <td class="text-center py-3">
                   <VBtn
                     color="primary"
                     size="small"
-                    variant="tonal"
+                    variant="elevated"
                     prepend-icon="ri-add-line"
-                    class="font-weight-bold rounded-lg"
+                    class="btn-cotizar-action text-none font-weight-bold rounded-lg elevation-1"
                     @click="addToQuote(item)"
                   >
                     Cotizar
@@ -517,10 +537,39 @@ onMounted(() => {
         <!-- Paginación -->
         <div
           v-if="totalItems > 0"
-          class="d-flex align-center justify-space-between flex-wrap gap-2 mt-4 px-2"
+          class="d-flex align-center justify-space-between flex-wrap gap-3 mt-4 px-2"
         >
-          <div class="text-caption text-medium-emphasis">
-            Mostrando {{ items.length }} de <strong>{{ totalItems }}</strong> productos disponibles en catálogo
+          <div class="d-flex align-center flex-wrap gap-3">
+            <span class="text-caption text-medium-emphasis">
+              Mostrando {{ items.length }} de <strong>{{ totalItems }}</strong> productos disponibles
+            </span>
+            <div class="d-flex align-center gap-1">
+              <span class="text-caption text-disabled">Mostrar:</span>
+              <VBtnToggle
+                v-model="perPage"
+                mandatory
+                density="compact"
+                size="x-small"
+                variant="outlined"
+                color="primary"
+                rounded="lg"
+              >
+                <VBtn
+                  :value="10"
+                  size="x-small"
+                  class="px-2 font-weight-bold"
+                >
+                  10
+                </VBtn>
+                <VBtn
+                  :value="12"
+                  size="x-small"
+                  class="px-2 font-weight-bold"
+                >
+                  12
+                </VBtn>
+              </VBtnToggle>
+            </div>
           </div>
 
           <VPagination
@@ -529,16 +578,27 @@ onMounted(() => {
             :total-visible="5"
             density="compact"
             size="small"
+            rounded="circle"
           />
         </div>
       </VCardText>
 
       <VDivider />
 
-      <VCardActions class="pa-4 justify-end">
+      <VCardActions class="pa-4 px-6 justify-space-between align-center bg-surface-variant-subtle border-t">
+        <div class="text-caption text-medium-emphasis d-none d-sm-flex align-center">
+          <VIcon
+            icon="ri-information-line"
+            size="16"
+            class="me-1 text-primary"
+          />
+          <span>Los repuestos se agregan a la cotización con el PVP calculado y datos del proveedor.</span>
+        </div>
         <VBtn
           color="secondary"
           variant="tonal"
+          prepend-icon="ri-close-line"
+          class="rounded-lg font-weight-medium ms-auto"
           @click="closeDialog"
         >
           Cerrar
@@ -551,6 +611,100 @@ onMounted(() => {
 <style lang="scss" scoped>
 .catalog-search-card {
   overflow: hidden;
+}
+
+.custom-dialog-header-primary {
+  background: linear-gradient(135deg, #7367F0 0%, #5e50ee 50%, #4839eb 100%) !important;
+  color: #ffffff !important;
+  padding: 1.5rem 1.5rem 1.25rem 1.5rem !important;
+  text-align: center !important;
+  position: relative !important;
+  box-shadow: 0 4px 18px rgba(115, 103, 240, 0.25);
+
+  .custom-dialog-close-btn {
+    position: absolute !important;
+    top: 14px !important;
+    right: 14px !important;
+    color: #ffffff !important;
+    background: rgba(255, 255, 255, 0.2) !important;
+    border: 1px solid rgba(255, 255, 255, 0.35) !important;
+    border-radius: 10px !important;
+    transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1) !important;
+    z-index: 5 !important;
+
+    &:hover {
+      background: rgba(255, 255, 255, 0.35) !important;
+      border-color: rgba(255, 255, 255, 0.6) !important;
+      transform: scale(1.08) !important;
+    }
+  }
+
+  .custom-dialog-avatar {
+    margin: 0 auto 0.65rem auto !important;
+    background: rgba(255, 255, 255, 0.22) !important;
+    backdrop-filter: blur(12px) !important;
+    -webkit-backdrop-filter: blur(12px) !important;
+    border: 1.5px solid rgba(255, 255, 255, 0.4) !important;
+    border-radius: 1rem !important;
+    width: 52px !important;
+    height: 52px !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.12), inset 0 1px 0 rgba(255, 255, 255, 0.4) !important;
+    color: #ffffff !important;
+
+    .v-icon {
+      color: #ffffff !important;
+    }
+  }
+
+  .custom-dialog-title {
+    font-size: 1.25rem !important;
+    font-weight: 800 !important;
+    color: #ffffff !important;
+    margin-bottom: 0.25rem !important;
+    line-height: 1.25 !important;
+    letter-spacing: -0.02em !important;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.15);
+  }
+
+  .custom-dialog-subtitle {
+    font-size: 0.85rem !important;
+    color: rgba(255, 255, 255, 0.92) !important;
+    font-weight: 500 !important;
+    margin-bottom: 0 !important;
+    line-height: 1.35 !important;
+    max-width: 580px !important;
+    margin-left: auto !important;
+    margin-right: auto !important;
+  }
+}
+
+.btn-cotizar-action {
+  letter-spacing: 0.02em;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  white-space: nowrap !important;
+
+  &:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(115, 103, 240, 0.4) !important;
+  }
+}
+
+.table-responsive {
+  width: 100%;
+  overflow-x: auto;
+  scrollbar-width: thin;
+}
+
+.catalog-items-table {
+  width: 100% !important;
+  table-layout: fixed;
+
+  td, th {
+    padding: 8px 6px !important;
+  }
 }
 
 .font-monospace {

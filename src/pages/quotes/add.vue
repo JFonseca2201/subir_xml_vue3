@@ -226,7 +226,52 @@ const addManualItem = async () => {
 }
 
 const addDistributorCatalogItem = itemPayload => {
-  quote.value.items.push(itemPayload)
+  if (!itemPayload) return
+
+  const existing = quote.value.items.find(item => {
+    if (itemPayload.sku && item.sku && item.sku === itemPayload.sku) return true
+    if (itemPayload.product_id && item.product_id && item.product_id === itemPayload.product_id) return true
+    if (
+      item.description &&
+      itemPayload.description &&
+      item.description.trim().toLowerCase() === itemPayload.description.trim().toLowerCase()
+    ) return true
+    return false
+  })
+
+  if (existing) {
+    existing.quantity = (Number(existing.quantity) || 0) + (Number(itemPayload.quantity) || 1)
+    showNotification(`Cantidad actualizada a ${existing.quantity} para "${existing.description}"`, 'info')
+  } else {
+    quote.value.items.push({
+      ...itemPayload,
+      quantity: Number(itemPayload.quantity) || 1,
+    })
+    showNotification(`"${itemPayload.description}" agregado a la cotización`, 'success')
+  }
+}
+
+const isServiceItem = item => {
+  if (!item) return false
+  if (item.type === 'service') return true
+  if (item.item_type === 2) return true
+  if (item.sku && String(item.sku).toUpperCase().startsWith('SRV-')) return true
+  return false
+}
+
+const toggleItemType = item => {
+  if (!item) return
+  if (isServiceItem(item)) {
+    item.type = 'product'
+    item.item_type = 1
+  } else {
+    item.type = 'service'
+    item.item_type = 2
+  }
+}
+
+const addTemporaryProduct = () => {
+  openManualProductDialog()
 }
 
 const getProductPriceWithTax = product => {
@@ -904,6 +949,7 @@ onActivated(async () => {
           </VCard>
 
           <!-- Búsqueda y Agregar Items -->
+          <!-- Tarjeta: Productos y Servicios (Igual a la de ventas) -->
           <VCard class="rounded-xl border-light elevation-1 mb-6 overflow-hidden">
             <VCardItem class="py-3 px-4 border-b">
               <template #title>
@@ -911,19 +957,19 @@ onActivated(async () => {
                   <div class="d-flex align-center gap-3">
                     <VAvatar
                       size="36"
-                      color="primary"
+                      color="success"
                       variant="tonal"
                       class="rounded-lg"
                     >
                       <VIcon
-                        icon="ri-shopping-cart-line"
+                        icon="ri-shopping-bag-3-line"
                         size="20"
                       />
                     </VAvatar>
                     <div>
                       <div class="d-flex align-center gap-2 flex-wrap">
-                        <h3 class="text-subtitle-1 font-weight-bold text-high-emphasis mb-0">
-                          Servicios y Repuestos
+                        <h3 class="text-subtitle-1 font-weight-bold text-slate-900 mb-0">
+                          Productos y Servicios
                         </h3>
                         <VChip
                           v-if="quote.items.length > 0"
@@ -936,37 +982,37 @@ onActivated(async () => {
                         </VChip>
                       </div>
                       <p class="text-caption text-medium-emphasis mb-0">
-                        Ítems, servicios y repuestos a presupuestar
+                        Agrega ítems a presupuestar
                       </p>
                     </div>
                   </div>
-                  <div class="d-flex align-center gap-2">
+                  <div class="d-flex gap-2 flex-wrap">
                     <VBtn
-                      color="primary"
                       size="small"
+                      color="primary"
                       variant="tonal"
-                      prepend-icon="ri-add-circle-line"
-                      class="rounded-lg font-weight-bold"
+                      prepend-icon="ri-box-3-line"
+                      class="font-weight-semibold"
                       @click="openManualProductDialog"
                     >
-                      + Producto Manual
+                      Producto Temporal
                     </VBtn>
                     <VBtn
-                      color="info"
                       size="small"
+                      color="info"
                       variant="tonal"
                       prepend-icon="ri-store-2-line"
-                      class="rounded-lg font-weight-bold"
+                      class="font-weight-semibold"
                       @click="isDistributorCatalogDialogVisible = true"
                     >
                       Catálogo Distribuidores
                     </VBtn>
                     <VBtn
-                      color="secondary"
                       size="small"
-                      variant="text"
+                      color="secondary"
+                      variant="tonal"
                       prepend-icon="ri-tools-line"
-                      class="font-weight-medium"
+                      class="font-weight-semibold"
                       @click="isAddServiceDialogVisible = true"
                     >
                       Servicio Express
@@ -975,202 +1021,248 @@ onActivated(async () => {
                 </div>
               </template>
             </VCardItem>
+
             <VCardText class="pa-4 pa-sm-5">
-
-              <VSearch
-                v-model="selectedProductTemp"
-                endpoint="products/search"
-                item-title="description"
-                :return-object="true"
-                label="Buscar repuesto o servicio por SKU, código o nombre..."
-                icon="ri-search-line"
-                class="mb-6"
-                @change="addItem"
-              >
-                <template #item="{ props, item }">
-                  <VListItem
-                    v-bind="props"
-                    :title="undefined"
-                  >
-                    <VListItemTitle
-                      style="white-space: normal !important; line-height: 1.4;"
-                      class="font-weight-medium"
+              <!-- Cuadro de búsqueda de productos -->
+              <div class="mb-4">
+                <VSearch
+                  v-model="selectedProductTemp"
+                  endpoint="products/search"
+                  item-title="description"
+                  :return-object="true"
+                  label="Buscar y agregar producto o servicio por nombre, código o SKU..."
+                  icon="ri-search-line"
+                  class="mb-0"
+                  hide-details
+                  @change="addItem"
+                >
+                  <template #item="{ props, item }">
+                    <VListItem
+                      v-bind="props"
+                      :title="undefined"
                     >
-                      {{ item.raw.description || item.raw.name }}
-                    </VListItemTitle>
-                    <VListItemSubtitle
-                      v-if="item.raw.code_aux || item.raw.sku"
-                      class="mt-1 text-grey"
-                    >
-                      Código/SKU: {{ item.raw.code_aux || item.raw.sku }}
-                    </VListItemSubtitle>
-                    <template #append>
-                      <VChip
-                        size="small"
-                        color="success"
-                        variant="tonal"
-                        class="font-weight-bold"
+                      <template #prepend>
+                        <VAvatar
+                          size="32"
+                          color="primary"
+                          variant="tonal"
+                          class="rounded-lg"
+                        >
+                          <VIcon
+                            icon="ri-box-3-line"
+                            size="18"
+                          />
+                        </VAvatar>
+                      </template>
+                      <VListItemTitle
+                        style="white-space: normal !important; line-height: 1.4;"
+                        class="font-weight-medium text-body-2"
                       >
-                        ${{ getProductPriceWithTax(item.raw).toFixed(2) }}
-                      </VChip>
-                    </template>
-                  </VListItem>
-                </template>
-              </VSearch>
+                        {{ item.raw.description || item.raw.name }}
+                      </VListItemTitle>
+                      <VListItemSubtitle
+                        v-if="item.raw.code_aux || item.raw.sku"
+                        class="mt-1 text-grey"
+                      >
+                        Código/SKU: {{ item.raw.code_aux || item.raw.sku }}
+                      </VListItemSubtitle>
+                      <template #append>
+                        <VChip
+                          size="small"
+                          color="success"
+                          variant="tonal"
+                          class="font-weight-bold"
+                        >
+                          ${{ getProductPriceWithTax(item.raw).toFixed(2) }}
+                        </VChip>
+                      </template>
+                    </VListItem>
+                  </template>
+                </VSearch>
+              </div>
 
-              <!-- Tabla de Items Agregados -->
-              <VTable
+              <!-- Tabla de items (Igual a Ventas) -->
+              <div
                 v-if="quote.items.length > 0"
-                hover
-                class="border rounded"
+                class="rounded-xl border overflow-hidden"
               >
-                <thead>
-                  <tr>
-                    <th class="text-left">
-                      Item / Descripción
-                    </th>
-                    <th
-                      class="text-center"
-                      style="width: 100px;"
+                <table class="custom-sales-items-table">
+                  <thead>
+                    <tr class="bg-slate-50 text-caption font-weight-bold">
+                      <th class="text-left th-desc">
+                        Ítem / Descripción
+                      </th>
+                      <th class="text-center th-qty">
+                        Cant.
+                      </th>
+                      <th class="text-center th-price">
+                        P.V.P
+                      </th>
+                      <th class="text-center th-discount">
+                        Desc. $
+                      </th>
+                      <th class="text-right th-subtotal">
+                        Subtotal
+                      </th>
+                      <th class="text-center th-actions">
+                        Acc.
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr
+                      v-for="(item, index) in quote.items"
+                      :key="index"
+                      class="sales-item-row"
                     >
-                      Cant.
-                    </th>
-                    <th
-                      class="text-right"
-                      style="width: 140px;"
-                    >
-                      PVP ($)
-                    </th>
-                    <th
-                      class="text-right"
-                      style="width: 120px;"
-                    >
-                      Desc. ($)
-                    </th>
-                    <th
-                      class="text-right"
-                      style="width: 120px;"
-                    >
-                      Total
-                    </th>
-                    <th
-                      class="text-center"
-                      style="width: 60px;"
-                    />
-                  </tr>
-                </thead>
-                <tbody>
-                  <tr
-                    v-for="(item, index) in quote.items"
-                    :key="index"
-                  >
-                    <td class="text-left font-weight-medium">
-                      <div
-                        v-if="item.product_id"
-                        class="d-flex flex-column"
-                      >
-                        <span>{{ item.description }}</span>
-                        <div class="text-caption text-medium-emphasis">
-                          {{ item.sku || 'Sin Código' }}
-                        </div>
-                      </div>
-                      <div
-                        v-else
-                        class="d-flex flex-column gap-1 py-1"
-                      >
-                        <div class="d-flex align-center gap-2">
-                          <VChip
-                            size="x-small"
-                            color="primary"
+                      <!-- Columna Descripción -->
+                      <td class="td-desc">
+                        <div class="d-flex align-center gap-2 py-1">
+                          <VAvatar
+                            size="28"
+                            :color="isServiceItem(item) ? 'info' : 'primary'"
                             variant="tonal"
-                            class="font-weight-bold"
+                            class="rounded-lg flex-shrink-0"
                           >
-                            {{ item.type === 'service' ? 'Servicio Manual' : 'Producto Manual' }}
-                          </VChip>
-                          <span
-                            v-if="item.sku && item.sku !== 'MANUAL'"
-                            class="text-caption text-medium-emphasis font-weight-medium"
-                          >
-                            Ref: {{ item.sku }}
-                          </span>
+                            <VIcon
+                              :icon="isServiceItem(item) ? 'ri-tools-line' : 'ri-box-3-line'"
+                              size="14"
+                            />
+                          </VAvatar>
+                          <div class="desc-content-col">
+                            <input
+                              v-model="item.description"
+                              type="text"
+                              placeholder="Descripción del ítem..."
+                              class="item-title-input"
+                              :title="item.description"
+                            >
+                            <div class="item-meta-row mt-0.5">
+                              <span
+                                class="meta-tag cursor-pointer"
+                                :class="isServiceItem(item) ? 'tag-service' : 'tag-product'"
+                                title="Clic para alternar entre Producto y Servicio"
+                                @click="toggleItemType(item)"
+                              >
+                                {{ isServiceItem(item) ? 'Servicio' : 'Producto' }}
+                              </span>
+                              <span
+                                v-if="item.sku"
+                                class="meta-sku font-mono"
+                              >
+                                {{ item.sku }}
+                              </span>
+                            </div>
+                          </div>
                         </div>
-                        <VTextField
-                          v-model="item.description"
-                          placeholder="Descripción del producto manual..."
-                          variant="underlined"
-                          density="compact"
-                          hide-details
-                          class="font-weight-medium mt-1"
-                        />
-                      </div>
-                    </td>
-                    <td class="text-center">
-                      <VTextField
-                        v-model.number="item.quantity"
-                        type="number"
-                        min="1"
-                        variant="underlined"
-                        density="compact"
-                        hide-details
-                        class="text-center"
-                      />
-                    </td>
-                    <td class="text-right">
-                      <VTextField
-                        v-model.number="item.price"
-                        type="number"
-                        prefix="$"
-                        variant="underlined"
-                        density="compact"
-                        hide-details
-                        class="text-right"
-                      />
-                    </td>
-                    <td class="text-right">
-                      <VTextField
-                        v-model.number="item.discount"
-                        type="number"
-                        prefix="$"
-                        variant="underlined"
-                        density="compact"
-                        hide-details
-                        class="text-right"
-                      />
-                    </td>
-                    <td class="text-right font-weight-bold">
-                      ${{ (((Number(item.quantity) || 0) * (Number(item.price) || 0)) - (Number(item.discount) ||
-                        0)).toFixed(2)
-                      }}
-                    </td>
-                    <td class="text-center">
-                      <VBtn
-                        icon="ri-delete-bin-line"
-                        color="error"
-                        variant="text"
-                        size="small"
-                        @click="removeItem(index)"
-                      />
-                    </td>
-                  </tr>
-                </tbody>
-              </VTable>
+                      </td>
 
+                      <!-- Columna Cantidad con stepper -->
+                      <td class="td-qty text-center">
+                        <div class="qty-stepper-mini">
+                          <button
+                            type="button"
+                            class="qty-mini-btn"
+                            :disabled="item.quantity <= 1"
+                            @click="item.quantity--"
+                          >
+                            <VIcon
+                              icon="ri-subtract-line"
+                              size="12"
+                            />
+                          </button>
+                          <span class="qty-mini-val font-mono">{{ item.quantity }}</span>
+                          <button
+                            type="button"
+                            class="qty-mini-btn"
+                            :disabled="item.quantity >= 99"
+                            @click="item.quantity++"
+                          >
+                            <VIcon
+                              icon="ri-add-line"
+                              size="12"
+                            />
+                          </button>
+                        </div>
+                      </td>
+
+                      <!-- Columna Precio Unitario -->
+                      <td class="td-price text-center">
+                        <div class="cell-input-wrapper">
+                          <span class="cell-prefix">$</span>
+                          <input
+                            v-model.number="item.price"
+                            type="number"
+                            min="0"
+                            step="0.01"
+                            class="cell-number-input font-mono font-weight-bold text-slate-800"
+                            placeholder="0.00"
+                          >
+                        </div>
+                      </td>
+
+                      <!-- Columna Descuento -->
+                      <td class="td-discount text-center">
+                        <div class="cell-input-wrapper">
+                          <span class="cell-prefix">$</span>
+                          <input
+                            v-model.number="item.discount"
+                            type="number"
+                            min="0"
+                            step="0.01"
+                            class="cell-number-input font-mono font-weight-medium text-error"
+                            placeholder="0.00"
+                          >
+                        </div>
+                      </td>
+
+                      <!-- Columna Subtotal -->
+                      <td class="td-subtotal text-right">
+                        <span
+                          class="font-mono font-weight-black text-success"
+                          style="font-size: 0.88rem;"
+                        >
+                          ${{ (((Number(item.quantity) || 0) * (Number(item.price) || 0)) - (Number(item.discount) || 0)).toFixed(2) }}
+                        </span>
+                      </td>
+
+                      <!-- Columna Acciones -->
+                      <td class="td-actions text-center">
+                        <VBtn
+                          icon="ri-delete-bin-line"
+                          size="x-small"
+                          color="error"
+                          variant="text"
+                          class="delete-item-btn"
+                          @click="removeItem(index)"
+                        />
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+
+              <!-- Estado Vacío -->
               <div
                 v-else
-                class="text-center py-10 border-2 border-dashed rounded bg-grey-lighten-5"
+                class="text-center pa-10 rounded-xl bg-slate-50 border border-dashed"
               >
-                <VIcon
-                  icon="ri-inbox-line"
-                  size="40"
-                  color="grey-lighten-1"
-                  class="mb-2"
-                />
-                <div class="text-subtitle-1 text-medium-emphasis">
-                  No hay repuestos o servicios agregados.
+                <VAvatar
+                  color="primary"
+                  variant="tonal"
+                  size="64"
+                  class="mb-3"
+                >
+                  <VIcon
+                    icon="ri-shopping-cart-line"
+                    size="32"
+                  />
+                </VAvatar>
+                <div class="text-subtitle-1 font-weight-bold text-slate-900">
+                  No hay productos o servicios agregados
                 </div>
-                <div class="text-caption text-grey">
-                  Busca productos en el campo superior o agrega un servicio
-                  personalizado.
+                <div class="text-body-2 text-medium-emphasis mt-1">
+                  Usa el buscador para agregar ítems o crea un producto temporal o de catálogo.
                 </div>
               </div>
             </VCardText>
