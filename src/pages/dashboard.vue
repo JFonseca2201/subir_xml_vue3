@@ -743,16 +743,18 @@ const purchasedProductsHasData = computed(() => {
   return topPurchasedProducts.value.some(p => (Number(p.total_quantity) || 0) > 0)
 })
 
-const purchasedProductsSeries = computed(() => {
-  if (!purchasedProductsHasData.value) return [1]
+const validTopPurchasedProducts = computed(() => {
+  return (topPurchasedProducts.value || []).filter(p => (Number(p.total_quantity) || 0) > 0)
+})
 
-  return topPurchasedProducts.value.map(p => Number(p.total_quantity) || 0)
+const purchasedProductsSeries = computed(() => {
+  if (!purchasedProductsHasData.value) return []
+  return validTopPurchasedProducts.value.map(p => Number(p.total_quantity) || 0)
 })
 
 const purchasedProductsOptions = computed(() => {
-  const labels = topPurchasedProducts.value.map(p => {
+  const labels = validTopPurchasedProducts.value.map(p => {
     const desc = p.description || 'Producto'
-
     return desc.length > 28 ? desc.substring(0, 28) + '...' : desc
   })
 
@@ -763,12 +765,13 @@ const purchasedProductsOptions = computed(() => {
       zoom: { enabled: false },
       selection: { enabled: false },
       background: 'transparent',
+      animations: { enabled: false },
     },
     labels: labels.length > 0 ? labels : ['Sin datos'],
     colors: [chartThemes.value.primaryColor, '#06B6D4', '#10B981', '#F59E0B', '#EF4444', '#94A3B8'],
     dataLabels: {
       enabled: true,
-      formatter: val => `${Math.round(val)}%`,
+      formatter: val => `${Math.round(val || 0)}%`,
       style: {
         fontSize: '12px',
         fontWeight: 'bold',
@@ -788,8 +791,7 @@ const purchasedProductsOptions = computed(() => {
               fontWeight: '600',
               color: chartThemes.value.textColor,
               formatter: () => {
-                const totalQty = topPurchasedProducts.value.reduce((acc, p) => acc + Number(p.total_quantity || 0), 0)
-
+                const totalQty = validTopPurchasedProducts.value.reduce((acc, p) => acc + Number(p.total_quantity || 0), 0)
                 return `${Math.round(totalQty)} u.`
               },
             },
@@ -817,12 +819,11 @@ const purchasedProductsOptions = computed(() => {
       theme: chartThemes.value.tooltipTheme,
       y: {
         formatter: (val, opts) => {
-          const item = topPurchasedProducts.value[opts.seriesIndex]
+          const item = validTopPurchasedProducts.value[opts.seriesIndex]
           if (item && item.total_spent) {
-            return `${Number(val).toLocaleString()} u. (Total: ${formatCurrency(item.total_spent)})`
+            return `${Number(val || 0).toLocaleString()} u. (Total: ${formatCurrency(item.total_spent)})`
           }
-
-          return `${Number(val).toLocaleString()} unidades`
+          return `${Number(val || 0).toLocaleString()} unidades`
         },
       },
     },
@@ -839,17 +840,21 @@ const workOrdersReport = computed(() => kpis.value?.work_orders_report || {
   technicians: {},
 })
 
+const validOtTotales = computed(() => {
+  return (workOrdersReport.value?.ot_totales || []).filter(i => (Number(i.count) || 0) > 0)
+})
+
 const otTotalesHasData = computed(() => {
-  return Array.isArray(workOrdersReport.value?.ot_totales) && workOrdersReport.value.ot_totales.some(i => (Number(i.count) || 0) > 0)
+  return validOtTotales.value.length > 0
 })
 
 const otTotalesSeries = computed(() => {
-  if (!otTotalesHasData.value) return [1]
-  return workOrdersReport.value.ot_totales.map(i => Number(i.count) || 0)
+  if (!otTotalesHasData.value) return []
+  return validOtTotales.value.map(i => Number(i.count) || 0)
 })
 
 const otTotalesOptions = computed(() => {
-  const labels = workOrdersReport.value.ot_totales.map(i => i.status)
+  const labels = validOtTotales.value.map(i => i.status || 'Estado')
 
   return {
     chart: {
@@ -858,6 +863,7 @@ const otTotalesOptions = computed(() => {
       zoom: { enabled: false },
       selection: { enabled: false },
       background: 'transparent',
+      animations: { enabled: false },
     },
     labels: labels.length > 0 ? labels : ['Sin datos'],
     colors: ['#06B6D4', '#10B981', '#F59E0B', '#EF4444', chartThemes.value.primaryColor],
@@ -868,18 +874,24 @@ const otTotalesOptions = computed(() => {
   }
 })
 
+const validSlaEntries = computed(() => {
+  const rawSla = workOrdersReport.value?.sla || {}
+  return Object.keys(rawSla)
+    .filter(k => (Number(rawSla[k]) || 0) > 0)
+    .map(k => ({ label: k, value: Number(rawSla[k]) || 0 }))
+})
+
 const slaHasData = computed(() => {
-  if (!workOrdersReport.value?.sla) return false
-  return Object.values(workOrdersReport.value.sla).some(v => (Number(v) || 0) > 0)
+  return validSlaEntries.value.length > 0
 })
 
 const slaSeries = computed(() => {
-  if (!slaHasData.value) return [1]
-  return Object.values(workOrdersReport.value.sla).map(v => Number(v) || 0)
+  if (!slaHasData.value) return []
+  return validSlaEntries.value.map(e => e.value)
 })
 
 const slaOptions = computed(() => {
-  const labels = Object.keys(workOrdersReport.value.sla || {})
+  const labels = validSlaEntries.value.map(e => e.label)
 
   return {
     chart: {
@@ -888,8 +900,9 @@ const slaOptions = computed(() => {
       zoom: { enabled: false },
       selection: { enabled: false },
       background: 'transparent',
+      animations: { enabled: false },
     },
-    labels: labels.length > 0 ? labels : ['1 día', '2-3 días', '4-7 días', '+8 días'],
+    labels: labels.length > 0 ? labels : ['Sin datos'],
     colors: ['#10B981', '#F59E0B', '#EF4444', chartThemes.value.primaryColor],
     dataLabels: { enabled: true, style: { fontWeight: 'bold' } },
     legend: { position: 'right', labels: { colors: chartThemes.value.textColor } },
@@ -903,7 +916,7 @@ const tecnicosHasData = computed(() => {
 })
 
 const tecnicosSeries = computed(() => {
-  const techs = workOrdersReport.value.technicians || {}
+  const techs = workOrdersReport.value?.technicians || {}
   const statusSet = new Set()
 
   Object.values(techs).forEach(t => {
@@ -916,7 +929,7 @@ const tecnicosSeries = computed(() => {
   return statuses.map(status => {
     return {
       name: status,
-      data: Object.keys(techs).map(techName => techs[techName][status] || 0),
+      data: Object.keys(techs).map(techName => Number(techs[techName]?.[status]) || 0),
     }
   })
 })
@@ -933,6 +946,7 @@ const tecnicosOptions = computed(() => {
       zoom: { enabled: false },
       selection: { enabled: false },
       background: 'transparent',
+      animations: { enabled: false },
     },
     colors: ['#06B6D4', '#10B981', '#F59E0B', '#EF4444', chartThemes.value.primaryColor],
     xaxis: {
@@ -1271,7 +1285,7 @@ const tecnicosOptions = computed(() => {
       </div>
 
       <!-- TAB 1: FINANZAS & VENTAS -->
-      <div v-show="activeTab === 'finances'" class="tab-content-fade">
+      <div v-if="activeTab === 'finances'" class="tab-content-fade">
         <VRow class="mb-4" dense>
           <!-- Flujo de caja YTD -->
           <VCol cols="12" lg="8">
@@ -1433,7 +1447,7 @@ const tecnicosOptions = computed(() => {
       </div>
 
       <!-- TAB 2: TALLER & MANTENIMIENTO -->
-      <div v-show="activeTab === 'workshop'" class="tab-content-fade">
+      <div v-if="activeTab === 'workshop'" class="tab-content-fade">
         <VRow class="mb-4" dense>
           <!-- Mantenimiento Preventivo (Calendario + Agenda) -->
           <VCol cols="12" lg="4">
@@ -1745,7 +1759,7 @@ const tecnicosOptions = computed(() => {
                     </VChip>
                   </div>
                   <div class="pa-1 d-flex justify-center align-center my-auto">
-                    <VueApexCharts v-if="otTotalesHasData" :key="`otTotales-${chartThemes.themeKey}`" type="donut"
+                    <VueApexCharts v-if="activeTab === 'workshop' && otTotalesHasData && otTotalesSeries.length > 0" :key="`otTotales-${chartThemes.themeKey}`" type="donut"
                       height="200" width="100%" :options="otTotalesOptions" :series="otTotalesSeries" />
                     <div v-else class="d-flex align-center justify-center text-caption text-medium-emphasis"
                       style="height: 200px;">
@@ -1766,7 +1780,7 @@ const tecnicosOptions = computed(() => {
                     </div>
                   </div>
                   <div class="pa-1 d-flex justify-center align-center my-auto">
-                    <VueApexCharts v-if="slaHasData" :key="`sla-${chartThemes.themeKey}`" type="pie" height="200"
+                    <VueApexCharts v-if="activeTab === 'workshop' && slaHasData && slaSeries.length > 0" :key="`sla-${chartThemes.themeKey}`" type="pie" height="200"
                       width="100%" :options="slaOptions" :series="slaSeries" />
                     <div v-else class="d-flex align-center justify-center text-caption text-medium-emphasis"
                       style="height: 200px;">
@@ -1792,7 +1806,7 @@ const tecnicosOptions = computed(() => {
                     </div>
                   </div>
                   <div class="pa-1">
-                    <VueApexCharts v-if="tecnicosHasData" :key="`tecnicos-${chartThemes.themeKey}`" type="bar"
+                    <VueApexCharts v-if="activeTab === 'workshop' && tecnicosHasData && tecnicosSeries.length > 0" :key="`tecnicos-${chartThemes.themeKey}`" type="bar"
                       height="210" width="100%" :options="tecnicosOptions" :series="tecnicosSeries" />
                     <div v-else class="d-flex align-center justify-center text-caption text-medium-emphasis"
                       style="height: 210px;">
@@ -1807,7 +1821,7 @@ const tecnicosOptions = computed(() => {
       </div>
 
       <!-- TAB 3: PROVEEDORES & COMPRAS -->
-      <div v-show="activeTab === 'purchases'" class="tab-content-fade">
+      <div v-if="activeTab === 'purchases'" class="tab-content-fade">
         <VRow class="mb-4" dense>
           <!-- Top Proveedores con Mayor Facturación -->
           <VCol cols="12" lg="7">
@@ -1903,7 +1917,7 @@ const tecnicosOptions = computed(() => {
                   </p>
                 </div>
 
-                <div v-else-if="purchasedProductsHasData" class="pa-2 d-flex justify-center align-center">
+                <div v-else-if="activeTab === 'purchases' && purchasedProductsHasData && purchasedProductsSeries.length > 0" class="pa-2 d-flex justify-center align-center">
                   <VueApexCharts :key="`purchased-${chartThemes.themeKey}`" type="donut" height="340" width="100%"
                     :options="purchasedProductsOptions" :series="purchasedProductsSeries" />
                 </div>

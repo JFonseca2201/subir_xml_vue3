@@ -1,6 +1,6 @@
 <script setup>
-import { ref, watch, onMounted, computed } from 'vue'
-import { useDebounceFn } from '@vueuse/core'
+import { ref, watch, onMounted, computed, nextTick } from 'vue'
+import { useDebounceFn, useElementSize } from '@vueuse/core'
 import { $api } from '@/utils/api'
 
 const props = defineProps({
@@ -84,9 +84,43 @@ const props = defineProps({
     type: [String, Array],
     default: () => [],
   },
+  menuProps: {
+    type: Object,
+    default: () => ({}),
+  },
 })
 
 const emit = defineEmits(['update:modelValue', 'change'])
+
+const searchContainerRef = ref(null)
+const { width: containerWidth } = useElementSize(searchContainerRef)
+const manualWidth = ref(0)
+
+const updateContainerDimensions = () => {
+  if (searchContainerRef.value) {
+    const rect = searchContainerRef.value.getBoundingClientRect()
+    if (rect.width > 0) {
+      manualWidth.value = Math.round(rect.width)
+    }
+  }
+}
+
+const computedMenuProps = computed(() => {
+  const currentWidth = containerWidth.value > 0
+    ? Math.round(containerWidth.value)
+    : (manualWidth.value > 0 ? manualWidth.value : undefined)
+
+  const widthStyle = currentWidth ? `${currentWidth}px` : undefined
+
+  return {
+    width: widthStyle,
+    maxWidth: widthStyle,
+    minWidth: widthStyle,
+    contentClass: 'v-search-autocomplete-menu',
+    maxHeight: 320,
+    ...props.menuProps,
+  }
+})
 
 const loading = ref(false)
 const items = ref([])
@@ -109,11 +143,11 @@ const resolveItemTitle = item => {
 
 const updateItemsWithRecent = () => {
   const list = []
-  
+
   if (props.initialItem && typeof props.initialItem === 'object') {
     list.push(props.initialItem)
   }
-  
+
   if (props.modelValue && typeof props.modelValue === 'object') {
     const key = props.modelValue[props.itemValue]
     if (!list.some(it => String(it[props.itemValue]) === String(key))) {
@@ -172,14 +206,14 @@ const fetchItems = async query => {
       ...props.extraParams,
     }
 
-    const response = await $api(props.endpoint, { 
+    const response = await $api(props.endpoint, {
       params,
       signal: vSearchAbortController.signal,
     })
 
     const data = response?.data || response || []
     const results = Array.isArray(data) ? data : []
-    
+
     // Mantener elemento seleccionado o inicial para no perder reactividad
     const list = [...results]
     if (props.modelValue && typeof props.modelValue === 'object') {
@@ -188,7 +222,7 @@ const fetchItems = async query => {
         list.unshift(props.modelValue)
       }
     }
-    
+
     items.value = list
   } catch (error) {
     if (error?.name === 'AbortError' || error?.message?.includes('aborted')) return
@@ -214,6 +248,7 @@ const onSearchInput = val => {
 }
 
 const onFocus = () => {
+  updateContainerDimensions()
   if (recentItems.value.length === 0) {
     fetchRecentItems()
   } else if (!search.value || search.value.length < props.minChars) {
@@ -225,6 +260,7 @@ const onFocus = () => {
 const onMenuUpdate = val => {
   isMenuOpen.value = val
   if (val) {
+    updateContainerDimensions()
     if (recentItems.value.length === 0) {
       fetchRecentItems()
     } else if (!search.value || search.value.length < props.minChars) {
@@ -257,6 +293,7 @@ onMounted(() => {
   if (props.initialItem) {
     items.value = [props.initialItem]
   }
+  updateContainerDimensions()
   fetchRecentItems()
 })
 
@@ -283,74 +320,85 @@ watch(() => props.endpoint, () => {
 </script>
 
 <template>
-  <VAutocomplete
-    :model-value="modelValue"
-    v-model:search="search"
-    v-model:menu="isMenuOpen"
-    :items="items"
-    :item-title="resolveItemTitle"
-    :item-value="itemValue"
-    :label="label"
-    :placeholder="placeholder"
-    :return-object="returnObject"
-    :clearable="clearable"
-    :variant="variant"
-    :density="density"
-    :loading="loading"
-    :hide-details="hideDetails"
-    :rules="rules"
-    :error="error"
-    :error-messages="errorMessages"
-    :custom-filter="() => true"
-    :open-on-focus="true"
-    :open-on-clear="true"
-    @update:model-value="onModelValueUpdate"
-    @update:search="onSearchInput"
-    @update:menu="onMenuUpdate"
-    @focus="onFocus"
-    @click:control="onFocus"
-  >
-    <template #prepend-inner>
-      <VProgressCircular
-        v-if="loading"
-        indeterminate
-        color="primary"
-        size="20"
-        width="2"
-      />
-      <VIcon
-        v-else
-        :icon="icon"
-      />
-    </template>
+  <div ref="searchContainerRef" class="v-search-wrapper w-100 position-relative">
+    <VAutocomplete :model-value="modelValue" v-model:search="search" v-model:menu="isMenuOpen" :items="items"
+      :item-title="resolveItemTitle" :item-value="itemValue" :label="label" :placeholder="placeholder"
+      :return-object="returnObject" :clearable="clearable" :variant="variant" :density="density" :loading="loading"
+      :hide-details="hideDetails" :rules="rules" :error="error" :error-messages="errorMessages"
+      :menu-props="computedMenuProps" :custom-filter="() => true" :open-on-focus="true" :open-on-clear="true"
+      @update:model-value="onModelValueUpdate" @update:search="onSearchInput" @update:menu="onMenuUpdate"
+      @focus="onFocus" @click:control="onFocus">
+      <template #prepend-inner>
+        <VProgressCircular v-if="loading" indeterminate color="primary" size="20" width="2" />
+        <VIcon v-else :icon="icon" />
+      </template>
 
-    <template #item="data">
-      <slot
-        name="item"
-        v-bind="data"
-      >
-        <VListItem v-bind="data.props" />
-      </slot>
-    </template>
+      <template #item="data">
+        <slot name="item" v-bind="data">
+          <VListItem v-bind="data.props" />
+        </slot>
+      </template>
 
-    <template
-      v-if="$slots.append"
-      #append
-    >
-      <slot name="append" />
-    </template>
-    
-    <template #no-data>
-      <div class="px-4 py-3 text-medium-emphasis text-body-2 text-center">
-        <span v-if="!search || search.length < minChars">
-          <VIcon icon="ri-search-line" size="18" class="me-1 mb-1 text-disabled" />
-          Escriba al menos {{ minChars }} caracteres para buscar
-        </span>
-        <span v-else>
-          <VIcon icon="ri-information-line" size="18" class="me-1 mb-1 text-disabled" />
-          No se encontraron resultados para "<strong>{{ search }}</strong>"
-        </span>
-      </div>
-    </template>
-  </VAutocomplete>
+      <template v-if="$slots.append" #append>
+        <slot name="append" />
+      </template>
+
+      <template #no-data>
+        <div class="px-4 py-3 text-medium-emphasis text-body-2 text-center">
+          <span v-if="!search || search.length < minChars">
+            <VIcon icon="ri-search-line" size="18" class="me-1 mb-1 text-disabled" />
+            Escriba al menos {{ minChars }} caracteres para buscar
+          </span>
+          <span v-else>
+            <VIcon icon="ri-information-line" size="18" class="me-1 mb-1 text-disabled" />
+            No se encontraron resultados para "<strong>{{ search }}</strong>"
+          </span>
+        </div>
+      </template>
+    </VAutocomplete>
+  </div>
 </template>
+
+<style lang="scss">
+.v-search-autocomplete-menu {
+  box-sizing: border-box !important;
+  overflow-x: hidden !important;
+
+  .v-list {
+    max-width: 100% !important;
+    overflow-x: hidden !important;
+    box-sizing: border-box !important;
+  }
+
+  .v-list-item {
+    max-width: 100% !important;
+    overflow: hidden !important;
+    box-sizing: border-box !important;
+    padding-inline: 12px !important;
+  }
+
+  .v-list-item__content {
+    max-width: 100% !important;
+    min-width: 0 !important;
+    overflow: hidden !important;
+  }
+
+  .v-list-item-title {
+    white-space: normal !important;
+    word-break: break-word !important;
+    overflow-wrap: break-word !important;
+    line-height: 1.35 !important;
+  }
+
+  .v-list-item-subtitle {
+    white-space: normal !important;
+    word-break: break-word !important;
+    overflow-wrap: break-word !important;
+  }
+
+  .v-list-item__append {
+    flex-shrink: 0 !important;
+    margin-inline-start: 8px !important;
+  }
+}
+</style>

@@ -11,6 +11,7 @@ import ClientCompanyAddDialog from '@/components/inventory/clients/ClientCompany
 import VehicleAddDialog from '@/components/inventory/vehicles/VehicleAddDialog.vue'
 import AddServiceDialog from '@/components/inventory/product/AddServiceDialog.vue'
 import VSearch from '@/components/common/VSearch.vue'
+import DistributorCatalogSearchDialog from '@/components/distribuidor-catalogo/DistributorCatalogSearchDialog.vue'
 
 const router = useRouter()
 const route = useRoute()
@@ -105,6 +106,7 @@ const isClientCompanyDialogVisible = ref(false)
 const isVehicleDialogVisible = ref(false)
 const isAddServiceDialogVisible = ref(false)
 const isManualProductDialogVisible = ref(false)
+const isDistributorCatalogDialogVisible = ref(false)
 
 // Manual Product Form State
 const manualFormRef = ref(null)
@@ -160,6 +162,10 @@ const addManualItem = async () => {
   showNotification('Producto manual agregado a la cotización', 'success')
   isManualProductDialogVisible.value = false
   resetManualProductForm()
+}
+
+const addDistributorCatalogItem = itemPayload => {
+  quote.value.items.push(itemPayload)
 }
 
 const getProductPriceWithTax = product => {
@@ -590,6 +596,10 @@ onMounted(async () => {
                     class="font-weight-medium" @click="openManualProductDialog">
                     + Producto Manual
                   </VBtn>
+                  <VBtn color="info" size="small" variant="tonal" prepend-icon="ri-store-2-line"
+                    class="font-weight-bold rounded-lg" @click="isDistributorCatalogDialogVisible = true">
+                    Catálogo Distribuidores
+                  </VBtn>
                   <VBtn color="secondary" size="small" variant="text" prepend-icon="ri-tools-line"
                     @click="isAddServiceDialogVisible = true">
                     Servicio Express
@@ -767,6 +777,9 @@ onMounted(async () => {
       @client-added="handleClientAdded" />
     <VehicleAddDialog v-if="isVehicleDialogVisible" v-model:isDialogVisible="isVehicleDialogVisible"
       :client-selected-id="quote.client_id" @vehicle-added="handleVehicleAdded" />
+    <DistributorCatalogSearchDialog v-if="isDistributorCatalogDialogVisible"
+      v-model:isDialogVisible="isDistributorCatalogDialogVisible"
+      @add-item="addDistributorCatalogItem" />
     <AddServiceDialog v-if="isAddServiceDialogVisible" v-model:isDialogVisible="isAddServiceDialogVisible"
       @add-service="addCustomService" />
 

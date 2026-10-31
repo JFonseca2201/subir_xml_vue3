@@ -11,6 +11,7 @@ import ClientCompanyAddDialog from '@/components/inventory/clients/ClientCompany
 import VehicleAddDialog from '@/components/inventory/vehicles/VehicleAddDialog.vue'
 import AddServiceDialog from '@/components/inventory/product/AddServiceDialog.vue'
 import VSearch from '@/components/common/VSearch.vue'
+import DistributorCatalogSearchDialog from '@/components/distribuidor-catalogo/DistributorCatalogSearchDialog.vue'
 import { useFormDraft } from '@/composables/useFormDraft'
 
 const router = useRouter()
@@ -166,6 +167,7 @@ const isClientCompanyDialogVisible = ref(false)
 const isVehicleDialogVisible = ref(false)
 const isAddServiceDialogVisible = ref(false)
 const isManualProductDialogVisible = ref(false)
+const isDistributorCatalogDialogVisible = ref(false)
 
 // Manual Product Form State
 const manualFormRef = ref(null)
@@ -192,8 +194,8 @@ const resetManualProductForm = () => {
 }
 
 const openManualProductDialog = () => {
-  resetManualProductForm()
   isManualProductDialogVisible.value = true
+  resetManualProductForm()
 }
 
 const addManualItem = async () => {
@@ -221,6 +223,10 @@ const addManualItem = async () => {
   showNotification('Producto manual agregado a la cotización', 'success')
   isManualProductDialogVisible.value = false
   resetManualProductForm()
+}
+
+const addDistributorCatalogItem = itemPayload => {
+  quote.value.items.push(itemPayload)
 }
 
 const getProductPriceWithTax = product => {
@@ -946,6 +952,16 @@ onActivated(async () => {
                       + Producto Manual
                     </VBtn>
                     <VBtn
+                      color="info"
+                      size="small"
+                      variant="tonal"
+                      prepend-icon="ri-store-2-line"
+                      class="rounded-lg font-weight-bold"
+                      @click="isDistributorCatalogDialogVisible = true"
+                    >
+                      Catálogo Distribuidores
+                    </VBtn>
+                    <VBtn
                       color="secondary"
                       size="small"
                       variant="text"
@@ -1312,6 +1328,11 @@ onActivated(async () => {
       v-model:isDialogVisible="isVehicleDialogVisible"
       :client-selected-id="quote.client_id"
       @vehicle-added="handleVehicleAdded"
+    />
+    <DistributorCatalogSearchDialog
+      v-if="isDistributorCatalogDialogVisible"
+      v-model:isDialogVisible="isDistributorCatalogDialogVisible"
+      @add-item="addDistributorCatalogItem"
     />
     <AddServiceDialog
       v-if="isAddServiceDialogVisible"
