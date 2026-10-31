@@ -1,5 +1,5 @@
 <script setup>
-import { ref, computed } from 'vue'
+import { ref, computed, watch } from 'vue'
 import { useLoaderStore } from '@/stores/loader'
 import { useGlobalToast } from '@/composables/useGlobalToast'
 import { $api } from '@/utils/api'
@@ -22,6 +22,16 @@ const emit = defineEmits([
 
 const loader = useLoaderStore()
 const { showNotification } = useGlobalToast()
+
+const cancellationReason = ref('')
+const reasonError = ref('')
+
+watch(() => props.isDialogVisible, newVal => {
+  if (newVal) {
+    cancellationReason.value = ''
+    reasonError.value = ''
+  }
+})
 
 // Opciones para selects (solo para mostrar labels)
 const documentTypeOptions = ref([
@@ -46,30 +56,30 @@ const statusOptions = ref([
 const getDocumentTypeLabel = computed(() => {
   if (!props.saleSelected?.document_type) return 'No especificado'
   const option = documentTypeOptions.value.find(opt => opt.value === props.saleSelected.document_type)
-  
+
   return option ? option.title : 'No especificado'
 })
 
 const getPaymentStatusLabel = computed(() => {
   if (!props.saleSelected?.payment_status) return 'No especificado'
   const option = paymentStatusOptions.value.find(opt => opt.value === props.saleSelected.payment_status)
-  
+
   return option ? option.title : 'No especificado'
 })
 
 const getStatusLabel = computed(() => {
   if (!props.saleSelected?.status) return 'No especificado'
   const option = statusOptions.value.find(opt => opt.value === props.saleSelected.status)
-  
+
   return option ? option.title : 'No especificado'
 })
 
 // Computed para obtener el nombre del cliente
 const getClientName = computed(() => {
   if (!props.saleSelected?.client) return 'No especificado'
-  
-  return props.saleSelected.client.full_name || props.saleSelected.client.name || 
-        `${props.saleSelected.client.first_name || ''} ${props.saleSelected.client.last_name || ''}`.trim() || 'Cliente Desconocido'
+
+  return props.saleSelected.client.full_name || props.saleSelected.client.name ||
+    `${props.saleSelected.client.first_name || ''} ${props.saleSelected.client.last_name || ''}`.trim() || 'Cliente Desconocido'
 })
 
 // Computed para obtener la placa del vehículo
@@ -92,7 +102,7 @@ const getStatusColor = computed(() => {
     canceled: 'error',
   }
 
-  
+
   return colors[props.saleSelected?.status] || 'grey'
 })
 
@@ -100,14 +110,21 @@ const confirmDelete = async () => {
   if (!props.saleSelected || !props.saleSelected.id) {
     console.error('No hay venta seleccionada para eliminar')
     showNotification('Error: no se puede eliminar, venta no seleccionada', 'error')
-    
+
     return
   }
 
   if (props.saleSelected.status === 'canceled') {
     showNotification('Esta venta ya se encuentra anulada', 'warning')
     emit('update:isDialogVisible', false)
-    
+
+    return
+  }
+
+  const reasonTrimmed = cancellationReason.value?.trim()
+  if (!reasonTrimmed) {
+    reasonError.value = 'El motivo de anulación es obligatorio'
+    showNotification('Debe ingresar un motivo para anular la venta', 'warning')
     return
   }
 
@@ -116,6 +133,8 @@ const confirmDelete = async () => {
   try {
     const resp = await $api(`sales/${props.saleSelected.id}`, {
       method: "DELETE",
+      body: { cancellation_reason: reasonTrimmed },
+      params: { cancellation_reason: reasonTrimmed },
       onResponseError({ response }) {
         console.error('Error al eliminar venta:', response)
         console.error('Data del error:', response._data)
@@ -174,25 +193,13 @@ const cancelDelete = () => {
 </script>
 
 <template>
-  <VDialog
-    scrollable
-    :model-value="props.isDialogVisible"
-    max-width="500"
-    persistent
-    :closable="!loader.loading"
-    @update:model-value="val => emit('update:isDialogVisible', val)"
-  >
+  <VDialog scrollable :model-value="props.isDialogVisible" max-width="500" persistent :closable="!loader.loading"
+    @update:model-value="val => emit('update:isDialogVisible', val)">
     <VCard class="custom-dialog-card elevation-8">
       <!-- Header Banner Primary -->
       <div class="custom-dialog-header-primary bg-primary text-white">
-        <VBtn
-          icon="ri-close-line"
-          variant="text"
-          size="small"
-          class="custom-dialog-close-btn"
-          :disabled="loader.loading"
-          @click="emit('update:isDialogVisible', false)"
-        />
+        <VBtn icon="ri-close-line" variant="text" size="small" class="custom-dialog-close-btn"
+          :disabled="loader.loading" @click="emit('update:isDialogVisible', false)" />
         <div class="custom-dialog-avatar">
           <VIcon icon="ri-delete-bin-line" />
         </div>
@@ -208,16 +215,8 @@ const cancelDelete = () => {
       <VCardText class="pa-4">
         <div class="text-center">
           <!-- Avatar -->
-          <VAvatar
-            size="80"
-            color="error"
-            variant="tonal"
-            class="mb-4"
-          >
-            <VIcon
-              icon="ri-file-list-3-line"
-              size="40"
-            />
+          <VAvatar size="80" color="error" variant="tonal" class="mb-4">
+            <VIcon icon="ri-file-list-3-line" size="40" />
           </VAvatar>
 
           <!-- Sale Info -->
@@ -228,40 +227,28 @@ const cancelDelete = () => {
 
             <div class="d-flex flex-column gap-1">
               <div class="d-flex align-center justify-center gap-2">
-                <VIcon
-                  icon="ri-hashtag"
-                  size="16"
-                />
+                <VIcon icon="ri-hashtag" size="16" />
                 <span class="text-body-2">
                   <strong>Número:</strong> {{ props.saleSelected?.document_number || 'Sin número' }}
                 </span>
               </div>
 
               <div class="d-flex align-center justify-center gap-2">
-                <VIcon
-                  icon="ri-user-line"
-                  size="16"
-                />
+                <VIcon icon="ri-user-line" size="16" />
                 <span class="text-body-2">
                   <strong>Cliente:</strong> {{ getClientName }}
                 </span>
               </div>
 
               <div class="d-flex align-center justify-center gap-2">
-                <VIcon
-                  icon="ri-car-line"
-                  size="16"
-                />
+                <VIcon icon="ri-car-line" size="16" />
                 <span class="text-body-2">
                   <strong>Vehículo:</strong> {{ getVehicleLicensePlate }}
                 </span>
               </div>
 
               <div class="d-flex align-center justify-center gap-2">
-                <VIcon
-                  icon="ri-money-dollar-circle-line"
-                  size="16"
-                />
+                <VIcon icon="ri-money-dollar-circle-line" size="16" />
                 <span class="text-body-2">
                   <strong>Total:</strong> {{ formatCurrency(props.saleSelected?.total) }}
                 </span>
@@ -270,9 +257,7 @@ const cancelDelete = () => {
               <div class="d-flex align-center justify-center gap-2">
                 <VIcon
                   :icon="props.saleSelected?.status === 'completed' ? 'ri-checkbox-circle-line' : props.saleSelected?.status === 'pending' ? 'ri-time-line' : 'ri-close-circle-line'"
-                  size="16"
-                  :color="getStatusColor"
-                />
+                  size="16" :color="getStatusColor" />
                 <span class="text-body-2">
                   <strong>Estado:</strong> {{ getStatusLabel }}
                 </span>
@@ -280,8 +265,20 @@ const cancelDelete = () => {
             </div>
           </div>
 
+          <!-- Motivo de Anulación Obligatorio -->
+          <div class="mt-4 text-left">
+            <label class="text-caption font-weight-bold text-high-emphasis mb-1 d-block">
+              Motivo de Anulación <span class="text-error">*</span>
+            </label>
+            <VTextarea v-model="cancellationReason"
+              placeholder="Escribe el motivo por el cual se anula este documento (ej: error en datos del cliente, error de facturación, etc.)..."
+              rows="3" variant="outlined" density="comfortable" auto-grow counter maxlength="500"
+              prepend-inner-icon="ri-chat-delete-line" :error-messages="reasonError"
+              @update:model-value="reasonError = ''" />
+          </div>
+
           <p class="text-caption text-medium-emphasis text-center mb-0 mt-3">
-            Esta acción revertirá el stock y anulará la transacción comercial.
+            Esta acción revertirá el stock, anulará los registros contables y liberará la orden de trabajo.
           </p>
         </div>
       </VCardText>
@@ -289,32 +286,18 @@ const cancelDelete = () => {
       <VDivider />
 
       <!-- Actions -->
-      <VCardActions
-        class="pa-4 d-flex justify-end align-center gap-3 bg-surface"
-        style="position: sticky; bottom: 0; z-index: 2;"
-      >
-        <VBtn
-          color="secondary"
-          variant="outlined"
-          prepend-icon="ri-close-line"
-          class="rounded-lg px-6 font-weight-medium"
-          height="40"
-          :disabled="loader.loading"
-          @click="emit('update:isDialogVisible', false)"
-        >
+      <VCardActions class="pa-4 d-flex justify-end align-center gap-3 bg-surface"
+        style="position: sticky; bottom: 0; z-index: 2;">
+        <VBtn color="secondary" variant="outlined" prepend-icon="ri-close-line"
+          class="rounded-lg px-6 font-weight-medium" height="40" :disabled="loader.loading"
+          @click="emit('update:isDialogVisible', false)">
           Cancelar
         </VBtn>
-        <VBtn
-          color="error"
-          variant="elevated"
-          prepend-icon="ri-delete-bin-line"
-          class="rounded-lg px-6 font-weight-bold"
-          height="40"
-          :loading="loader.loading"
-          :disabled="loader.loading || props.saleSelected?.status === 'canceled'"
-          @click="confirmDelete"
-        >
-          Anular
+        <VBtn color="error" variant="elevated" prepend-icon="ri-delete-bin-line"
+          class="rounded-lg px-6 font-weight-bold" height="40" :loading="loader.loading"
+          :disabled="loader.loading || props.saleSelected?.status === 'canceled' || !cancellationReason.trim()"
+          @click="confirmDelete">
+          Anular Documento
         </VBtn>
       </VCardActions>
     </VCard>

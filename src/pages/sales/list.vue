@@ -14,6 +14,7 @@ import SriErrorDialog from '@/components/inventory/sales/SriErrorDialog.vue'
 import CreditNoteDialog from '@/components/inventory/sales/CreditNoteDialog.vue'
 import SriStatusDialog from '@/components/inventory/sales/SriStatusDialog.vue'
 import WorkOrderViewDialog from '@/components/dialogs/WorkOrderViewDialog.vue'
+import CanceledInvoiceShowDialog from '@/components/inventory/sales/CanceledInvoiceShowDialog.vue'
 import { getBrandNameById } from '@/data/vehicleBrands'
 
 
@@ -42,6 +43,31 @@ const selectedWorkOrderIdForView = ref(null)
 const selectedSaleForCreditNote = ref(null)
 const selectedSale = ref(null)
 const viewLoading = ref(false)
+
+// Estado para Diálogo de Facturas Anuladas
+const isCanceledDialogVisible = ref(false)
+const canceledSaleData = ref(null)
+const canceledLoading = ref(false)
+
+const viewCanceledSale = async sale => {
+  if (!sale) return
+  canceledSaleData.value = { ...sale }
+  isCanceledDialogVisible.value = true
+  canceledLoading.value = true
+
+  try {
+    const response = await $api(`sales/${sale.id}`)
+    if (response?.success && response?.data) {
+      canceledSaleData.value = response.data
+    } else if (response?.data) {
+      canceledSaleData.value = response.data
+    }
+  } catch (err) {
+    console.warn('Detalle completo del servidor no disponible, usando datos de lista:', err)
+  } finally {
+    canceledLoading.value = false
+  }
+}
 
 const openCreditNoteDialog = sale => {
   selectedSaleForCreditNote.value = sale
@@ -563,8 +589,7 @@ const getPaymentMethodClass = item => {
 // Acciones
 const viewSale = async sale => {
   if (isSaleCanceled(sale)) {
-    showCanceledDocAlert(sale.document_number || sale.id)
-    showNotification('El documento no existe porque fue anulado', 'warning')
+    viewCanceledSale(sale)
 
     return
   }
@@ -576,8 +601,7 @@ const viewSale = async sale => {
     if (response?.success || response?.data) {
       const saleData = response.data || response
       if (isSaleCanceled(saleData)) {
-        showCanceledDocAlert(saleData.document_number || saleData.id)
-        showNotification('El documento no existe porque fue anulado', 'warning')
+        viewCanceledSale(saleData)
 
         return
       }
@@ -597,8 +621,7 @@ const viewSale = async sale => {
       errorMsg.toLowerCase().includes('no encontrad') ||
       errorMsg.toLowerCase().includes('not found')
     ) {
-      showCanceledDocAlert(sale.document_number || sale.id)
-      showNotification('El documento no existe porque fue anulado', 'warning')
+      viewCanceledSale(sale)
     } else {
       showNotification('Error al cargar los detalles de la venta', 'error')
     }
@@ -1433,13 +1456,14 @@ onActivated(() => {
             </div>
 
             <!-- Vehículo (si existe) -->
-            <div v-if="item.vehicle" class="d-flex align-center gap-1.5 mb-2.5 text-caption min-w-0">
-              <VIcon icon="ri-roadster-line" size="15" color="primary" class="flex-shrink-0" />
-              <span v-if="item.vehicle.plate || item.vehicle.license_plate"
-                class="font-mono font-weight-bold text-primary flex-shrink-0">
-                {{ (item.vehicle.plate || item.vehicle.license_plate).toUpperCase() }}
-              </span>
-              <span v-if="item.vehicle.plate || item.vehicle.license_plate" class="text-disabled">•</span>
+            <div v-if="item.vehicle" class="d-flex align-center gap-2 mb-2.5 text-caption min-w-0 flex-wrap">
+              <div
+                class="status-pill-clean font-mono"
+                :class="(item.vehicle.plate || item.vehicle.license_plate) ? 'status-transfer' : 'status-canceled'"
+              >
+                <span class="status-dot" />
+                <span>{{ (item.vehicle.plate || item.vehicle.license_plate || 'SIN PLACA').toUpperCase() }}</span>
+              </div>
               <span class="text-medium-emphasis text-truncate font-weight-medium">
                 {{ formatVehicleInfo(item.vehicle) }}
               </span>
@@ -1484,9 +1508,19 @@ onActivated(() => {
               <!-- Nivel 2: Badges de Estado (Pills con flex-wrap para que nunca desborden) -->
               <div class="d-flex align-center justify-end gap-1.5 mt-2 flex-wrap">
                 <!-- Factura / Documento Anulado -->
-                <div v-if="isSaleCanceled(item)" class="status-pill-clean status-canceled">
-                  <span class="status-dot" />
-                  <span>Anulada</span>
+                <div v-if="isSaleCanceled(item)" class="d-flex align-center gap-1.5">
+                  <div class="status-pill-clean status-canceled">
+                    <span class="status-dot" />
+                    <span>Anulada</span>
+                  </div>
+                  <VBtn
+                    size="x-small"
+                    color="error"
+                    variant="tonal"
+                    icon="ri-information-line"
+                    title="Ver datos de factura anulada"
+                    @click.stop="viewCanceledSale(item)"
+                  />
                 </div>
 
                 <template v-else>
@@ -1633,8 +1667,8 @@ onActivated(() => {
                     <div
                       class="font-mono text-body-1 font-weight-bold cursor-pointer hover-underline text-high-emphasis"
                       :class="{ 'doc-number-canceled': isSaleCanceled(item) }"
-                      :title="isSaleCanceled(item) ? 'Documento Anulado (Clic para más información)' : 'Ver Detalle'"
-                      @click="viewSale(item)"
+                      :title="isSaleCanceled(item) ? 'Factura Anulada (Clic para ver cliente y clave de 49 dígitos)' : 'Ver Detalle'"
+                      @click="isSaleCanceled(item) ? viewCanceledSale(item) : viewSale(item)"
                     >
                       {{ formatDocumentNumber(item.document_number) }}
                     </div>
@@ -1683,17 +1717,16 @@ onActivated(() => {
                   </div>
                 </td>
 
-                <!-- Vehículo (Placa vehicular sobria y modelo, sin avatar redundante) -->
+                <!-- Vehículo (Placa vehicular con formato de status-pill-clean y modelo) -->
                 <td class="py-3" style="overflow: hidden;">
-                  <div v-if="item.vehicle" class="d-flex flex-column gap-0.5 overflow-hidden w-100">
-                    <div class="d-flex align-center gap-1.5">
-                      <span
-                        class="vehicle-plate-pill font-mono"
-                        :class="(item.vehicle.plate || item.vehicle.license_plate) ? 'vehicle-plate-active' : 'vehicle-plate-none'"
-                        :title="(item.vehicle.plate || item.vehicle.license_plate || '').toUpperCase() || 'Sin placa'"
-                      >
-                        {{ (item.vehicle.plate || item.vehicle.license_plate || '').toUpperCase() || 'SIN PLACA' }}
-                      </span>
+                  <div v-if="item.vehicle" class="d-flex flex-column align-start gap-1 overflow-hidden w-100">
+                    <div
+                      class="status-pill-clean font-mono"
+                      :class="(item.vehicle.plate || item.vehicle.license_plate) ? 'status-transfer' : 'status-canceled'"
+                      :title="(item.vehicle.plate || item.vehicle.license_plate || '').toUpperCase() || 'Sin placa'"
+                    >
+                      <span class="status-dot" />
+                      <span>{{ (item.vehicle.plate || item.vehicle.license_plate || 'SIN PLACA').toUpperCase() }}</span>
                     </div>
                     <span
                       class="text-uppercase text-medium-emphasis vehicle-model-small"
@@ -1849,8 +1882,16 @@ onActivated(() => {
                       </VMenu>
                     </VBtn>
                   </div>
-                  <div v-else class="text-center">
-                    <span class="text-disabled font-weight-bold text-caption">—</span>
+                  <div v-else class="d-flex justify-center align-center gap-1">
+                    <!-- Botón para ver factura anulada: cliente y clave de 49 dígitos -->
+                    <VBtn
+                      size="small"
+                      color="error"
+                      variant="tonal"
+                      icon="ri-information-line"
+                      title="Ver datos del cliente y clave de acceso SRI (49 dígitos)"
+                      @click="viewCanceledSale(item)"
+                    />
                   </div>
                 </td>
               </tr>
@@ -1905,5 +1946,13 @@ onActivated(() => {
     <!-- Diálogo para Ver Orden de Trabajo -->
     <WorkOrderViewDialog v-if="isWorkOrderViewDialogVisible" v-model:is-dialog-visible="isWorkOrderViewDialogVisible"
       :work-order-id="selectedWorkOrderIdForView" />
+
+    <!-- Diálogo Especializado para Facturas Anuladas (Cliente y Clave 49 Dígitos) -->
+    <CanceledInvoiceShowDialog
+      v-if="isCanceledDialogVisible"
+      v-model:is-dialog-visible="isCanceledDialogVisible"
+      :sale-data="canceledSaleData"
+      :loading="canceledLoading"
+    />
   </div>
 </template>

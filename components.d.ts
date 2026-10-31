@@ -30,6 +30,7 @@ declare module 'vue' {
     AppStepper: typeof import('./src/@core/components/AppStepper.vue')['default']
     AttachReceiptsDialog: typeof import('./src/components/common/AttachReceiptsDialog.vue')['default']
     BuyNow: typeof import('./src/@core/components/BuyNow.vue')['default']
+    CanceledInvoiceShowDialog: typeof import('./src/components/inventory/sales/CanceledInvoiceShowDialog.vue')['default']
     CardAddEditDialog: typeof import('./src/components/dialogs/CardAddEditDialog.vue')['default']
     CardStatisticsHorizontal: typeof import('./src/@core/components/cards/CardStatisticsHorizontal.vue')['default']
     CardStatisticsVertical: typeof import('./src/@core/components/cards/CardStatisticsVertical.vue')['default']

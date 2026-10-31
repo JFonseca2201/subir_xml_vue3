@@ -44,12 +44,14 @@ watch(totalPages, newVal => {
 // Búsqueda y Filtros
 const searchWorkOrder = ref('')
 const rangeDate = ref(null)
+const filterSpecificDate = ref(null)
 const filterType = ref('')
 const filterMonth = ref('')
 
 const resetFilters = () => {
   searchWorkOrder.value = ''
   rangeDate.value = null
+  filterSpecificDate.value = null
   filterType.value = ''
   filterMonth.value = ''
 }
@@ -62,7 +64,42 @@ const backendTotals = ref({
 })
 
 let searchTimeout = null
-watch([searchWorkOrder, rangeDate, filterType, filterMonth], () => {
+
+// Vigilante para fecha específica ("Solo por el día")
+watch(filterSpecificDate, newVal => {
+  if (newVal) {
+    rangeDate.value = null
+  }
+  currentPage.value = 1
+  if (searchTimeout) clearTimeout(searchTimeout)
+  searchTimeout = setTimeout(() => {
+    loadMovements()
+  }, 350)
+})
+
+// Vigilante para rango de fechas: no recargar a medio camino cuando solo se ha pulsado la primera fecha
+watch(rangeDate, newVal => {
+  if (newVal && !newVal.includes(' to ')) {
+    return
+  }
+  if (newVal && newVal.includes(' to ')) {
+    const parts = newVal.split(' to ')
+    if (!parts[1] || parts[1].trim().length < 8) {
+      return
+    }
+    if (filterSpecificDate.value) {
+      filterSpecificDate.value = null
+    }
+  }
+  currentPage.value = 1
+  if (searchTimeout) clearTimeout(searchTimeout)
+  searchTimeout = setTimeout(() => {
+    loadMovements()
+  }, 350)
+})
+
+// Vigilante para texto, tipo y mes
+watch([searchWorkOrder, filterType, filterMonth], () => {
   currentPage.value = 1
   if (searchTimeout) clearTimeout(searchTimeout)
   searchTimeout = setTimeout(() => {
@@ -281,8 +318,9 @@ const generatePDF = async () => {
       include_incomes: true,
       include_expenses: true,
       search: searchWorkOrder.value || undefined,
-      start_date: rangeDate.value ? rangeDate.value.split(" to ")[0]?.trim() || undefined : undefined,
-      end_date: rangeDate.value ? rangeDate.value.split(" to ")[1]?.trim() || undefined : undefined,
+      specific_date: filterSpecificDate.value || undefined,
+      start_date: (!filterSpecificDate.value && rangeDate.value && rangeDate.value.includes(' to ')) ? rangeDate.value.split(" to ")[0]?.trim() || undefined : undefined,
+      end_date: (!filterSpecificDate.value && rangeDate.value && rangeDate.value.includes(' to ')) ? rangeDate.value.split(" to ")[1]?.trim() || undefined : undefined,
       type: filterType.value || undefined,
       month: filterMonth.value || undefined,
     }
@@ -441,9 +479,10 @@ const deleteMovement = movement => {
 
 const confirmDelete = async () => {
   try {
-    const recordId = getFinanceRecordId(movementToDelete.value)
+    const movementId = movementToDelete.value?.id
+    if (!movementId) return
 
-    await $api(`finance-records/${recordId}`, {
+    await $api(`financial-movements/${movementId}`, {
       method: 'DELETE',
     })
 
@@ -497,16 +536,16 @@ const saveIncome = async data => {
     const payload = prepareFinanceRecordPayload(data)
 
     if (editingMovement.value) {
-      const recordId = getFinanceRecordId(editingMovement.value)
+      const movementId = editingMovement.value.id
 
       if (payload instanceof FormData) {
         payload.append('_method', 'PUT')
-        await $api(`finance-records/${recordId}`, {
+        await $api(`financial-movements/${movementId}`, {
           method: 'POST',
           body: payload,
         })
       } else {
-        await $api(`finance-records/${recordId}`, {
+        await $api(`financial-movements/${movementId}`, {
           method: 'PUT',
           body: payload,
         })
@@ -539,16 +578,16 @@ const saveExpense = async data => {
     const payload = prepareFinanceRecordPayload(data)
 
     if (editingMovement.value) {
-      const recordId = getFinanceRecordId(editingMovement.value)
+      const movementId = editingMovement.value.id
 
       if (payload instanceof FormData) {
         payload.append('_method', 'PUT')
-        await $api(`finance-records/${recordId}`, {
+        await $api(`financial-movements/${movementId}`, {
           method: 'POST',
           body: payload,
         })
       } else {
-        await $api(`finance-records/${recordId}`, {
+        await $api(`financial-movements/${movementId}`, {
           method: 'PUT',
           body: payload,
         })
@@ -601,8 +640,10 @@ const loadMovements = async (showOverlay = true) => {
     if (searchWorkOrder.value) {
       params.search = searchWorkOrder.value
     }
-    if (rangeDate.value) {
-      const parts = rangeDate.value.split(" to ")
+    if (filterSpecificDate.value) {
+      params.specific_date = filterSpecificDate.value
+    } else if (rangeDate.value && rangeDate.value.includes(' to ')) {
+      const parts = rangeDate.value.split(' to ')
       if (parts[0]) params.start_date = parts[0].trim()
       if (parts[1]) params.end_date = parts[1].trim()
     }
@@ -1228,16 +1269,15 @@ onMounted(() => {
         align="center"
         density="comfortable"
       >
-        <!-- Buscar por texto -->
+        <!-- Columna Izquierda (6 columnas): Búsqueda -->
         <VCol
           cols="12"
-          sm="6"
-          md="3"
+          md="6"
         >
           <VTextField
             v-model="searchWorkOrder"
             prepend-inner-icon="ri-search-2-line"
-            placeholder="Buscar por OT, Factura..."
+            placeholder="Buscar por OT, Factura, Descripción..."
             hide-details
             clearable
             variant="outlined"
@@ -1246,65 +1286,93 @@ onMounted(() => {
           />
         </VCol>
 
-        <!-- Filtrar por Mes -->
+        <!-- Columna Derecha (6 columnas): Los 4 filtros restantes -->
         <VCol
           cols="12"
-          sm="6"
-          md="3"
+          md="6"
         >
-          <VSelect
-            v-model="filterMonth"
-            :items="monthsOptions"
-            item-title="title"
-            item-value="value"
-            label="Filtrar por Mes"
-            prepend-inner-icon="ri-calendar-event-line"
-            hide-details
-            variant="outlined"
+          <VRow
+            align="center"
             density="compact"
-          />
-        </VCol>
+          >
+            <!-- Filtrar por Mes -->
+            <VCol
+              cols="12"
+              sm="6"
+              md="3"
+            >
+              <VSelect
+                v-model="filterMonth"
+                :items="monthsOptions"
+                item-title="title"
+                item-value="value"
+                label="Mes"
+                prepend-inner-icon="ri-calendar-event-line"
+                hide-details
+                variant="outlined"
+                density="compact"
+              />
+            </VCol>
 
-        <!-- Filtrar por Tipo -->
-        <VCol
-          cols="12"
-          sm="6"
-          md="3"
-        >
-          <VSelect
-            v-model="filterType"
-            :items="[
-              { title: 'Todos los tipos', value: '' },
-              { title: 'Ingresos', value: 'income' },
-              { title: 'Egresos', value: 'expense' },
-              { title: 'Transferencias', value: 'transfer' }
-            ]"
-            item-title="title"
-            item-value="value"
-            label="Tipo de Movimiento"
-            prepend-inner-icon="ri-equalizer-line"
-            hide-details
-            variant="outlined"
-            density="compact"
-          />
-        </VCol>
+            <!-- Solo por el día -->
+            <VCol
+              cols="12"
+              sm="6"
+              md="3"
+            >
+              <AppDateTimePicker
+                v-model="filterSpecificDate"
+                label="Solo por el día"
+                placeholder="Elegir día"
+                variant="outlined"
+                density="compact"
+                hide-details
+                clearable
+              />
+            </VCol>
 
-        <!-- Rango de Fechas -->
-        <VCol
-          cols="12"
-          sm="6"
-          md="3"
-        >
-          <AppDateTimePicker
-            v-model="rangeDate"
-            label="Rango de fechas"
-            placeholder="Seleccionar rango"
-            :config="{ mode: 'range' }"
-            variant="outlined"
-            density="compact"
-            hide-details
-            clearable
-          />
+            <!-- Rango de Fechas -->
+            <VCol
+              cols="12"
+              sm="6"
+              md="3"
+            >
+              <AppDateTimePicker
+                v-model="rangeDate"
+                label="Rango de fechas"
+                placeholder="Rango"
+                :config="{ mode: 'range' }"
+                variant="outlined"
+                density="compact"
+                hide-details
+                clearable
+              />
+            </VCol>
+
+            <!-- Filtrar por Tipo -->
+            <VCol
+              cols="12"
+              sm="6"
+              md="3"
+            >
+              <VSelect
+                v-model="filterType"
+                :items="[
+                  { title: 'Todos', value: '' },
+                  { title: 'Ingresos', value: 'income' },
+                  { title: 'Egresos', value: 'expense' },
+                  { title: 'Transferencias', value: 'transfer' }
+                ]"
+                item-title="title"
+                item-value="value"
+                label="Tipo"
+                prepend-inner-icon="ri-equalizer-line"
+                hide-details
+                variant="outlined"
+                density="compact"
+              />
+            </VCol>
+          </VRow>
         </VCol>
       </VRow>
     </VCard>
