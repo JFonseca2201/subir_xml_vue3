@@ -561,8 +561,8 @@ watch([() => searchForm.value.search, () => searchForm.value.categorie_id, () =>
             <span>Filtros de Búsqueda</span>
           </div>
 
-          <VBtn variant="text" color="error" size="small" prepend-icon="ri-filter-off-line"
-            class="font-weight-semibold" @click="resetFilters">
+          <VBtn variant="text" color="error" size="small" prepend-icon="ri-filter-off-line" class="font-weight-semibold"
+            @click="resetFilters">
             Limpiar Filtros
           </VBtn>
         </div>
@@ -905,7 +905,14 @@ watch([() => searchForm.value.search, () => searchForm.value.categorie_id, () =>
 
                 <!-- Acciones (Menú de 3 puntos desplegable) -->
                 <td class="text-center py-3">
-                  <div class="d-flex justify-center align-center">
+                  <div class="d-flex justify-center align-center gap-1">
+                    <!-- Ver Detalle -->
+                    <VBtn size="small" color="info" variant="tonal" icon="ri-eye-line" title="Ver Detalle"
+                      @click="viewProduct(item)" />
+
+                    <VBtn v-if="can('edit_product')" size="small" color="warning" variant="tonal" icon="ri-pencil-line"
+                      title="Editar producto" @click="editProduct(item)" />
+
                     <VBtn size="small" color="secondary" variant="tonal" icon="ri-more-2-line"
                       title="Opciones del Producto">
                       <VIcon icon="ri-more-2-line" size="18" />
@@ -918,14 +925,6 @@ watch([() => searchForm.value.search, () => searchForm.value.categorie_id, () =>
                           <!-- Ajuste Rápido de Stock -->
                           <VListItem v-if="can('edit_product') && item.item_type == 1" prepend-icon="ri-box-3-line"
                             title="Ajustar Stock" class="text-body-2" @click="openStockDialog(item)" />
-
-                          <!-- Ver Detalle -->
-                          <VListItem prepend-icon="ri-eye-line" title="Ver Detalle" class="text-body-2"
-                            @click="viewProduct(item)" />
-
-                          <!-- Editar Completo -->
-                          <VListItem v-if="can('edit_product')" prepend-icon="ri-pencil-line" title="Editar Completo"
-                            class="text-warning text-body-2" @click="editProduct(item)" />
 
                           <VDivider v-if="can('delete_product')" class="my-1" />
 

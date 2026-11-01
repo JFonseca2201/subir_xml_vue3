@@ -1205,10 +1205,10 @@ watch(() => route.query.search, newSearch => {
                 </div>
                 <div class="d-flex align-center gap-3 text-caption text-medium-emphasis mt-1">
                   <span>KM: <strong class="font-mono text-high-emphasis">{{ selectedWorkOrder.mileage || 'N/A'
-                  }}</strong></span>
+                      }}</strong></span>
                   <span>•</span>
                   <span>Combustible: <strong class="text-high-emphasis">{{ selectedWorkOrder.fuel_level || 'N/A'
-                  }}</strong></span>
+                      }}</strong></span>
                 </div>
               </div>
             </VCol>

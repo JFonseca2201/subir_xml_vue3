@@ -17,7 +17,7 @@ const { showNotification } = useGlobalToast()
 // Obtener usuario actual del localStorage
 const currentUser = computed(() => {
   const userStr = localStorage.getItem('user')
-  
+
   return userStr ? JSON.parse(userStr) : null
 })
 
@@ -25,7 +25,7 @@ const currentUser = computed(() => {
 const canAccessAportes = computed(() => {
   const user = currentUser.value
   const roleId = user?.role?.id
-  
+
   return user && roleId === 1
 })
 
@@ -59,7 +59,7 @@ const resetFilters = () => {
 // Limpiar nombre de cuenta
 const cleanAccountName = name => {
   if (!name) return 'N/A'
-  
+
   return name
     .replace(/\(EFECTIVO\)/gi, '')
     .replace(/\(TRANSFERENCIA\)/gi, '')
@@ -251,25 +251,10 @@ onMounted(() => {
 
 <template>
   <!-- Estado sin permisos -->
-  <div
-    v-if="!canAccessAportes"
-    class="d-flex justify-center align-center"
-    style="min-height: 400px"
-  >
-    <VCard
-      class="pa-8 text-center rounded-xl elevation-4"
-      max-width="460"
-    >
-      <VAvatar
-        color="error"
-        variant="tonal"
-        size="72"
-        class="mb-4"
-      >
-        <VIcon
-          size="38"
-          icon="ri-lock-line"
-        />
+  <div v-if="!canAccessAportes" class="d-flex justify-center align-center" style="min-height: 400px">
+    <VCard class="pa-8 text-center rounded-xl elevation-4" max-width="460">
+      <VAvatar color="error" variant="tonal" size="72" class="mb-4">
+        <VIcon size="38" icon="ri-lock-line" />
       </VAvatar>
       <h3 class="text-h5 font-weight-bold mb-2 text-high-emphasis">
         Acceso Restringido
@@ -278,41 +263,24 @@ onMounted(() => {
         No tienes permisos suficientes para acceder a la gestión de
         aportes.
       </p>
-      <VBtn
-        color="primary"
-        size="large"
-        variant="elevated"
-        prepend-icon="ri-dashboard-line"
-        class="font-weight-semibold"
-        @click="router.push('/dashboard')"
-      >
+      <VBtn color="primary" size="large" variant="elevated" prepend-icon="ri-dashboard-line"
+        class="font-weight-semibold" @click="router.push('/dashboard')">
         Volver al Dashboard
       </VBtn>
     </VCard>
   </div>
 
-  <div
-    v-else
-    class="pa-4 pa-sm-6 aportes-page"
-  >
+  <div v-else class="pa-4 pa-sm-6 aportes-page">
     <!-- Encabezado Principal (Sin fondo de tarjeta) -->
     <div class="d-flex align-center justify-space-between flex-wrap mb-4 mb-md-6 gap-3 gap-md-4">
       <div class="d-flex align-center gap-3">
-        <VAvatar
-          color="primary"
-          variant="tonal"
-          rounded="lg"
-          size="42"
-          size-sm="44"
-        >
-          <VIcon
-            icon="ri-group-line"
-            size="24"
-          />
+        <VAvatar color="primary" variant="tonal" rounded="lg" size="42" size-sm="44">
+          <VIcon icon="ri-group-line" size="24" />
         </VAvatar>
         <div>
           <div class="d-flex align-center gap-2">
-            <h1 class="text-h5 text-sm-h4 font-weight-bold text-high-emphasis mb-0 operations-page-title d-flex align-center">
+            <h1
+              class="text-h5 text-sm-h4 font-weight-bold text-high-emphasis mb-0 operations-page-title d-flex align-center">
               Aportes de Capital
             </h1>
             <div class="status-pill-clean status-transfer">
@@ -328,26 +296,12 @@ onMounted(() => {
 
       <!-- Botones de Acción -->
       <div class="d-flex align-center justify-end gap-2 flex-wrap ms-auto crud-header-actions">
-        <VBtn
-          color="primary"
-          variant="elevated"
-          size="default"
-          prepend-icon="ri-add-circle-line"
-          class="font-weight-bold elevation-1"
-          @click="openCreateDialog"
-        >
+        <VBtn color="primary" variant="elevated" size="default" prepend-icon="ri-add-circle-line"
+          class="font-weight-bold elevation-1" @click="openCreateDialog">
           Nuevo Aporte
         </VBtn>
-        <VBtn
-          title="Actualizar datos"
-          variant="outlined"
-          color="secondary"
-          prepend-icon="ri-refresh-line"
-          size="default"
-          class="font-weight-medium"
-          :loading="loading"
-          @click="loadAportes"
-        >
+        <VBtn title="Actualizar datos" variant="outlined" color="secondary" prepend-icon="ri-refresh-line"
+          size="default" class="font-weight-medium" :loading="loading" @click="loadAportes">
           Actualizar
         </VBtn>
       </div>
@@ -356,15 +310,8 @@ onMounted(() => {
     <!-- Tarjetas de Resumen KPI con colores tonales -->
     <VRow class="mb-5 d-none d-sm-flex">
       <!-- Aportes Hoy -->
-      <VCol
-        cols="12"
-        sm="6"
-        md="4"
-      >
-        <VCard
-          class="pa-4 rounded-xl tonal-card bg-primary-tonal border-primary operations-kpi-card"
-          elevation="0"
-        >
+      <VCol cols="12" sm="6" md="4">
+        <VCard class="pa-4 rounded-xl tonal-card bg-primary-tonal border-primary operations-kpi-card" elevation="0">
           <div class="d-flex align-center justify-space-between">
             <div>
               <span class="text-overline font-weight-bold text-primary text-uppercase tracking-wider">
@@ -377,32 +324,16 @@ onMounted(() => {
                 Total acumulado jornada de hoy
               </span>
             </div>
-            <VAvatar
-              color="primary"
-              variant="elevated"
-              size="42"
-              class="elevation-2 kpi-avatar"
-            >
-              <VIcon
-                size="24"
-                icon="ri-calendar-check-line"
-                color="white"
-              />
+            <VAvatar color="primary" variant="elevated" size="42" class="elevation-2 kpi-avatar">
+              <VIcon size="24" icon="ri-calendar-check-line" color="white" />
             </VAvatar>
           </div>
         </VCard>
       </VCol>
 
       <!-- Aportes del Mes -->
-      <VCol
-        cols="12"
-        sm="6"
-        md="4"
-      >
-        <VCard
-          class="pa-4 rounded-xl tonal-card bg-success-tonal border-success operations-kpi-card"
-          elevation="0"
-        >
+      <VCol cols="12" sm="6" md="4">
+        <VCard class="pa-4 rounded-xl tonal-card bg-success-tonal border-success operations-kpi-card" elevation="0">
           <div class="d-flex align-center justify-space-between">
             <div>
               <span class="text-overline font-weight-bold text-success text-uppercase tracking-wider">
@@ -415,32 +346,16 @@ onMounted(() => {
                 Total acumulado mes en curso
               </span>
             </div>
-            <VAvatar
-              color="success"
-              variant="elevated"
-              size="42"
-              class="elevation-2 kpi-avatar"
-            >
-              <VIcon
-                size="24"
-                icon="ri-calendar-event-fill"
-                color="white"
-              />
+            <VAvatar color="success" variant="elevated" size="42" class="elevation-2 kpi-avatar">
+              <VIcon size="24" icon="ri-calendar-event-fill" color="white" />
             </VAvatar>
           </div>
         </VCard>
       </VCol>
 
       <!-- Total General -->
-      <VCol
-        cols="12"
-        sm="12"
-        md="4"
-      >
-        <VCard
-          class="pa-4 rounded-xl tonal-card bg-info-tonal border-info operations-kpi-card"
-          elevation="0"
-        >
+      <VCol cols="12" sm="12" md="4">
+        <VCard class="pa-4 rounded-xl tonal-card bg-info-tonal border-info operations-kpi-card" elevation="0">
           <div class="d-flex align-center justify-space-between">
             <div>
               <span class="text-overline font-weight-bold text-info text-uppercase tracking-wider">
@@ -453,17 +368,8 @@ onMounted(() => {
                 Suma histórica total de aportes
               </span>
             </div>
-            <VAvatar
-              color="info"
-              variant="elevated"
-              size="42"
-              class="elevation-2 kpi-avatar"
-            >
-              <VIcon
-                size="24"
-                icon="ri-money-dollar-box-line"
-                color="white"
-              />
+            <VAvatar color="info" variant="elevated" size="42" class="elevation-2 kpi-avatar">
+              <VIcon size="24" icon="ri-money-dollar-box-line" color="white" />
             </VAvatar>
           </div>
         </VCard>
@@ -474,79 +380,40 @@ onMounted(() => {
     <VCard class="pa-4 mb-6 rounded-xl border-light elevation-1">
       <div class="d-flex align-center justify-space-between mb-3">
         <div class="d-flex align-center gap-2 text-subtitle-2 font-weight-bold text-high-emphasis">
-          <VIcon
-            icon="ri-filter-3-line"
-            size="18"
-            color="primary"
-          />
+          <VIcon icon="ri-filter-3-line" size="18" color="primary" />
           <span>Filtros de Búsqueda</span>
         </div>
 
-        <VBtn
-          variant="text"
-          color="error"
-          size="small"
-          prepend-icon="ri-filter-off-line"
-          class="font-weight-semibold"
-          @click="resetFilters"
-        >
+        <VBtn variant="text" color="error" size="small" prepend-icon="ri-filter-off-line" class="font-weight-semibold"
+          @click="resetFilters">
           Limpiar Filtros
         </VBtn>
       </div>
 
-      <VRow
-        align="center"
-        justify="space-between"
-      >
-        <VCol
-          cols="12"
-          md="6"
-        >
-          <VTextField
-            v-model="searchQuery"
-            prepend-inner-icon="ri-search-2-line"
-            placeholder="Buscar por socio, descripción o cuenta..."
-            hide-details
-            clearable
-            variant="outlined"
-            density="compact"
-            :loading="loading"
-          />
+      <VRow align="center" justify="space-between">
+        <VCol cols="12" md="6">
+          <VTextField v-model="searchQuery" prepend-inner-icon="ri-search-2-line"
+            placeholder="Buscar por socio, descripción o cuenta..." hide-details clearable variant="outlined"
+            density="compact" :loading="loading" />
         </VCol>
 
-        <VCol
-          cols="12"
-          md="6"
-          class="d-flex justify-end align-center"
-        >
+        <VCol cols="12" md="6" class="d-flex justify-end align-center">
           <div class="finance-filter-container d-flex align-center justify-end gap-2">
             <span class="text-body-2 font-weight-medium text-medium-emphasis finance-filter-label">Filtrar:</span>
             <div class="finance-filter-btn-group">
-              <VBtn
-                size="small"
-                :variant="selectedFilter === 'all' ? 'elevated' : 'tonal'"
-                :color="selectedFilter === 'all' ? 'primary' : 'secondary'"
-                class="font-weight-semibold"
-                @click="selectedFilter = 'all'"
-              >
+              <VBtn size="small" :variant="selectedFilter === 'all' ? 'elevated' : 'tonal'"
+                :color="selectedFilter === 'all' ? 'primary' : 'secondary'" class="font-weight-semibold"
+                @click="selectedFilter = 'all'">
                 Todos
               </VBtn>
-              <VBtn
-                size="small"
-                :variant="selectedFilter === 'today' ? 'elevated' : 'tonal'"
-                :color="selectedFilter === 'today' ? 'primary' : 'secondary'"
-                class="font-weight-semibold"
-                @click="selectedFilter = 'today'"
-              >
+              <VBtn size="small" :variant="selectedFilter === 'today' ? 'elevated' : 'tonal'"
+                :color="selectedFilter === 'today' ? 'primary' : 'secondary'" class="font-weight-semibold"
+                @click="selectedFilter = 'today'">
                 Hoy
               </VBtn>
-              <VBtn
-                size="small"
-                :variant="selectedFilter === 'month' ? 'elevated' : 'tonal'"
-                :color="selectedFilter === 'month' ? 'primary' : 'secondary'"
-                class="font-weight-semibold"
-                @click="selectedFilter = 'month'"
-              >
+              <VBtn size="small" :variant="selectedFilter === 'month' ? 'elevated' : 'tonal'"
+                :color="selectedFilter === 'month' ? 'primary' : 'secondary'" class="font-weight-semibold"
+                @click="selectedFilter = 'month'">
                 Este Mes
               </VBtn>
             </div>
@@ -556,21 +423,9 @@ onMounted(() => {
     </VCard>
 
     <!-- Sin registros iniciales (Base de datos vacía) -->
-    <VCard
-      v-if="!loading && !aportes.length"
-      class="text-center pa-12 rounded-xl border-light elevation-1"
-    >
-      <VAvatar
-        color="primary"
-        variant="tonal"
-        size="80"
-        class="mb-4"
-      >
-        <VIcon
-          icon="ri-inbox-line"
-          size="42"
-          color="primary"
-        />
+    <VCard v-if="!loading && !aportes.length" class="text-center pa-12 rounded-xl border-light elevation-1">
+      <VAvatar color="primary" variant="tonal" size="80" class="mb-4">
+        <VIcon icon="ri-inbox-line" size="42" color="primary" />
       </VAvatar>
       <h3 class="text-h6 font-weight-bold text-high-emphasis">
         No hay aportes registrados
@@ -578,13 +433,8 @@ onMounted(() => {
       <p class="text-body-2 text-medium-emphasis max-w-md mx-auto mt-1 mb-6">
         Comienza registrando tu primer aporte de capital.
       </p>
-      <VBtn
-        color="primary"
-        variant="elevated"
-        prepend-icon="ri-add-line"
-        class="font-weight-semibold"
-        @click="openCreateDialog"
-      >
+      <VBtn color="primary" variant="elevated" prepend-icon="ri-add-line" class="font-weight-semibold"
+        @click="openCreateDialog">
         Registrar Primer Aporte
       </VBtn>
     </VCard>
@@ -593,34 +443,16 @@ onMounted(() => {
     <div v-else>
       <!-- VISTA MÓVIL: TARJETAS TOUCH-FRIENDLY (d-md-none) -->
       <div class="d-md-none d-flex flex-column gap-4 mb-4 mobile-card-list-container">
-        <div
-          v-if="loading"
-          class="d-flex flex-column gap-3"
-        >
-          <div
-            v-for="n in 3"
-            :key="n"
-            class="pa-4 rounded-xl border bg-surface"
-          >
+        <div v-if="loading" class="d-flex flex-column gap-3">
+          <div v-for="n in 3" :key="n" class="pa-4 rounded-xl border bg-surface">
             <div class="shimmer-line w-50 mb-2" />
             <div class="shimmer-line w-75 mb-3" />
             <div class="shimmer-line w-40" />
           </div>
         </div>
-        <div
-          v-else-if="!filteredAportes.length"
-          class="text-center pa-8 rounded-xl border bg-surface"
-        >
-          <VAvatar
-            size="56"
-            color="primary"
-            variant="tonal"
-            class="mb-3"
-          >
-            <VIcon
-              size="28"
-              icon="ri-inbox-line"
-            />
+        <div v-else-if="!filteredAportes.length" class="text-center pa-8 rounded-xl border bg-surface">
+          <VAvatar size="56" color="primary" variant="tonal" class="mb-3">
+            <VIcon size="28" icon="ri-inbox-line" />
           </VAvatar>
           <p class="text-body-1 font-weight-bold mb-1">
             Sin resultados para la búsqueda
@@ -629,20 +461,12 @@ onMounted(() => {
             Prueba cambiando el término de búsqueda o limpia el filtro.
           </p>
         </div>
-        <template
-          v-for="dia in filteredAportes"
-          v-else
-          :key="`mob-aporte-dia-${dia.fecha}`"
-        >
+        <template v-for="dia in filteredAportes" v-else :key="`mob-aporte-dia-${dia.fecha}`">
           <!-- Cabecera de Día Móvil -->
           <div class="pa-3 rounded-xl bg-slate-50 border d-flex flex-column gap-1.5">
             <div class="d-flex align-center justify-space-between flex-wrap gap-2">
               <div class="d-flex align-center gap-2">
-                <VIcon
-                  icon="ri-calendar-event-line"
-                  size="18"
-                  color="primary"
-                />
+                <VIcon icon="ri-calendar-event-line" size="18" color="primary" />
                 <span class="text-body-2 font-weight-bold text-high-emphasis">
                   {{ dia.label }}
                 </span>
@@ -655,31 +479,19 @@ onMounted(() => {
             <div class="d-flex align-center justify-space-between pt-1 border-t text-caption font-weight-bold">
               <span class="text-medium-emphasis text-uppercase">Total jornada:</span>
               <span class="text-success font-weight-black">
-                +{{ formatCurrency(dia.total_dia || dia.aportes.reduce((acc, a) => acc + parseFloat(a.monto || 0), 0)) }}
+                +{{formatCurrency(dia.total_dia || dia.aportes.reduce((acc, a) => acc + parseFloat(a.monto || 0), 0))
+                }}
               </span>
             </div>
           </div>
 
           <!-- Tarjetas de Aportes del Día -->
-          <div
-            v-for="aporte in dia.aportes"
-            :key="`mob-aporte-${aporte.id}`"
-            class="mobile-aporte-card"
-          >
+          <div v-for="aporte in dia.aportes" :key="`mob-aporte-${aporte.id}`" class="mobile-aporte-card">
             <!-- Fila Superior: Socio y Hora -->
             <div class="d-flex align-center justify-space-between pb-2 border-b mb-2">
               <div class="d-flex align-center gap-2">
-                <VAvatar
-                  size="26"
-                  color="success"
-                  variant="tonal"
-                  class="rounded-circle"
-                >
-                  <VIcon
-                    size="14"
-                    icon="ri-user-star-line"
-                    color="success"
-                  />
+                <VAvatar size="26" color="success" variant="tonal" class="rounded-circle">
+                  <VIcon size="14" icon="ri-user-star-line" color="success" />
                 </VAvatar>
                 <span class="text-caption font-weight-bold text-slate-900">
                   {{ aporte.partner_nombre }}
@@ -696,11 +508,8 @@ onMounted(() => {
                 {{ aporte.descripcion || 'Aporte de Capital' }}
               </div>
               <div class="d-flex align-center gap-1.5 flex-wrap mt-1 text-caption">
-                <VIcon
-                  :icon="aporte.metodo_pago === 'EFECTIVO' ? 'ri-money-dollar-circle-line' : 'ri-bank-line'"
-                  size="14"
-                  :color="aporte.metodo_pago === 'EFECTIVO' ? 'success' : 'primary'"
-                />
+                <VIcon :icon="aporte.metodo_pago === 'EFECTIVO' ? 'ri-money-dollar-circle-line' : 'ri-bank-line'"
+                  size="14" :color="aporte.metodo_pago === 'EFECTIVO' ? 'success' : 'primary'" />
                 <span class="font-weight-medium text-slate-700">
                   {{ cleanAccountName(aporte.cuenta) }}
                 </span>
@@ -714,52 +523,22 @@ onMounted(() => {
             <!-- Fila Inferior: Monto y Acciones -->
             <div class="d-flex align-center justify-space-between pt-2 border-t flex-wrap gap-2">
               <div>
-                <span
-                  class="text-caption text-medium-emphasis d-block"
-                  style="font-size: 0.68rem;"
-                >MONTO APORTADO</span>
+                <span class="text-caption text-medium-emphasis d-block" style="font-size: 0.68rem;">MONTO
+                  APORTADO</span>
                 <span class="text-h6 font-weight-black text-success">
                   +{{ formatCurrency(aporte.monto) }}
                 </span>
               </div>
 
               <div class="d-flex align-center gap-1 ms-auto listing-item-actions">
-                <VBtn
-                  size="small"
-                  variant="tonal"
-                  color="primary"
-                  icon="ri-eye-line"
-                  class="rounded-lg"
-                  title="Ver Nota"
-                  @click="openAporteNoteDialog(aporte)"
-                />
-                <VBtn
-                  size="small"
-                  variant="tonal"
-                  color="secondary"
-                  icon="ri-attachment-line"
-                  class="rounded-lg"
-                  title="Adjuntos"
-                  @click="openAttachDialog(aporte)"
-                />
-                <VBtn
-                  size="small"
-                  variant="tonal"
-                  color="warning"
-                  icon="ri-pencil-line"
-                  class="rounded-lg"
-                  title="Editar"
-                  @click="openEditDialog(aporte)"
-                />
-                <VBtn
-                  size="small"
-                  variant="tonal"
-                  color="error"
-                  icon="ri-delete-bin-line"
-                  class="rounded-lg"
-                  title="Eliminar"
-                  @click="deleteAporte(aporte)"
-                />
+                <VBtn size="small" variant="tonal" color="primary" icon="ri-eye-line" class="rounded-lg"
+                  title="Ver Nota" @click="openAporteNoteDialog(aporte)" />
+                <VBtn size="small" variant="tonal" color="secondary" icon="ri-attachment-line" class="rounded-lg"
+                  title="Adjuntos" @click="openAttachDialog(aporte)" />
+                <VBtn size="small" variant="tonal" color="warning" icon="ri-pencil-line" class="rounded-lg"
+                  title="Editar" @click="openEditDialog(aporte)" />
+                <VBtn size="small" variant="tonal" color="error" icon="ri-delete-bin-line" class="rounded-lg"
+                  title="Eliminar" @click="deleteAporte(aporte)" />
               </div>
             </div>
           </div>
@@ -767,56 +546,29 @@ onMounted(() => {
       </div>
 
       <!-- Lista Unificada de Aportes por Fecha Desktop (d-none d-md-block) -->
-      <VCard class="d-none d-md-block rounded-xl border-light overflow-hidden elevation-1 transfer-table-container position-relative">
-        <VProgressLinear
-          v-if="loading"
-          v-slot
-          indeterminate
-          color="primary"
-          height="3"
-          class="position-absolute"
-          style="top: 0; left: 0; right: 0; z-index: 10;"
-        />
-        <VTable
-          hover
-          class="transfer-table text-no-wrap"
-        >
+      <VCard
+        class="d-none d-md-block rounded-xl border-light overflow-hidden elevation-1 transfer-table-container position-relative">
+        <VProgressLinear v-if="loading" v-slot indeterminate color="primary" height="3" class="position-absolute"
+          style="top: 0; left: 0; right: 0; z-index: 10;" />
+        <VTable hover class="transfer-table text-no-wrap">
           <thead>
             <tr>
-              <th
-                class="text-left py-4"
-                style="min-width: 260px;"
-              >
+              <th class="text-left py-4" style="min-width: 260px;">
                 SOCIO
               </th>
-              <th
-                class="text-left py-4"
-                style="min-width: 260px;"
-              >
+              <th class="text-left py-4" style="min-width: 260px;">
                 DESCRIPCIÓN
               </th>
-              <th
-                class="text-left py-4"
-                style="min-width: 200px;"
-              >
+              <th class="text-left py-4" style="min-width: 200px;">
                 CUENTA DE INGRESO
               </th>
-              <th
-                class="text-left py-4"
-                style="min-width: 180px;"
-              >
+              <th class="text-left py-4" style="min-width: 180px;">
                 REGISTRADO POR
               </th>
-              <th
-                class="text-right py-4"
-                style="width: 160px;"
-              >
+              <th class="text-right py-4" style="width: 160px;">
                 MONTO
               </th>
-              <th
-                class="text-center py-4"
-                style="width: 120px;"
-              >
+              <th class="text-center py-4" style="width: 120px;">
                 ACCIONES
               </th>
             </tr>
@@ -824,11 +576,7 @@ onMounted(() => {
 
           <!-- Cargando (Skeleton Rows) -->
           <tbody v-if="loading">
-            <tr
-              v-for="n in 5"
-              :key="n"
-              class="skeleton-row align-middle"
-            >
+            <tr v-for="n in 5" :key="n" class="skeleton-row align-middle">
               <td class="py-4">
                 <div class="shimmer-line w-60" />
               </td>
@@ -856,21 +604,9 @@ onMounted(() => {
           <!-- Sin resultados filtrados -->
           <tbody v-else-if="!filteredAportes.length">
             <tr>
-              <td
-                colspan="6"
-                class="text-center py-12 text-medium-emphasis"
-              >
-                <VAvatar
-                  color="primary"
-                  variant="tonal"
-                  size="64"
-                  class="mb-3"
-                >
-                  <VIcon
-                    icon="ri-inbox-line"
-                    size="32"
-                    color="primary"
-                  />
+              <td colspan="6" class="text-center py-12 text-medium-emphasis">
+                <VAvatar color="primary" variant="tonal" size="64" class="mb-3">
+                  <VIcon icon="ri-inbox-line" size="32" color="primary" />
                 </VAvatar>
                 <div class="text-h6 font-weight-bold text-high-emphasis">
                   Sin resultados para la búsqueda
@@ -885,26 +621,14 @@ onMounted(() => {
 
           <!-- Datos reales -->
           <tbody v-else>
-            <template
-              v-for="dia in filteredAportes"
-              :key="dia.fecha"
-            >
+            <template v-for="dia in filteredAportes" :key="dia.fecha">
               <!-- Fila de Encabezado por Fecha -->
               <tr class="transfer-date-header-row">
                 <td colspan="6">
                   <div class="d-flex align-center justify-space-between flex-wrap gap-2 py-1">
                     <div class="d-flex align-center gap-3">
-                      <VAvatar
-                        color="primary"
-                        variant="tonal"
-                        size="36"
-                        class="rounded-lg"
-                      >
-                        <VIcon
-                          icon="ri-calendar-event-line"
-                          size="20"
-                          color="primary"
-                        />
+                      <VAvatar color="primary" variant="tonal" size="36" class="rounded-lg">
+                        <VIcon icon="ri-calendar-event-line" size="20" color="primary" />
                       </VAvatar>
                       <div class="d-flex align-center gap-2">
                         <span class="text-subtitle-2 font-weight-bold text-slate-900">
@@ -918,10 +642,12 @@ onMounted(() => {
                     </div>
 
                     <div class="d-flex align-center gap-2 me-2">
-                      <span class="text-caption text-medium-emphasis text-uppercase font-weight-bold">Total del Día:</span>
+                      <span class="text-caption text-medium-emphasis text-uppercase font-weight-bold">Total del
+                        Día:</span>
                       <div class="status-pill-clean status-paid">
                         <span class="status-dot" />
-                        <span>{{ formatCurrency(dia.total_dia || dia.aportes.reduce((acc, a) => acc + parseFloat(a.monto || 0), 0)) }}</span>
+                        <span>{{formatCurrency(dia.total_dia || dia.aportes.reduce((acc, a) => acc + parseFloat(a.monto
+                          || 0), 0))}}</span>
                       </div>
                     </div>
                   </div>
@@ -929,25 +655,12 @@ onMounted(() => {
               </tr>
 
               <!-- Filas de Aportes -->
-              <tr
-                v-for="aporte in dia.aportes"
-                :key="aporte.id"
-                class="transfer-row"
-              >
+              <tr v-for="aporte in dia.aportes" :key="aporte.id" class="transfer-row">
                 <!-- Socio -->
                 <td class="py-3">
                   <div class="d-flex align-center gap-3">
-                    <VAvatar
-                      size="36"
-                      color="success"
-                      variant="tonal"
-                      class="rounded-circle shrink-0 font-weight-bold"
-                    >
-                      <VIcon
-                        size="20"
-                        icon="ri-user-star-line"
-                        color="success"
-                      />
+                    <VAvatar size="36" color="success" variant="tonal" class="rounded-circle shrink-0 font-weight-bold">
+                      <VIcon size="20" icon="ri-user-star-line" color="success" />
                     </VAvatar>
                     <div class="d-flex flex-column text-left">
                       <span class="text-body-2 font-weight-bold text-slate-900">
@@ -962,10 +675,8 @@ onMounted(() => {
 
                 <!-- Descripción -->
                 <td class="py-3">
-                  <div
-                    class="text-body-2 font-weight-medium text-slate-800 text-wrap"
-                    style="max-width: 280px; line-height: 1.35;"
-                  >
+                  <div class="text-body-2 font-weight-medium text-slate-800 text-wrap"
+                    style="max-width: 280px; line-height: 1.35;">
                     {{ aporte.descripcion || 'Aporte de Capital' }}
                   </div>
                 </td>
@@ -973,16 +684,10 @@ onMounted(() => {
                 <!-- Cuenta & Método -->
                 <td class="py-3">
                   <div class="d-flex align-center gap-2">
-                    <VAvatar
-                      size="30"
-                      :color="aporte.metodo_pago === 'EFECTIVO' ? 'success' : 'primary'"
-                      variant="tonal"
-                      class="rounded-lg shrink-0"
-                    >
-                      <VIcon
-                        :icon="aporte.metodo_pago === 'EFECTIVO' ? 'ri-money-dollar-circle-line' : 'ri-bank-line'"
-                        size="16"
-                      />
+                    <VAvatar size="30" :color="aporte.metodo_pago === 'EFECTIVO' ? 'success' : 'primary'"
+                      variant="tonal" class="rounded-lg shrink-0">
+                      <VIcon :icon="aporte.metodo_pago === 'EFECTIVO' ? 'ri-money-dollar-circle-line' : 'ri-bank-line'"
+                        size="16" />
                     </VAvatar>
                     <div class="d-flex flex-column">
                       <span class="text-body-2 font-weight-bold text-slate-900">
@@ -998,26 +703,15 @@ onMounted(() => {
                 <!-- Registrado por -->
                 <td class="py-3">
                   <div class="d-flex align-center gap-2">
-                    <VAvatar
-                      size="28"
-                      color="secondary"
-                      variant="tonal"
-                      class="rounded-circle shrink-0"
-                    >
-                      <VIcon
-                        icon="ri-user-settings-line"
-                        size="15"
-                      />
+                    <VAvatar size="28" color="secondary" variant="tonal" class="rounded-circle shrink-0">
+                      <VIcon icon="ri-user-settings-line" size="15" />
                     </VAvatar>
                     <div class="d-flex flex-column">
                       <span class="text-body-2 font-weight-medium text-slate-800">
                         {{ aporte.user_nombre || 'Super-Admin' }}
                       </span>
                       <span class="text-caption text-medium-emphasis d-flex align-center gap-1">
-                        <VIcon
-                          icon="ri-time-line"
-                          size="12"
-                        />
+                        <VIcon icon="ri-time-line" size="12" />
                         {{ aporte.hora || '' }}
                       </span>
                     </div>
@@ -1035,80 +729,37 @@ onMounted(() => {
                 <td class="py-3 text-center">
                   <div class="d-flex align-center justify-center gap-1">
                     <!-- Botón Principal: Ver Nota y Comprobantes -->
-                    <VBtn
-                      icon="ri-eye-line"
-                      variant="tonal"
-                      color="primary"
-                      size="small"
-                      class="action-btn"
-                      title="Ver Nota y Comprobantes"
-                      @click="openAporteNoteDialog(aporte)"
-                    />
+                    <VBtn icon="ri-eye-line" variant="tonal" color="primary" size="small" class="action-btn"
+                      title="Ver Nota y Comprobantes" @click="openAporteNoteDialog(aporte)" />
+
+
+                    <VBtn size="small" color="warning" variant="tonal" icon="ri-pencil-line"
+                      @click="openEditDialog(aporte)" />
 
                     <!-- Menú Pro de Acciones Secundarias -->
-                    <VMenu
-                      location="bottom end"
-                      transition="scale-transition"
-                    >
+                    <VMenu location="bottom end" transition="scale-transition">
                       <template #activator="{ props: menuProps }">
-                        <VBtn
-                          v-bind="menuProps"
-                          size="small"
-                          variant="text"
-                          color="secondary"
-                          icon="ri-more-2-fill"
-                          class="action-btn"
-                          title="Más opciones"
-                        />
+                        <VBtn v-bind="menuProps" size="small" variant="text" color="secondary" icon="ri-more-2-fill"
+                          class="action-btn" title="Más opciones" />
                       </template>
 
-                      <VList
-                        density="compact"
-                        elevation="6"
-                        class="py-1 rounded-lg"
-                        min-width="200"
-                      >
+                      <VList density="compact" elevation="6" class="py-1 rounded-lg" min-width="200">
                         <VListItem @click="openAttachDialog(aporte)">
                           <template #prepend>
-                            <VIcon
-                              icon="ri-attachment-2"
-                              color="secondary"
-                              size="18"
-                              class="me-2"
-                            />
+                            <VIcon icon="ri-attachment-2" color="secondary" size="18" class="me-2" />
                           </template>
                           <VListItemTitle class="font-weight-medium text-body-2">
                             Adjuntar Comprobante
                           </VListItemTitle>
                         </VListItem>
 
-                        <VListItem @click="openEditDialog(aporte)">
-                          <template #prepend>
-                            <VIcon
-                              icon="ri-pencil-line"
-                              color="warning"
-                              size="18"
-                              class="me-2"
-                            />
-                          </template>
-                          <VListItemTitle class="font-weight-medium text-body-2">
-                            Editar Aporte
-                          </VListItemTitle>
-                        </VListItem>
+
 
                         <VDivider class="my-1" />
 
-                        <VListItem
-                          class="text-error"
-                          @click="deleteAporte(aporte)"
-                        >
+                        <VListItem class="text-error" @click="deleteAporte(aporte)">
                           <template #prepend>
-                            <VIcon
-                              icon="ri-delete-bin-line"
-                              color="error"
-                              size="18"
-                              class="me-2"
-                            />
+                            <VIcon icon="ri-delete-bin-line" color="error" size="18" class="me-2" />
                           </template>
                           <VListItemTitle class="font-weight-medium text-body-2 text-error">
                             Eliminar Aporte
@@ -1127,58 +778,31 @@ onMounted(() => {
   </div>
 
   <!-- Diálogo de Crear Aportes -->
-  <AporteCreateDialog
-    v-model="showCreateDialog"
-    @created="onAporteCreated"
-  />
+  <AporteCreateDialog v-model="showCreateDialog" @created="onAporteCreated" />
 
   <!-- Diálogo de Editar Aportes -->
-  <AporteEditDialog
-    v-model="showEditDialog"
-    :aporte="editingAporte"
-    @updated="onAporteUpdated"
-  />
+  <AporteEditDialog v-model="showEditDialog" :aporte="editingAporte" @updated="onAporteUpdated" />
 
   <!-- Diálogo de Nota de Aporte y Comprobantes (VDialog) -->
-  <MovementReceiptNoteDialog
-    v-if="selectedAporteForNote"
-    v-model="isNoteDialogVisible"
-    :movement="selectedAporteForNote"
-    @updated="loadAportes"
-  />
+  <MovementReceiptNoteDialog v-if="selectedAporteForNote" v-model="isNoteDialogVisible"
+    :movement="selectedAporteForNote" @updated="loadAportes" />
 
   <!-- Diálogo de Gestión de Comprobantes Adjuntos (VDialog) -->
-  <AttachReceiptsDialog
-    v-if="selectedAporteForReceipts"
-    :is-dialog-visible="isReceiptsDialogVisible"
-    attachable-type="partner_capital"
-    :attachable-id="selectedAporteForReceipts.id"
+  <AttachReceiptsDialog v-if="selectedAporteForReceipts" :is-dialog-visible="isReceiptsDialogVisible"
+    attachable-type="partner_capital" :attachable-id="selectedAporteForReceipts.id"
     :title="`Comprobantes de Aporte — ${selectedAporteForReceipts.partner_nombre}`"
     :identifier="`APORTE-${String(selectedAporteForReceipts.id).padStart(5, '0')}`"
     :party-name="selectedAporteForReceipts.partner_nombre"
     @update:is-dialog-visible="val => { isReceiptsDialogVisible = val; if (!val) selectedAporteForReceipts = null; }"
-    @updated="loadAportes"
-  />
+    @updated="loadAportes" />
 
   <!-- Diálogo Confirmar Eliminación Estándar del Sistema (VDialog) -->
-  <VDialog
-    v-model="showDeleteDialog"
-    scrollable
-    max-width="500"
-    persistent
-    transition="dialog-bottom-transition"
-  >
+  <VDialog v-model="showDeleteDialog" scrollable max-width="500" persistent transition="dialog-bottom-transition">
     <VCard class="custom-dialog-card elevation-12">
       <!-- Header Banner Primary (Color del sistema) -->
       <div class="custom-dialog-header-primary bg-primary text-white">
-        <VBtn
-          icon="ri-close-line"
-          variant="text"
-          size="small"
-          class="custom-dialog-close-btn"
-          :disabled="loader.loading"
-          @click="closeDeleteDialog"
-        />
+        <VBtn icon="ri-close-line" variant="text" size="small" class="custom-dialog-close-btn"
+          :disabled="loader.loading" @click="closeDeleteDialog" />
         <div class="custom-dialog-avatar">
           <VIcon icon="ri-delete-bin-line" />
         </div>
@@ -1190,22 +814,11 @@ onMounted(() => {
         </p>
       </div>
 
-      <VCardText
-        v-if="aporteToDelete"
-        class="pa-6"
-      >
+      <VCardText v-if="aporteToDelete" class="pa-6">
         <div class="text-center">
           <!-- Aporte Avatar -->
-          <VAvatar
-            size="72"
-            color="primary"
-            variant="tonal"
-            class="mb-3"
-          >
-            <VIcon
-              icon="ri-hand-coin-line"
-              size="36"
-            />
+          <VAvatar size="72" color="primary" variant="tonal" class="mb-3">
+            <VIcon icon="ri-hand-coin-line" size="36" />
           </VAvatar>
 
           <!-- Aporte Info Summary -->
@@ -1218,10 +831,7 @@ onMounted(() => {
             </p>
 
             <!-- Detalles en Card Plana -->
-            <div
-              class="pa-3 rounded-xl border d-flex flex-column gap-2 text-start info-card-flat"
-
-            >
+            <div class="pa-3 rounded-xl border d-flex flex-column gap-2 text-start info-card-flat">
               <div class="d-flex justify-space-between align-center">
                 <span class="text-caption text-medium-emphasis">Socio Inversionista:</span>
                 <span class="text-caption font-weight-bold text-slate-900">
@@ -1236,25 +846,16 @@ onMounted(() => {
                 </span>
               </div>
 
-              <div
-                v-if="aporteToDelete.metodo_pago"
-                class="d-flex justify-space-between align-center"
-              >
+              <div v-if="aporteToDelete.metodo_pago" class="d-flex justify-space-between align-center">
                 <span class="text-caption text-medium-emphasis">Método de Pago:</span>
                 <span class="text-caption text-medium-emphasis text-uppercase font-weight-medium">
                   {{ aporteToDelete.metodo_pago }}
                 </span>
               </div>
 
-              <div
-                v-if="aporteToDelete.descripcion"
-                class="d-flex justify-space-between align-center"
-              >
+              <div v-if="aporteToDelete.descripcion" class="d-flex justify-space-between align-center">
                 <span class="text-caption text-medium-emphasis">Descripción:</span>
-                <span
-                  class="text-caption text-high-emphasis text-truncate"
-                  style="max-width: 220px;"
-                >
+                <span class="text-caption text-high-emphasis text-truncate" style="max-width: 220px;">
                   {{ aporteToDelete.descripcion }}
                 </span>
               </div>
@@ -1267,11 +868,9 @@ onMounted(() => {
               </div>
             </div>
 
-            <div class="mt-4 d-flex align-center justify-center gap-1 text-error text-caption font-weight-medium text-center">
-              <VIcon
-                icon="ri-error-warning-line"
-                size="16"
-              />
+            <div
+              class="mt-4 d-flex align-center justify-center gap-1 text-error text-caption font-weight-medium text-center">
+              <VIcon icon="ri-error-warning-line" size="16" />
               <span>Esta acción revertirá los fondos de la cuenta asociada y no se puede deshacer.</span>
             </div>
           </div>
@@ -1280,30 +879,15 @@ onMounted(() => {
 
       <VDivider />
 
-      <VCardActions
-        class="pa-4 d-flex justify-end align-center gap-3 bg-surface"
-        style="position: sticky; bottom: 0; z-index: 2;"
-      >
-        <VBtn
-          variant="outlined"
-          color="secondary"
-          prepend-icon="ri-close-line"
-          class="rounded-lg px-6 font-weight-medium"
-          height="40"
-          :disabled="loader.loading"
-          @click="closeDeleteDialog"
-        >
+      <VCardActions class="pa-4 d-flex justify-end align-center gap-3 bg-surface"
+        style="position: sticky; bottom: 0; z-index: 2;">
+        <VBtn variant="outlined" color="secondary" prepend-icon="ri-close-line"
+          class="rounded-lg px-6 font-weight-medium" height="40" :disabled="loader.loading" @click="closeDeleteDialog">
           Cancelar
         </VBtn>
-        <VBtn
-          color="error"
-          variant="elevated"
-          prepend-icon="ri-delete-bin-line"
-          class="rounded-lg px-6 font-weight-bold elevation-2"
-          height="40"
-          :loading="loader.loading"
-          @click="confirmDeleteAporte"
-        >
+        <VBtn color="error" variant="elevated" prepend-icon="ri-delete-bin-line"
+          class="rounded-lg px-6 font-weight-bold elevation-2" height="40" :loading="loader.loading"
+          @click="confirmDeleteAporte">
           Confirmar Eliminación
         </VBtn>
       </VCardActions>

@@ -1070,6 +1070,11 @@ onActivated(() => {
                       <VIcon icon="ri-more-2-line" size="18" />
                       <VMenu activator="parent" transition="slide-y-transition" align="end" location="bottom end">
                         <VList density="compact" class="py-1 rounded-lg elevation-4 border" min-width="220">
+                          <!-- Editar Cotización -->
+                          <VListItem
+                            v-if="!item.converted_sale_id && !item.converted_work_order_id && item.status !== 'completed' && !isQuoteCanceled(item)"
+                            prepend-icon="ri-pencil-line" title="Editar Cotización" class="text-warning text-body-2"
+                            @click="editQuote(item)" />
                           <!-- Convertir a Orden de Trabajo -->
                           <VListItem
                             v-if="!item.converted_sale_id && !item.converted_work_order_id && item.status !== 'completed' && !isQuoteCanceled(item)"
@@ -1082,11 +1087,7 @@ onActivated(() => {
                             prepend-icon="ri-shopping-cart-2-line" title="Facturar / Emitir Venta"
                             class="text-success text-body-2" @click="openConvertDialog(item)" />
 
-                          <!-- Editar Cotización -->
-                          <VListItem
-                            v-if="!item.converted_sale_id && !item.converted_work_order_id && item.status !== 'completed' && !isQuoteCanceled(item)"
-                            prepend-icon="ri-pencil-line" title="Editar Cotización" class="text-warning text-body-2"
-                            @click="editQuote(item)" />
+
 
                           <VDivider
                             v-if="!item.converted_sale_id && !item.converted_work_order_id && item.status !== 'completed' && !isQuoteCanceled(item)"
@@ -1109,7 +1110,7 @@ onActivated(() => {
                             title="Reactivar Cotización" class="text-success text-body-2"
                             @click="reactivateQuote(item)" />
                           <VListItem v-else-if="!item.converted_sale_id && !item.converted_work_order_id"
-                            prepend-icon="ri-close-circle-line" title="Anular Cotización" class="text-error text-body-2"
+                            prepend-icon="ri-delete-bin-line" title="Anular Cotización" class="text-error text-body-2"
                             @click="cancelQuote(item)" />
                         </VList>
                       </VMenu>
@@ -1341,4 +1342,3 @@ onActivated(() => {
     </VDialog>
   </div>
 </template>
-

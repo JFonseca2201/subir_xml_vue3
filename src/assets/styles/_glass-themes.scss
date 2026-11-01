@@ -417,32 +417,39 @@ $glass-themes: (
     .nav-link.router-link-active>a,
     .nav-link.router-link-exact-active>a,
     .v-list-item--active {
-      background: var(--bg-active-item) !important;
-      border: 1px solid var(--border-active) !important;
-      border-radius: 8px !important;
-      backdrop-filter: blur(8px) !important;
-      -webkit-backdrop-filter: blur(8px) !important;
-      color: var(--text-active) !important;
-      box-shadow: var(--shadow-glow) !important;
-      transform: translateX(3px);
-
-      * {
+      &,
+      &:hover {
+        background: var(--bg-active-item) !important;
+        border: 1px solid var(--border-active) !important;
+        border-radius: 8px !important;
+        backdrop-filter: blur(8px) !important;
+        -webkit-backdrop-filter: blur(8px) !important;
         color: var(--text-active) !important;
-      }
+        box-shadow: var(--shadow-glow) !important;
+        transform: translateX(3px);
 
-      .nav-item-icon {
-        color: var(--text-active) !important;
-        filter: if($theme-name =='taller' or $theme-name =='light', none, drop-shadow(0 0 6px var(--border-active)));
-      }
+        * {
+          color: var(--text-active) !important;
+          -webkit-text-fill-color: var(--text-active) !important;
+        }
 
-      .nav-item-title {
-        color: var(--text-active) !important;
-        font-weight: 700 !important;
-      }
+        .nav-item-icon {
+          color: var(--text-active) !important;
+          fill: var(--text-active) !important;
+          filter: if($theme-name =='taller' or $theme-name =='light', none, drop-shadow(0 0 6px var(--border-active)));
+        }
 
-      .nav-item-badge {
-        background-color: var(--border-active) !important;
-        color: #ffffff !important;
+        .nav-item-title {
+          color: var(--text-active) !important;
+          fill: var(--text-active) !important;
+          -webkit-text-fill-color: var(--text-active) !important;
+          font-weight: 700 !important;
+        }
+
+        .nav-item-badge {
+          background-color: var(--border-active) !important;
+          color: #ffffff !important;
+        }
       }
     }
 
@@ -2214,7 +2221,7 @@ $glass-themes: (
             fill: rgba(255, 255, 255, 0.92) !important;
           }
 
-          &:hover {
+          &:not(.router-link-active):not(.router-link-exact-active):hover {
             background: rgba(255, 255, 255, 0.14) !important;
             color: #ffffff !important;
           }
@@ -2227,21 +2234,26 @@ $glass-themes: (
       .nav-link.router-link-active>a,
       .nav-link.router-link-exact-active>a,
       .v-list-item--active {
-        background: #ffffff !important;
-        color: #5C61E6 !important;
-        box-shadow: 0 4px 14px rgba(0, 0, 0, 0.18) !important;
-        border: none !important;
-
-        * {
+        &,
+        &:hover {
+          background: #ffffff !important;
           color: #5C61E6 !important;
-        }
+          box-shadow: 0 4px 14px rgba(0, 0, 0, 0.18) !important;
+          border: none !important;
 
-        .nav-item-icon,
-        .nav-item-title,
-        .v-icon {
-          color: #5C61E6 !important;
-          fill: #5C61E6 !important;
-          font-weight: 800 !important;
+          * {
+            color: #5C61E6 !important;
+            -webkit-text-fill-color: #5C61E6 !important;
+          }
+
+          .nav-item-icon,
+          .nav-item-title,
+          .v-icon {
+            color: #5C61E6 !important;
+            fill: #5C61E6 !important;
+            -webkit-text-fill-color: #5C61E6 !important;
+            font-weight: 800 !important;
+          }
         }
       }
 
@@ -3561,7 +3573,7 @@ $glass-themes: (
         opacity: 1 !important;
       }
 
-      &:hover {
+      &:not(.router-link-active):not(.router-link-exact-active):hover {
         background: rgba(255, 255, 255, 0.18) !important;
         color: #ffffff !important;
 
@@ -3607,7 +3619,7 @@ $glass-themes: (
           fill: rgba(255, 255, 255, 0.92) !important;
         }
 
-        &:hover {
+        &:not(.router-link-active):not(.router-link-exact-active):hover {
           background: rgba(255, 255, 255, 0.16) !important;
           color: #ffffff !important;
 
@@ -3620,6 +3632,30 @@ $glass-themes: (
           }
         }
       }
+
+      .nav-link > a.router-link-active,
+      .nav-link > a.router-link-exact-active,
+      .nav-link.router-link-active > a,
+      .nav-link.router-link-exact-active > a {
+        &,
+        &:hover {
+          background: var(--bg-active-item, #ffffff) !important;
+          color: var(--text-active, #5C61E6) !important;
+          box-shadow: 0 4px 14px rgba(0, 0, 0, 0.18) !important;
+          border: none !important;
+
+          *,
+          span,
+          .nav-item-icon,
+          .nav-item-title,
+          .v-icon {
+            color: var(--text-active, #5C61E6) !important;
+            fill: var(--text-active, #5C61E6) !important;
+            font-weight: 800 !important;
+            -webkit-text-fill-color: var(--text-active, #5C61E6) !important;
+          }
+        }
+      }
     }
 
     // Elemento activo seleccionado (adaptable a cada tema)
@@ -3628,20 +3664,23 @@ $glass-themes: (
     .nav-link.router-link-active>a,
     .nav-link.router-link-exact-active>a,
     .v-list-item--active {
-      background: var(--bg-active-item, #ffffff) !important;
-      color: var(--text-active, #5C61E6) !important;
-      box-shadow: 0 4px 14px rgba(0, 0, 0, 0.18) !important;
-      border: none !important;
-
-      *,
-      span,
-      .nav-item-icon,
-      .nav-item-title,
-      .v-icon {
+      &,
+      &:hover {
+        background: var(--bg-active-item, #ffffff) !important;
         color: var(--text-active, #5C61E6) !important;
-        fill: var(--text-active, #5C61E6) !important;
-        font-weight: 800 !important;
-        -webkit-text-fill-color: var(--text-active, #5C61E6) !important;
+        box-shadow: 0 4px 14px rgba(0, 0, 0, 0.18) !important;
+        border: none !important;
+
+        *,
+        span,
+        .nav-item-icon,
+        .nav-item-title,
+        .v-icon {
+          color: var(--text-active, #5C61E6) !important;
+          fill: var(--text-active, #5C61E6) !important;
+          font-weight: 800 !important;
+          -webkit-text-fill-color: var(--text-active, #5C61E6) !important;
+        }
       }
     }
 

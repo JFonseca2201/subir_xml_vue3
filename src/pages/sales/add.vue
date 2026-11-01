@@ -1982,7 +1982,8 @@ onActivated(async () => {
                         </VListItem>
                       </template>
                     </VSearch>
-                    <VBtn icon size="small" color="primary" variant="tonal">
+                    <VBtn icon size="small" color="primary" variant="tonal" rounded="circle"
+                      class="btn-circle-add rounded-circle" style="border-radius: 50% !important;">
                       <VIcon icon="ri-add-line" />
                       <VMenu activator="parent">
                         <VList density="compact" class="rounded-lg elevation-4 border">
@@ -1997,7 +1998,7 @@ onActivated(async () => {
                 </VCol>
 
                 <VCol cols="12" sm="6">
-                  <div class="d-flex align-center gap-2" style="text-transform: uppercase;">
+                  <div class="d-flex align-center gap-2" style="text-transform: capitalize;">
                     <VSearch v-model="selectedVehicle" :return-object="true" endpoint="vehicles/search"
                       item-title="license_plate"
                       :label="isLinkedToWorkOrder ? 'Vehículo * (Obligatorio para Orden de Trabajo)' : 'Vehículo (Opcional)'"
@@ -2019,7 +2020,8 @@ onActivated(async () => {
                         </VListItem>
                       </template>
                     </VSearch>
-                    <VBtn color="success" variant="tonal" size="small" icon="ri-add-line"
+                    <VBtn color="primary" variant="tonal" size="small" rounded="circle"
+                      class="btn-circle-add rounded-circle" style="border-radius: 50% !important;" icon="ri-add-line"
                       @click="isVehicleAddDialogVisible = true" />
                   </div>
                 </VCol>
@@ -2181,7 +2183,7 @@ onActivated(async () => {
                         {{ item.raw.description || item.raw.name }}
                       </VListItemTitle>
                       <VListItemSubtitle v-if="item.raw.code_aux || item.raw.sku" class="mt-1 text-grey">
-                        Código/SKU: {{ item.raw.code_aux || item.raw.sku }}
+                        Código: {{ item.raw.code_aux || item.raw.sku }}
                       </VListItemSubtitle>
                       <template #append>
                         <VChip size="small" color="success" variant="tonal" class="font-weight-bold">
@@ -2231,9 +2233,9 @@ onActivated(async () => {
                             <input v-model="item.description" type="text" placeholder="Descripción del ítem..."
                               class="item-title-input" :title="item.description">
                             <div class="item-meta-row mt-0.5">
-                              <span class="meta-tag cursor-pointer" :class="isServiceItem(item) ? 'tag-service' : 'tag-product'"
-                                title="Clic para alternar entre Producto y Servicio"
-                                @click="toggleItemType(item)">
+                              <span class="meta-tag cursor-pointer"
+                                :class="isServiceItem(item) ? 'tag-service' : 'tag-product'"
+                                title="Clic para alternar entre Producto y Servicio" @click="toggleItemType(item)">
                                 {{ isServiceItem(item) ? 'Servicio' : 'Producto' }}
                               </span>
                               <span v-if="!isServiceItem(item) && sale.document_type !== 'quote'" class="meta-stock"

@@ -548,18 +548,29 @@ onMounted(async () => {
                           </VListItemSubtitle>
                         </VListItem>
                       </template>
-                    </VSearch>
-                    <VMenu>
-                      <template #activator="{ props }">
-                        <VBtn icon="ri-add-line" color="primary" variant="tonal" v-bind="props" class="mb-5" />
+                      <template #append>
+                        <VBtn
+                          icon
+                          size="small"
+                          variant="tonal"
+                          color="primary"
+                          rounded="circle"
+                          class="btn-circle-add rounded-circle"
+                          style="border-radius: 50% !important;"
+                          type="button"
+                        >
+                          <VIcon icon="ri-add-line" />
+                          <VMenu activator="parent">
+                            <VList density="compact" class="rounded-lg elevation-4 border">
+                              <VListItem title="Persona Natural" prepend-icon="ri-user-line"
+                                @click="isClientFinalDialogVisible = true" />
+                              <VListItem title="Empresa / Jurídico" prepend-icon="ri-building-line"
+                                @click="isClientCompanyDialogVisible = true" />
+                            </VList>
+                          </VMenu>
+                        </VBtn>
                       </template>
-                      <VList density="compact">
-                        <VListItem title="Persona Natural" prepend-icon="ri-user-line"
-                          @click="isClientFinalDialogVisible = true" />
-                        <VListItem title="Empresa / Jurídico" prepend-icon="ri-building-line"
-                          @click="isClientCompanyDialogVisible = true" />
-                      </VList>
-                    </VMenu>
+                    </VSearch>
                   </div>
                   <div v-if="selectedClient" class="text-caption text-grey mt-0 mb-3 ms-1">
                     <VIcon icon="ri-file-list-3-line" size="14" class="me-1" />
@@ -585,9 +596,22 @@ onMounted(async () => {
                           </VListItemSubtitle>
                         </VListItem>
                       </template>
+                      <template #append>
+                        <VBtn
+                          icon
+                          size="small"
+                          variant="tonal"
+                          color="primary"
+                          rounded="circle"
+                          class="btn-circle-add rounded-circle"
+                          style="border-radius: 50% !important;"
+                          type="button"
+                          @click="isVehicleDialogVisible = true"
+                        >
+                          <VIcon icon="ri-add-line" />
+                        </VBtn>
+                      </template>
                     </VSearch>
-                    <VBtn icon="ri-add-line" color="primary" variant="tonal" class="mb-5"
-                      @click="isVehicleDialogVisible = true" />
                   </div>
                 </VCol>
 

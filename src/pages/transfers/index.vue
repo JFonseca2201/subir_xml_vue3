@@ -84,7 +84,7 @@ const loadTransfers = async () => {
     ])
 
     accounts.value = accountsRes || []
-    
+
     let dataArray = []
 
     if (response.data) {
@@ -129,7 +129,7 @@ const loadTransfers = async () => {
 
 const cleanAccountName = name => {
   if (!name) return 'N/A'
-  
+
   return name
     .replace(/\(EFECTIVO\)/gi, '')
     .replace(/\(TRANSFERENCIA\)/gi, '')
@@ -195,7 +195,7 @@ const formatDate = dateString => {
     const parts = datePart.split('-')
     if (parts.length === 3) {
       const [year, month, day] = parts
-      
+
       return `${year}/${month.padStart(2, '0')}/${day.padStart(2, '0')}`
     }
 
@@ -204,13 +204,13 @@ const formatDate = dateString => {
       const y = date.getFullYear()
       const m = String(date.getMonth() + 1).padStart(2, '0')
       const d = String(date.getDate()).padStart(2, '0')
-      
+
       return `${y}/${m}/${d}`
     }
   } catch (e) {
     return dateString
   }
-  
+
   return dateString
 }
 
@@ -226,11 +226,11 @@ const formatDateHeader = labelString => {
 
     const [year, month, day] = labelString.split('-')
     const date = new Date(year, month - 1, day)
-    
+
     return date.toLocaleDateString('es-ES', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })
       .replace(/^\w/, c => c.toUpperCase())
   }
-  
+
   return labelString
 }
 
@@ -312,7 +312,7 @@ watch([searchQuery, selectedFilter], () => {
 const paginatedTransfers = computed(() => {
   const start = (currentPage.value - 1) * itemsPerPage.value
   const end = start + itemsPerPage.value
-  
+
   return allFilteredTransfers.value.slice(start, end)
 })
 
@@ -347,25 +347,10 @@ onMounted(() => {
 
 <template>
   <!-- Estado sin permisos -->
-  <div
-    v-if="!canAccessTransfers"
-    class="d-flex justify-center align-center"
-    style="min-height: 400px"
-  >
-    <VCard
-      class="pa-8 text-center rounded-xl elevation-4"
-      max-width="460"
-    >
-      <VAvatar
-        color="error"
-        variant="tonal"
-        size="72"
-        class="mb-4"
-      >
-        <VIcon
-          size="38"
-          icon="ri-lock-line"
-        />
+  <div v-if="!canAccessTransfers" class="d-flex justify-center align-center" style="min-height: 400px">
+    <VCard class="pa-8 text-center rounded-xl elevation-4" max-width="460">
+      <VAvatar color="error" variant="tonal" size="72" class="mb-4">
+        <VIcon size="38" icon="ri-lock-line" />
       </VAvatar>
       <h3 class="text-h5 font-weight-bold mb-2 text-high-emphasis">
         Acceso Restringido
@@ -373,41 +358,24 @@ onMounted(() => {
       <p class="text-body-1 text-medium-emphasis mb-6">
         No tienes permisos suficientes para acceder al módulo de gestión de transferencias.
       </p>
-      <VBtn
-        color="primary"
-        size="large"
-        variant="elevated"
-        prepend-icon="ri-dashboard-line"
-        class="font-weight-semibold"
-        @click="router.push('/dashboard')"
-      >
+      <VBtn color="primary" size="large" variant="elevated" prepend-icon="ri-dashboard-line"
+        class="font-weight-semibold" @click="router.push('/dashboard')">
         Volver al Dashboard
       </VBtn>
     </VCard>
   </div>
 
-  <div
-    v-else
-    class="pa-4 pa-sm-6 transfers-page"
-  >
+  <div v-else class="pa-4 pa-sm-6 transfers-page">
     <!-- Encabezado Principal (Sin fondo de tarjeta) -->
     <div class="d-flex align-center justify-space-between flex-wrap mb-4 mb-md-6 gap-3 gap-md-4">
       <div class="d-flex align-center gap-3">
-        <VAvatar
-          color="primary"
-          variant="tonal"
-          rounded="lg"
-          size="42"
-          size-sm="44"
-        >
-          <VIcon
-            icon="ri-arrow-left-right-line"
-            size="24"
-          />
+        <VAvatar color="primary" variant="tonal" rounded="lg" size="42" size-sm="44">
+          <VIcon icon="ri-arrow-left-right-line" size="24" />
         </VAvatar>
         <div>
           <div class="d-flex align-center gap-2">
-            <h1 class="text-h5 text-sm-h4 font-weight-bold text-high-emphasis mb-0 operations-page-title d-flex align-center">
+            <h1
+              class="text-h5 text-sm-h4 font-weight-bold text-high-emphasis mb-0 operations-page-title d-flex align-center">
               Transferencias
             </h1>
             <div class="status-pill-clean status-transfer">
@@ -423,27 +391,12 @@ onMounted(() => {
 
       <!-- Botones de Acción -->
       <div class="d-flex align-center justify-end gap-2 flex-wrap ms-auto crud-header-actions">
-        <VBtn
-          v-if="can('register_transfer')"
-          color="primary"
-          variant="elevated"
-          size="default"
-          prepend-icon="ri-add-circle-line"
-          class="font-weight-bold elevation-1"
-          @click="openTransferDialog"
-        >
+        <VBtn v-if="can('register_transfer')" color="primary" variant="elevated" size="default"
+          prepend-icon="ri-add-circle-line" class="font-weight-bold elevation-1" @click="openTransferDialog">
           Nueva Transferencia
         </VBtn>
-        <VBtn
-          title="Actualizar datos"
-          variant="outlined"
-          color="secondary"
-          prepend-icon="ri-refresh-line"
-          size="default"
-          class="font-weight-medium"
-          :loading="loading"
-          @click="loadTransfers"
-        >
+        <VBtn title="Actualizar datos" variant="outlined" color="secondary" prepend-icon="ri-refresh-line"
+          size="default" class="font-weight-medium" :loading="loading" @click="loadTransfers">
           Actualizar
         </VBtn>
       </div>
@@ -452,15 +405,8 @@ onMounted(() => {
     <!-- Tarjetas de Resumen KPI con colores tonales e impresiones de texto de alto contraste -->
     <VRow class="mb-5 d-none d-sm-flex">
       <!-- Transferido Hoy -->
-      <VCol
-        cols="12"
-        sm="6"
-        md="4"
-      >
-        <VCard
-          class="pa-4 rounded-xl tonal-card bg-primary-tonal border-primary operations-kpi-card"
-          elevation="0"
-        >
+      <VCol cols="12" sm="6" md="4">
+        <VCard class="pa-4 rounded-xl tonal-card bg-primary-tonal border-primary operations-kpi-card" elevation="0">
           <div class="d-flex align-center justify-space-between">
             <div>
               <span class="text-overline font-weight-bold text-primary text-uppercase tracking-wider">
@@ -473,32 +419,16 @@ onMounted(() => {
                 Movimientos de la jornada actual
               </span>
             </div>
-            <VAvatar
-              color="primary"
-              variant="elevated"
-              size="42"
-              class="elevation-2 kpi-avatar"
-            >
-              <VIcon
-                size="24"
-                icon="ri-calendar-check-line"
-                color="white"
-              />
+            <VAvatar color="primary" variant="elevated" size="42" class="elevation-2 kpi-avatar">
+              <VIcon size="24" icon="ri-calendar-check-line" color="white" />
             </VAvatar>
           </div>
         </VCard>
       </VCol>
 
       <!-- Transferido en el Mes -->
-      <VCol
-        cols="12"
-        sm="6"
-        md="4"
-      >
-        <VCard
-          class="pa-4 rounded-xl tonal-card bg-success-tonal border-success operations-kpi-card"
-          elevation="0"
-        >
+      <VCol cols="12" sm="6" md="4">
+        <VCard class="pa-4 rounded-xl tonal-card bg-success-tonal border-success operations-kpi-card" elevation="0">
           <div class="d-flex align-center justify-space-between">
             <div>
               <span class="text-overline font-weight-bold text-success text-uppercase tracking-wider">
@@ -511,32 +441,16 @@ onMounted(() => {
                 Acumulado mes en curso
               </span>
             </div>
-            <VAvatar
-              color="success"
-              variant="elevated"
-              size="42"
-              class="elevation-2 kpi-avatar"
-            >
-              <VIcon
-                size="24"
-                icon="ri-calendar-event-fill"
-                color="white"
-              />
+            <VAvatar color="success" variant="elevated" size="42" class="elevation-2 kpi-avatar">
+              <VIcon size="24" icon="ri-calendar-event-fill" color="white" />
             </VAvatar>
           </div>
         </VCard>
       </VCol>
 
       <!-- Total Histórico -->
-      <VCol
-        cols="12"
-        sm="12"
-        md="4"
-      >
-        <VCard
-          class="pa-4 rounded-xl tonal-card bg-info-tonal border-info operations-kpi-card"
-          elevation="0"
-        >
+      <VCol cols="12" sm="12" md="4">
+        <VCard class="pa-4 rounded-xl tonal-card bg-info-tonal border-info operations-kpi-card" elevation="0">
           <div class="d-flex align-center justify-space-between">
             <div>
               <span class="text-overline font-weight-bold text-info text-uppercase tracking-wider">
@@ -549,17 +463,8 @@ onMounted(() => {
                 Suma total de transferencias
               </span>
             </div>
-            <VAvatar
-              color="info"
-              variant="elevated"
-              size="42"
-              class="elevation-2 kpi-avatar"
-            >
-              <VIcon
-                size="24"
-                icon="ri-safe-2-line"
-                color="white"
-              />
+            <VAvatar color="info" variant="elevated" size="42" class="elevation-2 kpi-avatar">
+              <VIcon size="24" icon="ri-safe-2-line" color="white" />
             </VAvatar>
           </div>
         </VCard>
@@ -570,80 +475,40 @@ onMounted(() => {
     <VCard class="pa-4 mb-6 rounded-xl border-light elevation-1">
       <div class="d-flex align-center justify-space-between mb-3">
         <div class="d-flex align-center gap-2 text-subtitle-2 font-weight-bold text-high-emphasis">
-          <VIcon
-            icon="ri-filter-3-line"
-            size="18"
-            color="primary"
-          />
+          <VIcon icon="ri-filter-3-line" size="18" color="primary" />
           <span>Filtros de Búsqueda</span>
         </div>
 
-        <VBtn
-          variant="text"
-          color="error"
-          size="small"
-          prepend-icon="ri-filter-off-line"
-          class="font-weight-semibold"
-          @click="resetFilters"
-        >
+        <VBtn variant="text" color="error" size="small" prepend-icon="ri-filter-off-line" class="font-weight-semibold"
+          @click="resetFilters">
           Limpiar Filtros
         </VBtn>
       </div>
 
-      <VRow
-        align="center"
-        justify="space-between"
-      >
-        <VCol
-          cols="12"
-          md="6"
-        >
-          <VTextField
-            v-model="searchQuery"
-            prepend-inner-icon="ri-search-2-line"
-            placeholder="Buscar por cuenta, descripción o monto..."
-            hide-details
-            clearable
-            variant="outlined"
-            density="compact"
-            :loading="loading"
-            class="search-input"
-          />
+      <VRow align="center" justify="space-between">
+        <VCol cols="12" md="6">
+          <VTextField v-model="searchQuery" prepend-inner-icon="ri-search-2-line"
+            placeholder="Buscar por cuenta, descripción o monto..." hide-details clearable variant="outlined"
+            density="compact" :loading="loading" class="search-input" />
         </VCol>
 
-        <VCol
-          cols="12"
-          md="6"
-          class="d-flex justify-end align-center"
-        >
+        <VCol cols="12" md="6" class="d-flex justify-end align-center">
           <div class="finance-filter-container d-flex align-center justify-end gap-2">
             <span class="text-body-2 font-weight-medium text-medium-emphasis finance-filter-label">Filtrar:</span>
             <div class="finance-filter-btn-group">
-              <VBtn
-                size="small"
-                :variant="selectedFilter === 'all' ? 'elevated' : 'tonal'"
-                :color="selectedFilter === 'all' ? 'primary' : 'secondary'"
-                class="font-weight-semibold"
-                @click="selectedFilter = 'all'"
-              >
+              <VBtn size="small" :variant="selectedFilter === 'all' ? 'elevated' : 'tonal'"
+                :color="selectedFilter === 'all' ? 'primary' : 'secondary'" class="font-weight-semibold"
+                @click="selectedFilter = 'all'">
                 Todos
               </VBtn>
-              <VBtn
-                size="small"
-                :variant="selectedFilter === 'today' ? 'elevated' : 'tonal'"
-                :color="selectedFilter === 'today' ? 'primary' : 'secondary'"
-                class="font-weight-semibold"
-                @click="selectedFilter = 'today'"
-              >
+              <VBtn size="small" :variant="selectedFilter === 'today' ? 'elevated' : 'tonal'"
+                :color="selectedFilter === 'today' ? 'primary' : 'secondary'" class="font-weight-semibold"
+                @click="selectedFilter = 'today'">
                 Hoy
               </VBtn>
-              <VBtn
-                size="small"
-                :variant="selectedFilter === 'month' ? 'elevated' : 'tonal'"
-                :color="selectedFilter === 'month' ? 'primary' : 'secondary'"
-                class="font-weight-semibold"
-                @click="selectedFilter = 'month'"
-              >
+              <VBtn size="small" :variant="selectedFilter === 'month' ? 'elevated' : 'tonal'"
+                :color="selectedFilter === 'month' ? 'primary' : 'secondary'" class="font-weight-semibold"
+                @click="selectedFilter = 'month'">
                 Este Mes
               </VBtn>
             </div>
@@ -653,21 +518,9 @@ onMounted(() => {
     </VCard>
 
     <!-- Sin registros iniciales (Base de datos vacía) -->
-    <VCard
-      v-if="!loading && !transfers.length"
-      class="text-center pa-12 rounded-xl border-light elevation-1"
-    >
-      <VAvatar
-        color="primary"
-        variant="tonal"
-        size="80"
-        class="mb-4"
-      >
-        <VIcon
-          icon="ri-inbox-line"
-          size="42"
-          color="primary"
-        />
+    <VCard v-if="!loading && !transfers.length" class="text-center pa-12 rounded-xl border-light elevation-1">
+      <VAvatar color="primary" variant="tonal" size="80" class="mb-4">
+        <VIcon icon="ri-inbox-line" size="42" color="primary" />
       </VAvatar>
       <h3 class="text-h6 font-weight-bold text-high-emphasis">
         No hay transferencias registradas
@@ -675,13 +528,8 @@ onMounted(() => {
       <p class="text-body-2 text-medium-emphasis max-w-md mx-auto mt-1 mb-6">
         Registra movimientos entre tus cuentas bancarias o cajas de efectivo.
       </p>
-      <VBtn
-        color="primary"
-        variant="elevated"
-        prepend-icon="ri-add-line"
-        class="font-weight-semibold"
-        @click="openTransferDialog"
-      >
+      <VBtn color="primary" variant="elevated" prepend-icon="ri-add-line" class="font-weight-semibold"
+        @click="openTransferDialog">
         Registrar Primera Transferencia
       </VBtn>
     </VCard>
@@ -690,34 +538,16 @@ onMounted(() => {
     <div v-else>
       <!-- VISTA MÓVIL: TARJETAS TOUCH-FRIENDLY (d-md-none) -->
       <div class="d-md-none d-flex flex-column gap-4 mb-4 mobile-card-list-container">
-        <div
-          v-if="loading"
-          class="d-flex flex-column gap-3"
-        >
-          <div
-            v-for="n in 3"
-            :key="n"
-            class="pa-4 rounded-xl border bg-surface"
-          >
+        <div v-if="loading" class="d-flex flex-column gap-3">
+          <div v-for="n in 3" :key="n" class="pa-4 rounded-xl border bg-surface">
             <div class="shimmer-line w-50 mb-2" />
             <div class="shimmer-line w-75 mb-3" />
             <div class="shimmer-line w-40" />
           </div>
         </div>
-        <div
-          v-else-if="!allFilteredTransfers.length"
-          class="text-center pa-8 rounded-xl border bg-surface"
-        >
-          <VAvatar
-            size="56"
-            color="primary"
-            variant="tonal"
-            class="mb-3"
-          >
-            <VIcon
-              size="28"
-              icon="ri-arrow-left-right-line"
-            />
+        <div v-else-if="!allFilteredTransfers.length" class="text-center pa-8 rounded-xl border bg-surface">
+          <VAvatar size="56" color="primary" variant="tonal" class="mb-3">
+            <VIcon size="28" icon="ri-arrow-left-right-line" />
           </VAvatar>
           <p class="text-body-1 font-weight-bold mb-1">
             No se encontraron transferencias
@@ -726,43 +556,32 @@ onMounted(() => {
             Intenta cambiar los términos de búsqueda o registra una transferencia.
           </p>
         </div>
-        <template
-          v-for="group in paginatedGroupedTransfers"
-          v-else
-          :key="`mob-tr-grp-${group.label}`"
-        >
+        <template v-for="group in paginatedGroupedTransfers" v-else :key="`mob-tr-grp-${group.label}`">
           <!-- Cabecera de Día Móvil -->
           <div class="pa-3 rounded-xl bg-slate-50 border d-flex flex-column gap-1.5">
             <div class="d-flex align-center justify-space-between flex-wrap gap-2">
               <div class="d-flex align-center gap-2">
-                <VIcon
-                  icon="ri-calendar-event-line"
-                  size="18"
-                  color="primary"
-                />
+                <VIcon icon="ri-calendar-event-line" size="18" color="primary" />
                 <span class="text-body-2 font-weight-bold text-high-emphasis">
                   {{ formatDateHeader(group.label) }}
                 </span>
               </div>
               <div class="status-pill-clean status-transfer">
                 <span class="status-dot" />
-                <span>{{ group.transfers.length }} {{ group.transfers.length === 1 ? 'operación' : 'operaciones' }}</span>
+                <span>{{ group.transfers.length }} {{ group.transfers.length === 1 ? 'operación' : 'operaciones'
+                }}</span>
               </div>
             </div>
             <div class="d-flex align-center justify-space-between pt-1 border-t text-caption font-weight-bold">
               <span class="text-medium-emphasis text-uppercase">Total jornada:</span>
               <span class="text-primary font-weight-black">
-                {{ formatCurrency(group.transfers.reduce((acc, t) => acc + parseFloat(t.amount || 0), 0)) }}
+                {{formatCurrency(group.transfers.reduce((acc, t) => acc + parseFloat(t.amount || 0), 0))}}
               </span>
             </div>
           </div>
 
           <!-- Tarjetas de Transferencia del Día -->
-          <div
-            v-for="transfer in group.transfers"
-            :key="`mob-transfer-${transfer.id}`"
-            class="mobile-transfer-card"
-          >
+          <div v-for="transfer in group.transfers" :key="`mob-transfer-${transfer.id}`" class="mobile-transfer-card">
             <!-- Fila Superior: Fecha y Referencia -->
             <div class="d-flex align-center justify-space-between pb-2 border-b mb-2">
               <span class="text-caption text-medium-emphasis font-weight-medium">
@@ -776,48 +595,27 @@ onMounted(() => {
             <!-- Flujo de Cuentas: Origen -> Destino -->
             <div class="transfer-flow-container w-100 mb-2.5 justify-space-between">
               <div class="transfer-endpoint">
-                <VAvatar
-                  size="22"
-                  color="secondary"
-                  variant="tonal"
-                  class="rounded-circle shrink-0"
-                >
+                <VAvatar size="22" color="secondary" variant="tonal" class="rounded-circle shrink-0">
                   <VIcon
                     :icon="getAccountName(transfer.source_account).toLowerCase().includes('efectivo') || getAccountName(transfer.source_account).toLowerCase().includes('caja') ? 'ri-money-dollar-circle-line' : 'ri-bank-line'"
-                    size="12"
-                  />
+                    size="12" />
                 </VAvatar>
-                <span
-                  class="account-name text-truncate"
-                  style="max-width: 120px;"
-                >
+                <span class="account-name text-truncate" style="max-width: 120px;">
                   {{ getAccountName(transfer.source_account) }}
                 </span>
               </div>
 
               <div class="transfer-arrow-separator">
-                <VIcon
-                  icon="ri-arrow-right-line"
-                  size="12"
-                />
+                <VIcon icon="ri-arrow-right-line" size="12" />
               </div>
 
               <div class="transfer-endpoint">
-                <VAvatar
-                  size="22"
-                  color="primary"
-                  variant="tonal"
-                  class="rounded-circle shrink-0"
-                >
+                <VAvatar size="22" color="primary" variant="tonal" class="rounded-circle shrink-0">
                   <VIcon
                     :icon="getAccountName(transfer.destination_account).toLowerCase().includes('efectivo') || getAccountName(transfer.destination_account).toLowerCase().includes('caja') ? 'ri-money-dollar-circle-line' : 'ri-bank-line'"
-                    size="12"
-                  />
+                    size="12" />
                 </VAvatar>
-                <span
-                  class="account-name font-weight-bold text-high-emphasis text-truncate"
-                  style="max-width: 120px;"
-                >
+                <span class="account-name font-weight-bold text-high-emphasis text-truncate" style="max-width: 120px;">
                   {{ getAccountName(transfer.destination_account) }}
                 </span>
               </div>
@@ -831,56 +629,27 @@ onMounted(() => {
             <!-- Fila Inferior: Monto y Acciones -->
             <div class="d-flex align-center justify-space-between pt-2 border-t flex-wrap gap-2">
               <div>
-                <span
-                  class="text-caption text-medium-emphasis d-block"
-                  style="font-size: 0.68rem;"
-                >MONTO</span>
+                <span class="text-caption text-medium-emphasis d-block" style="font-size: 0.68rem;">MONTO</span>
                 <span class="text-h6 font-weight-black text-primary">
                   {{ formatCurrency(transfer.amount) }}
                 </span>
               </div>
 
               <div class="d-flex align-center gap-1 ms-auto listing-item-actions">
-                <VBtn
-                  size="small"
-                  variant="tonal"
-                  color="primary"
-                  class="rounded-lg"
-                  title="Ver Nota"
-                  @click="openNoteDialog(transfer)"
-                >
+                <VBtn size="small" variant="tonal" color="primary" class="rounded-lg" title="Ver Nota"
+                  @click="openNoteDialog(transfer)">
                   <VIcon icon="ri-eye-line" size="18" />
                 </VBtn>
-                <VBtn
-                  size="small"
-                  variant="tonal"
-                  color="secondary"
-                  class="rounded-lg"
-                  title="Adjuntos"
-                  @click="openAttachDialog(transfer)"
-                >
+                <VBtn size="small" variant="tonal" color="secondary" class="rounded-lg" title="Adjuntos"
+                  @click="openAttachDialog(transfer)">
                   <VIcon icon="ri-attachment-line" size="18" />
                 </VBtn>
-                <VBtn
-                  v-if="can('edit_transfer')"
-                  size="small"
-                  variant="tonal"
-                  color="warning"
-                  class="rounded-lg"
-                  title="Editar"
-                  @click="openEditDialog(transfer)"
-                >
+                <VBtn v-if="can('edit_transfer')" size="small" variant="tonal" color="warning" class="rounded-lg"
+                  title="Editar" @click="openEditDialog(transfer)">
                   <VIcon icon="ri-pencil-line" size="18" />
                 </VBtn>
-                <VBtn
-                  v-if="can('delete_transfer')"
-                  size="small"
-                  variant="tonal"
-                  color="error"
-                  class="rounded-lg"
-                  title="Eliminar"
-                  @click="deleteTransfer(transfer)"
-                >
+                <VBtn v-if="can('delete_transfer')" size="small" variant="tonal" color="error" class="rounded-lg"
+                  title="Eliminar" @click="deleteTransfer(transfer)">
                   <VIcon icon="ri-delete-bin-line" size="18" />
                 </VBtn>
               </div>
@@ -890,56 +659,31 @@ onMounted(() => {
       </div>
 
       <!-- Lista de Transferencias Unificada Desktop (d-none d-md-block) -->
-      <VCard class="d-none d-md-block rounded-xl border-light overflow-hidden elevation-1 transfer-table-container position-relative">
-        <VProgressLinear
-          v-if="loading"
-          v-slot
-          indeterminate
-          color="primary"
-          height="3"
-          class="position-absolute"
-          style="top: 0; left: 0; right: 0; z-index: 10;"
-        />
-        <VTable
-          hover
-          class="transfer-table"
-        >
+      <VCard
+        class="d-none d-md-block rounded-xl border-light overflow-hidden elevation-1 transfer-table-container position-relative">
+        <VProgressLinear v-if="loading" v-slot indeterminate color="primary" height="3" class="position-absolute"
+          style="top: 0; left: 0; right: 0; z-index: 10;" />
+        <VTable hover class="transfer-table">
           <thead>
             <tr>
-              <th
-                class="text-left py-3"
-                style="width: 44%;"
-              >
+              <th class="text-left py-3" style="width: 44%;">
                 FLUJO DE LA TRANSFERENCIA
               </th>
-              <th
-                class="text-left py-3"
-                style="width: 30%;"
-              >
+              <th class="text-left py-3" style="width: 30%;">
                 DESCRIPCIÓN & FECHA
               </th>
-              <th
-                class="text-right py-3"
-                style="width: 14%;"
-              >
+              <th class="text-right py-3" style="width: 14%;">
                 MONTO
               </th>
-              <th
-                class="text-center py-3"
-                style="width: 12%;"
-              >
+              <th class="text-center py-3" style="width: 12%;">
                 ACCIONES
               </th>
             </tr>
           </thead>
-        
+
           <!-- Cargando (Skeleton Rows) -->
           <tbody v-if="loading">
-            <tr
-              v-for="n in 5"
-              :key="n"
-              class="skeleton-row align-middle"
-            >
+            <tr v-for="n in 5" :key="n" class="skeleton-row align-middle">
               <td class="py-4">
                 <div class="shimmer-line w-75" />
               </td>
@@ -962,21 +706,9 @@ onMounted(() => {
           <!-- Sin resultados filtrados -->
           <tbody v-else-if="!allFilteredTransfers.length">
             <tr>
-              <td
-                colspan="4"
-                class="text-center py-12 text-medium-emphasis"
-              >
-                <VAvatar
-                  color="primary"
-                  variant="tonal"
-                  size="64"
-                  class="mb-3"
-                >
-                  <VIcon
-                    icon="ri-inbox-line"
-                    size="32"
-                    color="primary"
-                  />
+              <td colspan="4" class="text-center py-12 text-medium-emphasis">
+                <VAvatar color="primary" variant="tonal" size="64" class="mb-3">
+                  <VIcon icon="ri-inbox-line" size="32" color="primary" />
                 </VAvatar>
                 <div class="text-h6 font-weight-bold text-high-emphasis">
                   Sin resultados para la búsqueda
@@ -990,26 +722,14 @@ onMounted(() => {
 
           <!-- Datos reales -->
           <tbody v-else>
-            <template
-              v-for="group in paginatedGroupedTransfers"
-              :key="group.label"
-            >
+            <template v-for="group in paginatedGroupedTransfers" :key="group.label">
               <!-- Fila de Encabezado por Fecha -->
               <tr class="transfer-date-header-row">
                 <td colspan="4">
                   <div class="d-flex align-center justify-space-between flex-wrap gap-2 py-1">
                     <div class="d-flex align-center gap-3">
-                      <VAvatar
-                        color="primary"
-                        variant="tonal"
-                        size="36"
-                        class="rounded-lg"
-                      >
-                        <VIcon
-                          icon="ri-calendar-event-line"
-                          size="20"
-                          color="primary"
-                        />
+                      <VAvatar color="primary" variant="tonal" size="36" class="rounded-lg">
+                        <VIcon icon="ri-calendar-event-line" size="20" color="primary" />
                       </VAvatar>
                       <div class="d-flex align-center gap-2">
                         <span class="text-subtitle-2 font-weight-bold text-slate-900">
@@ -1017,16 +737,19 @@ onMounted(() => {
                         </span>
                         <div class="status-pill-clean status-transfer">
                           <span class="status-dot" />
-                          <span>{{ group.transfers.length }} {{ group.transfers.length === 1 ? 'operación' : 'operaciones' }}</span>
+                          <span>{{ group.transfers.length }} {{ group.transfers.length === 1 ? 'operación' :
+                            'operaciones' }}</span>
                         </div>
                       </div>
                     </div>
 
                     <div class="d-flex align-center gap-2 me-2">
-                      <span class="text-caption text-medium-emphasis text-uppercase font-weight-bold">Total del Día:</span>
+                      <span class="text-caption text-medium-emphasis text-uppercase font-weight-bold">Total del
+                        Día:</span>
                       <div class="status-pill-clean status-paid">
                         <span class="status-dot" />
-                        <span>{{ formatCurrency(group.transfers.reduce((acc, t) => acc + parseFloat(t.amount || 0), 0)) }}</span>
+                        <span>{{formatCurrency(group.transfers.reduce((acc, t) => acc + parseFloat(t.amount || 0), 0))
+                        }}</span>
                       </div>
                     </div>
                   </div>
@@ -1034,54 +757,34 @@ onMounted(() => {
               </tr>
 
               <!-- Filas de Transferencias para ese día -->
-              <tr
-                v-for="transfer in group.transfers"
-                :key="transfer.id"
-                class="transfer-row"
-              >
+              <tr v-for="transfer in group.transfers" :key="transfer.id" class="transfer-row">
                 <!-- Flujo: Origen -> Destino sobrio y elegante -->
                 <td class="py-3">
                   <div class="transfer-flow-container">
                     <!-- Origen -->
                     <div class="transfer-endpoint">
-                      <VAvatar
-                        size="24"
-                        color="secondary"
-                        variant="tonal"
-                        class="rounded-circle shrink-0"
-                      >
+                      <VAvatar size="24" color="secondary" variant="tonal" class="rounded-circle shrink-0">
                         <VIcon
                           :icon="getAccountName(transfer.source_account).toLowerCase().includes('efectivo') || getAccountName(transfer.source_account).toLowerCase().includes('caja') ? 'ri-money-dollar-circle-line' : 'ri-bank-line'"
-                          size="13"
-                          color="secondary"
-                        />
+                          size="13" color="secondary" />
                       </VAvatar>
                       <span class="account-name">{{ getAccountName(transfer.source_account) }}</span>
                     </div>
 
                     <!-- Separador Flecha -->
                     <div class="transfer-arrow-separator">
-                      <VIcon
-                        icon="ri-arrow-right-line"
-                        size="12"
-                      />
+                      <VIcon icon="ri-arrow-right-line" size="12" />
                     </div>
 
                     <!-- Destino -->
                     <div class="transfer-endpoint">
-                      <VAvatar
-                        size="24"
-                        color="primary"
-                        variant="tonal"
-                        class="rounded-circle shrink-0"
-                      >
+                      <VAvatar size="24" color="primary" variant="tonal" class="rounded-circle shrink-0">
                         <VIcon
                           :icon="getAccountName(transfer.destination_account).toLowerCase().includes('efectivo') || getAccountName(transfer.destination_account).toLowerCase().includes('caja') ? 'ri-money-dollar-circle-line' : 'ri-bank-line'"
-                          size="13"
-                          color="primary"
-                        />
+                          size="13" color="primary" />
                       </VAvatar>
-                      <span class="account-name font-weight-bold text-high-emphasis">{{ getAccountName(transfer.destination_account) }}</span>
+                      <span class="account-name font-weight-bold text-high-emphasis">{{
+                        getAccountName(transfer.destination_account) }}</span>
                     </div>
                   </div>
                 </td>
@@ -1093,11 +796,7 @@ onMounted(() => {
                       {{ transfer.description || 'Transferencia entre cuentas' }}
                     </span>
                     <div class="d-flex align-center gap-1.5 text-caption text-medium-emphasis font-weight-medium mt-1">
-                      <VIcon
-                        icon="ri-calendar-line"
-                        size="14"
-                        color="secondary"
-                      />
+                      <VIcon icon="ri-calendar-line" size="14" color="secondary" />
                       <span>{{ formatDate(transfer.transfer_date || transfer.created_at) }}</span>
                     </div>
                   </div>
@@ -1114,74 +813,28 @@ onMounted(() => {
                 <td class="py-3 text-center">
                   <div class="d-flex align-center justify-center gap-1">
                     <!-- Botón Principal: Ver Nota de Transferencia -->
-                    <VBtn
-                      title="Ver nota de transferencia y comprobantes"
-                      size="small"
-                      variant="tonal"
-                      color="primary"
-                      icon="ri-eye-line"
-                      class="action-btn"
-                      @click="openNoteDialog(transfer)"
-                    />
+                    <VBtn title="Ver nota de transferencia y comprobantes" size="small" variant="tonal" color="primary"
+                      icon="ri-eye-line" class="action-btn" @click="openNoteDialog(transfer)" />
+
+                    <VBtn size="small" color="warning" variant="tonal" icon="ri-pencil-line"
+                      @click="openEditDialog(transfer)" />
 
                     <!-- Menú Pro de Acciones Secundarias -->
-                    <VMenu
-                      v-if="can('edit_transfer') || can('delete_transfer')"
-                      location="bottom end"
-                      transition="scale-transition"
-                    >
+                    <VMenu v-if="can('edit_transfer') || can('delete_transfer')" location="bottom end"
+                      transition="scale-transition">
                       <template #activator="{ props: menuProps }">
-                        <VBtn
-                          v-bind="menuProps"
-                          size="small"
-                          variant="text"
-                          color="secondary"
-                          icon="ri-more-2-fill"
-                          class="action-btn"
-                          title="Más opciones"
-                        />
+                        <VBtn v-bind="menuProps" size="small" variant="text" color="secondary" icon="ri-more-2-fill"
+                          class="action-btn" title="Más opciones" />
                       </template>
 
-                      <VList
-                        density="compact"
-                        elevation="6"
-                        class="py-1 rounded-lg"
-                        min-width="180"
-                      >
-                        <VListItem
-                          v-if="can('edit_transfer')"
-                          @click="openEditDialog(transfer)"
-                        >
-                          <template #prepend>
-                            <VIcon
-                              icon="ri-edit-line"
-                              color="warning"
-                              size="18"
-                              class="me-2"
-                            />
-                          </template>
-                          <VListItemTitle class="font-weight-medium text-body-2">
-                            Editar Registro
-                          </VListItemTitle>
-                        </VListItem>
+                      <VList density="compact" elevation="6" class="py-1 rounded-lg" min-width="180">
 
-                        <VDivider
-                          v-if="can('edit_transfer') && can('delete_transfer')"
-                          class="my-1"
-                        />
 
-                        <VListItem
-                          v-if="can('delete_transfer')"
-                          class="text-error"
-                          @click="deleteTransfer(transfer)"
-                        >
+                        <VDivider v-if="can('edit_transfer') && can('delete_transfer')" class="my-1" />
+
+                        <VListItem v-if="can('delete_transfer')" class="text-error" @click="deleteTransfer(transfer)">
                           <template #prepend>
-                            <VIcon
-                              icon="ri-delete-bin-line"
-                              color="error"
-                              size="18"
-                              class="me-2"
-                            />
+                            <VIcon icon="ri-delete-bin-line" color="error" size="18" class="me-2" />
                           </template>
                           <VListItemTitle class="font-weight-medium text-body-2 text-error">
                             Eliminar Registro
@@ -1198,82 +851,41 @@ onMounted(() => {
       </VCard>
 
       <!-- Paginación -->
-      <VCard
-        v-if="allFilteredTransfers.length > 0"
-        class="mt-4 rounded-xl border elevation-0 pa-4 bg-surface"
-      >
+      <VCard v-if="allFilteredTransfers.length > 0" class="mt-4 rounded-xl border elevation-0 pa-4 bg-surface">
         <div class="d-flex flex-column flex-sm-row align-center justify-space-between gap-3 w-100">
           <div class="d-flex align-center gap-4 flex-wrap">
             <div class="text-body-2 text-medium-emphasis">
-              Mostrando <strong class="text-high-emphasis">{{ paginatedTransfers.length }}</strong> de <strong class="text-high-emphasis">{{ allFilteredTransfers.length }}</strong> transferencias
+              Mostrando <strong class="text-high-emphasis">{{ paginatedTransfers.length }}</strong> de <strong
+                class="text-high-emphasis">{{ allFilteredTransfers.length }}</strong> transferencias
             </div>
-            <div
-              class="d-flex align-center gap-2"
-              style="min-width: 140px;"
-            >
+            <div class="d-flex align-center gap-2" style="min-width: 140px;">
               <span class="text-caption text-medium-emphasis">Por pág:</span>
-              <VSelect
-                v-model="itemsPerPage"
-                :items="[10, 15, 25, 50, 100]"
-                variant="outlined"
-                density="compact"
-                hide-details
-                style="max-width: 95px;"
-                @update:model-value="currentPage = 1"
-              />
+              <VSelect v-model="itemsPerPage" :items="[10, 15, 25, 50, 100]" variant="outlined" density="compact"
+                hide-details style="max-width: 95px;" @update:model-value="currentPage = 1" />
             </div>
           </div>
-          <VPagination
-            v-if="totalPages > 1"
-            v-model="currentPage"
-            :length="totalPages"
-            :disabled="loading"
-            rounded="circle"
-            :total-visible="$vuetify.display.xs ? 4 : 7"
-            :size="$vuetify.display.xs ? 'small' : 'default'"
-            density="comfortable"
-            color="primary"
-            class="my-0"
-          />
+          <VPagination v-if="totalPages > 1" v-model="currentPage" :length="totalPages" :disabled="loading"
+            rounded="circle" :total-visible="$vuetify.display.xs ? 4 : 7"
+            :size="$vuetify.display.xs ? 'small' : 'default'" density="comfortable" color="primary" class="my-0" />
         </div>
       </VCard>
     </div>
   </div>
 
   <!-- Modal Ver Nota de Transferencia -->
-  <MovementReceiptNoteDialog
-    v-model="showNoteDialog"
-    :movement="selectedTransferForNote"
-    :accounts="accounts"
-    @updated="loadTransfers"
-  />
+  <MovementReceiptNoteDialog v-model="showNoteDialog" :movement="selectedTransferForNote" :accounts="accounts"
+    @updated="loadTransfers" />
 
   <!-- Modal de transferencias -->
-  <TransferDialog
-    v-model="showTransferDialog"
-    :transfer-data="editingTransfer"
-    @transferred="onTransferred"
-  />
+  <TransferDialog v-model="showTransferDialog" :transfer-data="editingTransfer" @transferred="onTransferred" />
 
   <!-- Modal Confirmar Eliminación Estándar del Sistema -->
-  <VDialog
-    v-model="showDeleteDialog"
-    scrollable
-    max-width="500"
-    persistent
-    transition="dialog-bottom-transition"
-  >
+  <VDialog v-model="showDeleteDialog" scrollable max-width="500" persistent transition="dialog-bottom-transition">
     <VCard class="custom-dialog-card elevation-12">
       <!-- Header Banner Primary (Color del sistema) -->
       <div class="custom-dialog-header-primary bg-primary text-white">
-        <VBtn
-          icon="ri-close-line"
-          variant="text"
-          size="small"
-          class="custom-dialog-close-btn"
-          :disabled="loader.loading"
-          @click="closeDeleteDialog"
-        />
+        <VBtn icon="ri-close-line" variant="text" size="small" class="custom-dialog-close-btn"
+          :disabled="loader.loading" @click="closeDeleteDialog" />
         <div class="custom-dialog-avatar">
           <VIcon icon="ri-delete-bin-line" />
         </div>
@@ -1288,16 +900,8 @@ onMounted(() => {
       <VCardText class="pa-6">
         <div class="text-center">
           <!-- Transfer Avatar -->
-          <VAvatar
-            size="72"
-            color="primary"
-            variant="tonal"
-            class="mb-3"
-          >
-            <VIcon
-              icon="ri-arrow-left-right-line"
-              size="36"
-            />
+          <VAvatar size="72" color="primary" variant="tonal" class="mb-3">
+            <VIcon icon="ri-arrow-left-right-line" size="36" />
           </VAvatar>
 
           <!-- Transfer Info Summary -->
@@ -1306,14 +910,12 @@ onMounted(() => {
               ¿Eliminar esta transferencia?
             </h4>
             <p class="text-caption text-medium-emphasis mb-3">
-              Monto a revertir: <strong class="text-error font-weight-bold font-mono">{{ formatCurrency(transferToDelete?.amount) }}</strong>
+              Monto a revertir: <strong class="text-error font-weight-bold font-mono">{{
+                formatCurrency(transferToDelete?.amount) }}</strong>
             </p>
 
             <!-- Detalles en Card Plana -->
-            <div
-              class="pa-3 rounded-xl border d-flex flex-column gap-2 text-start info-card-flat"
-
-            >
+            <div class="pa-3 rounded-xl border d-flex flex-column gap-2 text-start info-card-flat">
               <div class="d-flex justify-space-between align-center">
                 <span class="text-caption text-medium-emphasis">Cuenta Origen (Sale de):</span>
                 <span class="text-caption font-weight-bold text-error">
@@ -1328,15 +930,9 @@ onMounted(() => {
                 </span>
               </div>
 
-              <div
-                v-if="transferToDelete?.description"
-                class="d-flex justify-space-between align-center"
-              >
+              <div v-if="transferToDelete?.description" class="d-flex justify-space-between align-center">
                 <span class="text-caption text-medium-emphasis">Descripción:</span>
-                <span
-                  class="text-caption text-high-emphasis text-truncate"
-                  style="max-width: 220px;"
-                >
+                <span class="text-caption text-high-emphasis text-truncate" style="max-width: 220px;">
                   {{ transferToDelete.description }}
                 </span>
               </div>
@@ -1356,11 +952,9 @@ onMounted(() => {
               </div>
             </div>
 
-            <div class="mt-4 d-flex align-center justify-center gap-1 text-error text-caption font-weight-medium text-center">
-              <VIcon
-                icon="ri-error-warning-line"
-                size="16"
-              />
+            <div
+              class="mt-4 d-flex align-center justify-center gap-1 text-error text-caption font-weight-medium text-center">
+              <VIcon icon="ri-error-warning-line" size="16" />
               <span>Esta acción revertirá los fondos a sus cuentas de origen y destino originales.</span>
             </div>
           </div>
@@ -1369,30 +963,15 @@ onMounted(() => {
 
       <VDivider />
 
-      <VCardActions
-        class="pa-4 d-flex justify-end align-center gap-3 bg-surface"
-        style="position: sticky; bottom: 0; z-index: 2;"
-      >
-        <VBtn
-          variant="outlined"
-          color="secondary"
-          prepend-icon="ri-close-line"
-          class="rounded-lg px-6 font-weight-medium"
-          height="40"
-          :disabled="loader.loading"
-          @click="closeDeleteDialog"
-        >
+      <VCardActions class="pa-4 d-flex justify-end align-center gap-3 bg-surface"
+        style="position: sticky; bottom: 0; z-index: 2;">
+        <VBtn variant="outlined" color="secondary" prepend-icon="ri-close-line"
+          class="rounded-lg px-6 font-weight-medium" height="40" :disabled="loader.loading" @click="closeDeleteDialog">
           Cancelar
         </VBtn>
-        <VBtn
-          color="error"
-          variant="elevated"
-          prepend-icon="ri-delete-bin-line"
-          class="rounded-lg px-6 font-weight-bold elevation-2"
-          height="40"
-          :loading="loader.loading"
-          @click="confirmDeleteTransfer"
-        >
+        <VBtn color="error" variant="elevated" prepend-icon="ri-delete-bin-line"
+          class="rounded-lg px-6 font-weight-bold elevation-2" height="40" :loading="loader.loading"
+          @click="confirmDeleteTransfer">
           Confirmar Eliminación
         </VBtn>
       </VCardActions>

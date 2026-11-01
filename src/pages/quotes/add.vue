@@ -814,30 +814,35 @@ onActivated(async () => {
                           </VListItemSubtitle>
                         </VListItem>
                       </template>
-                    </VSearch>
-                    <VMenu>
-                      <template #activator="{ props }">
+                      <template #append>
                         <VBtn
-                          icon="ri-add-line"
-                          color="primary"
+                          icon
+                          size="small"
                           variant="tonal"
-                          v-bind="props"
-                          class="mb-5"
-                        />
+                          color="primary"
+                          rounded="circle"
+                          class="btn-circle-add rounded-circle"
+                          style="border-radius: 50% !important;"
+                          type="button"
+                        >
+                          <VIcon icon="ri-add-line" />
+                          <VMenu activator="parent">
+                            <VList density="compact" class="rounded-lg elevation-4 border">
+                              <VListItem
+                                title="Persona Natural"
+                                prepend-icon="ri-user-line"
+                                @click="isClientFinalDialogVisible = true"
+                              />
+                              <VListItem
+                                title="Empresa / Jurídico"
+                                prepend-icon="ri-building-line"
+                                @click="isClientCompanyDialogVisible = true"
+                              />
+                            </VList>
+                          </VMenu>
+                        </VBtn>
                       </template>
-                      <VList density="compact">
-                        <VListItem
-                          title="Persona Natural"
-                          prepend-icon="ri-user-line"
-                          @click="isClientFinalDialogVisible = true"
-                        />
-                        <VListItem
-                          title="Empresa / Jurídico"
-                          prepend-icon="ri-building-line"
-                          @click="isClientCompanyDialogVisible = true"
-                        />
-                      </VList>
-                    </VMenu>
+                    </VSearch>
                   </div>
                   <div
                     v-if="selectedClient"
@@ -884,14 +889,22 @@ onActivated(async () => {
                           </VListItemSubtitle>
                         </VListItem>
                       </template>
+                      <template #append>
+                        <VBtn
+                          icon
+                          size="small"
+                          variant="tonal"
+                          color="primary"
+                          rounded="circle"
+                          class="btn-circle-add rounded-circle"
+                          style="border-radius: 50% !important;"
+                          type="button"
+                          @click="isVehicleDialogVisible = true"
+                        >
+                          <VIcon icon="ri-add-line" />
+                        </VBtn>
+                      </template>
                     </VSearch>
-                    <VBtn
-                      icon="ri-add-line"
-                      color="primary"
-                      variant="tonal"
-                      class="mb-5"
-                      @click="isVehicleDialogVisible = true"
-                    />
                   </div>
                 </VCol>
 

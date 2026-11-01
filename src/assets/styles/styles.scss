@@ -14,4 +14,35 @@
 // Login module styles
 @import './login.scss';
 
+// Botones circulares estandarizados para agregar cliente/vehículo
+.rounded-circle {
+  border-radius: 50% !important;
+}
 
+.btn-circle-add,
+.v-btn.btn-circle-add {
+  border-radius: 50% !important;
+  width: 36px !important;
+  height: 36px !important;
+  min-width: 36px !important;
+  padding: 0 !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  background-color: rgba(var(--v-theme-primary), 0.16) !important;
+  color: rgb(var(--v-theme-primary)) !important;
+  border: 1px solid rgba(var(--v-theme-primary), 0.32) !important;
+
+  .v-icon,
+  i {
+    color: rgb(var(--v-theme-primary)) !important;
+    font-size: 20px !important;
+    opacity: 1 !important;
+  }
+
+  &:hover {
+    background-color: rgba(var(--v-theme-primary), 0.26) !important;
+    transform: scale(1.05);
+    transition: all 0.2s ease-in-out;
+  }
+}

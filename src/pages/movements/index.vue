@@ -66,8 +66,15 @@ const backendTotals = ref({
 let searchTimeout = null
 
 // Vigilante para fecha específica ("Solo por el día")
-watch(filterSpecificDate, newVal => {
-  if (newVal) {
+watch(filterSpecificDate, (newVal, oldVal) => {
+  const cleanNew = (newVal || '').trim()
+  const cleanOld = (oldVal || '').trim()
+
+  // Evitar recargar si no hubo cambio real o si se abrió el picker y se salió sin elegir nada
+  if (cleanNew === cleanOld) return
+  if (!cleanOld && !cleanNew) return
+
+  if (cleanNew) {
     rangeDate.value = null
   }
   currentPage.value = 1
@@ -77,20 +84,32 @@ watch(filterSpecificDate, newVal => {
   }, 350)
 })
 
-// Vigilante para rango de fechas: no recargar a medio camino cuando solo se ha pulsado la primera fecha
-watch(rangeDate, newVal => {
-  if (newVal && !newVal.includes(' to ')) {
+// Vigilante para rango de fechas: no recargar si se entra y no se escoge nada, o si está incompleto
+watch(rangeDate, (newVal, oldVal) => {
+  const cleanNew = (newVal || '').trim()
+  const cleanOld = (oldVal || '').trim()
+
+  // Si no hay cambio real entre los valores limpios
+  if (cleanNew === cleanOld) return
+
+  const isNewComplete = cleanNew.includes(' to ') && cleanNew.split(' to ')[1]?.trim().length >= 8
+  const isOldComplete = cleanOld.includes(' to ') && cleanOld.split(' to ')[1]?.trim().length >= 8
+
+  // Si el nuevo valor es incompleto (ej. solo seleccionó una fecha y no la segunda)
+  if (cleanNew && !isNewComplete) {
     return
   }
-  if (newVal && newVal.includes(' to ')) {
-    const parts = newVal.split(' to ')
-    if (!parts[1] || parts[1].trim().length < 8) {
-      return
-    }
-    if (filterSpecificDate.value) {
-      filterSpecificDate.value = null
-    }
+
+  // Si no había un rango completo previo y el nuevo tampoco es completo (ej. entrar y salir sin elegir nada)
+  if (!isOldComplete && !isNewComplete) {
+    return
   }
+
+  // Si se seleccionó un rango válido y había fecha específica, limpiarla
+  if (isNewComplete && filterSpecificDate.value) {
+    filterSpecificDate.value = null
+  }
+
   currentPage.value = 1
   if (searchTimeout) clearTimeout(searchTimeout)
   searchTimeout = setTimeout(() => {
@@ -98,8 +117,14 @@ watch(rangeDate, newVal => {
   }, 350)
 })
 
-// Vigilante para texto, tipo y mes
-watch([searchWorkOrder, filterType, filterMonth], () => {
+// Vigilante para texto, tipo y mes: validar que haya un cambio real antes de recargar
+watch([searchWorkOrder, filterType, filterMonth], ([newSearch, newType, newMonth], [oldSearch, oldType, oldMonth]) => {
+  const sChanged = (newSearch || '').trim() !== (oldSearch || '').trim()
+  const tChanged = (newType || '') !== (oldType || '')
+  const mChanged = (newMonth || '') !== (oldMonth || '')
+
+  if (!sChanged && !tChanged && !mChanged) return
+
   currentPage.value = 1
   if (searchTimeout) clearTimeout(searchTimeout)
   searchTimeout = setTimeout(() => {
@@ -111,7 +136,7 @@ watch([searchWorkOrder, filterType, filterMonth], () => {
 const paginatedMovements = computed(() => {
   const start = (currentPage.value - 1) * itemsPerPage.value
   const end = start + itemsPerPage.value
-  
+
   return movements.value.slice(start, end)
 })
 
@@ -246,6 +271,15 @@ const cleanAccountName = name => {
     .replace(/\(TRANSFERENCIA\)/gi, '')
     .replace(/\(EFECTIVO\s*\/\s*CAJA\)/gi, '')
     .trim()
+}
+
+const formatMovementDescription = desc => {
+  if (!desc) return 'Sin descripción'
+
+  return desc
+    .replace(/\bVenta:\s*invoice\b/gi, 'Venta: Factura')
+    .replace(/\bVenta:\s*note\b/gi, 'Venta: Nota de Venta')
+    .replace(/\bVenta:\s*quote\b/gi, 'Venta: Cotización')
 }
 
 // Determinar con precisión si el método de pago es TRANSFERENCIA o EFECTIVO
@@ -523,10 +557,10 @@ const prepareFinanceRecordPayload = data => {
         formData.append(key, data[key])
       }
     })
-    
+
     return formData
   }
-  
+
   return data
 }
 
@@ -812,7 +846,7 @@ const getMovementDocNumber = movement => {
   if (inv && inv !== '-') return inv
   const wo = getMovementWorkOrderNumber(movement)
   if (wo && wo !== '-') return wo
-  
+
   return `#${movement?.id || '-'}`
 }
 
@@ -866,14 +900,14 @@ const getAttachmentUrl = att => {
 
 const hasImageAttachment = movement => {
   const atts = movement?.resolved_attachments || movement?.attachments || []
-  
+
   return atts.some(att => att.is_image || (att.mime_type && att.mime_type.startsWith('image/')) || /\.(jpg|jpeg|png|webp|gif)$/i.test(att.file_name || att.file_path || ''))
 }
 
 const getFirstImageUrl = movement => {
   const atts = movement?.resolved_attachments || movement?.attachments || []
   const imgAtt = atts.find(att => att.is_image || (att.mime_type && att.mime_type.startsWith('image/')) || /\.(jpg|jpeg|png|webp|gif)$/i.test(att.file_name || att.file_path || ''))
-  
+
   return imgAtt ? getAttachmentUrl(imgAtt) : ''
 }
 
@@ -971,7 +1005,7 @@ const previewMovementPhoto = (movement, index = 0) => {
   const atts = movement?.resolved_attachments || movement?.attachments || []
   if (!atts || atts.length === 0) {
     openAttachDialog(movement)
-    
+
     return
   }
   currentPhotoMovement.value = movement
@@ -982,14 +1016,14 @@ const previewMovementPhoto = (movement, index = 0) => {
 
 const currentActivePhoto = computed(() => {
   if (!currentPhotoList.value || currentPhotoList.value.length === 0) return null
-  
+
   return currentPhotoList.value[currentPhotoIndex.value] || currentPhotoList.value[0]
 })
 
 const isCurrentPhotoAnImage = computed(() => {
   const photo = currentActivePhoto.value
   if (!photo) return false
-  
+
   return photo.is_image || (photo.mime_type && photo.mime_type.startsWith('image/')) || /\.(jpg|jpeg|png|webp|gif)$/i.test(photo.file_name || photo.file_path || '')
 })
 
@@ -1050,29 +1084,16 @@ onMounted(() => {
     <!-- Encabezado Principal (Sin fondo de tarjeta) -->
     <div class="d-flex align-center justify-space-between flex-wrap mb-4 mb-md-6 gap-3 gap-md-4">
       <div class="d-flex align-center gap-3">
-        <VAvatar
-          color="primary"
-          variant="tonal"
-          rounded="lg"
-          size="42"
-          size-sm="44"
-        >
-          <VIcon
-            icon="ri-exchange-dollar-line"
-            size="24"
-          />
+        <VAvatar color="primary" variant="tonal" rounded="lg" size="42" size-sm="44">
+          <VIcon icon="ri-exchange-dollar-line" size="24" />
         </VAvatar>
         <div>
           <div class="d-flex align-center gap-2">
-            <h1 class="text-h5 text-sm-h4 font-weight-bold text-high-emphasis mb-0 operations-page-title d-flex align-center">
+            <h1
+              class="text-h5 text-sm-h4 font-weight-bold text-high-emphasis mb-0 operations-page-title d-flex align-center">
               Ingresos y Egresos
             </h1>
-            <VChip
-              size="small"
-              color="primary"
-              variant="tonal"
-              class="font-weight-bold"
-            >
+            <VChip size="small" color="primary" variant="tonal" class="font-weight-bold">
               {{ totalMovementsCount }} {{ totalMovementsCount === 1 ? 'registro' : 'registros' }}
             </VChip>
           </div>
@@ -1084,35 +1105,16 @@ onMounted(() => {
 
       <!-- Botones de Acción -->
       <div class="d-flex align-center justify-end gap-2 flex-wrap ms-auto crud-header-actions">
-        <VBtn
-          color="primary"
-          variant="elevated"
-          size="default"
-          prepend-icon="ri-add-circle-line"
-          class="font-weight-bold elevation-1"
-          @click="openIncomeDialog"
-        >
+        <VBtn color="primary" variant="elevated" size="default" prepend-icon="ri-add-circle-line"
+          class="font-weight-bold elevation-1" @click="openIncomeDialog">
           Nuevo Ingreso
         </VBtn>
-        <VBtn
-          color="info"
-          variant="tonal"
-          size="default"
-          prepend-icon="ri-indeterminate-circle-line"
-          class="font-weight-semibold"
-          @click="openExpenseDialog"
-        >
+        <VBtn color="info" variant="tonal" size="default" prepend-icon="ri-indeterminate-circle-line"
+          class="font-weight-semibold" @click="openExpenseDialog">
           Nuevo Egreso
         </VBtn>
-        <VBtn
-          color="secondary"
-          variant="outlined"
-          size="default"
-          prepend-icon="ri-file-pdf-line"
-          class="font-weight-medium"
-          :loading="isGeneratingPDF"
-          @click="generatePDF"
-        >
+        <VBtn color="secondary" variant="outlined" size="default" prepend-icon="ri-file-pdf-line"
+          class="font-weight-medium" :loading="isGeneratingPDF" @click="generatePDF">
           Exportar PDF
         </VBtn>
       </div>
@@ -1121,17 +1123,11 @@ onMounted(() => {
     <!-- Tarjetas de Resumen KPI con colores tonales -->
     <VRow class="mb-5 d-none d-sm-flex">
       <!-- Total Ingresos -->
-      <VCol
-        cols="12"
-        sm="6"
-        md="4"
-      >
+      <VCol cols="12" sm="6" md="4">
         <VCard
           class="pa-4 rounded-xl tonal-card bg-success-tonal border-success cursor-pointer transition-all hover-scale operations-kpi-card"
           :class="{ 'active-card border-2 elevation-3': filterType === 'income', 'opacity-60': filterType && filterType !== 'income' }"
-          elevation="0"
-          @click="filterType = filterType === 'income' ? '' : 'income'"
-        >
+          elevation="0" @click="filterType = filterType === 'income' ? '' : 'income'">
           <div class="d-flex align-center justify-space-between">
             <div>
               <span class="text-overline font-weight-bold text-success text-uppercase tracking-wider">
@@ -1144,34 +1140,19 @@ onMounted(() => {
                 Suma total de ingresos registrados
               </span>
             </div>
-            <VAvatar
-              color="success"
-              variant="elevated"
-              size="42"
-              class="elevation-2 kpi-avatar"
-            >
-              <VIcon
-                size="24"
-                icon="ri-arrow-right-up-line"
-                color="white"
-              />
+            <VAvatar color="success" variant="elevated" size="42" class="elevation-2 kpi-avatar">
+              <VIcon size="24" icon="ri-arrow-right-up-line" color="white" />
             </VAvatar>
           </div>
         </VCard>
       </VCol>
 
       <!-- Total Egresos -->
-      <VCol
-        cols="12"
-        sm="6"
-        md="4"
-      >
+      <VCol cols="12" sm="6" md="4">
         <VCard
           class="pa-4 rounded-xl tonal-card bg-error-tonal border-error cursor-pointer transition-all hover-scale operations-kpi-card"
           :class="{ 'active-card border-2 elevation-3': filterType === 'expense', 'opacity-60': filterType && filterType !== 'expense' }"
-          elevation="0"
-          @click="filterType = filterType === 'expense' ? '' : 'expense'"
-        >
+          elevation="0" @click="filterType = filterType === 'expense' ? '' : 'expense'">
           <div class="d-flex align-center justify-space-between">
             <div>
               <span class="text-overline font-weight-bold text-error text-uppercase tracking-wider">
@@ -1184,34 +1165,19 @@ onMounted(() => {
                 Suma total de egresos registrados
               </span>
             </div>
-            <VAvatar
-              color="error"
-              variant="elevated"
-              size="42"
-              class="elevation-2 kpi-avatar"
-            >
-              <VIcon
-                size="24"
-                icon="ri-arrow-right-down-line"
-                color="white"
-              />
+            <VAvatar color="error" variant="elevated" size="42" class="elevation-2 kpi-avatar">
+              <VIcon size="24" icon="ri-arrow-right-down-line" color="white" />
             </VAvatar>
           </div>
         </VCard>
       </VCol>
 
       <!-- Balance Neto -->
-      <VCol
-        cols="12"
-        sm="12"
-        md="4"
-      >
+      <VCol cols="12" sm="12" md="4">
         <VCard
           class="pa-4 rounded-xl tonal-card bg-primary-tonal border-primary cursor-pointer transition-all hover-scale operations-kpi-card"
-          :class="{ 'active-card border-2 elevation-3': filterType === '', 'opacity-60': filterType }"
-          elevation="0"
-          @click="filterType = ''"
-        >
+          :class="{ 'active-card border-2 elevation-3': filterType === '', 'opacity-60': filterType }" elevation="0"
+          @click="filterType = ''">
           <div class="d-flex align-center justify-space-between">
             <div>
               <span class="text-overline font-weight-bold text-primary text-uppercase tracking-wider">
@@ -1224,17 +1190,8 @@ onMounted(() => {
                 Diferencia Ingresos - Egresos
               </span>
             </div>
-            <VAvatar
-              color="primary"
-              variant="elevated"
-              size="42"
-              class="elevation-2 kpi-avatar"
-            >
-              <VIcon
-                size="24"
-                icon="ri-wallet-3-line"
-                color="white"
-              />
+            <VAvatar color="primary" variant="elevated" size="42" class="elevation-2 kpi-avatar">
+              <VIcon size="24" icon="ri-wallet-3-line" color="white" />
             </VAvatar>
           </div>
         </VCard>
@@ -1245,132 +1202,54 @@ onMounted(() => {
     <VCard class="pa-4 mb-6 rounded-xl border-light elevation-1">
       <div class="d-flex align-center justify-space-between mb-3">
         <div class="d-flex align-center gap-2 text-subtitle-2 font-weight-bold text-high-emphasis">
-          <VIcon
-            icon="ri-filter-3-line"
-            size="18"
-            color="primary"
-          />
+          <VIcon icon="ri-filter-3-line" size="18" color="primary" />
           <span>Filtros de Búsqueda</span>
         </div>
 
-        <VBtn
-          variant="text"
-          color="error"
-          size="small"
-          prepend-icon="ri-filter-off-line"
-          class="font-weight-semibold"
-          @click="resetFilters"
-        >
+        <VBtn variant="text" color="error" size="small" prepend-icon="ri-filter-off-line" class="font-weight-semibold"
+          @click="resetFilters">
           Limpiar Filtros
         </VBtn>
       </div>
 
-      <VRow
-        align="center"
-        density="comfortable"
-      >
+      <VRow align="start" density="comfortable">
         <!-- Columna Izquierda (6 columnas): Búsqueda -->
-        <VCol
-          cols="12"
-          md="6"
-        >
-          <VTextField
-            v-model="searchWorkOrder"
-            prepend-inner-icon="ri-search-2-line"
-            placeholder="Buscar por OT, Factura, Descripción..."
-            hide-details
-            clearable
-            variant="outlined"
-            density="compact"
-            :loading="loading"
-          />
+        <VCol cols="12" md="6">
+          <VTextField v-model="searchWorkOrder" prepend-inner-icon="ri-search-2-line"
+            placeholder="Buscar por OT, Factura, Descripción..." hide-details clearable variant="outlined"
+            density="compact" :loading="loading" />
         </VCol>
 
         <!-- Columna Derecha (6 columnas): Los 4 filtros restantes -->
-        <VCol
-          cols="12"
-          md="6"
-        >
-          <VRow
-            align="center"
-            density="compact"
-          >
+        <VCol cols="12" md="6">
+          <VRow align="center" density="compact">
             <!-- Filtrar por Mes -->
-            <VCol
-              cols="12"
-              sm="6"
-              md="3"
-            >
-              <VSelect
-                v-model="filterMonth"
-                :items="monthsOptions"
-                item-title="title"
-                item-value="value"
-                label="Mes"
-                prepend-inner-icon="ri-calendar-event-line"
-                hide-details
-                variant="outlined"
-                density="compact"
-              />
+            <VCol cols="12" sm="6" md="3">
+              <VSelect v-model="filterMonth" :items="monthsOptions" item-title="title" item-value="value" label="Mes"
+                prepend-inner-icon="ri-calendar-event-line" hide-details variant="outlined" density="compact" />
             </VCol>
 
             <!-- Solo por el día -->
-            <VCol
-              cols="12"
-              sm="6"
-              md="3"
-            >
-              <AppDateTimePicker
-                v-model="filterSpecificDate"
-                label="Solo por el día"
-                placeholder="Elegir día"
-                variant="outlined"
-                density="compact"
-                hide-details
-                clearable
-              />
+            <VCol cols="12" sm="6" md="3">
+              <AppDateTimePicker v-model="filterSpecificDate" label="Por día" placeholder="Elegir día"
+                variant="outlined" density="compact" hide-details clearable />
             </VCol>
 
             <!-- Rango de Fechas -->
-            <VCol
-              cols="12"
-              sm="6"
-              md="3"
-            >
-              <AppDateTimePicker
-                v-model="rangeDate"
-                label="Rango de fechas"
-                placeholder="Rango"
-                :config="{ mode: 'range' }"
-                variant="outlined"
-                density="compact"
-                hide-details
-                clearable
-              />
+            <VCol cols="12" sm="6" md="3">
+              <AppDateTimePicker v-model="rangeDate" label="Rango de fechas" placeholder="Rango"
+                :config="{ mode: 'range' }" variant="outlined" density="compact" hide-details clearable />
             </VCol>
 
             <!-- Filtrar por Tipo -->
-            <VCol
-              cols="12"
-              sm="6"
-              md="3"
-            >
-              <VSelect
-                v-model="filterType"
-                :items="[
-                  { title: 'Todos', value: '' },
-                  { title: 'Ingresos', value: 'income' },
-                  { title: 'Egresos', value: 'expense' },
-                  { title: 'Transferencias', value: 'transfer' }
-                ]"
-                item-title="title"
-                item-value="value"
-                label="Tipo"
-                prepend-inner-icon="ri-equalizer-line"
-                hide-details
-                variant="outlined"
-                density="compact"
-              />
+            <VCol cols="12" sm="6" md="3">
+              <VSelect v-model="filterType" :items="[
+                { title: 'Todos', value: '' },
+                { title: 'Ingresos', value: 'income' },
+                { title: 'Egresos', value: 'expense' },
+                { title: 'Transferencias', value: 'transfer' }
+              ]" item-title="title" item-value="value" label="Tipo" prepend-inner-icon="ri-equalizer-line" hide-details
+                variant="outlined" density="compact" />
             </VCol>
           </VRow>
         </VCol>
@@ -1379,21 +1258,9 @@ onMounted(() => {
 
     <!-- Cargando -->
     <!-- Sin registros iniciales (Base de datos vacía) -->
-    <VCard
-      v-if="!loading && !movements.length"
-      class="text-center pa-12 rounded-xl border-light elevation-1"
-    >
-      <VAvatar
-        color="primary"
-        variant="tonal"
-        size="80"
-        class="mb-4"
-      >
-        <VIcon
-          icon="ri-inbox-line"
-          size="42"
-          color="primary"
-        />
+    <VCard v-if="!loading && !movements.length" class="text-center pa-12 rounded-xl border-light elevation-1">
+      <VAvatar color="primary" variant="tonal" size="80" class="mb-4">
+        <VIcon icon="ri-inbox-line" size="42" color="primary" />
       </VAvatar>
       <h3 class="text-h6 font-weight-bold text-high-emphasis">
         No hay movimientos para mostrar
@@ -1402,22 +1269,12 @@ onMounted(() => {
         Intenta ajustar los filtros de búsqueda o registra un nuevo ingreso o egreso.
       </p>
       <div class="d-flex justify-center gap-3">
-        <VBtn
-          color="success"
-          variant="elevated"
-          prepend-icon="ri-add-line"
-          class="font-weight-semibold"
-          @click="openIncomeDialog"
-        >
+        <VBtn color="success" variant="elevated" prepend-icon="ri-add-line" class="font-weight-semibold"
+          @click="openIncomeDialog">
           Agregar Ingreso
         </VBtn>
-        <VBtn
-          color="error"
-          variant="elevated"
-          prepend-icon="ri-subtract-line"
-          class="font-weight-semibold"
-          @click="openExpenseDialog"
-        >
+        <VBtn color="error" variant="elevated" prepend-icon="ri-subtract-line" class="font-weight-semibold"
+          @click="openExpenseDialog">
           Agregar Egreso
         </VBtn>
       </div>
@@ -1427,34 +1284,16 @@ onMounted(() => {
     <div v-else>
       <!-- VISTA MÓVIL: TARJETAS TOUCH-FRIENDLY (d-md-none) -->
       <div class="d-md-none d-flex flex-column gap-4 mb-4 mobile-card-list-container">
-        <div
-          v-if="loading"
-          class="d-flex flex-column gap-3"
-        >
-          <div
-            v-for="n in 3"
-            :key="n"
-            class="pa-4 rounded-xl border bg-surface"
-          >
+        <div v-if="loading" class="d-flex flex-column gap-3">
+          <div v-for="n in 3" :key="n" class="pa-4 rounded-xl border bg-surface">
             <div class="shimmer-line w-50 mb-2" />
             <div class="shimmer-line w-75 mb-3" />
             <div class="shimmer-line w-40" />
           </div>
         </div>
-        <div
-          v-else-if="groupedMovements.length === 0"
-          class="text-center pa-8 rounded-xl border bg-surface"
-        >
-          <VAvatar
-            size="56"
-            color="primary"
-            variant="tonal"
-            class="mb-3"
-          >
-            <VIcon
-              size="28"
-              icon="ri-inbox-line"
-            />
+        <div v-else-if="groupedMovements.length === 0" class="text-center pa-8 rounded-xl border bg-surface">
+          <VAvatar size="56" color="primary" variant="tonal" class="mb-3">
+            <VIcon size="28" icon="ri-inbox-line" />
           </VAvatar>
           <p class="text-body-1 font-weight-bold mb-1">
             Sin resultados para la búsqueda
@@ -1463,28 +1302,13 @@ onMounted(() => {
             Prueba cambiando el término de búsqueda o limpia el filtro.
           </p>
         </div>
-        <div
-          v-for="day in groupedMovements"
-          v-else
-          :key="`mob-day-${day.date}`"
-          class="day-group-mobile"
-        >
+        <div v-for="day in groupedMovements" v-else :key="`mob-day-${day.date}`" class="day-group-mobile">
           <!-- Cabecera de Día Móvil -->
           <div class="day-header-mobile">
             <div class="d-flex align-center justify-space-between flex-wrap gap-2 mb-1.5">
               <div class="d-flex align-center gap-2">
-                <VAvatar
-                  color="primary"
-                  variant="elevated"
-                  size="28"
-                  rounded="lg"
-                  class="elevation-1 flex-shrink-0"
-                >
-                  <VIcon
-                    icon="ri-calendar-event-line"
-                    size="15"
-                    color="white"
-                  />
+                <VAvatar color="primary" variant="elevated" size="28" rounded="lg" class="elevation-1 flex-shrink-0">
+                  <VIcon icon="ri-calendar-event-line" size="15" color="white" />
                 </VAvatar>
                 <span class="text-subtitle-2 font-weight-bold text-high-emphasis">
                   {{ formatDateHeader(day.date) }}
@@ -1495,7 +1319,8 @@ onMounted(() => {
                 <span>{{ day.movements.length }} {{ day.movements.length === 1 ? 'mov.' : 'movs.' }}</span>
               </div>
             </div>
-            <div class="d-flex align-center justify-space-between pt-1.5 border-t text-caption font-weight-bold flex-wrap gap-1">
+            <div
+              class="d-flex align-center justify-space-between pt-1.5 border-t text-caption font-weight-bold flex-wrap gap-1">
               <div class="status-pill-clean status-paid text-caption">
                 <span class="status-dot" />
                 <span>+{{ formatCurrency(day.dailyIncome) }}</span>
@@ -1504,10 +1329,8 @@ onMounted(() => {
                 <span class="status-dot" />
                 <span>-{{ formatCurrency(day.dailyExpenses) }}</span>
               </div>
-              <div
-                class="status-pill-clean text-caption"
-                :class="day.dailyBalance >= 0 ? 'status-transfer' : 'status-other'"
-              >
+              <div class="status-pill-clean text-caption"
+                :class="day.dailyBalance >= 0 ? 'status-transfer' : 'status-other'">
                 <span class="status-dot" />
                 <span>Neto: {{ formatCurrency(day.dailyBalance) }}</span>
               </div>
@@ -1516,266 +1339,148 @@ onMounted(() => {
 
           <!-- Tarjetas de Movimientos del Día -->
           <div class="day-movements-list">
-            <div
-              v-for="movement in day.movements"
-              :key="`mob-mov-${movement.id}`"
-              class="mobile-movement-card"
-            >
-            <!-- Fila Superior: N° Documento, OT, y Tipo -->
-            <div class="d-flex align-center justify-space-between pb-2 border-b mb-2 flex-wrap gap-1.5">
-              <div class="d-flex align-center gap-1.5 flex-wrap">
-                <span class="text-caption font-weight-black text-high-emphasis font-mono">
-                  {{ getMovementInvoiceNumber(movement) }}
-                </span>
-                <span
-                  v-if="getMovementWorkOrderNumber(movement) !== '-'"
-                  class="ot-chip-badge"
-                >
+            <div v-for="movement in day.movements" :key="`mob-mov-${movement.id}`" class="mobile-movement-card">
+              <!-- Fila Superior: N° Documento, OT, y Tipo -->
+              <div class="d-flex align-center justify-space-between pb-2 border-b mb-2 flex-wrap gap-1.5">
+                <div class="d-flex align-center gap-1.5 flex-wrap">
+                  <span class="text-caption font-weight-black text-high-emphasis font-mono">
+                    {{ getMovementInvoiceNumber(movement) }}
+                  </span>
+                  <span v-if="getMovementWorkOrderNumber(movement) !== '-'" class="ot-chip-badge">
+                    <VIcon icon="ri-tools-line" size="11" class="me-0.5" />
+                    {{ getMovementWorkOrderNumber(movement) }}
+                  </span>
+                </div>
+                <div v-if="movement.type === 0 || movement.type === 'income'" class="status-pill-clean status-paid">
+                  <span class="status-dot" />
+                  <span>Ingreso</span>
+                </div>
+                <div v-else-if="movement.type === 1 || movement.type === 'expense'"
+                  class="status-pill-clean status-pending">
+                  <span class="status-dot" />
+                  <span>Egreso</span>
+                </div>
+                <div v-else-if="movement.type === 'transfer'" class="status-pill-clean status-transfer">
+                  <span class="status-dot" />
+                  <span>Transferencia</span>
+                </div>
+                <div v-else class="status-pill-clean status-other">
+                  <span class="status-dot" />
+                  <span>{{ movement.type }}</span>
+                </div>
+              </div>
+
+              <!-- Fila Central: Avatar, Descripción y Cuenta -->
+              <div class="d-flex align-start gap-3 mb-2.5">
+                <VAvatar size="40"
+                  :color="(movement.type === 0 || movement.type === 'income') ? 'success' : ((movement.type === 1 || movement.type === 'expense') ? 'error' : 'info')"
+                  variant="tonal" rounded="lg" class="flex-shrink-0 mt-0.5">
                   <VIcon
-                    icon="ri-tools-line"
-                    size="11"
-                    class="me-0.5"
-                  />
-                  {{ getMovementWorkOrderNumber(movement) }}
-                </span>
-              </div>
-              <div
-                v-if="movement.type === 0 || movement.type === 'income'"
-                class="status-pill-clean status-paid"
-              >
-                <span class="status-dot" />
-                <span>Ingreso</span>
-              </div>
-              <div
-                v-else-if="movement.type === 1 || movement.type === 'expense'"
-                class="status-pill-clean status-pending"
-              >
-                <span class="status-dot" />
-                <span>Egreso</span>
-              </div>
-              <div
-                v-else-if="movement.type === 'transfer'"
-                class="status-pill-clean status-transfer"
-              >
-                <span class="status-dot" />
-                <span>Transferencia</span>
-              </div>
-              <div
-                v-else
-                class="status-pill-clean status-other"
-              >
-                <span class="status-dot" />
-                <span>{{ movement.type }}</span>
-              </div>
-            </div>
-
-            <!-- Fila Central: Avatar, Descripción y Cuenta -->
-            <div class="d-flex align-start gap-3 mb-2.5">
-              <VAvatar
-                size="40"
-                :color="(movement.type === 0 || movement.type === 'income') ? 'success' : ((movement.type === 1 || movement.type === 'expense') ? 'error' : 'info')"
-                variant="tonal"
-                rounded="lg"
-                class="flex-shrink-0 mt-0.5"
-              >
-                <VIcon
-                  :icon="movement.type === 'transfer' ? 'ri-arrow-left-right-line' : ((movement.type === 0 || movement.type === 'income') ? 'ri-arrow-right-up-line' : 'ri-arrow-right-down-line')"
-                  size="20"
-                />
-              </VAvatar>
-              <div class="min-w-0 flex-grow-1">
-                <div
-                  class="font-weight-bold text-high-emphasis text-body-2 cursor-pointer"
-                  @click="openMovementNoteDialog(movement)"
-                >
-                  {{ movement.description || 'Sin descripción' }}
-                </div>
-                <div class="d-flex align-center gap-1.5 flex-wrap mt-1">
-                  <span class="text-caption font-weight-medium text-slate-700">
-                    {{ getAccountName(movement) }}
-                  </span>
-                  <span class="text-caption text-medium-emphasis">·</span>
-                  <span
-                    class="text-caption font-weight-bold text-medium-emphasis text-uppercase"
-                    style="font-size: 10px;"
-                  >
-                    {{ getPaymentMethod(movement, accounts) }}
-                  </span>
-                </div>
-              </div>
-            </div>
-
-            <!-- Comprobante Preview si existe -->
-            <div
-              v-if="movement.resolved_attachments && movement.resolved_attachments.length > 0"
-              class="d-flex align-center gap-2 mb-2 pa-2 rounded-lg bg-slate-50 border"
-            >
-              <div
-                v-if="hasImageAttachment(movement)"
-                class="position-relative cursor-pointer"
-                @click="previewMovementPhoto(movement)"
-              >
-                <VAvatar
-                  size="34"
-                  rounded="md"
-                  class="border"
-                >
-                  <VImg
-                    :src="getFirstImageUrl(movement)"
-                    cover
-                  />
+                    :icon="movement.type === 'transfer' ? 'ri-arrow-left-right-line' : ((movement.type === 0 || movement.type === 'income') ? 'ri-arrow-right-up-line' : 'ri-arrow-right-down-line')"
+                    size="20" />
                 </VAvatar>
-                <span
-                  v-if="movement.resolved_attachments.length > 1"
-                  class="attachment-count-badge"
-                >
-                  +{{ movement.resolved_attachments.length - 1 }}
-                </span>
-              </div>
-              <span class="text-caption font-weight-medium text-medium-emphasis">
-                {{ movement.resolved_attachments.length }} {{ movement.resolved_attachments.length === 1 ? 'comprobante adjunto' : 'comprobantes adjuntos' }}
-              </span>
-              <VBtn
-                size="x-small"
-                variant="tonal"
-                color="primary"
-                class="ms-auto"
-                @click="previewMovementPhoto(movement)"
-              >
-                Ver
-              </VBtn>
-            </div>
-
-            <!-- Fila Inferior: Monto y Acciones -->
-            <div class="d-flex align-center justify-space-between pt-2 border-t flex-wrap gap-2">
-              <div>
-                <span
-                  class="text-caption text-medium-emphasis d-block"
-                  style="font-size: 0.68rem;"
-                >MONTO</span>
-                <span
-                  class="text-h6 font-weight-black"
-                  :class="(movement.type === 0 || movement.type === 'income') ? 'text-success' : ((movement.type === 1 || movement.type === 'expense') ? 'text-error' : 'text-info')"
-                >
-                  {{ (movement.type === 0 || movement.type === 'income') ? '+' : ((movement.type === 1 || movement.type === 'expense') ? '-' : '') }}{{ formatCurrency(movement.amount) }}
-                </span>
+                <div class="min-w-0 flex-grow-1">
+                  <div class="font-weight-bold text-high-emphasis text-body-2 cursor-pointer"
+                    @click="openMovementNoteDialog(movement)">
+                    {{ formatMovementDescription(movement.description) }}
+                  </div>
+                  <div class="d-flex align-center gap-1.5 flex-wrap mt-1">
+                    <span class="text-caption font-weight-medium text-slate-700">
+                      {{ getAccountName(movement) }}
+                    </span>
+                    <span class="text-caption text-medium-emphasis">·</span>
+                    <span class="text-caption font-weight-bold text-medium-emphasis text-uppercase"
+                      style="font-size: 10px;">
+                      {{ getPaymentMethod(movement, accounts) }}
+                    </span>
+                  </div>
+                </div>
               </div>
 
-              <div class="d-flex align-center gap-1 ms-auto listing-item-actions">
-                <!-- Ver Nota de Movimiento -->
-                <VBtn
-                  icon="ri-file-text-line"
-                  size="small"
-                  variant="tonal"
-                  color="secondary"
-                  class="rounded-lg"
-                  title="Ver Nota"
-                  @click="openMovementNoteDialog(movement)"
-                />
-                <!-- Adjuntar Comprobantes -->
-                <VBtn
-                  v-if="movement.type !== 'transfer'"
-                  icon="ri-attachment-2"
-                  size="small"
-                  variant="tonal"
-                  color="primary"
-                  class="rounded-lg"
-                  title="Comprobantes"
-                  @click="openAttachDialog(movement)"
-                />
-                <!-- Editar -->
-                <VBtn
-                  v-if="canEditMovement(movement)"
-                  icon="ri-pencil-line"
-                  size="small"
-                  variant="tonal"
-                  color="warning"
-                  class="rounded-lg"
-                  title="Editar"
-                  @click="editMovement(movement)"
-                />
-                <!-- Eliminar -->
-                <VBtn
-                  v-if="canDeleteMovement(movement)"
-                  icon="ri-delete-bin-line"
-                  size="small"
-                  variant="tonal"
-                  color="error"
-                  class="rounded-lg"
-                  title="Eliminar"
-                  @click="deleteMovement(movement)"
-                />
+              <!-- Comprobante Preview si existe -->
+              <div v-if="movement.resolved_attachments && movement.resolved_attachments.length > 0"
+                class="d-flex align-center gap-2 mb-2 pa-2 rounded-lg bg-slate-50 border">
+                <div v-if="hasImageAttachment(movement)" class="position-relative cursor-pointer"
+                  @click="previewMovementPhoto(movement)">
+                  <VAvatar size="34" rounded="md" class="border">
+                    <VImg :src="getFirstImageUrl(movement)" cover />
+                  </VAvatar>
+                  <span v-if="movement.resolved_attachments.length > 1" class="attachment-count-badge">
+                    +{{ movement.resolved_attachments.length - 1 }}
+                  </span>
+                </div>
+                <span class="text-caption font-weight-medium text-medium-emphasis">
+                  {{ movement.resolved_attachments.length }} {{ movement.resolved_attachments.length === 1 ?
+                    'comprobante adjunto' : 'comprobantes adjuntos' }}
+                </span>
+                <VBtn size="x-small" variant="tonal" color="primary" class="ms-auto"
+                  @click="previewMovementPhoto(movement)">
+                  Ver
+                </VBtn>
+              </div>
+
+              <!-- Fila Inferior: Monto y Acciones -->
+              <div class="d-flex align-center justify-space-between pt-2 border-t flex-wrap gap-2">
+                <div>
+                  <span class="text-caption text-medium-emphasis d-block" style="font-size: 0.68rem;">MONTO</span>
+                  <span class="text-h6 font-weight-black"
+                    :class="(movement.type === 0 || movement.type === 'income') ? 'text-success' : ((movement.type === 1 || movement.type === 'expense') ? 'text-error' : 'text-info')">
+                    {{ (movement.type === 0 || movement.type === 'income') ? '+' : ((movement.type === 1 ||
+                      movement.type === 'expense') ? '-' : '') }}{{ formatCurrency(movement.amount) }}
+                  </span>
+                </div>
+
+                <div class="d-flex align-center gap-1 ms-auto listing-item-actions">
+                  <!-- Ver Nota de Movimiento -->
+                  <VBtn icon="ri-file-text-line" size="small" variant="tonal" color="secondary" class="rounded-lg"
+                    title="Ver Nota" @click="openMovementNoteDialog(movement)" />
+                  <!-- Adjuntar Comprobantes -->
+                  <VBtn v-if="movement.type !== 'transfer'" icon="ri-attachment-2" size="small" variant="tonal"
+                    color="primary" class="rounded-lg" title="Comprobantes" @click="openAttachDialog(movement)" />
+                  <!-- Editar -->
+                  <VBtn v-if="canEditMovement(movement)" icon="ri-pencil-line" size="small" variant="tonal"
+                    color="warning" class="rounded-lg" title="Editar" @click="editMovement(movement)" />
+                  <!-- Eliminar -->
+                  <VBtn v-if="canDeleteMovement(movement)" icon="ri-delete-bin-line" size="small" variant="tonal"
+                    color="error" class="rounded-lg" title="Eliminar" @click="deleteMovement(movement)" />
+                </div>
               </div>
             </div>
           </div>
         </div>
       </div>
-    </div>
 
       <!-- Lista de Movimientos Unificada Desktop (d-none d-md-block) -->
-      <VCard class="d-none d-md-block rounded-xl border-light overflow-hidden elevation-1 transfer-table-container position-relative">
-        <VProgressLinear
-          v-if="loading"
-          v-slot
-          indeterminate
-          color="primary"
-          height="3"
-          class="position-absolute"
-          style="top: 0; left: 0; right: 0; z-index: 10;"
-        />
+      <VCard
+        class="d-none d-md-block rounded-xl border-light overflow-hidden elevation-1 transfer-table-container position-relative">
+        <VProgressLinear v-if="loading" v-slot indeterminate color="primary" height="3" class="position-absolute"
+          style="top: 0; left: 0; right: 0; z-index: 10;" />
 
-        <VTable
-          hover
-          class="transfer-table"
-        >
+        <VTable hover class="transfer-table">
           <thead>
             <tr>
-              <th
-                class="text-left py-3"
-                style="width: 12%; min-width: 95px;"
-              >
-                N° FACTURA / DOC
+              <th class="text-left py-3" style="width: 12%; min-width: 95px;">
+                N° DOC
               </th>
-              <th
-                class="text-left py-3"
-                style="width: 12%; min-width: 95px;"
-              >
-                ORDEN DE TRABAJO
+              <th class="text-left py-3" style="width: 12%; min-width: 95px;">
+                ORD. TRAB.
               </th>
-              <th
-                class="text-left py-3"
-                style="width: 10%; min-width: 100px;"
-              >
+              <th class="text-left py-3" style="width: 10%; min-width: 100px;">
                 TIPO
               </th>
-              <th
-                class="text-left py-3"
-                style="width: 24%; min-width: 160px;"
-              >
+              <th class="text-left py-3" style="width: 24%; min-width: 160px;">
                 DESCRIPCIÓN & FECHA
               </th>
-              <th
-                class="text-center py-3"
-                style="width: 11%; min-width: 100px;"
-              >
+              <th class="text-center py-3" style="width: 11%; min-width: 100px;">
                 COMPROBANTE
               </th>
-              <th
-                class="text-left py-3"
-                style="width: 15%; min-width: 130px;"
-              >
+              <th class="text-left py-3" style="width: 15%; min-width: 130px;">
                 CUENTA & MÉTODO
               </th>
-              <th
-                class="text-right py-3"
-                style="width: 8%; min-width: 85px;"
-              >
+              <th class="text-right py-3" style="width: 8%; min-width: 85px;">
                 MONTO
               </th>
-              <th
-                class="text-center py-3"
-                style="width: 8%; min-width: 100px;"
-              >
+              <th class="text-center py-3" style="width: 8%; min-width: 100px;">
                 ACCIONES
               </th>
             </tr>
@@ -1783,11 +1488,7 @@ onMounted(() => {
 
           <!-- Cargando (Skeleton Rows) -->
           <tbody v-if="loading">
-            <tr
-              v-for="n in 5"
-              :key="n"
-              class="skeleton-row align-middle"
-            >
+            <tr v-for="n in 5" :key="n" class="skeleton-row align-middle">
               <td class="py-4">
                 <div class="shimmer-line w-40" />
               </td>
@@ -1802,10 +1503,7 @@ onMounted(() => {
                 <div class="shimmer-line w-40" />
               </td>
               <td class="py-4 text-center">
-                <div
-                  class="shimmer-chip mx-auto"
-                  style="width: 40px; height: 40px; border-radius: 8px;"
-                />
+                <div class="shimmer-chip mx-auto" style="width: 40px; height: 40px; border-radius: 8px;" />
               </td>
               <td class="py-4">
                 <div class="shimmer-line w-60" />
@@ -1826,21 +1524,9 @@ onMounted(() => {
           <!-- Sin resultados filtrados -->
           <tbody v-else-if="groupedMovements.length === 0">
             <tr>
-              <td
-                colspan="8"
-                class="text-center py-12 text-medium-emphasis"
-              >
-                <VAvatar
-                  color="primary"
-                  variant="tonal"
-                  size="64"
-                  class="mb-3"
-                >
-                  <VIcon
-                    icon="ri-inbox-line"
-                    size="32"
-                    color="primary"
-                  />
+              <td colspan="8" class="text-center py-12 text-medium-emphasis">
+                <VAvatar color="primary" variant="tonal" size="64" class="mb-3">
+                  <VIcon icon="ri-inbox-line" size="32" color="primary" />
                 </VAvatar>
                 <div class="text-h6 font-weight-bold text-high-emphasis">
                   Sin resultados para la búsqueda
@@ -1854,27 +1540,15 @@ onMounted(() => {
 
           <!-- Datos reales -->
           <tbody v-else>
-            <template
-              v-for="day in groupedMovements"
-              :key="day.date"
-            >
+            <template v-for="day in groupedMovements" :key="day.date">
               <!-- Fila de Encabezado por Fecha -->
               <tr class="transfer-date-header-row">
                 <td colspan="8">
                   <div class="d-flex align-center justify-space-between flex-wrap gap-2 py-1">
                     <div class="d-flex align-center gap-3">
-                      <VAvatar
-                        color="primary"
-                        variant="elevated"
-                        size="34"
-                        rounded="lg"
-                        class="elevation-1 flex-shrink-0"
-                      >
-                        <VIcon
-                          icon="ri-calendar-event-fill"
-                          size="18"
-                          color="white"
-                        />
+                      <VAvatar color="primary" variant="elevated" size="34" rounded="lg"
+                        class="elevation-1 flex-shrink-0">
+                        <VIcon icon="ri-calendar-event-fill" size="18" color="white" />
                       </VAvatar>
                       <div class="d-flex align-center gap-2 flex-wrap">
                         <span class="date-header-title text-subtitle-1 font-weight-bold text-high-emphasis">
@@ -1882,7 +1556,8 @@ onMounted(() => {
                         </span>
                         <div class="status-pill-clean status-transfer font-weight-bold ms-1">
                           <span class="status-dot" />
-                          <span>{{ day.movements.length }} {{ day.movements.length === 1 ? 'movimiento' : 'movimientos' }}</span>
+                          <span>{{ day.movements.length }} {{ day.movements.length === 1 ? 'movimiento' : 'movimientos'
+                          }}</span>
                         </div>
                       </div>
                     </div>
@@ -1896,10 +1571,8 @@ onMounted(() => {
                         <span class="status-dot" />
                         <span>Egresos: -{{ formatCurrency(day.dailyExpenses) }}</span>
                       </div>
-                      <div
-                        class="status-pill-clean font-weight-bold"
-                        :class="day.dailyBalance >= 0 ? 'status-transfer' : 'status-other'"
-                      >
+                      <div class="status-pill-clean font-weight-bold"
+                        :class="day.dailyBalance >= 0 ? 'status-transfer' : 'status-other'">
                         <span class="status-dot" />
                         <span>Neto: {{ formatCurrency(day.dailyBalance) }}</span>
                       </div>
@@ -1909,74 +1582,43 @@ onMounted(() => {
               </tr>
 
               <!-- Filas de Movimientos para ese día -->
-              <tr
-                v-for="movement in day.movements"
-                :key="movement.id"
-                class="transfer-row"
-              >
+              <tr v-for="movement in day.movements" :key="movement.id" class="transfer-row">
                 <!-- N° Factura / Documento -->
                 <td class="py-3">
-                  <span
-                    class="text-body-2 font-weight-black text-slate-900 cursor-pointer"
-                    title="Clic para ver nota completa y comprobantes"
-                    @click="openMovementNoteDialog(movement)"
-                  >
+                  <span class="text-body-2 font-weight-black text-slate-900 cursor-pointer"
+                    title="Clic para ver nota completa y comprobantes" @click="openMovementNoteDialog(movement)">
                     {{ getMovementInvoiceNumber(movement) }}
                   </span>
                 </td>
 
                 <!-- N° Orden de Trabajo -->
                 <td class="py-3">
-                  <VChip
-                    v-if="getMovementWorkOrderNumber(movement) !== '-'"
-                    size="small"
-                    color="primary"
-                    variant="tonal"
-                    prepend-icon="ri-tools-line"
-                    class="font-weight-bold cursor-pointer"
-                    title="Número de Orden de Trabajo"
-                    @click="openMovementNoteDialog(movement)"
-                  >
+                  <VChip v-if="getMovementWorkOrderNumber(movement) !== '-'" size="small" color="primary"
+                    variant="tonal" prepend-icon="ri-tools-line" class="font-weight-bold cursor-pointer"
+                    title="Número de Orden de Trabajo" @click="openMovementNoteDialog(movement)">
                     {{ getMovementWorkOrderNumber(movement) }}
                   </VChip>
-                  <span
-                    v-else
-                    class="text-caption text-disabled"
-                  >
+                  <span v-else class="text-caption text-disabled">
                     —
                   </span>
                 </td>
 
                 <!-- Tipo (Ingreso vs Egreso) -->
-                <td
-                  class="py-3"
-                  style="white-space: nowrap;"
-                >
-                  <div
-                    v-if="movement.type === 0 || movement.type === 'income'"
-                    class="status-pill-clean status-paid"
-                  >
+                <td class="py-3" style="white-space: nowrap;">
+                  <div v-if="movement.type === 0 || movement.type === 'income'" class="status-pill-clean status-paid">
                     <span class="status-dot" />
                     <span>Ingreso</span>
                   </div>
-                  <div
-                    v-else-if="movement.type === 1 || movement.type === 'expense'"
-                    class="status-pill-clean status-pending"
-                  >
+                  <div v-else-if="movement.type === 1 || movement.type === 'expense'"
+                    class="status-pill-clean status-pending">
                     <span class="status-dot" />
                     <span>Egreso</span>
                   </div>
-                  <div
-                    v-else-if="movement.type === 'transfer'"
-                    class="status-pill-clean status-transfer"
-                  >
+                  <div v-else-if="movement.type === 'transfer'" class="status-pill-clean status-transfer">
                     <span class="status-dot" />
                     <span>Transferencia</span>
                   </div>
-                  <div
-                    v-else
-                    class="status-pill-clean status-other"
-                  >
+                  <div v-else class="status-pill-clean status-other">
                     <span class="status-dot" />
                     <span>{{ movement.type }}</span>
                   </div>
@@ -1984,20 +1626,13 @@ onMounted(() => {
 
                 <!-- Descripción & Fecha -->
                 <td class="py-3">
-                  <div
-                    class="d-flex flex-column cursor-pointer text-left"
-                    title="Clic para ver nota completa y comprobantes"
-                    @click="openMovementNoteDialog(movement)"
-                  >
+                  <div class="d-flex flex-column cursor-pointer text-left"
+                    title="Clic para ver nota completa y comprobantes" @click="openMovementNoteDialog(movement)">
                     <span class="text-body-2 font-weight-bold text-slate-900 mb-0.5">
-                      {{ movement.description || 'Sin descripción' }}
+                      {{ formatMovementDescription(movement.description) }}
                     </span>
                     <span class="text-caption text-medium-emphasis d-flex align-center gap-1 font-weight-medium">
-                      <VIcon
-                        icon="ri-calendar-line"
-                        size="12"
-                        class="text-slate-400"
-                      />
+                      <VIcon icon="ri-calendar-line" size="12" class="text-slate-400" />
                       {{ formatDate(movement.entry_date) }}
                     </span>
                   </div>
@@ -2005,83 +1640,38 @@ onMounted(() => {
 
                 <!-- Comprobante / Foto -->
                 <td class="py-3 text-center">
-                  <div
-                    v-if="movement.resolved_attachments && movement.resolved_attachments.length > 0"
-                    class="d-flex align-center justify-center gap-1"
-                  >
+                  <div v-if="movement.resolved_attachments && movement.resolved_attachments.length > 0"
+                    class="d-flex align-center justify-center gap-1">
                     <!-- Miniatura interactiva de foto -->
-                    <div
-                      v-if="hasImageAttachment(movement)"
+                    <div v-if="hasImageAttachment(movement)"
                       class="position-relative cursor-pointer attachment-thumb-wrapper"
-                      title="Clic para ver foto en tamaño completo"
-                      @click="previewMovementPhoto(movement)"
-                    >
-                      <VAvatar
-                        size="38"
-                        rounded="lg"
-                        class="border elevation-1 attachment-thumbnail"
-                      >
-                        <VImg
-                          :src="getFirstImageUrl(movement)"
-                          cover
-                        />
+                      title="Clic para ver foto en tamaño completo" @click="previewMovementPhoto(movement)">
+                      <VAvatar size="38" rounded="lg" class="border elevation-1 attachment-thumbnail">
+                        <VImg :src="getFirstImageUrl(movement)" cover />
                       </VAvatar>
-                      <span
-                        v-if="movement.resolved_attachments.length > 1"
-                        class="attachment-count-badge"
-                      >
+                      <span v-if="movement.resolved_attachments.length > 1" class="attachment-count-badge">
                         +{{ movement.resolved_attachments.length - 1 }}
                       </span>
                     </div>
 
                     <!-- Icono si solo es PDF o documento -->
-                    <VBtn
-                      v-else
-                      size="small"
-                      variant="tonal"
-                      color="primary"
-                      icon="ri-file-text-line"
-                      title="Ver documento adjunto"
-                      @click="previewMovementPhoto(movement)"
-                    />
+                    <VBtn v-else size="small" variant="tonal" color="primary" icon="ri-file-text-line"
+                      title="Ver documento adjunto" @click="previewMovementPhoto(movement)" />
 
                     <!-- Botón rápido de descarga directa -->
-                    <VBtn
-                      title="Descargar Foto / Comprobante"
-                      size="x-small"
-                      variant="text"
-                      color="secondary"
-                      icon="ri-download-2-line"
-                      @click.stop="downloadFirstAttachment(movement)"
-                    />
+                    <VBtn title="Descargar Foto / Comprobante" size="x-small" variant="text" color="secondary"
+                      icon="ri-download-2-line" @click.stop="downloadFirstAttachment(movement)" />
                   </div>
 
                   <!-- Si no tiene comprobante aún -->
-                  <div
-                    v-else
-                    class="d-flex justify-center align-center"
-                  >
-                    <VBtn
-                      v-if="movement.type !== 'transfer'"
-                      size="small"
-                      variant="tonal"
-                      color="primary"
-                      rounded="pill"
-                      class="btn-attach-comprobante"
-                      title="Adjuntar foto o comprobante"
-                      @click="openAttachDialog(movement)"
-                    >
-                      <VIcon
-                        icon="ri-attachment-2"
-                        size="15"
-                        class="me-1 shrink-0"
-                      />
+                  <div v-else class="d-flex justify-center align-center">
+                    <VBtn v-if="movement.type !== 'transfer'" size="small" variant="tonal" color="primary"
+                      rounded="pill" class="btn-attach-comprobante" title="Adjuntar foto o comprobante"
+                      @click="openAttachDialog(movement)">
+                      <VIcon icon="ri-attachment-2" size="15" class="me-1 shrink-0" />
                       <span>Adjuntar</span>
                     </VBtn>
-                    <span
-                      v-else
-                      class="text-caption text-disabled"
-                    >
+                    <span v-else class="text-caption text-disabled">
                       —
                     </span>
                   </div>
@@ -2090,25 +1680,15 @@ onMounted(() => {
                 <!-- Cuenta & Método -->
                 <td class="py-3">
                   <div class="d-flex align-center gap-2">
-                    <VAvatar
-                      size="32"
-                      color="primary"
-                      variant="tonal"
-                      class="rounded-lg shrink-0"
-                    >
-                      <VIcon
-                        size="16"
-                        icon="ri-bank-line"
-                      />
+                    <VAvatar size="32" color="primary" variant="tonal" class="rounded-lg shrink-0">
+                      <VIcon size="16" icon="ri-bank-line" />
                     </VAvatar>
                     <div class="d-flex flex-column text-left">
                       <span class="text-body-2 font-weight-bold text-slate-900">
                         {{ getAccountName(movement) }}
                       </span>
-                      <span
-                        class="text-medium-emphasis font-weight-semibold text-uppercase"
-                        style="font-size: 10px !important;"
-                      >
+                      <span class="text-medium-emphasis font-weight-semibold text-uppercase"
+                        style="font-size: 10px !important;">
                         {{ getPaymentMethod(movement, accounts) }}
                       </span>
                     </div>
@@ -2117,11 +1697,10 @@ onMounted(() => {
 
                 <!-- Monto -->
                 <td class="py-3 text-right">
-                  <span
-                    class="text-subtitle-1 font-weight-black me-1"
-                    :class="(movement.type === 0 || movement.type === 'income') ? 'text-success' : ((movement.type === 1 || movement.type === 'expense') ? 'text-error' : 'text-info')"
-                  >
-                    {{ (movement.type === 0 || movement.type === 'income') ? '+' : ((movement.type === 1 || movement.type
+                  <span class="text-subtitle-1 font-weight-black me-1"
+                    :class="(movement.type === 0 || movement.type === 'income') ? 'text-success' : ((movement.type === 1 || movement.type === 'expense') ? 'text-error' : 'text-info')">
+                    {{ (movement.type === 0 || movement.type === 'income') ? '+' : ((movement.type === 1 ||
+                      movement.type
                       === 'expense') ? '-' : '') }}{{ formatCurrency(movement.amount) }}
                   </span>
                 </td>
@@ -2130,51 +1709,20 @@ onMounted(() => {
                 <td class="py-3 text-center">
                   <div class="d-flex align-center justify-center gap-1">
                     <!-- Botón Principal: Ver Nota y Comprobantes -->
-                    <VBtn
-                      title="Ver Nota y Comprobantes"
-                      size="small"
-                      variant="tonal"
-                      color="primary"
-                      icon="ri-eye-line"
-                      class="action-btn"
-                      @click="openMovementNoteDialog(movement)"
-                    />
+                    <VBtn title="Ver Nota y Comprobantes" size="small" variant="tonal" color="primary"
+                      icon="ri-eye-line" class="action-btn" @click="openMovementNoteDialog(movement)" />
 
                     <!-- Menú Pro de Acciones Secundarias -->
-                    <VMenu
-                      v-if="movement.type !== 'transfer'"
-                      location="bottom end"
-                      transition="scale-transition"
-                    >
+                    <VMenu v-if="movement.type !== 'transfer'" location="bottom end" transition="scale-transition">
                       <template #activator="{ props: menuProps }">
-                        <VBtn
-                          v-bind="menuProps"
-                          size="small"
-                          variant="text"
-                          color="secondary"
-                          icon="ri-more-2-fill"
-                          class="action-btn"
-                          title="Más opciones"
-                        />
+                        <VBtn v-bind="menuProps" size="small" variant="text" color="secondary" icon="ri-more-2-fill"
+                          class="action-btn" title="Más opciones" />
                       </template>
 
-                      <VList
-                        density="compact"
-                        elevation="6"
-                        class="py-1 rounded-lg"
-                        min-width="200"
-                      >
-                        <VListItem
-                          :disabled="generatingSingleId === movement.id"
-                          @click="generateSinglePDF(movement)"
-                        >
+                      <VList density="compact" elevation="6" class="py-1 rounded-lg" min-width="200">
+                        <VListItem :disabled="generatingSingleId === movement.id" @click="generateSinglePDF(movement)">
                           <template #prepend>
-                            <VIcon
-                              icon="ri-file-pdf-line"
-                              color="info"
-                              size="18"
-                              class="me-2"
-                            />
+                            <VIcon icon="ri-file-pdf-line" color="info" size="18" class="me-2" />
                           </template>
                           <VListItemTitle class="font-weight-medium text-body-2">
                             Descargar PDF
@@ -2183,12 +1731,7 @@ onMounted(() => {
 
                         <VListItem @click="openAttachDialog(movement)">
                           <template #prepend>
-                            <VIcon
-                              icon="ri-attachment-2"
-                              color="secondary"
-                              size="18"
-                              class="me-2"
-                            />
+                            <VIcon icon="ri-attachment-2" color="secondary" size="18" class="me-2" />
                           </template>
                           <VListItemTitle class="font-weight-medium text-body-2">
                             Adjuntar Comprobante
@@ -2197,12 +1740,7 @@ onMounted(() => {
 
                         <VListItem @click="editMovement(movement)">
                           <template #prepend>
-                            <VIcon
-                              icon="ri-edit-line"
-                              color="warning"
-                              size="18"
-                              class="me-2"
-                            />
+                            <VIcon icon="ri-edit-line" color="warning" size="18" class="me-2" />
                           </template>
                           <VListItemTitle class="font-weight-medium text-body-2">
                             Editar Registro
@@ -2211,17 +1749,9 @@ onMounted(() => {
 
                         <VDivider class="my-1" />
 
-                        <VListItem
-                          class="text-error"
-                          @click="deleteMovement(movement)"
-                        >
+                        <VListItem class="text-error" @click="deleteMovement(movement)">
                           <template #prepend>
-                            <VIcon
-                              icon="ri-delete-bin-line"
-                              color="error"
-                              size="18"
-                              class="me-2"
-                            />
+                            <VIcon icon="ri-delete-bin-line" color="error" size="18" class="me-2" />
                           </template>
                           <VListItemTitle class="font-weight-medium text-body-2 text-error">
                             Eliminar Registro
@@ -2238,122 +1768,61 @@ onMounted(() => {
       </VCard>
 
       <!-- Paginación -->
-      <VCard
-        v-if="movements.length > 0"
-        class="mt-4 rounded-xl border elevation-0 pa-4 bg-surface"
-      >
+      <VCard v-if="movements.length > 0" class="mt-4 rounded-xl border elevation-0 pa-4 bg-surface">
         <div class="d-flex flex-column flex-sm-row align-center justify-space-between gap-3 w-100">
           <div class="d-flex align-center gap-4 flex-wrap">
             <div class="text-body-2 text-medium-emphasis">
-              Mostrando <strong class="text-high-emphasis">{{ paginatedMovements.length }}</strong> de <strong class="text-high-emphasis">{{ movements.length }}</strong> movimientos
+              Mostrando <strong class="text-high-emphasis">{{ paginatedMovements.length }}</strong> de <strong
+                class="text-high-emphasis">{{ movements.length }}</strong> movimientos
             </div>
-            <div
-              class="d-flex align-center gap-2"
-              style="min-width: 140px;"
-            >
+            <div class="d-flex align-center gap-2" style="min-width: 140px;">
               <span class="text-caption text-medium-emphasis">Por pág:</span>
-              <VSelect
-                v-model="itemsPerPage"
-                :items="[10, 15, 25, 50, 100]"
-                variant="outlined"
-                density="compact"
-                hide-details
-                style="max-width: 95px;"
-                @update:model-value="currentPage = 1"
-              />
+              <VSelect v-model="itemsPerPage" :items="[10, 15, 25, 50, 100]" variant="outlined" density="compact"
+                hide-details style="max-width: 95px;" @update:model-value="currentPage = 1" />
             </div>
           </div>
-          <VPagination
-            v-if="totalPages > 1"
-            v-model="currentPage"
-            :length="totalPages"
-            :disabled="loading"
-            rounded="circle"
-            :total-visible="$vuetify.display.xs ? 4 : 7"
-            :size="$vuetify.display.xs ? 'small' : 'default'"
-            density="comfortable"
-            color="primary"
-            class="my-0"
-          />
+          <VPagination v-if="totalPages > 1" v-model="currentPage" :length="totalPages" :disabled="loading"
+            rounded="circle" :total-visible="$vuetify.display.xs ? 4 : 7"
+            :size="$vuetify.display.xs ? 'small' : 'default'" density="comfortable" color="primary" class="my-0" />
         </div>
       </VCard>
     </div>
 
     <!-- Diálogos -->
-    <IncomeDialog
-      v-model="showIncomeDialog"
-      :editing-movement="editingMovement"
-      :is-saving="isSavingIncome"
-      @saved="saveIncome"
-    />
-    <ExpenseDialog
-      v-model="showExpenseDialog"
-      :editing-movement="editingMovement"
-      :is-saving="isSavingExpense"
-      @saved="saveExpense"
-    />
-    <DeleteDialog
-      v-model="showDeleteDialog"
-      :movement="movementToDelete"
-      @confirm="confirmDelete"
-    />
+    <IncomeDialog v-model="showIncomeDialog" :editing-movement="editingMovement" :is-saving="isSavingIncome"
+      @saved="saveIncome" />
+    <ExpenseDialog v-model="showExpenseDialog" :editing-movement="editingMovement" :is-saving="isSavingExpense"
+      @saved="saveExpense" />
+    <DeleteDialog v-model="showDeleteDialog" :movement="movementToDelete" @confirm="confirmDelete" />
 
     <!-- Diálogo de Aporte de Socio (VDialog) -->
-    <AporteCreateDialog
-      v-model="showAporteDialog"
-      @created="() => loadMovements(false)"
-    />
+    <AporteCreateDialog v-model="showAporteDialog" @created="() => loadMovements(false)" />
 
     <!-- Diálogo de Nota de Movimiento y Comprobantes -->
-    <MovementReceiptNoteDialog
-      v-if="selectedMovementForNote"
-      v-model="isMovementNoteDialogVisible"
-      :movement="selectedMovementForNote"
-      :accounts="accounts"
-      @updated="() => loadMovements(false)"
-    />
+    <MovementReceiptNoteDialog v-if="selectedMovementForNote" v-model="isMovementNoteDialogVisible"
+      :movement="selectedMovementForNote" :accounts="accounts" @updated="() => loadMovements(false)" />
 
     <!-- Diálogo de Gestión de Comprobantes Adjuntos -->
-    <AttachReceiptsDialog
-      v-if="selectedMovementReceipt"
-      :is-dialog-visible="isReceiptsDialogVisible"
+    <AttachReceiptsDialog v-if="selectedMovementReceipt" :is-dialog-visible="isReceiptsDialogVisible"
       :attachable-type="getMovementAttachableType(selectedMovementReceipt)"
       :attachable-id="getMovementAttachableId(selectedMovementReceipt)"
       :title="`Comprobantes de ${selectedMovementReceipt.description || getMovementDocNumber(selectedMovementReceipt)}`"
-      :identifier="getMovementDocNumber(selectedMovementReceipt)"
-      :party-name="selectedMovementReceipt.description"
+      :identifier="getMovementDocNumber(selectedMovementReceipt)" :party-name="selectedMovementReceipt.description"
       @update:is-dialog-visible="val => { isReceiptsDialogVisible = val; if (!val) selectedMovementReceipt = null; }"
-      @updated="() => loadMovements(false)"
-    />
+      @updated="() => loadMovements(false)" />
 
     <!-- Lightbox / Visor de Fotos en Pantalla Completa con Descarga -->
-    <VDialog
-      v-model="isPhotoViewerVisible"
-      max-width="920"
-      scrollable
-      class="photo-viewer-dialog"
-    >
+    <VDialog v-model="isPhotoViewerVisible" max-width="920" scrollable class="photo-viewer-dialog">
       <VCard class="rounded-xl overflow-hidden elevation-10">
         <!-- Header del Visor Primary -->
-        <VCardTitle class="d-flex align-center justify-space-between bg-primary text-white pa-3 pa-sm-4 flex-none gap-2">
+        <VCardTitle
+          class="d-flex align-center justify-space-between bg-primary text-white pa-3 pa-sm-4 flex-none gap-2">
           <div class="d-flex align-center gap-2 gap-sm-3 overflow-hidden me-1" style="min-width: 0; flex: 1 1 auto;">
-            <VAvatar
-              color="white"
-              variant="tonal"
-              size="36"
-              rounded="lg"
-              class="flex-shrink-0"
-            >
-              <VIcon
-                icon="ri-image-line"
-                color="white"
-                size="20"
-              />
+            <VAvatar color="white" variant="tonal" size="36" rounded="lg" class="flex-shrink-0">
+              <VIcon icon="ri-image-line" color="white" size="20" />
             </VAvatar>
             <div style="min-width: 0;" class="overflow-hidden">
-              <div
-                class="text-subtitle-1 font-weight-bold text-white leading-tight text-truncate"
-              >
+              <div class="text-subtitle-1 font-weight-bold text-white leading-tight text-truncate">
                 {{ currentActivePhoto?.file_name || 'Comprobante de Pago' }}
               </div>
               <div class="text-caption text-white opacity-80 text-truncate">
@@ -2364,140 +1833,77 @@ onMounted(() => {
           </div>
           <div class="d-flex align-center gap-1 gap-sm-2 flex-shrink-0">
             <!-- Botón de Descarga Principal -->
-            <VBtn
-              color="white"
-              variant="tonal"
-              size="small"
-              class="font-weight-medium text-white me-1"
-              :loading="isDownloading"
-              @click="downloadAttachment(currentActivePhoto)"
-            >
+            <VBtn color="white" variant="tonal" size="small" class="font-weight-medium text-white me-1"
+              :loading="isDownloading" @click="downloadAttachment(currentActivePhoto)">
               <VIcon icon="ri-download-2-line" :class="{ 'me-sm-1': true }" />
               <span class="d-none d-sm-inline">Descargar</span>
             </VBtn>
-            <VBtn
-              icon="ri-close-line"
-              variant="text"
-              color="white"
-              size="small"
-              @click="isPhotoViewerVisible = false"
-            />
+            <VBtn icon="ri-close-line" variant="text" color="white" size="small"
+              @click="isPhotoViewerVisible = false" />
           </div>
         </VCardTitle>
 
         <!-- Cuerpo del Visor -->
-        <VCardText
-          class="pa-2 pa-sm-4 d-flex align-center justify-center position-relative"
-          style="min-height: 380px; max-height: 75vh; overflow: auto; background: rgba(var(--v-theme-on-surface), 0.04);"
-        >
+        <VCardText class="pa-2 pa-sm-4 d-flex align-center justify-center position-relative"
+          style="min-height: 380px; max-height: 75vh; overflow: auto; background: rgba(var(--v-theme-on-surface), 0.04);">
           <!-- Navegación Anterior -->
-          <VBtn
-            v-if="currentPhotoList.length > 1"
-            icon="ri-arrow-left-s-line"
-            variant="elevated"
-            color="primary"
-            class="position-absolute elevation-4"
-            style="left: 12px; z-index: 10;"
-            :disabled="currentPhotoIndex === 0"
-            @click="currentPhotoIndex--"
-          />
+          <VBtn v-if="currentPhotoList.length > 1" icon="ri-arrow-left-s-line" variant="elevated" color="primary"
+            class="position-absolute elevation-4" style="left: 12px; z-index: 10;" :disabled="currentPhotoIndex === 0"
+            @click="currentPhotoIndex--" />
 
           <!-- Visualización de Imagen -->
-          <div
-            v-if="isCurrentPhotoAnImage"
-            class="d-flex align-center justify-center w-100 h-100 pa-2"
-          >
-            <img
-              :src="getAttachmentUrl(currentActivePhoto)"
-              :alt="currentActivePhoto?.file_name || 'Comprobante'"
+          <div v-if="isCurrentPhotoAnImage" class="d-flex align-center justify-center w-100 h-100 pa-2">
+            <img :src="getAttachmentUrl(currentActivePhoto)" :alt="currentActivePhoto?.file_name || 'Comprobante'"
               class="img-fluid rounded-xl elevation-4 border"
-              style="max-width: 100%; max-height: 68vh; object-fit: contain; background: transparent;"
-            >
+              style="max-width: 100%; max-height: 68vh; object-fit: contain; background: transparent;">
           </div>
 
           <!-- Visualización si es PDF -->
-          <div
-            v-else
-            class="d-flex flex-column align-center justify-center pa-4 pa-sm-8 text-center"
-          >
-            <VAvatar
-              color="error"
-              size="64"
-              variant="tonal"
-              class="mb-3"
-            >
-              <VIcon
-                icon="ri-file-pdf-2-line"
-                size="36"
-              />
+          <div v-else class="d-flex flex-column align-center justify-center pa-4 pa-sm-8 text-center">
+            <VAvatar color="error" size="64" variant="tonal" class="mb-3">
+              <VIcon icon="ri-file-pdf-2-line" size="36" />
             </VAvatar>
-            <div class="text-subtitle-1 font-weight-bold mb-1 text-high-emphasis text-truncate" style="max-width: 280px;">
+            <div class="text-subtitle-1 font-weight-bold mb-1 text-high-emphasis text-truncate"
+              style="max-width: 280px;">
               Documento PDF
             </div>
             <div class="text-caption text-medium-emphasis mb-4 text-truncate" style="max-width: 280px;">
               {{ currentActivePhoto?.file_name }}
             </div>
             <div class="d-flex flex-column flex-sm-row gap-2 w-100 justify-center" style="max-width: 320px;">
-              <VBtn
-                color="primary"
-                variant="elevated"
-                prepend-icon="ri-external-link-line"
-                target="_blank"
-                :href="getAttachmentUrl(currentActivePhoto)"
-                size="small"
-              >
+              <VBtn color="primary" variant="elevated" prepend-icon="ri-external-link-line" target="_blank"
+                :href="getAttachmentUrl(currentActivePhoto)" size="small">
                 Abrir PDF en pestaña
               </VBtn>
-              <VBtn
-                color="success"
-                variant="tonal"
-                prepend-icon="ri-download-2-line"
-                size="small"
-                @click="downloadAttachment(currentActivePhoto)"
-              >
+              <VBtn color="success" variant="tonal" prepend-icon="ri-download-2-line" size="small"
+                @click="downloadAttachment(currentActivePhoto)">
                 Descargar PDF
               </VBtn>
             </div>
           </div>
 
           <!-- Navegación Siguiente -->
-          <VBtn
-            v-if="currentPhotoList.length > 1"
-            icon="ri-arrow-right-s-line"
-            variant="elevated"
-            color="primary"
-            class="position-absolute elevation-4"
-            style="right: 12px; z-index: 10;"
-            :disabled="currentPhotoIndex === currentPhotoList.length - 1"
-            @click="currentPhotoIndex++"
-          />
+          <VBtn v-if="currentPhotoList.length > 1" icon="ri-arrow-right-s-line" variant="elevated" color="primary"
+            class="position-absolute elevation-4" style="right: 12px; z-index: 10;"
+            :disabled="currentPhotoIndex === currentPhotoList.length - 1" @click="currentPhotoIndex++" />
         </VCardText>
 
         <!-- Footer del Visor -->
-        <VCardActions class="pa-3 pa-sm-4 bg-surface border-t d-flex flex-column flex-sm-row justify-space-between align-stretch align-sm-center flex-none gap-2">
-          <div class="text-caption text-medium-emphasis font-weight-medium text-center text-sm-start order-1 order-sm-0">
+        <VCardActions
+          class="pa-3 pa-sm-4 bg-surface border-t d-flex flex-column flex-sm-row justify-space-between align-stretch align-sm-center flex-none gap-2">
+          <div
+            class="text-caption text-medium-emphasis font-weight-medium text-center text-sm-start order-1 order-sm-0">
             <span v-if="currentActivePhoto?.file_size">
               Tamaño: {{ (currentActivePhoto.file_size / 1024).toFixed(1) }} KB
             </span>
           </div>
           <div class="photo-viewer-buttons d-flex flex-column flex-sm-row gap-2 order-0 order-sm-1">
-            <VBtn
-              variant="tonal"
-              color="primary"
-              size="small"
-              prepend-icon="ri-attachment-2"
-              class="font-weight-medium"
-              @click="() => { isPhotoViewerVisible = false; openAttachDialog(currentPhotoMovement); }"
-            >
+            <VBtn variant="tonal" color="primary" size="small" prepend-icon="ri-attachment-2" class="font-weight-medium"
+              @click="() => { isPhotoViewerVisible = false; openAttachDialog(currentPhotoMovement); }">
               Gestionar Adjuntos
             </VBtn>
-            <VBtn
-              variant="tonal"
-              color="secondary"
-              size="small"
-              class="font-weight-medium px-4"
-              @click="isPhotoViewerVisible = false"
-            >
+            <VBtn variant="tonal" color="secondary" size="small" class="font-weight-medium px-4"
+              @click="isPhotoViewerVisible = false">
               Cerrar
             </VBtn>
           </div>

@@ -1457,10 +1457,8 @@ onActivated(() => {
 
             <!-- Vehículo (si existe) -->
             <div v-if="item.vehicle" class="d-flex align-center gap-2 mb-2.5 text-caption min-w-0 flex-wrap">
-              <div
-                class="status-pill-clean font-mono"
-                :class="(item.vehicle.plate || item.vehicle.license_plate) ? 'status-transfer' : 'status-canceled'"
-              >
+              <div class="status-pill-clean font-mono"
+                :class="(item.vehicle.plate || item.vehicle.license_plate) ? 'status-transfer' : 'status-canceled'">
                 <span class="status-dot" />
                 <span>{{ (item.vehicle.plate || item.vehicle.license_plate || 'SIN PLACA').toUpperCase() }}</span>
               </div>
@@ -1513,14 +1511,8 @@ onActivated(() => {
                     <span class="status-dot" />
                     <span>Anulada</span>
                   </div>
-                  <VBtn
-                    size="x-small"
-                    color="error"
-                    variant="tonal"
-                    icon="ri-information-line"
-                    title="Ver datos de factura anulada"
-                    @click.stop="viewCanceledSale(item)"
-                  />
+                  <VBtn size="x-small" color="error" variant="tonal" icon="ri-information-line"
+                    title="Ver datos de factura anulada" @click.stop="viewCanceledSale(item)" />
                 </div>
 
                 <template v-else>
@@ -1657,10 +1649,8 @@ onActivated(() => {
                 <td class="py-3" style="white-space: nowrap;">
                   <div class="d-flex flex-column gap-0.5">
                     <div class="d-flex align-center gap-1">
-                      <span
-                        class="doc-type-badge font-weight-bold text-uppercase"
-                        :class="isSaleCanceled(item) ? 'doc-type-canceled' : (item.document_type === 'invoice' ? 'doc-type-invoice' : 'doc-type-note')"
-                      >
+                      <span class="doc-type-badge font-weight-bold text-uppercase"
+                        :class="isSaleCanceled(item) ? 'doc-type-canceled' : (item.document_type === 'invoice' ? 'doc-type-invoice' : 'doc-type-note')">
                         {{ getDocumentTypeInfo(item.document_type)?.text }}
                       </span>
                     </div>
@@ -1668,8 +1658,7 @@ onActivated(() => {
                       class="font-mono text-body-1 font-weight-bold cursor-pointer hover-underline text-high-emphasis"
                       :class="{ 'doc-number-canceled': isSaleCanceled(item) }"
                       :title="isSaleCanceled(item) ? 'Factura Anulada (Clic para ver cliente y clave de 49 dígitos)' : 'Ver Detalle'"
-                      @click="isSaleCanceled(item) ? viewCanceledSale(item) : viewSale(item)"
-                    >
+                      @click="isSaleCanceled(item) ? viewCanceledSale(item) : viewSale(item)">
                       {{ formatDocumentNumber(item.document_number) }}
                     </div>
                   </div>
@@ -1681,10 +1670,10 @@ onActivated(() => {
                     v-if="item.work_order_id || item.work_order?.id || item.workOrder?.id || item.work_order?.number || item.workOrder?.number"
                     class="ot-badge font-mono cursor-pointer"
                     :title="`Ver Orden de Trabajo #${item.work_order?.number || item.workOrder?.number || item.work_order_number || item.work_order_id}`"
-                    @click="openWorkOrderView(item.work_order_id || item.work_order?.id || item.workOrder?.id || item.work_order_number)"
-                  >
+                    @click="openWorkOrderView(item.work_order_id || item.work_order?.id || item.workOrder?.id || item.work_order_number)">
                     <VIcon icon="ri-tools-line" size="11" class="me-1" />
-                    <span>{{ formatWorkOrderNumber(item.work_order?.number || item.workOrder?.number || item.work_order_number || item.work_order_id) }}</span>
+                    <span>{{ formatWorkOrderNumber(item.work_order?.number || item.workOrder?.number ||
+                      item.work_order_number || item.work_order_id) }}</span>
                   </span>
                   <span v-else class="text-disabled text-caption font-weight-bold">—</span>
                 </td>
@@ -1720,18 +1709,14 @@ onActivated(() => {
                 <!-- Vehículo (Placa vehicular con formato de status-pill-clean y modelo) -->
                 <td class="py-3" style="overflow: hidden;">
                   <div v-if="item.vehicle" class="d-flex flex-column align-start gap-1 overflow-hidden w-100">
-                    <div
-                      class="status-pill-clean font-mono"
+                    <div class="status-pill-clean font-mono"
                       :class="(item.vehicle.plate || item.vehicle.license_plate) ? 'status-transfer' : 'status-canceled'"
-                      :title="(item.vehicle.plate || item.vehicle.license_plate || '').toUpperCase() || 'Sin placa'"
-                    >
+                      :title="(item.vehicle.plate || item.vehicle.license_plate || '').toUpperCase() || 'Sin placa'">
                       <span class="status-dot" />
                       <span>{{ (item.vehicle.plate || item.vehicle.license_plate || 'SIN PLACA').toUpperCase() }}</span>
                     </div>
-                    <span
-                      class="text-uppercase text-medium-emphasis vehicle-model-small"
-                      :title="formatVehicleInfo(item.vehicle)"
-                    >
+                    <span class="text-uppercase text-medium-emphasis vehicle-model-small"
+                      :title="formatVehicleInfo(item.vehicle)">
                       {{ formatVehicleInfo(item.vehicle) }}
                     </span>
                   </div>
@@ -1742,8 +1727,10 @@ onActivated(() => {
 
                 <!-- Fecha -->
                 <td class="py-3" style="white-space: nowrap;">
-                  <div class="d-flex align-center text-body-2 text-medium-emphasis text-no-wrap" style="white-space: nowrap;">
-                    <VIcon icon="ri-calendar-line" size="15" color="medium-emphasis" class="me-1.5 flex-shrink-0 opacity-70" />
+                  <div class="d-flex align-center text-body-2 text-medium-emphasis text-no-wrap"
+                    style="white-space: nowrap;">
+                    <VIcon icon="ri-calendar-line" size="15" color="medium-emphasis"
+                      class="me-1.5 flex-shrink-0 opacity-70" />
                     <div class="d-flex flex-column">
                       <span class="text-no-wrap font-weight-medium text-high-emphasis" style="white-space: nowrap;">
                         {{ formatDate(item.service_date || item.created_at) }}
@@ -1751,9 +1738,7 @@ onActivated(() => {
                       <span
                         v-if="(item.work_order?.date || item.workOrder?.date) && formatDate(item.work_order?.date || item.workOrder?.date) !== formatDate(item.service_date || item.created_at)"
                         class="text-caption text-disabled font-weight-medium"
-                        style="font-size: 0.68rem; line-height: 1;"
-                        title="Fecha de creación de la Orden de Trabajo"
-                      >
+                        style="font-size: 0.68rem; line-height: 1;" title="Fecha de creación de la Orden de Trabajo">
                         OT: {{ formatDate(item.work_order?.date || item.workOrder?.date) }}
                       </span>
                     </div>
@@ -1837,6 +1822,10 @@ onActivated(() => {
                       <VIcon icon="ri-more-2-line" size="18" />
                       <VMenu activator="parent" transition="slide-y-transition" align="end" location="bottom end">
                         <VList density="compact" class="py-1 rounded-lg elevation-4 border" min-width="220">
+
+                          <VListItem v-if="item.document_type !== 'invoice'" prepend-icon="ri-pencil-line"
+                            title="Editar Venta" class="text-warning text-body-2" @click="editSale(item)" />
+
                           <VListItem prepend-icon="ri-printer-line" title="Imprimir Ticket"
                             class="text-info text-body-2" @click="printSale(item.id)" />
                           <VListItem prepend-icon="ri-file-pdf-line" title="Ver PDF" class="text-success text-body-2"
@@ -1874,29 +1863,24 @@ onActivated(() => {
                           </template>
 
                           <VDivider v-if="item.document_type !== 'invoice'" class="my-1" />
-                          <VListItem v-if="item.document_type !== 'invoice'" prepend-icon="ri-pencil-line"
-                            title="Editar Venta" class="text-warning text-body-2" @click="editSale(item)" />
-                          <VListItem prepend-icon="ri-close-circle-line" title="Anular Venta"
+
+                          <VListItem prepend-icon="ri-delete-bin-line" title="Anular Venta"
                             class="text-error text-body-2" @click="cancelSale(item)" />
                         </VList>
                       </VMenu>
                     </VBtn>
                   </div>
-                  <div v-else class="d-flex justify-center align-center gap-1">
+                  <div v-else class="d-flex justify-end align-end gap-1">
                     <!-- Botón para ver factura anulada: cliente y clave de 49 dígitos -->
-                    <VBtn
-                      size="small"
-                      color="error"
-                      variant="tonal"
-                      icon="ri-information-line"
+                    <VBtn size="small" color="warning" variant="tonal" icon="ri-information-line"
                       title="Ver datos del cliente y clave de acceso SRI (49 dígitos)"
-                      @click="viewCanceledSale(item)"
-                    />
+                      @click="viewCanceledSale(item)" />
                   </div>
                 </td>
               </tr>
             </template>
-          </tbody>        </VTable>
+          </tbody>
+        </VTable>
       </VCard>
 
       <!-- Paginación -->
@@ -1948,11 +1932,7 @@ onActivated(() => {
       :work-order-id="selectedWorkOrderIdForView" />
 
     <!-- Diálogo Especializado para Facturas Anuladas (Cliente y Clave 49 Dígitos) -->
-    <CanceledInvoiceShowDialog
-      v-if="isCanceledDialogVisible"
-      v-model:is-dialog-visible="isCanceledDialogVisible"
-      :sale-data="canceledSaleData"
-      :loading="canceledLoading"
-    />
+    <CanceledInvoiceShowDialog v-if="isCanceledDialogVisible" v-model:is-dialog-visible="isCanceledDialogVisible"
+      :sale-data="canceledSaleData" :loading="canceledLoading" />
   </div>
 </template>

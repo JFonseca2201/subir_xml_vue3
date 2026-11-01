@@ -1035,7 +1035,8 @@ onActivated(async () => {
                       </VListItem>
                     </template>
                     <template #append>
-                      <VBtn icon size="small" variant="tonal" color="primary" type="button">
+                      <VBtn icon size="small" variant="tonal" color="primary" rounded="circle"
+                        class="btn-circle-add rounded-circle" style="border-radius: 50% !important;" type="button">
                         <VIcon icon="ri-add-line" />
                         <VMenu activator="parent">
                           <VList density="compact" class="rounded-lg elevation-4 border">
@@ -1052,7 +1053,7 @@ onActivated(async () => {
 
                 <!-- Vehículo -->
                 <VCol cols="12" sm="6">
-                  <div style="text-transform: uppercase;">
+                  <div style="text-transform: capitalize;">
                     <VSearch v-model="selectedVehicle" :return-object="true" endpoint="vehicles/search"
                       item-title="license_plate"
                       :label="hasServices ? 'Vehículo * (Obligatorio para servicios)' : 'Vehículo (Opcional)'"
@@ -1092,7 +1093,8 @@ onActivated(async () => {
                         </VListItem>
                       </template>
                       <template #append>
-                        <VBtn icon size="small" variant="tonal" color="primary" type="button"
+                        <VBtn icon size="small" variant="tonal" color="primary" rounded="circle"
+                          class="btn-circle-add rounded-circle" style="border-radius: 50% !important;" type="button"
                           @click="showVehicleDialog = true">
                           <VIcon icon="ri-add-line" />
                         </VBtn>
@@ -1396,8 +1398,7 @@ onActivated(async () => {
                               <!-- Tipo de Item (Servicio / Producto) -->
                               <span class="text-uppercase font-weight-bold cursor-pointer"
                                 :class="isServiceItem(item) ? 'text-info' : 'text-secondary'"
-                                style="font-size: 0.65rem;"
-                                title="Clic para alternar entre Producto y Servicio"
+                                style="font-size: 0.65rem;" title="Clic para alternar entre Producto y Servicio"
                                 @click="toggleItemType(item)">
                                 {{ isServiceItem(item) ? 'Servicio' : 'Producto' }}
                               </span>
@@ -1681,4 +1682,3 @@ onActivated(async () => {
     </VDialog>
   </div>
 </template>
-

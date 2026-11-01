@@ -179,6 +179,30 @@
           }
         }
       }
+
+      .nav-link > a.router-link-active,
+      .nav-link > a.router-link-exact-active,
+      .nav-link.router-link-active > a,
+      .nav-link.router-link-exact-active > a {
+        &,
+        &:hover {
+          background: #ffffff !important;
+          color: #484DE6 !important;
+          box-shadow: 0 4px 14px rgba(18, 14, 70, 0.22) !important;
+
+          * {
+            color: #484DE6 !important;
+            -webkit-text-fill-color: #484DE6 !important;
+          }
+
+          .nav-item-icon,
+          .nav-item-title {
+            color: #484DE6 !important;
+            fill: #484DE6 !important;
+            -webkit-text-fill-color: #484DE6 !important;
+          }
+        }
+      }
     }
 
     // 🌟 ÍTEM SELECCIONADO / ACTIVO (Píldora blanca nítida con texto púrpura profundo)
@@ -186,32 +210,39 @@
     .nav-link > a.router-link-exact-active,
     .nav-link.router-link-active > a,
     .nav-link.router-link-exact-active > a {
-      background: #ffffff !important;
-      color: #484DE6 !important;
-      font-weight: 700 !important;
-      box-shadow: 0 4px 14px rgba(18, 14, 70, 0.22) !important;
-      transform: translateX(3px);
-
-      * {
-        color: #484DE6 !important;
-      }
-
-      .nav-item-icon {
-        color: #484DE6 !important;
-        font-size: 1.35rem;
-      }
-
-      .nav-item-title {
+      &,
+      &:hover {
+        background: #ffffff !important;
         color: #484DE6 !important;
         font-weight: 700 !important;
-        font-size: 0.95rem;
-        letter-spacing: 0.15px;
-      }
+        box-shadow: 0 4px 14px rgba(18, 14, 70, 0.22) !important;
+        transform: translateX(3px);
 
-      .nav-item-badge {
-        background-color: #484DE6 !important;
-        color: #ffffff !important;
-        font-size: 0.75rem;
+        * {
+          color: #484DE6 !important;
+          -webkit-text-fill-color: #484DE6 !important;
+        }
+
+        .nav-item-icon {
+          color: #484DE6 !important;
+          fill: #484DE6 !important;
+          font-size: 1.35rem;
+        }
+
+        .nav-item-title {
+          color: #484DE6 !important;
+          fill: #484DE6 !important;
+          -webkit-text-fill-color: #484DE6 !important;
+          font-weight: 700 !important;
+          font-size: 0.95rem;
+          letter-spacing: 0.15px;
+        }
+
+        .nav-item-badge {
+          background-color: #484DE6 !important;
+          color: #ffffff !important;
+          font-size: 0.75rem;
+        }
       }
     }
 
