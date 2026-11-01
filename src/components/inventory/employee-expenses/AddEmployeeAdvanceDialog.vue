@@ -224,23 +224,11 @@ onMounted(() => {
 
 
 <template>
-  <VDialog
-    v-model="show"
-    scrollable
-    max-width="560"
-    :fullscreen="$vuetify.display.smAndDown"
-    persistent
-  >
+  <VDialog v-model="show" scrollable max-width="560" :fullscreen="$vuetify.display.smAndDown" persistent>
     <VCard class="custom-dialog-card">
       <!-- Header Banner Primary -->
       <div class="custom-dialog-header-primary bg-primary text-white">
-        <VBtn
-          icon="ri-close-line"
-          variant="text"
-          size="small"
-          class="custom-dialog-close-btn"
-          @click="closeDialog"
-        />
+        <VBtn icon="ri-close-line" variant="text" size="small" class="custom-dialog-close-btn" @click="closeDialog" />
         <div class="custom-dialog-avatar">
           <VIcon icon="ri-hand-coin-line" />
         </div>
@@ -253,216 +241,108 @@ onMounted(() => {
       </div>
       <VCardText class="pa-4">
         <!-- Skeleton loader mientras cargan datos -->
-        <div
-          v-if="isLoadingData"
-          class="py-2"
-        >
+        <div v-if="isLoadingData" class="py-2">
           <VRow>
             <VCol cols="12">
-              <VSkeletonLoader
-                type="text"
-                height="52"
-                class="rounded-lg mb-2"
-              />
+              <VSkeletonLoader type="text" height="52" class="rounded-lg mb-2" />
             </VCol>
             <VCol cols="6">
-              <VSkeletonLoader
-                type="text"
-                height="52"
-                class="rounded-lg mb-2"
-              />
+              <VSkeletonLoader type="text" height="52" class="rounded-lg mb-2" />
             </VCol>
             <VCol cols="6">
-              <VSkeletonLoader
-                type="text"
-                height="52"
-                class="rounded-lg mb-2"
-              />
+              <VSkeletonLoader type="text" height="52" class="rounded-lg mb-2" />
             </VCol>
             <VCol cols="6">
-              <VSkeletonLoader
-                type="text"
-                height="52"
-                class="rounded-lg mb-2"
-              />
+              <VSkeletonLoader type="text" height="52" class="rounded-lg mb-2" />
             </VCol>
             <VCol cols="6">
-              <VSkeletonLoader
-                type="text"
-                height="52"
-                class="rounded-lg mb-2"
-              />
+              <VSkeletonLoader type="text" height="52" class="rounded-lg mb-2" />
             </VCol>
             <VCol cols="12">
-              <VSkeletonLoader
-                type="article"
-                class="rounded-lg"
-              />
+              <VSkeletonLoader type="article" class="rounded-lg" />
             </VCol>
           </VRow>
         </div>
 
-        <VForm
-          v-else
-          ref="formRef"
-          @submit.prevent="handleSubmit"
-        >
+        <VForm v-else ref="formRef" @submit.prevent="handleSubmit">
           <VCardText>
             <VRow>
-              <VCol cols="12">
-                <VSelect
-                  v-model="form.employee_id"
-                  :items="employees"
-                  item-title="name"
-                  item-value="id"
-                  label="Empleado"
-                  placeholder="Seleccionar empleado"
-                  :rules="[v => !!v]"
-                  required
-                />
+              <VCol cols="8">
+                <VSelect v-model="form.employee_id" :items="employees" item-title="name" item-value="id"
+                  label="Empleado" placeholder="Seleccionar empleado" :rules="[v => !!v]" required />
+              </VCol>
+              <VCol cols="4">
+                <VTextField v-model="form.amount" label="Monto" type="number" prefix="$" placeholder="0.00"
+                  :rules="[v => !!v && v > 0]" required />
               </VCol>
 
               <VCol cols="6">
-                <VSelect
-                  v-model="form.payment_method"
-                  :items="paymentMethods"
-                  item-title="text"
-                  item-value="value"
-                  label="Método de Pago"
-                  placeholder="Seleccionar método de pago"
-                  :rules="[v => !!v]"
-                  required
-                />
+                <VSelect v-model="form.payment_method" :items="paymentMethods" item-title="text" item-value="value"
+                  label="Método de Pago" placeholder="Seleccionar método de pago" :rules="[v => !!v]" required />
               </VCol>
 
               <VCol cols="6">
-                <VSelect
-                  v-model="form.account_id"
-                  :items="filteredAccounts"
-                  item-title="name"
-                  item-value="id"
-                  label="Cuenta"
-                  placeholder="Seleccionar cuenta"
-                  :rules="[v => !!v]"
-                  required
-                >
+                <VSelect v-model="form.account_id" :items="filteredAccounts" item-title="name" item-value="id"
+                  label="Cuenta" placeholder="Seleccionar cuenta" :rules="[v => !!v]" required>
                   <template #prepend-inner>
-                    <VIcon
-                      color="primary"
-                      size="20"
-                    >
+                    <VIcon color="primary" size="20">
                       {{ form.payment_method === 'EFECTIVO' ? 'ri-money-dollar-circle-line' : 'ri-bank-line' }}
                     </VIcon>
                   </template>
                   <template #item="{ props, item }">
-                    <VListItem
-                      v-bind="props"
-                      :title="undefined"
-                    >
+                    <VListItem v-bind="props" :title="undefined">
                       <template #prepend>
-                        <VAvatar
-                          size="30"
-                          :color="item.raw.type === 'cash' ? 'success' : 'primary'"
-                          variant="tonal"
-                          class="me-2"
-                        >
-                          <VIcon
-                            :icon="item.raw.type === 'cash' ? 'ri-money-dollar-circle-line' : 'ri-bank-card-line'"
-                            size="18"
-                          />
+                        <VAvatar size="30" :color="item.raw.type === 'cash' ? 'success' : 'primary'" variant="tonal"
+                          class="me-2">
+                          <VIcon :icon="item.raw.type === 'cash' ? 'ri-money-dollar-circle-line' : 'ri-bank-card-line'"
+                            size="18" />
                         </VAvatar>
                       </template>
                       <VListItemTitle class="font-weight-medium">
                         {{ item.raw.name }}
                       </VListItemTitle>
                       <VListItemSubtitle class="text-caption mt-1">
-                        Saldo: <span
-                          class="font-weight-bold"
-                          :class="item.raw.saldo_actual >= 0 ? 'text-success' : 'text-error'"
-                        >${{ parseFloat(item.raw.saldo_actual).toFixed(2) }}</span>
+                        Saldo: <span class="font-weight-bold"
+                          :class="item.raw.saldo_actual >= 0 ? 'text-success' : 'text-error'">${{
+                            parseFloat(item.raw.saldo_actual).toFixed(2) }}</span>
                       </VListItemSubtitle>
                     </VListItem>
                   </template>
                 </VSelect>
               </VCol>
 
-              <VCol cols="12">
-                <VTextField
-                  v-model="form.amount"
-                  label="Monto"
-                  type="number"
-                  prefix="$"
-                  placeholder="0.00"
-                  :rules="[v => !!v && v > 0]"
-                  required
-                />
-              </VCol>
+
 
               <VCol cols="12">
-                <VTextField
-                  v-model="form.description"
-                  label="Descripción"
-                  placeholder="Descripción del adelanto"
-                  :rules="[v => !!v]"
-                />
+                <VTextField v-model="form.description" label="Descripción" placeholder="Descripción del adelanto"
+                  :rules="[v => !!v]" />
               </VCol>
 
               <VCol cols="6">
-                <VTextField
-                  v-model="form.advance_date"
-                  label="Fecha"
-                  type="date"
-                  :rules="[v => !!v]"
-                  required
-                />
+                <VTextField v-model="form.advance_date" label="Fecha" type="date" :rules="[v => !!v]" required />
               </VCol>
 
               <VCol cols="6">
-                <VTextField
-                  v-model="form.payment_date"
-                  label="Fecha de Pago"
-                  type="date"
-                  :rules="[v => !!v]"
-                  required
-                />
+                <VTextField v-model="form.payment_date" label="Fecha de Pago" type="date" :rules="[v => !!v]"
+                  required />
               </VCol>
 
               <!-- Comprobante / Recibo Adjunto -->
               <VCol cols="12">
-                <ReceiptUploader
-                  v-model="receiptFiles"
-                  label="Comprobante(s) de Adelanto (Foto / PDF)"
-                  hint="Formatos JPG, PNG, WEBP o PDF hasta 15MB"
-                  :max-files="5"
-                />
+                <ReceiptUploader v-model="receiptFiles" label="Comprobante(s) de Adelanto (Foto / PDF)"
+                  hint="Formatos JPG, PNG, WEBP o PDF hasta 15MB" :max-files="5" />
               </VCol>
             </VRow>
           </VCardText>
           <VDivider />
-          <VCardActions
-            class="pa-4 d-flex justify-end align-center gap-3 bg-white"
-            style="position: sticky; bottom: 0; z-index: 2;"
-          >
-            <VBtn
-              color="secondary"
-              variant="outlined"
-              prepend-icon="ri-close-line"
-              class="rounded-lg px-6 font-weight-medium"
-              height="40"
-              @click="closeDialog"
-            >
+          <VCardActions class="pa-4 d-flex justify-end align-center gap-3 bg-white"
+            style="position: sticky; bottom: 0; z-index: 2;">
+            <VBtn color="secondary" variant="outlined" prepend-icon="ri-close-line"
+              class="rounded-lg px-6 font-weight-medium" height="40" @click="closeDialog">
               Cancelar
             </VBtn>
-            <VBtn
-              color="primary"
-              variant="elevated"
-              type="submit"
-              prepend-icon="ri-save-line"
-              class="rounded-lg px-6 font-weight-bold"
-              height="40"
-              :loading="loading"
-              :disabled="loading"
-            >
+            <VBtn color="primary" variant="elevated" type="submit" prepend-icon="ri-save-line"
+              class="rounded-lg px-6 font-weight-bold" height="40" :loading="loading" :disabled="loading">
               Crear Adelanto
             </VBtn>
           </VCardActions>

@@ -121,6 +121,14 @@ const filteredAccounts = computed(() => {
 })
 
 // Formulario reactivo
+const formatCurrency = value => {
+  return new Intl.NumberFormat('es-EC', {
+    style: 'currency',
+    currency: 'USD',
+  }).format(value || 0)
+}
+
+// Formulario reactivo
 const form = ref({
   employee_id: null,
   account_id: null,
@@ -128,6 +136,7 @@ const form = ref({
   description: '',
   payment_date: new Date(Date.now() - (new Date()).getTimezoneOffset() * 60000).toISOString().split('T')[0],
   payment_method: 'TRANSFERENCIA',
+  reference: '',
 })
 
 // Funciones
@@ -139,7 +148,9 @@ const resetForm = () => {
     description: '',
     payment_date: new Date(Date.now() - (new Date()).getTimezoneOffset() * 60000).toISOString().split('T')[0],
     payment_method: 'TRANSFERENCIA',
+    reference: '',
   }
+  newReceiptFiles.value = []
   formRef.value?.reset()
 }
 
@@ -293,6 +304,7 @@ const loadEmployees = async () => {
       ...emp,
       id: Number(emp.id),
       name: `${emp.first_name || ''} ${emp.last_name || ''}`.trim(),
+      display_title: `${emp.first_name || ''} ${emp.last_name || ''} (${emp.position || 'Empleado'} - Sueldo: ${formatCurrency(emp.salary)})`.trim(),
     }))
   } catch (error) {
     console.error('Error al cargar empleados:', error)
@@ -380,6 +392,7 @@ const assignEmployeeAndAccountIds = paymentData => {
   // 4. Asignar campos básicos
   form.value.amount = paymentData.amount || null
   form.value.description = paymentData.description || ''
+  form.value.reference = paymentData.reference || paymentData.invoice_number || ''
 
   const dateValue = paymentData.payment_date || paymentData.date || new Date(Date.now() - (new Date()).getTimezoneOffset() * 60000).toISOString().split('T')[0]
   if (dateValue && typeof dateValue === 'string' && dateValue.includes('/')) {
@@ -440,7 +453,7 @@ onMounted(async () => {
   >
     <VCard class="custom-dialog-card">
       <!-- Header Banner Primary -->
-      <div class="custom-dialog-header-primary">
+      <div class="custom-dialog-header-primary bg-primary text-white">
         <VBtn
           icon="ri-close-line"
           variant="text"
@@ -452,347 +465,471 @@ onMounted(async () => {
           <VIcon icon="ri-edit-line" />
         </div>
         <h3 class="custom-dialog-title">
-          Editar Pago
+          Editar Pago de Nómina
         </h3>
         <p class="custom-dialog-subtitle">
-          Modifica los datos del pago registrado
+          Modifica los datos del pago registrado y comprobantes
         </p>
       </div>
-      <VForm
-        ref="formRef"
-        @submit.prevent="handleSubmit"
+
+      <VCardText
+        class="pa-4"
+        style="overflow-x: hidden;"
       >
-        <VCardText class="pa-4">
-          <!-- Skeleton Loader mientras cargan datos -->
-          <div
-            v-if="isLoadingData"
-            class="py-2"
-          >
-            <VRow>
-              <VCol cols="12">
-                <VSkeletonLoader
-                  type="text"
-                  height="52"
-                  class="rounded-lg mb-2"
-                />
-              </VCol>
-              <VCol cols="6">
-                <VSkeletonLoader
-                  type="text"
-                  height="52"
-                  class="rounded-lg mb-2"
-                />
-              </VCol>
-              <VCol cols="6">
-                <VSkeletonLoader
-                  type="text"
-                  height="52"
-                  class="rounded-lg mb-2"
-                />
-              </VCol>
-              <VCol cols="6">
-                <VSkeletonLoader
-                  type="text"
-                  height="52"
-                  class="rounded-lg mb-2"
-                />
-              </VCol>
-              <VCol cols="6">
-                <VSkeletonLoader
-                  type="text"
-                  height="52"
-                  class="rounded-lg mb-2"
-                />
-              </VCol>
-              <VCol cols="12">
-                <VSkeletonLoader
-                  type="article"
-                  class="rounded-lg"
-                />
-              </VCol>
-            </VRow>
-          </div>
+        <!-- Skeleton Loader mientras cargan datos -->
+        <div
+          v-if="isLoadingData"
+          class="py-2"
+        >
+          <VRow class="ma-0">
+            <VCol
+              cols="12"
+              md="6"
+              class="pa-2"
+            >
+              <VSkeletonLoader
+                type="text"
+                height="52"
+                class="rounded-lg mb-2"
+              />
+            </VCol>
+            <VCol
+              cols="12"
+              md="6"
+              class="pa-2"
+            >
+              <VSkeletonLoader
+                type="text"
+                height="52"
+                class="rounded-lg mb-2"
+              />
+            </VCol>
+            <VCol
+              cols="12"
+              md="6"
+              class="pa-2"
+            >
+              <VSkeletonLoader
+                type="text"
+                height="52"
+                class="rounded-lg mb-2"
+              />
+            </VCol>
+            <VCol
+              cols="12"
+              md="6"
+              class="pa-2"
+            >
+              <VSkeletonLoader
+                type="text"
+                height="52"
+                class="rounded-lg mb-2"
+              />
+            </VCol>
+            <VCol
+              cols="12"
+              md="6"
+              class="pa-2"
+            >
+              <VSkeletonLoader
+                type="text"
+                height="52"
+                class="rounded-lg mb-2"
+              />
+            </VCol>
+            <VCol
+              cols="12"
+              md="6"
+              class="pa-2"
+            >
+              <VSkeletonLoader
+                type="text"
+                height="52"
+                class="rounded-lg mb-2"
+              />
+            </VCol>
+            <VCol
+              cols="12"
+              class="pa-2"
+            >
+              <VSkeletonLoader
+                type="article"
+                class="rounded-lg"
+              />
+            </VCol>
+          </VRow>
+        </div>
 
-          <div v-else>
-            <VRow>
-              <VCol cols="12">
-                <VSelect
-                  v-model="form.employee_id"
-                  :items="employees"
-                  item-title="name"
-                  item-value="id"
-                  label="Empleado"
-                  placeholder="Seleccionar empleado"
-                  :rules="[v => !!v]"
-                  required
-                />
-              </VCol>
-            </VRow>
-
-            <VRow>
-              <VCol cols="12">
-                <VTextField
-                  v-model="form.amount"
-                  label="Monto"
-                  type="number"
-                  prefix="$"
-                  placeholder="0.00"
-                  :rules="[v => !!v && v > 0]"
-                  required
-                />
-              </VCol>
-            </VRow>
-
-            <VRow>
-              <VCol cols="12">
-                <VSelect
-                  v-model="form.payment_method"
-                  :items="paymentMethods"
-                  item-title="text"
-                  item-value="value"
-                  label="Método de Pago"
-                  placeholder="Seleccionar método"
-                  :rules="[v => !!v || 'El método de pago es requerido']"
-                  required
-                />
-              </VCol>
-            </VRow>
-
-            <VRow>
-              <VCol cols="12">
-                <VSelect
-                  v-model="form.account_id"
-                  :items="filteredAccounts"
-                  item-title="display_name"
-                  item-value="id"
-                  label="Cuenta"
-                  placeholder="Seleccionar cuenta"
-                  :rules="[v => !!v]"
-                  required
-                  variant="outlined"
-                  density="comfortable"
-                >
-                  <template #prepend-inner>
-                    <VIcon
-                      color="primary"
-                      size="20"
-                    >
-                      {{ form.payment_method === 'EFECTIVO' ? 'ri-money-dollar-circle-line' : 'ri-bank-line' }}
-                    </VIcon>
-                  </template>
-                  <template #item="{ props, item }">
-                    <VListItem
-                      v-bind="props"
-                      :title="undefined"
-                    >
-                      <template #prepend>
-                        <VAvatar
-                          size="30"
-                          :color="item.raw.type === 'cash' ? 'success' : 'primary'"
-                          variant="tonal"
-                          class="me-2"
-                        >
-                          <VIcon
-                            :icon="item.raw.type === 'cash' ? 'ri-money-dollar-circle-line' : 'ri-bank-card-line'"
-                            size="18"
-                          />
-                        </VAvatar>
-                      </template>
-                      <VListItemTitle class="font-weight-medium">
-                        {{ item.raw.display_name }}
-                      </VListItemTitle>
-                      <VListItemSubtitle class="text-caption mt-1">
-                        Saldo: <span
-                          class="font-weight-bold"
-                          :class="item.raw.saldo_actual >= 0 ? 'text-success' : 'text-error'"
-                        >${{ parseFloat(item.raw.saldo_actual).toFixed(2) }}</span>
-                      </VListItemSubtitle>
-                    </VListItem>
-                  </template>
-                </VSelect>
-              </VCol>
-            </VRow>
-
-            <VRow>
-              <VCol cols="12">
-                <VTextField
-                  v-model="form.description"
-                  label="Descripción"
-                  placeholder="Descripción del pago"
-                  :rules="[v => !!v]"
-                />
-              </VCol>
-            </VRow>
-
-            <VRow>
-              <VCol cols="12">
-                <VTextField
-                  v-model="form.payment_date"
-                  label="Fecha"
-                  type="date"
-                  :rules="[v => !!v]"
-                  required
-                />
-              </VCol>
-            </VRow>
-
-            <!-- Sección de Comprobantes Adjuntos con Previsualización Grid -->
-            <VRow class="mt-2">
-              <VCol cols="12">
-                <VDivider class="my-3" />
-                <div class="d-flex align-center justify-space-between mb-3">
-                  <span class="text-subtitle-2 font-weight-bold text-high-emphasis d-flex align-center gap-1">
-                    <VIcon
-                      icon="ri-attachment-2"
-                      color="primary"
-                      size="18"
-                    />
-                    Comprobante(s) de Pago (Previsualización)
-                  </span>
-                  <VChip
-                    v-if="existingAttachments.length > 0"
-                    size="x-small"
-                    color="success"
-                    variant="tonal"
-                    class="font-weight-bold"
+        <VForm
+          v-else
+          ref="formRef"
+          @submit.prevent="handleSubmit"
+        >
+          <VRow class="ma-0">
+            <!-- 1. Selección de Empleado -->
+            <VCol
+              cols="12"
+              md="6"
+              class="pa-2"
+            >
+              <VSelect
+                v-model="form.employee_id"
+                :items="employees"
+                item-title="display_title"
+                item-value="id"
+                label="Empleado"
+                placeholder="Selecciona un empleado"
+                :rules="[v => !!v || 'Debes seleccionar un empleado']"
+                required
+              >
+                <template #prepend-inner>
+                  <VIcon
+                    color="primary"
+                    size="20"
                   >
-                    {{ existingAttachments.length }} guardado(s)
-                  </VChip>
-                </div>
+                    ri-user-follow-line
+                  </VIcon>
+                </template>
+              </VSelect>
+            </VCol>
 
-                <!-- Grid de Comprobantes Guardados -->
-                <div
+            <!-- 2. Monto a Pagar -->
+            <VCol
+              cols="12"
+              md="6"
+              class="pa-2"
+            >
+              <VTextField
+                v-model="form.amount"
+                label="Monto a Pagar"
+                type="number"
+                prefix="$"
+                placeholder="0.00"
+                :rules="[v => !!v && v > 0 || 'El monto debe ser mayor a 0']"
+                required
+              >
+                <template #prepend-inner>
+                  <VIcon
+                    color="primary"
+                    size="20"
+                  >
+                    ri-money-dollar-circle-line
+                  </VIcon>
+                </template>
+              </VTextField>
+            </VCol>
+
+            <!-- 3. Método de Pago -->
+            <VCol
+              cols="12"
+              md="6"
+              class="pa-2"
+            >
+              <VSelect
+                v-model="form.payment_method"
+                :items="paymentMethods"
+                item-title="text"
+                item-value="value"
+                label="Método de Pago"
+                placeholder="Selecciona método de pago"
+                :rules="[v => !!v || 'El método de pago es requerido']"
+                required
+              >
+                <template #prepend-inner>
+                  <VIcon
+                    color="primary"
+                    size="20"
+                  >
+                    ri-bank-card-line
+                  </VIcon>
+                </template>
+              </VSelect>
+            </VCol>
+
+            <!-- 4. Cuenta de Salida -->
+            <VCol
+              cols="12"
+              md="6"
+              class="pa-2"
+            >
+              <VSelect
+                v-model="form.account_id"
+                :items="filteredAccounts"
+                item-value="id"
+                item-title="display_name"
+                label="Cuenta de Salida"
+                placeholder="Selecciona cuenta"
+                :rules="[v => !!v || 'La cuenta es requerida']"
+                required
+              >
+                <template #prepend-inner>
+                  <VIcon
+                    color="primary"
+                    size="20"
+                  >
+                    {{ form.payment_method === 'EFECTIVO' ? 'ri-money-dollar-circle-line' : 'ri-bank-line' }}
+                  </VIcon>
+                </template>
+                <template #item="{ props, item }">
+                  <VListItem
+                    v-bind="props"
+                    :title="undefined"
+                  >
+                    <template #prepend>
+                      <VAvatar
+                        size="30"
+                        :color="item.raw.type === 'cash' ? 'success' : 'primary'"
+                        variant="tonal"
+                        class="me-2"
+                      >
+                        <VIcon
+                          :icon="item.raw.type === 'cash' ? 'ri-money-dollar-circle-line' : 'ri-bank-card-line'"
+                          size="18"
+                        />
+                      </VAvatar>
+                    </template>
+                    <VListItemTitle class="font-weight-medium">
+                      {{ item.raw.display_name }}
+                    </VListItemTitle>
+                    <VListItemSubtitle class="text-caption mt-1">
+                      Saldo disponible: <span
+                        class="font-weight-bold"
+                        :class="item.raw.saldo_actual >= 0 ? 'text-success' : 'text-error'"
+                      >${{ parseFloat(item.raw.saldo_actual || 0).toFixed(2) }}</span>
+                    </VListItemSubtitle>
+                  </VListItem>
+                </template>
+              </VSelect>
+            </VCol>
+
+            <!-- 5. Fecha de Pago -->
+            <VCol
+              cols="12"
+              md="6"
+              class="pa-2"
+            >
+              <VTextField
+                v-model="form.payment_date"
+                label="Fecha de Emisión / Pago"
+                type="date"
+                :rules="[v => !!v || 'La fecha es requerida']"
+                required
+              >
+                <template #prepend-inner>
+                  <VIcon
+                    color="primary"
+                    size="20"
+                  >
+                    ri-calendar-event-line
+                  </VIcon>
+                </template>
+              </VTextField>
+            </VCol>
+
+            <!-- 6. Referencia -->
+            <VCol
+              cols="12"
+              md="6"
+              class="pa-2"
+            >
+              <VTextField
+                v-model="form.reference"
+                label="Nº Documento / Transferencia (Opcional)"
+                placeholder="Ej. TRANS-98421"
+              >
+                <template #prepend-inner>
+                  <VIcon
+                    color="secondary"
+                    size="20"
+                  >
+                    ri-hashtag
+                  </VIcon>
+                </template>
+              </VTextField>
+            </VCol>
+
+            <!-- 7. Observaciones o Descripción -->
+            <VCol
+              cols="12"
+              class="pa-2"
+            >
+              <VTextarea
+                v-model="form.description"
+                label="Observaciones o Notas del Pago (Opcional)"
+                placeholder="Detalles adicionales sobre el pago..."
+                rows="2"
+              >
+                <template #prepend-inner>
+                  <VIcon
+                    color="secondary"
+                    size="20"
+                  >
+                    ri-file-text-line
+                  </VIcon>
+                </template>
+              </VTextarea>
+            </VCol>
+
+            <!-- 8. Sección de Comprobantes Adjuntos con Previsualización Grid -->
+            <VCol
+              cols="12"
+              class="pa-2"
+            >
+              <VDivider class="my-2" />
+              <div class="d-flex align-center justify-space-between mb-3">
+                <span class="text-subtitle-2 font-weight-bold text-high-emphasis d-flex align-center gap-1">
+                  <VIcon
+                    icon="ri-attachment-2"
+                    color="primary"
+                    size="18"
+                  />
+                  Comprobante(s) de Pago (Previsualización)
+                </span>
+                <VChip
                   v-if="existingAttachments.length > 0"
-                  class="mb-4"
+                  size="x-small"
+                  color="success"
+                  variant="tonal"
+                  class="font-weight-bold"
                 >
-                  <div class="existing-grid">
+                  {{ existingAttachments.length }} guardado(s)
+                </VChip>
+              </div>
+
+              <!-- Grid de Comprobantes Guardados -->
+              <div
+                v-if="existingAttachments.length > 0"
+                class="mb-4"
+              >
+                <div class="existing-grid">
+                  <div
+                    v-for="att in existingAttachments"
+                    :key="att.id"
+                    class="existing-card elevation-1"
+                  >
+                    <!-- Imagen Thumbnail Previsualización -->
                     <div
-                      v-for="att in existingAttachments"
-                      :key="att.id"
-                      class="existing-card elevation-1"
+                      v-if="isImageFile(att)"
+                      class="existing-media"
+                      @click="openAttachment(att)"
                     >
-                      <!-- Imagen Thumbnail Previsualización -->
-                      <div
-                        v-if="isImageFile(att)"
-                        class="existing-media"
-                        @click="openAttachment(att)"
+                      <img
+                        :src="getFullUrl(att.file_path || att.url)"
+                        :alt="att.file_name"
+                        class="existing-img"
                       >
-                        <img
-                          :src="getFullUrl(att.file_path || att.url)"
-                          :alt="att.file_name"
-                          class="existing-img"
-                        >
-                        <div class="existing-overlay">
-                          <VIcon
-                            icon="ri-external-link-line"
-                            color="white"
-                            size="18"
+                      <div class="existing-overlay">
+                        <VIcon
+                          icon="ri-external-link-line"
+                          color="white"
+                          size="18"
+                        />
+                      </div>
+                    </div>
+
+                    <!-- PDF Thumbnail Previsualización -->
+                    <div
+                      v-else-if="isPdfFile(att)"
+                      class="existing-media pdf-media"
+                      @click="openAttachment(att)"
+                    >
+                      <VIcon
+                        icon="ri-file-pdf-2-fill"
+                        size="36"
+                        color="error"
+                      />
+                      <span class="pdf-tag">PDF</span>
+                    </div>
+
+                    <!-- General Media -->
+                    <div
+                      v-else
+                      class="existing-media"
+                      @click="openAttachment(att)"
+                    >
+                      <VIcon
+                        icon="ri-file-3-line"
+                        size="32"
+                        color="primary"
+                      />
+                    </div>
+
+                    <!-- Info & Acciones -->
+                    <div class="existing-info pa-2">
+                      <div
+                        class="text-caption font-weight-medium text-truncate text-high-emphasis"
+                        :title="att.file_name"
+                      >
+                        {{ att.file_name || 'Comprobante' }}
+                      </div>
+                      <div class="d-flex align-center justify-space-between text-caption text-disabled mt-1">
+                        <span style="font-size: 10px;">{{ att.created_at ? new Date(att.created_at).toLocaleDateString() : 'Archivo' }}</span>
+                        <div class="d-flex gap-1">
+                          <VBtn
+                            icon="ri-download-2-line"
+                            size="x-small"
+                            variant="text"
+                            color="primary"
+                            title="Descargar"
+                            @click.stop="openAttachment(att)"
                           />
-                        </div>
-                      </div>
-
-                      <!-- PDF Thumbnail Previsualización -->
-                      <div
-                        v-else-if="isPdfFile(att)"
-                        class="existing-media pdf-media"
-                        @click="openAttachment(att)"
-                      >
-                        <VIcon
-                          icon="ri-file-pdf-2-fill"
-                          size="36"
-                          color="error"
-                        />
-                        <span class="pdf-tag">PDF</span>
-                      </div>
-
-                      <!-- General Media -->
-                      <div
-                        v-else
-                        class="existing-media"
-                        @click="openAttachment(att)"
-                      >
-                        <VIcon
-                          icon="ri-file-3-line"
-                          size="32"
-                          color="primary"
-                        />
-                      </div>
-
-                      <!-- Info & Acciones -->
-                      <div class="existing-info pa-2">
-                        <div
-                          class="text-caption font-weight-medium text-truncate text-high-emphasis"
-                          :title="att.file_name"
-                        >
-                          {{ att.file_name || 'Comprobante' }}
-                        </div>
-                        <div class="d-flex align-center justify-space-between text-caption text-disabled mt-1">
-                          <span style="font-size: 10px;">{{ att.created_at ? new Date(att.created_at).toLocaleDateString() : 'Archivo' }}</span>
-                          <div class="d-flex gap-1">
-                            <VBtn
-                              icon="ri-download-2-line"
-                              size="x-small"
-                              variant="text"
-                              color="primary"
-                              title="Descargar"
-                              @click.stop="openAttachment(att)"
-                            />
-                            <VBtn
-                              icon="ri-delete-bin-line"
-                              size="x-small"
-                              variant="text"
-                              color="error"
-                              title="Eliminar"
-                              @click.stop="deleteAttachment(att.id)"
-                            />
-                          </div>
+                          <VBtn
+                            icon="ri-delete-bin-line"
+                            size="x-small"
+                            variant="text"
+                            color="error"
+                            title="Eliminar"
+                            @click.stop="deleteAttachment(att.id)"
+                          />
                         </div>
                       </div>
                     </div>
                   </div>
                 </div>
+              </div>
 
-                <!-- Subir Nuevos Comprobantes -->
-                <ReceiptUploader
-                  v-model="newReceiptFiles"
-                  label="Adjuntar Nuevos Comprobantes (Foto / PDF)"
-                  hint="Puedes agregar o reemplazar fotos del comprobante de pago"
-                  :max-files="5"
-                  @error="msg => showNotification(msg, 'error')"
-                />
-              </VCol>
-            </VRow>
-          </div>
-        </VCardText>
-        <VDivider />
-        <VCardActions
-          class="pa-4 d-flex justify-end align-center gap-3 bg-white"
-          style="position: sticky; bottom: 0; z-index: 2;"
-        >
-          <VBtn
-            color="secondary"
-            variant="outlined"
-            prepend-icon="ri-close-line"
-            class="rounded-lg px-6 font-weight-medium"
-            height="40"
-            @click="closeDialog"
+              <!-- Subir Nuevos Comprobantes -->
+              <ReceiptUploader
+                v-model="newReceiptFiles"
+                label="Adjuntar Nuevos Comprobantes (Foto / PDF)"
+                hint="Puedes agregar o reemplazar fotos del comprobante de pago"
+                :max-files="5"
+                @error="msg => showNotification(msg, 'error')"
+              />
+            </VCol>
+          </VRow>
+
+          <VDivider />
+
+          <VCardActions
+            class="pa-4 d-flex justify-end align-center gap-3 bg-white"
+            style="position: sticky; bottom: 0; z-index: 2;"
           >
-            Cancelar
-          </VBtn>
-          <VBtn
-            color="primary"
-            variant="elevated"
-            type="submit"
-            :loading="loading"
-            :disabled="loading"
-            prepend-icon="ri-refresh-line"
-            class="rounded-lg px-6 font-weight-bold"
-            height="40"
-          >
-            Actualizar Pago
-          </VBtn>
-        </VCardActions>
-      </VForm>
+            <VBtn
+              color="secondary"
+              variant="outlined"
+              prepend-icon="ri-close-line"
+              class="rounded-lg px-6 font-weight-medium"
+              height="40"
+              @click="closeDialog"
+            >
+              Cancelar
+            </VBtn>
+            <VBtn
+              color="primary"
+              variant="elevated"
+              type="submit"
+              :loading="loading"
+              :disabled="loading"
+              prepend-icon="ri-refresh-line"
+              class="rounded-lg px-6 font-weight-bold"
+              height="40"
+            >
+              Actualizar Pago
+            </VBtn>
+          </VCardActions>
+        </VForm>
+      </VCardText>
     </VCard>
   </VDialog>
 </template>
