@@ -9,6 +9,7 @@ import DeleteDialog from '@/components/inventory/finances-records/DeleteDialog.v
 import AttachReceiptsDialog from '@/components/common/AttachReceiptsDialog.vue'
 import MovementReceiptNoteDialog from '@/components/inventory/finances-records/MovementReceiptNoteDialog.vue'
 import AporteCreateDialog from '@/components/inventory/aportes/AporteCreateDialog.vue'
+import TransferDialog from '@/components/inventory/finances-records/TransferDialog.vue'
 
 // Composable instances
 const loader = useLoaderStore()
@@ -18,6 +19,7 @@ const { showNotification } = useGlobalToast()
 const showIncomeDialog = ref(false)
 const showExpenseDialog = ref(false)
 const showAporteDialog = ref(false)
+const showTransferDialog = ref(false)
 const isSavingIncome = ref(false)
 const isSavingExpense = ref(false)
 
@@ -32,7 +34,7 @@ const loading = ref(false)
 
 // Paginación
 const currentPage = ref(1)
-const itemsPerPage = ref(15)
+const itemsPerPage = ref(12)
 const totalPages = computed(() => Math.ceil(movements.value.length / itemsPerPage.value) || 1)
 
 watch(totalPages, newVal => {
@@ -434,6 +436,15 @@ const openExpenseDialog = () => {
   showExpenseDialog.value = true
 }
 
+const openTransferDialog = () => {
+  showTransferDialog.value = true
+}
+
+const onTransferCompleted = () => {
+  loadMovements(false)
+  loadAccounts()
+}
+
 const getFinanceRecordId = movement => {
   if (!movement) return null
 
@@ -495,7 +506,6 @@ const editMovement = movement => {
     showExpenseDialog.value = true
   }
 }
-
 const closeIncomeDialog = () => {
   showIncomeDialog.value = false
   editingMovement.value = null
@@ -835,7 +845,8 @@ const getMovementInvoiceNumber = movement => {
   }
 
   if (movement.type === 'transfer') {
-    return `TRANS-${String(movement.id || '').padStart(4, '0')}`
+    const transferId = movement.movable_id || movement.metadata?.transfer_id || movement.id
+    return `TRANS-${String(transferId || '').padStart(4, '0')}`
   }
 
   return `#${movement.id || '-'}`
@@ -1113,6 +1124,10 @@ onMounted(() => {
           class="font-weight-semibold" @click="openExpenseDialog">
           Nuevo Egreso
         </VBtn>
+        <VBtn color="warning" variant="tonal" size="default" prepend-icon="ri-arrow-left-right-line"
+          class="font-weight-semibold" @click="openTransferDialog">
+          Nueva Transferencia
+        </VBtn>
         <VBtn color="secondary" variant="outlined" size="default" prepend-icon="ri-file-pdf-line"
           class="font-weight-medium" :loading="isGeneratingPDF" @click="generatePDF">
           Exportar PDF
@@ -1362,7 +1377,7 @@ onMounted(() => {
                 </div>
                 <div v-else-if="movement.type === 'transfer'" class="status-pill-clean status-transfer">
                   <span class="status-dot" />
-                  <span>Transferencia</span>
+                  <span>Transfer.</span>
                 </div>
                 <div v-else class="status-pill-clean status-other">
                   <span class="status-dot" />
@@ -1452,77 +1467,83 @@ onMounted(() => {
 
       <!-- Lista de Movimientos Unificada Desktop (d-none d-md-block) -->
       <VCard
-        class="d-none d-md-block rounded-xl border-light overflow-hidden elevation-1 transfer-table-container position-relative">
-        <VProgressLinear v-if="loading" v-slot indeterminate color="primary" height="3" class="position-absolute"
+        class="d-none d-md-block rounded-xl border overflow-hidden elevation-0 bg-surface table-card-responsive position-relative">
+        <VProgressLinear v-if="loading" indeterminate color="primary" height="3" class="position-absolute"
           style="top: 0; left: 0; right: 0; z-index: 10;" />
 
-        <VTable hover class="transfer-table">
+        <VTable hover class="movements-modern-table overflow-x-auto">
           <thead>
-            <tr>
-              <th class="text-left py-3" style="width: 12%; min-width: 95px;">
-                N° DOC
+            <tr class="bg-grey-lighten-5">
+              <th class="text-left font-weight-bold text-uppercase py-3" style="width: 130px; white-space: nowrap;">
+                Documento
               </th>
-              <th class="text-left py-3" style="width: 12%; min-width: 95px;">
-                ORD. TRAB.
+              <th class="text-left font-weight-bold text-uppercase py-3" style="width: 120px; white-space: nowrap;">
+                Fecha
               </th>
-              <th class="text-left py-3" style="width: 10%; min-width: 100px;">
-                TIPO
+              <th class="text-center font-weight-bold text-uppercase py-3" style="width: 120px; white-space: nowrap;">
+                Tipo
               </th>
-              <th class="text-left py-3" style="width: 24%; min-width: 160px;">
-                DESCRIPCIÓN & FECHA
+              <th class="text-left font-weight-bold text-uppercase py-3" style="min-width: 220px;">
+                Descripción
               </th>
-              <th class="text-center py-3" style="width: 11%; min-width: 100px;">
-                COMPROBANTE
+              <th class="text-left font-weight-bold text-uppercase py-3" style="width: 180px; white-space: nowrap;">
+                Cuenta / Método
               </th>
-              <th class="text-left py-3" style="width: 15%; min-width: 130px;">
-                CUENTA & MÉTODO
+              <th class="text-center font-weight-bold text-uppercase py-3" style="width: 110px; white-space: nowrap;">
+                Comprobante
               </th>
-              <th class="text-right py-3" style="width: 8%; min-width: 85px;">
-                MONTO
+              <th class="text-right font-weight-bold text-uppercase py-3" style="width: 120px; white-space: nowrap;">
+                Monto
               </th>
-              <th class="text-center py-3" style="width: 8%; min-width: 100px;">
-                ACCIONES
+              <th class="text-center font-weight-bold text-uppercase py-3" style="width: 100px; white-space: nowrap;">
+                Acciones
               </th>
             </tr>
           </thead>
 
           <!-- Cargando (Skeleton Rows) -->
           <tbody v-if="loading">
-            <tr v-for="n in 5" :key="n" class="skeleton-row align-middle">
+            <tr v-for="n in 5" :key="'skel-mov-' + n" class="skeleton-row align-middle">
               <td class="py-4">
-                <div class="shimmer-line w-40" />
+                <div class="shimmer-line" style="width: 80px; height: 16px;" />
+                <div class="shimmer-line" style="width: 110px; height: 12px;" />
               </td>
               <td class="py-4">
-                <div class="shimmer-line w-40" />
-              </td>
-              <td class="py-4">
-                <div class="shimmer-chip" />
-              </td>
-              <td class="py-4">
-                <div class="shimmer-line w-75 mb-2" />
-                <div class="shimmer-line w-40" />
+                <div class="shimmer-line" style="width: 85px; height: 14px;" />
               </td>
               <td class="py-4 text-center">
-                <div class="shimmer-chip mx-auto" style="width: 40px; height: 40px; border-radius: 8px;" />
+                <div class="shimmer-chip mx-auto" style="width: 80px; height: 24px;" />
               </td>
               <td class="py-4">
-                <div class="shimmer-line w-60" />
+                <div class="shimmer-line mb-1.5" style="width: 180px; height: 16px;" />
+                <div class="shimmer-line" style="width: 110px; height: 12px;" />
               </td>
               <td class="py-4">
-                <div class="shimmer-line w-40 ms-auto" />
+                <div class="d-flex align-center gap-2">
+                  <div class="shimmer-circle" style="width: 30px; height: 30px; border-radius: 8px;" />
+                  <div>
+                    <div class="shimmer-line mb-1" style="width: 90px; height: 14px;" />
+                    <div class="shimmer-line" style="width: 60px; height: 10px;" />
+                  </div>
+                </div>
               </td>
               <td class="py-4 text-center">
-                <div class="d-flex justify-center gap-2">
-                  <div class="shimmer-button" />
-                  <div class="shimmer-button" />
-                  <div class="shimmer-button" />
+                <div class="shimmer-chip mx-auto" style="width: 34px; height: 34px; border-radius: 8px;" />
+              </td>
+              <td class="py-4 text-right">
+                <div class="shimmer-line ms-auto" style="width: 70px; height: 18px;" />
+              </td>
+              <td class="py-4 text-center">
+                <div class="d-flex justify-center align-center gap-1">
+                  <div class="shimmer-button rounded" style="width: 32px; height: 32px;" />
+                  <div class="shimmer-button rounded" style="width: 32px; height: 32px;" />
                 </div>
               </td>
             </tr>
           </tbody>
 
           <!-- Sin resultados filtrados -->
-          <tbody v-else-if="groupedMovements.length === 0">
+          <tbody v-else-if="paginatedMovements.length === 0">
             <tr>
               <td colspan="8" class="text-center py-12 text-medium-emphasis">
                 <VAvatar color="primary" variant="tonal" size="64" class="mb-3">
@@ -1538,231 +1559,166 @@ onMounted(() => {
             </tr>
           </tbody>
 
-          <!-- Datos reales -->
+          <!-- Datos reales (Una fila por movimiento, sin agrupaciones) -->
           <tbody v-else>
-            <template v-for="day in groupedMovements" :key="day.date">
-              <!-- Fila de Encabezado por Fecha -->
-              <tr class="transfer-date-header-row">
-                <td colspan="8">
-                  <div class="d-flex align-center justify-space-between flex-wrap gap-2 py-1">
-                    <div class="d-flex align-center gap-3">
-                      <VAvatar color="primary" variant="elevated" size="34" rounded="lg"
-                        class="elevation-1 flex-shrink-0">
-                        <VIcon icon="ri-calendar-event-fill" size="18" color="white" />
-                      </VAvatar>
-                      <div class="d-flex align-center gap-2 flex-wrap">
-                        <span class="date-header-title text-subtitle-1 font-weight-bold text-high-emphasis">
-                          {{ formatDateHeader(day.date) }}
-                        </span>
-                        <div class="status-pill-clean status-transfer font-weight-bold ms-1">
-                          <span class="status-dot" />
-                          <span>{{ day.movements.length }} {{ day.movements.length === 1 ? 'movimiento' : 'movimientos'
-                          }}</span>
-                        </div>
-                      </div>
-                    </div>
-
-                    <div class="d-flex align-center gap-2 me-2 flex-wrap">
-                      <div class="status-pill-clean status-paid font-weight-bold">
-                        <span class="status-dot" />
-                        <span>Ingresos: +{{ formatCurrency(day.dailyIncome) }}</span>
-                      </div>
-                      <div class="status-pill-clean status-pending font-weight-bold">
-                        <span class="status-dot" />
-                        <span>Egresos: -{{ formatCurrency(day.dailyExpenses) }}</span>
-                      </div>
-                      <div class="status-pill-clean font-weight-bold"
-                        :class="day.dailyBalance >= 0 ? 'status-transfer' : 'status-other'">
-                        <span class="status-dot" />
-                        <span>Neto: {{ formatCurrency(day.dailyBalance) }}</span>
-                      </div>
-                    </div>
-                  </div>
-                </td>
-              </tr>
-
-              <!-- Filas de Movimientos para ese día -->
-              <tr v-for="movement in day.movements" :key="movement.id" class="transfer-row">
-                <!-- N° Factura / Documento -->
-                <td class="py-3">
-                  <span class="text-body-2 font-weight-black text-slate-900 cursor-pointer"
-                    title="Clic para ver nota completa y comprobantes" @click="openMovementNoteDialog(movement)">
-                    {{ getMovementInvoiceNumber(movement) }}
-                  </span>
-                </td>
-
-                <!-- N° Orden de Trabajo -->
-                <td class="py-3">
-                  <VChip v-if="getMovementWorkOrderNumber(movement) !== '-'" size="small" color="primary"
-                    variant="tonal" prepend-icon="ri-tools-line" class="font-weight-bold cursor-pointer"
-                    title="Número de Orden de Trabajo" @click="openMovementNoteDialog(movement)">
-                    {{ getMovementWorkOrderNumber(movement) }}
-                  </VChip>
-                  <span v-else class="text-caption text-disabled">
-                    —
-                  </span>
-                </td>
-
-                <!-- Tipo (Ingreso vs Egreso) -->
-                <td class="py-3" style="white-space: nowrap;">
-                  <div v-if="movement.type === 0 || movement.type === 'income'" class="status-pill-clean status-paid">
-                    <span class="status-dot" />
-                    <span>Ingreso</span>
-                  </div>
-                  <div v-else-if="movement.type === 1 || movement.type === 'expense'"
-                    class="status-pill-clean status-pending">
-                    <span class="status-dot" />
-                    <span>Egreso</span>
-                  </div>
-                  <div v-else-if="movement.type === 'transfer'" class="status-pill-clean status-transfer">
-                    <span class="status-dot" />
-                    <span>Transferencia</span>
-                  </div>
-                  <div v-else class="status-pill-clean status-other">
-                    <span class="status-dot" />
-                    <span>{{ movement.type }}</span>
-                  </div>
-                </td>
-
-                <!-- Descripción & Fecha -->
-                <td class="py-3">
-                  <div class="d-flex flex-column cursor-pointer text-left"
-                    title="Clic para ver nota completa y comprobantes" @click="openMovementNoteDialog(movement)">
-                    <span class="text-body-2 font-weight-bold text-slate-900 mb-0.5">
-                      {{ formatMovementDescription(movement.description) }}
-                    </span>
-                    <span class="text-caption text-medium-emphasis d-flex align-center gap-1 font-weight-medium">
-                      <VIcon icon="ri-calendar-line" size="12" class="text-slate-400" />
-                      {{ formatDate(movement.entry_date) }}
+            <tr v-for="movement in paginatedMovements" :key="movement.id" class="movement-table-row">
+              <!-- 1. Documento y Orden de Trabajo -->
+              <td class="py-3" style="white-space: nowrap;">
+                <div class="d-flex flex-column cursor-pointer" title="Clic para ver nota completa y comprobantes"
+                  @click="openMovementNoteDialog(movement)">
+                  <div class="d-flex align-center gap-1.5">
+                    <VIcon icon="ri-file-text-line" size="14" class="text-medium-emphasis flex-shrink-0" />
+                    <span class="font-weight-bold text-body-2 font-mono text-high-emphasis">
+                      {{ getMovementInvoiceNumber(movement) }}
                     </span>
                   </div>
-                </td>
 
-                <!-- Comprobante / Foto -->
-                <td class="py-3 text-center">
-                  <div v-if="movement.resolved_attachments && movement.resolved_attachments.length > 0"
-                    class="d-flex align-center justify-center gap-1">
-                    <!-- Miniatura interactiva de foto -->
-                    <div v-if="hasImageAttachment(movement)"
-                      class="position-relative cursor-pointer attachment-thumb-wrapper"
-                      title="Clic para ver foto en tamaño completo" @click="previewMovementPhoto(movement)">
-                      <VAvatar size="38" rounded="lg" class="border elevation-1 attachment-thumbnail">
-                        <VImg :src="getFirstImageUrl(movement)" cover />
-                      </VAvatar>
-                      <span v-if="movement.resolved_attachments.length > 1" class="attachment-count-badge">
-                        +{{ movement.resolved_attachments.length - 1 }}
-                      </span>
-                    </div>
-
-                    <!-- Icono si solo es PDF o documento -->
-                    <VBtn v-else size="small" variant="tonal" color="primary" icon="ri-file-text-line"
-                      title="Ver documento adjunto" @click="previewMovementPhoto(movement)" />
-
-                    <!-- Botón rápido de descarga directa -->
-                    <VBtn title="Descargar Foto / Comprobante" size="x-small" variant="text" color="secondary"
-                      icon="ri-download-2-line" @click.stop="downloadFirstAttachment(movement)" />
+                  <!-- Orden de Trabajo debajo, más pequeña y gris -->
+                  <div v-if="getMovementWorkOrderNumber(movement) !== '-'"
+                    class="d-flex align-center gap-1 text-caption text-medium-emphasis mt-0.5"
+                    style="font-size: 0.72rem; line-height: 1.2;">
+                    <VIcon icon="ri-tools-line" size="9" class="text-medium-emphasis flex-shrink-0" />
+                    <span class="font-mono">OT: {{ getMovementWorkOrderNumber(movement) }}</span>
                   </div>
+                </div>
+              </td>
 
-                  <!-- Si no tiene comprobante aún -->
-                  <div v-else class="d-flex justify-center align-center">
-                    <VBtn v-if="movement.type !== 'transfer'" size="small" variant="tonal" color="primary"
-                      rounded="pill" class="btn-attach-comprobante" title="Adjuntar foto o comprobante"
-                      @click="openAttachDialog(movement)">
-                      <VIcon icon="ri-attachment-2" size="15" class="me-1 shrink-0" />
-                      <span>Adjuntar</span>
-                    </VBtn>
-                    <span v-else class="text-caption text-disabled">
-                      —
+              <!-- 2. Fecha (En cada fila) -->
+              <td class="py-3" style="white-space: nowrap;">
+                <div class="d-flex align-center gap-1.5 text-body-2 font-weight-medium text-high-emphasis">
+                  <VIcon icon="ri-calendar-line" size="14" class="text-slate-400 flex-shrink-0" />
+                  <span>{{ formatDate(movement.entry_date) }}</span>
+                </div>
+              </td>
+
+              <!-- 4. Tipo -->
+              <td class="py-3 text-center" style="white-space: nowrap;">
+                <div v-if="movement.type === 0 || movement.type === 'income'"
+                  class="status-pill-clean status-paid d-inline-flex">
+                  <span class="status-dot" />
+                  <span>Ingreso</span>
+                </div>
+                <div v-else-if="movement.type === 1 || movement.type === 'expense'"
+                  class="status-pill-clean status-pending d-inline-flex">
+                  <span class="status-dot" />
+                  <span>Egreso</span>
+                </div>
+                <div v-else-if="movement.type === 'transfer'" class="status-pill-clean status-transfer d-inline-flex">
+                  <span class="status-dot" />
+                  <span>Transfer.</span>
+                </div>
+                <div v-else class="status-pill-clean status-other d-inline-flex">
+                  <span class="status-dot" />
+                  <span>{{ movement.type }}</span>
+                </div>
+              </td>
+
+              <!-- 5. Descripción -->
+              <td class="py-3">
+                <div class="cursor-pointer text-left font-weight-medium text-body-2 text-high-emphasis line-clamp-2"
+                  title="Clic para ver nota completa y comprobantes" @click="openMovementNoteDialog(movement)">
+                  {{ formatMovementDescription(movement.description) }}
+                </div>
+              </td>
+
+              <!-- 6. Cuenta / Método -->
+              <td class="py-3" style="white-space: nowrap;">
+                <div class="d-flex align-center gap-2">
+                  <VAvatar size="30"
+                    :color="getPaymentMethod(movement, accounts) === 'EFECTIVO' ? 'success' : 'primary'" variant="tonal"
+                    rounded="lg" class="flex-shrink-0">
+                    <VIcon size="16"
+                      :icon="getPaymentMethod(movement, accounts) === 'EFECTIVO' ? 'ri-money-dollar-circle-line' : 'ri-bank-line'" />
+                  </VAvatar>
+                  <div class="d-flex flex-column text-left">
+                    <span class="text-body-2 font-weight-bold text-high-emphasis">
+                      {{ cleanAccountName(getAccountName(movement)) }}
+                    </span>
+                    <span class="text-medium-emphasis font-weight-semibold text-uppercase"
+                      style="font-size: 0.68rem !important;">
+                      {{ getPaymentMethod(movement, accounts) }}
                     </span>
                   </div>
-                </td>
+                </div>
+              </td>
 
-                <!-- Cuenta & Método -->
-                <td class="py-3">
-                  <div class="d-flex align-center gap-2">
-                    <VAvatar size="32" color="primary" variant="tonal" class="rounded-lg shrink-0">
-                      <VIcon size="16" icon="ri-bank-line" />
+              <!-- 7. Comprobante -->
+              <td class="py-3 text-center" style="white-space: nowrap;">
+                <div v-if="movement.resolved_attachments && movement.resolved_attachments.length > 0"
+                  class="d-flex align-center justify-center gap-1">
+                  <!-- Miniatura interactiva de foto -->
+                  <div v-if="hasImageAttachment(movement)"
+                    class="position-relative cursor-pointer attachment-thumb-wrapper"
+                    title="Clic para ver foto en tamaño completo" @click="previewMovementPhoto(movement)">
+                    <VAvatar size="34" rounded="lg" class="border elevation-1 attachment-thumbnail">
+                      <VImg :src="getFirstImageUrl(movement)" cover />
                     </VAvatar>
-                    <div class="d-flex flex-column text-left">
-                      <span class="text-body-2 font-weight-bold text-slate-900">
-                        {{ getAccountName(movement) }}
-                      </span>
-                      <span class="text-medium-emphasis font-weight-semibold text-uppercase"
-                        style="font-size: 10px !important;">
-                        {{ getPaymentMethod(movement, accounts) }}
-                      </span>
-                    </div>
+                    <span v-if="movement.resolved_attachments.length > 1" class="attachment-count-badge">
+                      +{{ movement.resolved_attachments.length - 1 }}
+                    </span>
                   </div>
-                </td>
 
-                <!-- Monto -->
-                <td class="py-3 text-right">
-                  <span class="text-subtitle-1 font-weight-black me-1"
-                    :class="(movement.type === 0 || movement.type === 'income') ? 'text-success' : ((movement.type === 1 || movement.type === 'expense') ? 'text-error' : 'text-info')">
-                    {{ (movement.type === 0 || movement.type === 'income') ? '+' : ((movement.type === 1 ||
-                      movement.type
-                      === 'expense') ? '-' : '') }}{{ formatCurrency(movement.amount) }}
-                  </span>
-                </td>
+                  <!-- Icono si solo es PDF o documento -->
+                  <VBtn v-else size="small" variant="tonal" color="primary" icon="ri-file-text-line"
+                    title="Ver documento adjunto" @click="previewMovementPhoto(movement)" />
 
-                <!-- Acciones -->
-                <td class="py-3 text-center">
-                  <div class="d-flex align-center justify-center gap-1">
-                    <!-- Botón Principal: Ver Nota y Comprobantes -->
-                    <VBtn title="Ver Nota y Comprobantes" size="small" variant="tonal" color="primary"
-                      icon="ri-eye-line" class="action-btn" @click="openMovementNoteDialog(movement)" />
+                  <!-- Botón rápido de descarga directa -->
+                  <VBtn title="Descargar Foto / Comprobante" size="x-small" variant="text" color="secondary"
+                    icon="ri-download-2-line" @click.stop="downloadFirstAttachment(movement)" />
+                </div>
 
-                    <!-- Menú Pro de Acciones Secundarias -->
-                    <VMenu v-if="movement.type !== 'transfer'" location="bottom end" transition="scale-transition">
-                      <template #activator="{ props: menuProps }">
-                        <VBtn v-bind="menuProps" size="small" variant="text" color="secondary" icon="ri-more-2-fill"
-                          class="action-btn" title="Más opciones" />
-                      </template>
+                <!-- Si no tiene comprobante aún -->
+                <div v-else class="d-flex justify-center align-center">
+                  <VBtn v-if="movement.type !== 'transfer'" size="x-small" variant="tonal" color="primary"
+                    class="font-weight-medium rounded-pill px-2.5" prepend-icon="ri-attachment-2"
+                    title="Adjuntar foto o comprobante" @click="openAttachDialog(movement)">
+                    <span>Adjuntar</span>
+                  </VBtn>
+                  <span v-else class="text-caption text-disabled">—</span>
+                </div>
+              </td>
 
-                      <VList density="compact" elevation="6" class="py-1 rounded-lg" min-width="200">
-                        <VListItem :disabled="generatingSingleId === movement.id" @click="generateSinglePDF(movement)">
-                          <template #prepend>
-                            <VIcon icon="ri-file-pdf-line" color="info" size="18" class="me-2" />
-                          </template>
-                          <VListItemTitle class="font-weight-medium text-body-2">
-                            Descargar PDF
-                          </VListItemTitle>
-                        </VListItem>
+              <!-- 8. Monto -->
+              <td class="py-3 text-right" style="white-space: nowrap;">
+                <span class="text-subtitle-2 font-weight-bold font-mono"
+                  :class="(movement.type === 0 || movement.type === 'income') ? 'text-success' : ((movement.type === 1 || movement.type === 'expense') ? 'text-error' : 'text-info')">
+                  {{ (movement.type === 0 || movement.type === 'income') ? '+' : ((movement.type === 1 || movement.type
+                    === 'expense') ? '-' : '') }}{{ formatCurrency(movement.amount) }}
+                </span>
+              </td>
 
-                        <VListItem @click="openAttachDialog(movement)">
-                          <template #prepend>
-                            <VIcon icon="ri-attachment-2" color="secondary" size="18" class="me-2" />
-                          </template>
-                          <VListItemTitle class="font-weight-medium text-body-2">
-                            Adjuntar Comprobante
-                          </VListItemTitle>
-                        </VListItem>
+              <!-- 9. Acciones -->
+              <td class="py-3 text-center" style="white-space: nowrap;">
+                <div class="d-flex align-center justify-center gap-1">
+                  <!-- Botón Principal: Ver Nota y Comprobantes -->
+                  <VBtn title="Ver Nota y Comprobantes" size="small" variant="tonal" color="info" icon="ri-eye-line"
+                    @click="openMovementNoteDialog(movement)" />
 
-                        <VListItem @click="editMovement(movement)">
-                          <template #prepend>
-                            <VIcon icon="ri-edit-line" color="warning" size="18" class="me-2" />
-                          </template>
-                          <VListItemTitle class="font-weight-medium text-body-2">
-                            Editar Registro
-                          </VListItemTitle>
-                        </VListItem>
+                  <!-- Menú Más Opciones -->
+                  <VBtn v-if="movement.type !== 'transfer'" size="small" color="secondary" variant="tonal"
+                    icon="ri-more-2-line" title="Más opciones">
+                    <VIcon icon="ri-more-2-line" size="18" />
+                    <VMenu activator="parent" transition="slide-y-transition" align="end" location="bottom end">
+                      <VList density="compact" elevation="4" class="py-1 rounded-lg border" min-width="200">
+                        <VListItem :disabled="generatingSingleId === movement.id" prepend-icon="ri-file-pdf-line"
+                          title="Descargar PDF" class="text-info text-body-2" @click="generateSinglePDF(movement)" />
 
-                        <VDivider class="my-1" />
+                        <VListItem prepend-icon="ri-attachment-2" title="Adjuntar Comprobante"
+                          class="text-secondary text-body-2" @click="openAttachDialog(movement)" />
 
-                        <VListItem class="text-error" @click="deleteMovement(movement)">
-                          <template #prepend>
-                            <VIcon icon="ri-delete-bin-line" color="error" size="18" class="me-2" />
-                          </template>
-                          <VListItemTitle class="font-weight-medium text-body-2 text-error">
-                            Eliminar Registro
-                          </VListItemTitle>
-                        </VListItem>
+                        <VListItem v-if="canEditMovement(movement)" prepend-icon="ri-edit-line" title="Editar Registro"
+                          class="text-warning text-body-2" @click="editMovement(movement)" />
+
+                        <VDivider v-if="canDeleteMovement(movement)" class="my-1" />
+
+                        <VListItem v-if="canDeleteMovement(movement)" prepend-icon="ri-delete-bin-line"
+                          title="Eliminar Registro" class="text-error text-body-2" @click="deleteMovement(movement)" />
                       </VList>
                     </VMenu>
-                  </div>
-                </td>
-              </tr>
-            </template>
+                  </VBtn>
+                </div>
+              </td>
+            </tr>
           </tbody>
         </VTable>
       </VCard>
@@ -1797,6 +1753,7 @@ onMounted(() => {
 
     <!-- Diálogo de Aporte de Socio (VDialog) -->
     <AporteCreateDialog v-model="showAporteDialog" @created="() => loadMovements(false)" />
+    <TransferDialog v-model="showTransferDialog" @transferred="onTransferCompleted" />
 
     <!-- Diálogo de Nota de Movimiento y Comprobantes -->
     <MovementReceiptNoteDialog v-if="selectedMovementForNote" v-model="isMovementNoteDialogVisible"
@@ -1912,6 +1869,29 @@ onMounted(() => {
     </VDialog>
   </div>
 </template>
+
+
+<style scoped>
+.movements-modern-table {
+  width: 100% !important;
+
+  thead tr th {
+    font-size: 0.75rem !important;
+    letter-spacing: 0.04em !important;
+    color: rgba(var(--v-theme-on-surface), 0.75) !important;
+  }
+
+  tbody tr.movement-table-row {
+    td {
+      border-bottom: 1px solid rgba(var(--v-theme-on-surface), 0.06) !important;
+    }
+
+    &:hover td {
+      background-color: rgba(var(--v-theme-primary), 0.03) !important;
+    }
+  }
+}
+</style>
 
 <route lang="yaml">
 meta:
