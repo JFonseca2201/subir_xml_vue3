@@ -1,5 +1,5 @@
 <script setup>
-import { ref, onMounted, computed } from 'vue'
+import { ref, onMounted, onActivated, computed } from 'vue'
 import { useLoaderStore } from '@/stores/loader'
 import { useGlobalToast } from '@/composables/useGlobalToast'
 import { $api } from '@/utils/api'
@@ -283,7 +283,7 @@ const groupMovementsByDate = movements => {
   return Object.values(groups).sort((a, b) => {
     if (a.dateKey === 'Sin fecha') return 1
     if (b.dateKey === 'Sin fecha') return -1
-    
+
     return new Date(b.dateKey) - new Date(a.dateKey)
   })
 }
@@ -416,16 +416,16 @@ const formatCurrency = value => {
 // Helper de estados de OT
 const getWorkOrderStatusProps = status => {
   switch (status) {
-  case 'ready':
-  case 'delivered':
-    return { label: 'Listo p/ Facturar', colorClass: 'status-paid', dotColor: '#10b981', icon: 'ri-checkbox-circle-line' }
-  case 'in_progress':
-    return { label: 'En Progreso', colorClass: 'status-partial', dotColor: '#f59e0b', icon: 'ri-tools-line' }
-  case 'received':
-  case 'diagnosis':
-    return { label: 'Recibido', colorClass: 'status-transfer', dotColor: '#3b82f6', icon: 'ri-file-list-3-line' }
-  default:
-    return { label: status || 'Borrador', colorClass: 'status-canceled', dotColor: '#94a3b8', icon: 'ri-draft-line' }
+    case 'ready':
+    case 'delivered':
+      return { label: 'Listo p/ Facturar', colorClass: 'status-paid', dotColor: '#10b981', icon: 'ri-checkbox-circle-line' }
+    case 'in_progress':
+      return { label: 'En Progreso', colorClass: 'status-partial', dotColor: '#f59e0b', icon: 'ri-tools-line' }
+    case 'received':
+    case 'diagnosis':
+      return { label: 'Recibido', colorClass: 'status-transfer', dotColor: '#3b82f6', icon: 'ri-file-list-3-line' }
+    default:
+      return { label: status || 'Borrador', colorClass: 'status-canceled', dotColor: '#94a3b8', icon: 'ri-draft-line' }
   }
 }
 
@@ -437,7 +437,7 @@ const filteredActiveWorkOrders = computed(() => {
   if (workOrderFilter.value === 'ready') {
     return activeWorkOrders.value.filter(wo => ['ready', 'delivered'].includes(wo.status))
   }
-  
+
   return activeWorkOrders.value
 })
 
@@ -493,26 +493,18 @@ const generatePDF = async () => {
 onMounted(() => {
   dashboardOptions()
 })
+
+onActivated(() => {
+  dashboardOptions()
+})
 </script>
 
 <template>
   <div class="pa-4 pa-sm-6 operations-dashboard-page">
     <!-- Pantalla de Bloqueo -->
-    <div
-      v-if="!canAccessOperations"
-      class="d-flex justify-center align-center"
-      style="height: 400px"
-    >
-      <VCard
-        class="pa-6 text-center"
-        elevation="4"
-        rounded="xl"
-      >
-        <VIcon
-          size="64"
-          color="error"
-          class="mb-4"
-        >
+    <div v-if="!canAccessOperations" class="d-flex justify-center align-center" style="height: 400px">
+      <VCard class="pa-6 text-center" elevation="4" rounded="xl">
+        <VIcon size="64" color="error" class="mb-4">
           ri-lock-line
         </VIcon>
         <h3 class="text-h5 mb-2">
@@ -521,11 +513,7 @@ onMounted(() => {
         <p class="text-medium-emphasis">
           No tienes permisos para acceder a la gestión de operaciones.
         </p>
-        <VBtn
-          color="primary"
-          class="mt-4"
-          @click="router.push('/dashboard')"
-        >
+        <VBtn color="primary" class="mt-4" @click="router.push('/dashboard')">
           Volver al Dashboard
         </VBtn>
       </VCard>
@@ -537,17 +525,8 @@ onMounted(() => {
       <div class="d-flex align-center justify-space-between flex-wrap mb-4 mb-md-6 gap-3">
         <div>
           <h1 class="text-h5 text-sm-h4 font-weight-bold mb-1 d-flex align-center">
-            <VAvatar
-              size="40"
-              color="primary"
-              variant="tonal"
-              rounded="lg"
-              class="me-3"
-            >
-              <VIcon
-                icon="ri-exchange-funds-line"
-                size="24"
-              />
+            <VAvatar size="40" color="primary" variant="tonal" rounded="lg" class="me-3">
+              <VIcon icon="ri-exchange-funds-line" size="24" />
             </VAvatar>
             Gestión de Operaciones
           </h1>
@@ -560,20 +539,13 @@ onMounted(() => {
       <!-- Tarjetas de Métricas Principales (KPI Cards) -->
       <VRow class="mb-5 d-none d-sm-flex">
         <!-- Ingresos del Mes -->
-        <VCol
-          cols="12"
-          sm="6"
-          lg="3"
-        >
+        <VCol cols="12" sm="6" lg="3">
           <VCard class="kpi-metric-card kpi-income border elevation-0 rounded-2xl h-100">
             <div class="pa-4 d-flex flex-column justify-space-between h-100">
               <div class="d-flex align-center justify-space-between mb-3">
                 <span class="kpi-label">Ingresos del Mes</span>
                 <div class="kpi-icon-badge kpi-icon-income">
-                  <VIcon
-                    icon="ri-arrow-down-circle-line"
-                    size="22"
-                  />
+                  <VIcon icon="ri-arrow-down-circle-line" size="22" />
                 </div>
               </div>
               <div>
@@ -581,10 +553,7 @@ onMounted(() => {
                   {{ formatCurrency(financialSummary.monthlyIncome) }}
                 </div>
                 <div class="d-flex align-center gap-1 mt-1 text-caption text-slate-500 font-weight-medium">
-                  <VIcon
-                    icon="ri-file-list-line"
-                    size="13"
-                  />
+                  <VIcon icon="ri-file-list-line" size="13" />
                   <span>{{ financialSummary.incomeCount }} movimientos registrados</span>
                 </div>
               </div>
@@ -593,20 +562,13 @@ onMounted(() => {
         </VCol>
 
         <!-- Egresos del Mes -->
-        <VCol
-          cols="12"
-          sm="6"
-          lg="3"
-        >
+        <VCol cols="12" sm="6" lg="3">
           <VCard class="kpi-metric-card kpi-expense border elevation-0 rounded-2xl h-100">
             <div class="pa-4 d-flex flex-column justify-space-between h-100">
               <div class="d-flex align-center justify-space-between mb-3">
                 <span class="kpi-label">Egresos del Mes</span>
                 <div class="kpi-icon-badge kpi-icon-expense">
-                  <VIcon
-                    icon="ri-arrow-up-circle-line"
-                    size="22"
-                  />
+                  <VIcon icon="ri-arrow-up-circle-line" size="22" />
                 </div>
               </div>
               <div>
@@ -614,10 +576,7 @@ onMounted(() => {
                   {{ formatCurrency(financialSummary.monthlyExpense) }}
                 </div>
                 <div class="d-flex align-center gap-1 mt-1 text-caption text-slate-500 font-weight-medium">
-                  <VIcon
-                    icon="ri-file-list-line"
-                    size="13"
-                  />
+                  <VIcon icon="ri-file-list-line" size="13" />
                   <span>{{ financialSummary.expenseCount }} movimientos registrados</span>
                 </div>
               </div>
@@ -626,34 +585,22 @@ onMounted(() => {
         </VCol>
 
         <!-- Balance Neto Actual -->
-        <VCol
-          cols="12"
-          sm="6"
-          lg="3"
-        >
+        <VCol cols="12" sm="6" lg="3">
           <VCard class="kpi-metric-card kpi-balance border elevation-0 rounded-2xl h-100">
             <div class="pa-4 d-flex flex-column justify-space-between h-100">
               <div class="d-flex align-center justify-space-between mb-3">
                 <span class="kpi-label">Balance Neto Actual</span>
                 <div class="kpi-icon-badge kpi-icon-balance">
-                  <VIcon
-                    icon="ri-wallet-3-line"
-                    size="22"
-                  />
+                  <VIcon icon="ri-wallet-3-line" size="22" />
                 </div>
               </div>
               <div>
-                <div
-                  class="kpi-value"
-                  :class="financialSummary.currentBalance >= 0 ? 'text-primary' : 'text-rose'"
-                >
+                <div class="kpi-value" :class="financialSummary.currentBalance >= 0 ? 'text-primary' : 'text-rose'">
                   {{ formatCurrency(financialSummary.currentBalance) }}
                 </div>
                 <div class="d-flex align-center gap-1 mt-1 text-caption text-slate-500 font-weight-medium">
-                  <VIcon
-                    :icon="financialSummary.currentBalance >= 0 ? 'ri-arrow-up-line' : 'ri-arrow-down-line'"
-                    size="13"
-                  />
+                  <VIcon :icon="financialSummary.currentBalance >= 0 ? 'ri-arrow-up-line' : 'ri-arrow-down-line'"
+                    size="13" />
                   <span>Diferencia acumulada</span>
                 </div>
               </div>
@@ -662,23 +609,14 @@ onMounted(() => {
         </VCol>
 
         <!-- Órdenes de Trabajo Activas -->
-        <VCol
-          cols="12"
-          sm="6"
-          lg="3"
-        >
-          <VCard
-            class="kpi-metric-card kpi-workorders border elevation-0 rounded-2xl h-100 cursor-pointer"
-            @click="router.push('/work-orders')"
-          >
+        <VCol cols="12" sm="6" lg="3">
+          <VCard class="kpi-metric-card kpi-workorders border elevation-0 rounded-2xl h-100 cursor-pointer"
+            @click="router.push('/work-orders')">
             <div class="pa-4 d-flex flex-column justify-space-between h-100">
               <div class="d-flex align-center justify-space-between mb-3">
                 <span class="kpi-label">Órdenes de Trabajo</span>
                 <div class="kpi-icon-badge kpi-icon-ot">
-                  <VIcon
-                    icon="ri-tools-line"
-                    size="22"
-                  />
+                  <VIcon icon="ri-tools-line" size="22" />
                 </div>
               </div>
               <div>
@@ -705,35 +643,17 @@ onMounted(() => {
       <!-- Layout Principal: Movimientos Recientes a Pantalla Completa -->
       <VRow>
         <VCol cols="12">
-          <VCard
-            elevation="0"
-            class="border rounded-2xl h-100 position-relative overflow-hidden bg-white"
-          >
-            <VProgressLinear
-              v-if="loading"
-              indeterminate
-              color="primary"
-              height="3"
-              class="position-absolute"
-              style="top: 0; left: 0; right: 0; z-index: 10;"
-            />
+          <VCard elevation="0" class="border rounded-2xl h-100 position-relative overflow-hidden bg-white">
+            <VProgressLinear v-if="loading" indeterminate color="primary" height="3" class="position-absolute"
+              style="top: 0; left: 0; right: 0; z-index: 10;" />
 
             <!-- Encabezado de la Tarjeta de Movimientos -->
             <div class="pa-3 pa-sm-4 border-b">
               <div class="d-flex align-center justify-space-between gap-3 w-100">
                 <!-- Título + Avatar -->
                 <div class="d-flex align-center gap-2.5 min-w-0 flex-grow-1">
-                  <VAvatar
-                    color="primary"
-                    variant="tonal"
-                    rounded="lg"
-                    size="38"
-                    class="elevation-0 shrink-0"
-                  >
-                    <VIcon
-                      icon="ri-history-line"
-                      size="22"
-                    />
+                  <VAvatar color="primary" variant="tonal" rounded="lg" size="38" class="elevation-0 shrink-0">
+                    <VIcon icon="ri-history-line" size="22" />
                   </VAvatar>
                   <div class="min-w-0">
                     <div class="d-flex align-center gap-2 flex-wrap">
@@ -753,121 +673,66 @@ onMounted(() => {
 
                 <!-- Botones de Acción (PDF y Actualizar) -->
                 <div class="d-flex align-center gap-1.5 shrink-0">
-                  <VBtn
-                    color="secondary"
-                    variant="tonal"
-                    size="small"
-                    prepend-icon="ri-file-pdf-line"
-                    class="font-weight-semibold d-none d-sm-inline-flex"
-                    :loading="pdfLoading"
-                    @click="generatePDF"
-                  >
+                  <VBtn color="secondary" variant="tonal" size="small" prepend-icon="ri-file-pdf-line"
+                    class="font-weight-semibold d-none d-sm-inline-flex" :loading="pdfLoading" @click="generatePDF">
                     PDF
                   </VBtn>
-                  <VBtn
-                    icon="ri-file-pdf-line"
-                    size="small"
-                    variant="tonal"
-                    color="secondary"
-                    class="rounded-lg d-sm-none"
-                    title="Exportar PDF"
-                    :loading="pdfLoading"
-                    @click="generatePDF"
-                  />
+                  <VBtn icon="ri-file-pdf-line" size="small" variant="tonal" color="secondary"
+                    class="rounded-lg d-sm-none" title="Exportar PDF" :loading="pdfLoading" @click="generatePDF" />
 
-                  <VBtn
-                    icon="ri-refresh-line"
-                    size="small"
-                    variant="tonal"
-                    color="secondary"
-                    class="rounded-lg"
-                    title="Actualizar datos"
-                    @click="dashboardOptions"
-                  />
+                  <VBtn icon="ri-refresh-line" size="small" variant="tonal" color="secondary" class="rounded-lg"
+                    title="Actualizar datos" @click="dashboardOptions" />
                 </div>
               </div>
             </div>
 
             <!-- Barra de Filtros y Búsqueda de Movimientos -->
-            <div class="px-3 px-sm-4 py-2.5 py-sm-3 bg-slate-50 border-b d-flex flex-column flex-sm-row align-stretch align-sm-center justify-space-between gap-2.5">
+            <div
+              class="px-3 px-sm-4 py-2.5 py-sm-3 bg-slate-50 border-b d-flex flex-column flex-sm-row align-stretch align-sm-center justify-space-between gap-2.5">
+
+              <!-- Input de Búsqueda Rápida  -->
+              <div class="d-flex align-center gap-2 flex-grow-1 flex-sm-grow-0">
+                <div class="movement-search-input flex-grow-1 flex-sm-grow-0">
+                  <VTextField v-model="movementSearch" density="compact" variant="outlined"
+                    placeholder="Buscar movimiento, OT, placa..." prepend-inner-icon="ri-search-line" hide-details
+                    clearable class="search-field" />
+                </div>
+              </div>
               <!-- Filtros de Segmento -->
               <div class="movement-filter-pills">
-                <button
-                  type="button"
-                  class="filter-pill-btn"
-                  :class="{ active: movementFilter === 'all' }"
-                  @click="movementFilter = 'all'"
-                >
+                <button type="button" class="filter-pill-btn" :class="{ active: movementFilter === 'all' }"
+                  @click="movementFilter = 'all'">
                   Todos
                 </button>
-                <button
-                  type="button"
-                  class="filter-pill-btn"
-                  :class="{ active: movementFilter === 'income' }"
-                  @click="movementFilter = 'income'"
-                >
+                <button type="button" class="filter-pill-btn" :class="{ active: movementFilter === 'income' }"
+                  @click="movementFilter = 'income'">
                   <span class="pill-dot dot-income" />
                   Ingresos
                 </button>
-                <button
-                  type="button"
-                  class="filter-pill-btn"
-                  :class="{ active: movementFilter === 'expense' }"
-                  @click="movementFilter = 'expense'"
-                >
+                <button type="button" class="filter-pill-btn" :class="{ active: movementFilter === 'expense' }"
+                  @click="movementFilter = 'expense'">
                   <span class="pill-dot dot-expense" />
                   Egresos
                 </button>
-                <button
-                  type="button"
-                  class="filter-pill-btn"
-                  :class="{ active: movementFilter === 'transfer' }"
-                  @click="movementFilter = 'transfer'"
-                >
+                <button type="button" class="filter-pill-btn" :class="{ active: movementFilter === 'transfer' }"
+                  @click="movementFilter = 'transfer'">
                   <span class="pill-dot dot-transfer" />
                   Transf.
                 </button>
-              </div>
-
-              <!-- Input de Búsqueda Rápida y Limpiar Filtros -->
-              <div class="d-flex align-center gap-2 flex-grow-1 flex-sm-grow-0">
-                <div class="movement-search-input flex-grow-1 flex-sm-grow-0">
-                  <VTextField
-                    v-model="movementSearch"
-                    density="compact"
-                    variant="outlined"
-                    placeholder="Buscar movimiento, OT, placa..."
-                    prepend-inner-icon="ri-search-line"
-                    hide-details
-                    clearable
-                    class="search-field"
-                  />
-                </div>
-                <VBtn
-                  variant="text"
-                  color="error"
-                  size="small"
-                  prepend-icon="ri-filter-off-line"
-                  class="font-weight-semibold shrink-0"
-                  @click="resetFilters"
-                >
+                <VBtn variant="text" color="error" size="small" prepend-icon="ri-filter-off-line"
+                  class="font-weight-semibold shrink-0" @click="resetFilters">
                   Limpiar Filtros
                 </VBtn>
               </div>
+
+
             </div>
 
             <!-- Contenido de Movimientos -->
             <div class="pa-0">
               <!-- Skeleton Loader -->
-              <div
-                v-if="loading"
-                class="pa-4"
-              >
-                <div
-                  v-for="n in 5"
-                  :key="n"
-                  class="pa-3 mb-2 border rounded-xl d-flex align-center gap-3 shimmer-row"
-                >
+              <div v-if="loading" class="pa-4">
+                <div v-for="n in 5" :key="n" class="pa-3 mb-2 border rounded-xl d-flex align-center gap-3 shimmer-row">
                   <div class="shimmer-circle" />
                   <div class="flex-grow-1">
                     <div class="shimmer-line w-50 mb-2" />
@@ -878,20 +743,9 @@ onMounted(() => {
               </div>
 
               <!-- Sin Resultados -->
-              <div
-                v-else-if="filteredGroupedMovements.length === 0"
-                class="pa-8 pa-sm-10 text-center text-slate-500"
-              >
-                <VAvatar
-                  color="primary"
-                  variant="tonal"
-                  size="64"
-                  class="mb-3"
-                >
-                  <VIcon
-                    icon="ri-folder-open-line"
-                    size="32"
-                  />
+              <div v-else-if="filteredGroupedMovements.length === 0" class="pa-8 pa-sm-10 text-center text-slate-500">
+                <VAvatar color="primary" variant="tonal" size="64" class="mb-3">
+                  <VIcon icon="ri-folder-open-line" size="32" />
                 </VAvatar>
                 <h3 class="text-subtitle-1 font-weight-bold text-slate-800">
                   No se encontraron movimientos
@@ -900,44 +754,25 @@ onMounted(() => {
                   {{ movementSearch ? 'No hay registros que coincidan con la búsqueda.' :
                     'No hay movimientos registrados para este período.' }}
                 </p>
-                <VBtn
-                  v-if="movementSearch || movementFilter !== 'all'"
-                  size="small"
-                  variant="tonal"
-                  color="primary"
-                  class="mt-2"
-                  @click="movementSearch = ''; movementFilter = 'all'"
-                >
+                <VBtn v-if="movementSearch || movementFilter !== 'all'" size="small" variant="tonal" color="primary"
+                  class="mt-2" @click="movementSearch = ''; movementFilter = 'all'">
                   Limpiar Filtros
                 </VBtn>
               </div>
 
               <!-- Lista de Movimientos Agrupada (Fluida sin scroll interno) -->
-              <div
-                v-else
-                class="movements-scroll-container pa-3 pa-sm-5"
-              >
-                <template
-                  v-for="(day, dayIdx) in filteredGroupedMovements"
-                  :key="day.dateKey"
-                >
+              <div v-else class="movements-scroll-container pa-3 pa-sm-5">
+                <template v-for="(day, dayIdx) in filteredGroupedMovements" :key="day.dateKey">
                   <!-- VCard Unificada por Día (Fecha en cabecera y facturas separadas por Divider) -->
-                  <VCard
-                    elevation="0"
-                    class="operations-day-card border rounded-xl overflow-hidden"
-                    :class="dayIdx === 0 ? 'mt-1 mb-4' : 'mb-4'"
-                  >
+                  <VCard elevation="0" class="operations-day-card border rounded-xl overflow-hidden"
+                    :class="dayIdx === 0 ? 'mt-1 mb-4' : 'mb-4'">
                     <!-- Cabecera de Fecha Integrada -->
                     <div
-                      class="operations-date-header d-flex flex-column flex-sm-row align-start align-sm-center justify-space-between px-3 px-sm-4 py-2.5 gap-2"
-                    >
+                      class="operations-date-header d-flex flex-column flex-sm-row align-start align-sm-center justify-space-between px-3 px-sm-4 py-2.5 gap-2">
                       <!-- Fecha y Calendario -->
                       <div class="d-flex align-center gap-2">
                         <div class="date-icon-box">
-                          <VIcon
-                            icon="ri-calendar-event-line"
-                            size="15"
-                          />
+                          <VIcon icon="ri-calendar-event-line" size="15" />
                         </div>
                         <span class="date-title-text font-weight-bold text-uppercase tracking-wider">
                           {{ day.date }}
@@ -946,16 +781,10 @@ onMounted(() => {
 
                       <!-- Resumen del día: Subtotales + Conteo de Movimientos -->
                       <div class="d-flex align-center gap-1.5 flex-wrap ms-auto ms-sm-0">
-                        <span
-                          v-if="day.totalIncome > 0"
-                          class="day-subtotal day-subtotal-income"
-                        >
+                        <span v-if="day.totalIncome > 0" class="day-subtotal day-subtotal-income">
                           +{{ formatCurrency(day.totalIncome) }}
                         </span>
-                        <span
-                          v-if="day.totalExpense > 0"
-                          class="day-subtotal day-subtotal-expense"
-                        >
+                        <span v-if="day.totalExpense > 0" class="day-subtotal day-subtotal-expense">
                           -{{ formatCurrency(day.totalExpense) }}
                         </span>
                         <span class="status-pill-clean status-transfer">
@@ -968,23 +797,15 @@ onMounted(() => {
                     <VDivider class="mx-3 mx-sm-4" />
 
                     <!-- Movimientos/Facturas del día dentro de la misma tarjeta, separados por Divider -->
-                    <template
-                      v-for="(movement, movIdx) in day.movements"
-                      :key="movement.id"
-                    >
+                    <template v-for="(movement, movIdx) in day.movements" :key="movement.id">
                       <div
-                        class="operations-movement-item d-flex align-center justify-space-between gap-3 px-3 px-sm-4 py-3"
-                      >
+                        class="operations-movement-item d-flex align-center justify-space-between gap-3 px-3 px-sm-4 py-3">
                         <!-- Izquierda: Avatar Icono + Información -->
                         <div class="d-flex align-start gap-2.5 overflow-hidden flex-grow-1 min-w-0">
-                          <div
-                            class="movement-direction-avatar shrink-0 mt-0.5"
-                            :class="`avatar-${movement.type}`"
-                          >
+                          <div class="movement-direction-avatar shrink-0 mt-0.5" :class="`avatar-${movement.type}`">
                             <VIcon
                               :icon="movement.type === 'transfer' ? 'ri-arrow-left-right-line' : (movement.type === 'income' ? 'ri-arrow-down-line' : 'ri-arrow-up-line')"
-                              size="18"
-                            />
+                              size="18" />
                           </div>
 
                           <div class="d-flex flex-column text-left min-w-0 flex-grow-1">
@@ -994,25 +815,17 @@ onMounted(() => {
                                 {{ movement.displayTitle }}
                               </span>
                               <!-- Monto en móvil arriba a la derecha -->
-                              <span
-                                class="text-body-2 font-weight-bold amount-display d-sm-none shrink-0"
-                                :class="movement.type === 'transfer' ? 'text-info' : (movement.type === 'income' ? 'text-emerald' : 'text-rose')"
-                              >
+                              <span class="text-body-2 font-weight-bold amount-display d-sm-none shrink-0"
+                                :class="movement.type === 'transfer' ? 'text-info' : (movement.type === 'income' ? 'text-emerald' : 'text-rose')">
                                 {{ movement.type === 'transfer' ? '' : (movement.type === 'income' ? '+' : '-') }}
                                 {{ formatCurrency(movement.amount) }}
                               </span>
                             </div>
 
                             <!-- Línea 2: Datos del Cliente con Icono (si existen) -->
-                            <div
-                              v-if="movement.clientName"
-                              class="movement-client-row d-flex align-center gap-1.5 text-caption font-weight-medium my-0.5 text-truncate"
-                            >
-                              <VIcon
-                                icon="ri-user-3-line"
-                                size="13"
-                                class="text-slate-400 shrink-0"
-                              />
+                            <div v-if="movement.clientName"
+                              class="movement-client-row d-flex align-center gap-1.5 text-caption font-weight-medium my-0.5 text-truncate">
+                              <VIcon icon="ri-user-3-line" size="13" class="text-slate-400 shrink-0" />
                               <span class="text-slate-700 text-truncate font-weight-semibold">
                                 {{ movement.clientName }}
                               </span>
@@ -1027,45 +840,29 @@ onMounted(() => {
                               </span>
 
                               <!-- Badge de Orden de Trabajo si existe -->
-                              <span
-                                v-if="movement.workOrderNumber"
+                              <span v-if="movement.workOrderNumber"
                                 class="ot-chip-badge d-inline-flex align-center gap-1"
-                                title="Orden de Trabajo Asociada"
-                              >
-                                <VIcon
-                                  icon="ri-tools-line"
-                                  size="11"
-                                />
+                                title="Orden de Trabajo Asociada">
+                                <VIcon icon="ri-tools-line" size="11" />
                                 <span>{{ movement.workOrderNumber }}</span>
                               </span>
 
                               <!-- Badge de Placa Vehicular si existe -->
-                              <span
-                                v-if="movement.licensePlate"
-                                class="license-plate-badge"
-                                title="Vehículo"
-                              >
+                              <span v-if="movement.licensePlate" class="license-plate-badge" title="Vehículo">
                                 {{ movement.licensePlate.toUpperCase() }}
                               </span>
 
                               <!-- Método de Pago / Banco Específico -->
-                              <span
-                                class="payment-method-chip d-inline-flex align-center gap-1"
-                                :class="movement.methodInfo.badgeClass"
-                              >
-                                <VIcon
-                                  :icon="movement.methodInfo.icon"
-                                  size="12"
-                                />
+                              <span class="payment-method-chip d-inline-flex align-center gap-1"
+                                :class="movement.methodInfo.badgeClass">
+                                <VIcon :icon="movement.methodInfo.icon" size="12" />
                                 <span>{{ movement.methodInfo.label }}</span>
                               </span>
 
                               <!-- Hora -->
-                              <span class="movement-time-chip text-slate-400 d-inline-flex align-center gap-1 font-weight-medium">
-                                <VIcon
-                                  icon="ri-time-line"
-                                  size="12"
-                                />
+                              <span
+                                class="movement-time-chip text-slate-400 d-inline-flex align-center gap-1 font-weight-medium">
+                                <VIcon icon="ri-time-line" size="12" />
                                 {{ movement.time }}
                               </span>
                             </div>
@@ -1074,10 +871,8 @@ onMounted(() => {
 
                         <!-- Derecha: Monto Destacado en Desktop -->
                         <div class="movement-amount-container text-right shrink-0 ps-3 d-none d-sm-block">
-                          <span
-                            class="text-body-1 font-weight-bold amount-display"
-                            :class="movement.type === 'transfer' ? 'text-info' : (movement.type === 'income' ? 'text-emerald' : 'text-rose')"
-                          >
+                          <span class="text-body-2  amount-display"
+                            :class="movement.type === 'transfer' ? 'text-info' : (movement.type === 'income' ? 'text-emerald' : 'text-rose')">
                             {{ movement.type === 'transfer' ? '' : (movement.type === 'income' ? '+' : '-') }}
                             {{ formatCurrency(movement.amount) }}
                           </span>
@@ -1085,10 +880,7 @@ onMounted(() => {
                       </div>
 
                       <!-- Divider entre movimientos (excepto después del último) -->
-                      <VDivider
-                        v-if="movIdx < day.movements.length - 1"
-                        class="mx-3 mx-sm-4"
-                      />
+                      <VDivider v-if="movIdx < day.movements.length - 1" class="mx-3 mx-sm-4" />
                     </template>
                   </VCard>
                 </template>

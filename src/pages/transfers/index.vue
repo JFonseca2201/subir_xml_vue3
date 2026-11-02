@@ -1,5 +1,5 @@
 <script setup>
-import { ref, onMounted, computed } from 'vue'
+import { ref, onMounted, onActivated, computed } from 'vue'
 import { useLoaderStore } from '@/stores/loader'
 import { useGlobalToast } from '@/composables/useGlobalToast'
 import { $api } from '@/utils/api'
@@ -355,6 +355,12 @@ const totalFilteredItems = computed(() => allFilteredTransfers.value.length)
 
 // Montar componente
 onMounted(() => {
+  if (canAccessTransfers.value) {
+    loadTransfers()
+  }
+})
+
+onActivated(() => {
   if (canAccessTransfers.value) {
     loadTransfers()
   }

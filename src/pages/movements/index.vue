@@ -1,5 +1,5 @@
 <script setup>
-import { ref, onMounted, computed, watch } from 'vue'
+import { ref, onMounted, onActivated, computed, watch } from 'vue'
 import { $api } from '@/utils/api'
 import { useLoaderStore } from '@/stores/loader'
 import { useGlobalToast } from '@/composables/useGlobalToast'
@@ -441,8 +441,10 @@ const openTransferDialog = () => {
 }
 
 const onTransferCompleted = () => {
+  currentPage.value = 1
   loadMovements(false)
   loadAccounts()
+  loadTransfers()
 }
 
 const getFinanceRecordId = movement => {
@@ -1088,6 +1090,12 @@ onMounted(() => {
   loadMovements()
   loadTransfers()
 })
+
+onActivated(() => {
+  loadAccounts()
+  loadMovements(false)
+  loadTransfers()
+})
 </script>
 
 <template>
@@ -1131,6 +1139,10 @@ onMounted(() => {
         <VBtn color="secondary" variant="outlined" size="default" prepend-icon="ri-file-pdf-line"
           class="font-weight-medium" :loading="isGeneratingPDF" @click="generatePDF">
           Exportar PDF
+        </VBtn>
+        <VBtn title="Actualizar datos" variant="outlined" color="secondary" prepend-icon="ri-refresh-line"
+          size="default" class="font-weight-medium" :loading="loading" @click="() => loadMovements(false)">
+          Actualizar
         </VBtn>
       </div>
     </div>
@@ -1855,12 +1867,13 @@ onMounted(() => {
             </span>
           </div>
           <div class="photo-viewer-buttons d-flex flex-column flex-sm-row gap-2 order-0 order-sm-1">
-            <VBtn variant="tonal" color="primary" size="small" prepend-icon="ri-attachment-2" class="font-weight-medium"
+            <VBtn variant="elevated" color="primary" size="small" prepend-icon="ri-attachment-2"
+              class="font-weight-medium"
               @click="() => { isPhotoViewerVisible = false; openAttachDialog(currentPhotoMovement); }">
               Gestionar Adjuntos
             </VBtn>
-            <VBtn variant="tonal" color="secondary" size="small" class="font-weight-medium px-4"
-              @click="isPhotoViewerVisible = false">
+            <VBtn variant="outlined" prepend-icon="ri-close-line" color="secondary" size="small"
+              class="font-weight-medium px-4" @click="isPhotoViewerVisible = false">
               Cerrar
             </VBtn>
           </div>

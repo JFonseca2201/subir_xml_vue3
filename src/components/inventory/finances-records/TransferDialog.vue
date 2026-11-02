@@ -43,13 +43,13 @@ const isEditing = computed(() => !!props.transferData)
 
 const originAccounts = computed(() => {
   if (!form.value.to_account_id) return accounts.value
-  
+
   return accounts.value.filter(account => String(account.id) !== String(form.value.to_account_id))
 })
 
 const destinationAccounts = computed(() => {
   if (!form.value.from_account_id) return accounts.value
-  
+
   return accounts.value.filter(account => String(account.id) !== String(form.value.from_account_id))
 })
 
@@ -117,13 +117,13 @@ const handleSubmit = async () => {
 
   if (form.value.from_account_id === form.value.to_account_id) {
     showNotification('La cuenta de origen y destino no pueden ser la misma', 'warning')
-    
+
     return
   }
 
   if (!isEditing.value && receiptFiles.value.length === 0) {
     showNotification('Es obligatorio adjuntar la foto o comprobante de la transferencia', 'warning')
-    
+
     return
   }
 
@@ -210,23 +210,12 @@ onMounted(() => {
 </script>
 
 <template>
-  <VDialog
-    v-model="show"
-    scrollable
-    max-width="560"
-    persistent
-  >
+  <VDialog v-model="show" scrollable max-width="560" persistent>
     <VCard class="custom-dialog-card">
       <!-- Header Banner Primary -->
       <div class="custom-dialog-header-primary bg-primary text-white">
-        <VBtn
-          icon="ri-close-line"
-          variant="text"
-          size="small"
-          class="custom-dialog-close-btn"
-          :disabled="loading"
-          @click="closeDialog"
-        />
+        <VBtn icon="ri-close-line" variant="text" size="small" class="custom-dialog-close-btn" :disabled="loading"
+          @click="closeDialog" />
         <div class="custom-dialog-avatar">
           <VIcon icon="ri-arrow-left-right-line" />
         </div>
@@ -239,165 +228,58 @@ onMounted(() => {
       </div>
 
       <!-- Formulario con Scroll Interno -->
-      <VCardText
-        class="pa-4"
-        style="overflow-x: hidden;"
-      >
+      <VCardText class="pa-4" style="overflow-x: hidden;">
         <!-- Skeleton Loader mientras cargan datos -->
-        <div
-          v-if="isLoadingData"
-          class="py-2"
-        >
+        <div v-if="isLoadingData" class="py-2">
           <VRow class="ma-0">
-            <VCol
-              cols="12"
-              md="6"
-              class="pa-2"
-            >
-              <VSkeletonLoader
-                type="text"
-                height="52"
-                class="rounded-lg mb-2"
-              />
+            <VCol cols="12" md="6" class="pa-2">
+              <VSkeletonLoader type="text" height="52" class="rounded-lg mb-2" />
             </VCol>
-            <VCol
-              cols="12"
-              md="6"
-              class="pa-2"
-            >
-              <VSkeletonLoader
-                type="text"
-                height="52"
-                class="rounded-lg mb-2"
-              />
+            <VCol cols="12" md="6" class="pa-2">
+              <VSkeletonLoader type="text" height="52" class="rounded-lg mb-2" />
             </VCol>
-            <VCol
-              cols="12"
-              md="6"
-              class="pa-2"
-            >
-              <VSkeletonLoader
-                type="text"
-                height="52"
-                class="rounded-lg mb-2"
-              />
+            <VCol cols="12" md="6" class="pa-2">
+              <VSkeletonLoader type="text" height="52" class="rounded-lg mb-2" />
             </VCol>
-            <VCol
-              cols="12"
-              md="6"
-              class="pa-2"
-            >
-              <VSkeletonLoader
-                type="text"
-                height="52"
-                class="rounded-lg mb-2"
-              />
+            <VCol cols="12" md="6" class="pa-2">
+              <VSkeletonLoader type="text" height="52" class="rounded-lg mb-2" />
             </VCol>
-            <VCol
-              cols="12"
-              class="pa-2"
-            >
-              <VSkeletonLoader
-                type="text"
-                height="52"
-                class="rounded-lg mb-2"
-              />
+            <VCol cols="12" class="pa-2">
+              <VSkeletonLoader type="text" height="52" class="rounded-lg mb-2" />
             </VCol>
-            <VCol
-              cols="12"
-              class="pa-2"
-            >
-              <VSkeletonLoader
-                type="article"
-                class="rounded-lg"
-              />
+            <VCol cols="12" class="pa-2">
+              <VSkeletonLoader type="article" class="rounded-lg" />
             </VCol>
           </VRow>
         </div>
 
-        <VForm
-          v-else
-          ref="formRef"
-          @submit.prevent="handleSubmit"
-        >
+        <VForm v-else ref="formRef" @submit.prevent="handleSubmit">
           <VRow class="ma-0">
-            <VCol
-              cols="12"
-              sm="6"
-              class="pa-2"
-            >
-              <VSelect
-                v-model="form.from_account_id"
-                :items="originAccounts"
-                item-value="id"
-                item-title="display_name"
-                label="Cuenta Origen *"
-                placeholder="Desde dónde"
-                :rules="[v => !!v || 'Requerido']"
-                prepend-inner-icon="ri-bank-card-line"
-              />
+            <VCol cols="12" sm="6" class="pa-2">
+              <VSelect v-model="form.from_account_id" :items="originAccounts" item-value="id" item-title="display_name"
+                label="Cuenta Origen *" placeholder="Desde dónde" :rules="[v => !!v || 'Requerido']"
+                prepend-inner-icon="ri-bank-card-line" />
             </VCol>
-            <VCol
-              cols="12"
-              sm="6"
-              class="pa-2"
-            >
-              <VSelect
-                v-model="form.to_account_id"
-                :items="destinationAccounts"
-                item-value="id"
-                item-title="display_name"
-                label="Cuenta Destino *"
-                placeholder="Hacia dónde"
+            <VCol cols="12" sm="6" class="pa-2">
+              <VSelect v-model="form.to_account_id" :items="destinationAccounts" item-value="id"
+                item-title="display_name" label="Cuenta Destino *" placeholder="Hacia dónde"
                 :rules="[v => !!v || 'Requerido', v => v !== form.from_account_id || 'Debe ser diferente al origen']"
-                prepend-inner-icon="ri-bank-card-fill"
-              />
+                prepend-inner-icon="ri-bank-card-fill" />
             </VCol>
-            <VCol
-              cols="12"
-              sm="6"
-              class="pa-2"
-            >
-              <VTextField
-                v-model="form.amount"
-                label="Monto a Transferir *"
-                placeholder="0.00"
-                type="number"
-                prefix="$"
+            <VCol cols="12" sm="6" class="pa-2">
+              <VTextField v-model="form.amount" label="Monto a Transferir *" placeholder="0.00" type="number" prefix="$"
                 :rules="[v => !!v || 'Requerido', v => v > 0 || 'El monto debe ser mayor a 0']"
-                prepend-inner-icon="ri-money-dollar-circle-line"
-              />
+                prepend-inner-icon="ri-money-dollar-circle-line" />
             </VCol>
-            <VCol
-              cols="12"
-              sm="6"
-              class="pa-2"
-            >
-              <VTextField
-                v-model="form.transfer_date"
-                label="Fecha *"
-                type="date"
-                :rules="[v => !!v || 'Requerido']"
-                prepend-inner-icon="ri-calendar-line"
-              />
+            <VCol cols="12" sm="6" class="pa-2">
+              <VTextField v-model="form.transfer_date" label="Fecha *" type="date" :rules="[v => !!v || 'Requerido']"
+                prepend-inner-icon="ri-calendar-line" />
             </VCol>
-            <VCol
-              cols="12"
-              class="pa-2"
-            >
-              <VTextarea
-                v-model="form.description"
-                label="Motivo / Descripción *"
-                placeholder="Ej. Reposición de caja chica..."
-                rows="2"
-                no-resize
-                :rules="[v => !!v || 'Requerido']"
-              >
+            <VCol cols="12" class="pa-2">
+              <VTextarea v-model="form.description" label="Motivo / Descripción *"
+                placeholder="Ej. Reposición de caja chica..." rows="2" no-resize :rules="[v => !!v || 'Requerido']">
                 <template #prepend-inner>
-                  <VIcon
-                    color="primary"
-                    size="20"
-                  >
+                  <VIcon color="primary" size="20">
                     ri-article-line
                   </VIcon>
                 </template>
@@ -405,18 +287,10 @@ onMounted(() => {
             </VCol>
 
             <!-- Foto / Comprobante de la Transferencia -->
-            <VCol
-              cols="12"
-              class="pa-2"
-            >
-              <ReceiptUploader
-                v-model="receiptFiles"
-                label="Foto / Comprobante de la Transferencia"
-                hint="Adjunta foto del comprobante o captura de la transferencia entre cuentas (Obligatorio)"
-                required
-                :max-files="5"
-                @error="msg => showNotification(msg, 'error')"
-              />
+            <VCol cols="12" class="pa-2">
+              <ReceiptUploader v-model="receiptFiles" label="Foto / Comprobante de la Transferencia"
+                hint="Adjunta foto del comprobante o captura de la transferencia entre cuentas (Obligatorio)" required
+                :max-files="5" @error="msg => showNotification(msg, 'error')" />
             </VCol>
           </VRow>
         </VForm>
@@ -425,32 +299,16 @@ onMounted(() => {
       <VDivider />
 
       <!-- Footer Fijo de Acciones -->
-      <VCardActions
-        class="pa-4 d-flex justify-end align-center gap-3 bg-white"
-        style="position: sticky; bottom: 0; z-index: 2;"
-      >
-        <VBtn
-          variant="outlined"
-          color="secondary"
-          prepend-icon="ri-close-line"
-          class="rounded-lg px-6 font-weight-medium"
-          height="40"
-          :disabled="loading"
-          @click="closeDialog"
-        >
+      <VCardActions class="pa-4 d-flex justify-end align-center gap-3 bg-white"
+        style="position: sticky; bottom: 0; z-index: 2;">
+        <VBtn variant="outlined" color="secondary" prepend-icon="ri-close-line"
+          class="rounded-lg px-6 font-weight-medium" height="40" :disabled="loading" @click="closeDialog">
           Cancelar
         </VBtn>
 
-        <VBtn
-          color="primary"
-          variant="elevated"
-          prepend-icon="ri-save-line"
-          class="rounded-lg px-6 font-weight-bold"
-          height="40"
-          :loading="loading"
-          :disabled="loading || (!isEditing && receiptFiles.length === 0)"
-          @click="handleSubmit"
-        >
+        <VBtn color="primary" variant="elevated" prepend-icon="ri-save-line" class="rounded-lg px-6 font-weight-bold"
+          height="40" :loading="loading" :disabled="loading || (!isEditing && receiptFiles.length === 0)"
+          @click="handleSubmit">
           {{ isEditing ? 'Actualizar Transferencia' : 'Realizar Transferencia' }}
         </VBtn>
       </VCardActions>

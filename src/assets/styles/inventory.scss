@@ -3579,6 +3579,7 @@
 .theme-dark-glass,
 .theme-semi-dark-glass,
 html.dark {
+
   & .product-quick-dialog-card,
   &.product-quick-dialog-card {
     background-color: #2b2c40 !important;
@@ -4684,7 +4685,7 @@ html.dark {
 }
 
 .movement-search-input {
-  min-width: 260px;
+  min-width: 520px;
 
   .search-field :deep(.v-field),
   .search-field .v-field {
@@ -4949,9 +4950,9 @@ html.dark {
 
   // Visualización del Monto
   .amount-display {
-    font-size: 1.15rem !important;
+    font-size: 0.99rem !important;
     font-weight: 700 !important;
-    letter-spacing: -0.01em !important;
+    letter-spacing: -0.00em !important;
     white-space: nowrap !important;
   }
 }
@@ -6859,6 +6860,7 @@ td .d-flex .v-btn.btn-attach-comprobante,
 // Desktop Table Group Headers
 .transfer-table {
   tbody {
+
     // Fila separadora destacada por día
     tr.transfer-date-header-row {
       background: #f1f5f9 !important;
@@ -6947,6 +6949,7 @@ body[data-theme="dark-glass"],
 html[data-theme="semi-dark-glass"],
 body[data-theme="semi-dark-glass"],
 .theme-semi-dark-glass {
+
   // Clases específicas de modales y tarjetas planas en temas oscuros
   .info-card-flat,
   .stat-glass-card,
@@ -6969,6 +6972,7 @@ body[data-theme="semi-dark-glass"],
   .v-card-item,
   .v-card-text,
   .v-card-actions {
+
     &.bg-white,
     &[class*="bg-white"],
     &.bg-slate-50,
@@ -6985,9 +6989,9 @@ body[data-theme="semi-dark-glass"],
   }
 
   // Tarjetas de diálogo completas
-  .v-overlay--active.v-dialog > .v-overlay__content,
-  .v-overlay--active.v-dialog > .v-overlay__content > .v-card,
-  .v-overlay--active .v-dialog > .v-card,
+  .v-overlay--active.v-dialog>.v-overlay__content,
+  .v-overlay--active.v-dialog>.v-overlay__content>.v-card,
+  .v-overlay--active .v-dialog>.v-card,
   .v-overlay--active .v-card.modal-glass,
   .v-overlay--active.v-dialog .v-card,
   .v-dialog.v-overlay--active .v-card,
@@ -7125,6 +7129,7 @@ body[data-theme="semi-dark-glass"],
 
       .movement-title-row {
         color: #ffffff !important;
+
         * {
           color: #ffffff !important;
         }
@@ -7177,12 +7182,19 @@ body[data-theme="semi-dark-glass"],
       color: #ffffff !important;
     }
 
-    table, .v-table {
+    table,
+    .v-table {
       background: transparent !important;
       background-color: transparent !important;
       color: #ffffff !important;
 
-      thead, thead tr, thead th, thead[class*="bg-"], tr[class*="bg-"], tr[class*="bg-slate"], tr[class*="bg-grey"] {
+      thead,
+      thead tr,
+      thead th,
+      thead[class*="bg-"],
+      tr[class*="bg-"],
+      tr[class*="bg-slate"],
+      tr[class*="bg-grey"] {
         background: var(--table-header-bg, #3A3E5B) !important;
         background-color: var(--table-header-bg, #3A3E5B) !important;
         color: #ffffff !important;
@@ -7195,7 +7207,8 @@ body[data-theme="semi-dark-glass"],
         }
       }
 
-      tbody tr, tbody td {
+      tbody tr,
+      tbody td {
         background: transparent !important;
         color: #ffffff !important;
         border-color: rgba(234, 234, 255, 0.08) !important;
@@ -7216,19 +7229,24 @@ body[data-theme="semi-dark-glass"],
       color: #ffffff !important;
     }
 
-    .bg-emerald-50, [class*="bg-emerald-50"] {
+    .bg-emerald-50,
+    [class*="bg-emerald-50"] {
       background: rgba(16, 185, 129, 0.15) !important;
       border-color: rgba(16, 185, 129, 0.3) !important;
       color: #34d399 !important;
     }
 
-    .bg-amber-50, [class*="bg-amber-50"], .bg-yellow-50, [class*="bg-yellow-50"] {
+    .bg-amber-50,
+    [class*="bg-amber-50"],
+    .bg-yellow-50,
+    [class*="bg-yellow-50"] {
       background: rgba(245, 158, 11, 0.15) !important;
       border-color: rgba(245, 158, 11, 0.3) !important;
       color: #fbbf24 !important;
     }
 
-    .bg-red-50, [class*="bg-red-50"] {
+    .bg-red-50,
+    [class*="bg-red-50"] {
       background: rgba(239, 68, 68, 0.15) !important;
       border-color: rgba(239, 68, 68, 0.3) !important;
       color: #f87171 !important;
@@ -7286,6 +7304,7 @@ body[data-theme="semi-dark-glass"],
       color: #ffffff !important;
     }
   }
+
   // Unificación de cabeceras de diálogos en temas oscuros
   .custom-dialog-header-primary,
   .custom-dialog-header,
@@ -7303,10 +7322,10 @@ body[data-theme="semi-dark-glass"],
   .v-dialog .v-card-item.bg-primary,
   .custom-dialog-card .v-card-title.bg-primary,
   .custom-dialog-card .v-card-item.bg-primary,
-  .v-dialog .v-card > .bg-primary:first-child,
-  .custom-dialog-card > .bg-primary:first-child,
-  .v-dialog .v-card > div:first-child[class*="custom-dialog-header"],
-  .v-dialog .v-card > div:first-child[class*="dialog-header"] {
+  .v-dialog .v-card>.bg-primary:first-child,
+  .custom-dialog-card>.bg-primary:first-child,
+  .v-dialog .v-card>div:first-child[class*="custom-dialog-header"],
+  .v-dialog .v-card>div:first-child[class*="dialog-header"] {
     background: var(--bg-dialog-header, linear-gradient(180deg, rgba(255, 255, 255, 0.04) 0%, rgba(255, 255, 255, 0) 100%), #2F3349) !important;
     border-bottom: 1px solid var(--border-dialog-header, rgba(255, 255, 255, 0.12)) !important;
     box-shadow: 0 4px 20px rgba(0, 0, 0, 0.35) !important;
@@ -7331,7 +7350,9 @@ body[data-theme="semi-dark-glass"],
 
     .custom-dialog-title,
     .dialog-title,
-    h3, h2, h4,
+    h3,
+    h2,
+    h4,
     .v-card-title {
       color: #ffffff !important;
       text-shadow: 0 2px 4px rgba(0, 0, 0, 0.6) !important;
@@ -7441,7 +7462,10 @@ body[data-theme="semi-dark-glass"],
     color: #ffffff !important;
     border: 1px solid rgba(167, 139, 250, 0.45) !important;
 
-    &, span, .v-icon, * {
+    &,
+    span,
+    .v-icon,
+    * {
       color: #ffffff !important;
     }
   }
@@ -7453,7 +7477,9 @@ body[data-theme="semi-dark-glass"],
     color: #ffffff !important;
     border: 1px solid rgba(255, 255, 255, 0.22) !important;
 
-    &, span, * {
+    &,
+    span,
+    * {
       color: #ffffff !important;
       font-weight: 700 !important;
     }
@@ -7490,7 +7516,10 @@ body[data-theme="semi-dark-glass"],
       border: 1px solid rgba(96, 165, 250, 0.45) !important;
     }
 
-    &, span, .v-icon, * {
+    &,
+    span,
+    .v-icon,
+    * {
       color: #ffffff !important;
     }
   }
@@ -7533,16 +7562,19 @@ body[data-theme="semi-dark-glass"],
       color: #34d399 !important;
       border: 1px solid rgba(16, 185, 129, 0.4) !important;
     }
+
     &.kpi-icon-expense {
       background-color: rgba(239, 68, 68, 0.2) !important;
       color: #f87171 !important;
       border: 1px solid rgba(239, 68, 68, 0.4) !important;
     }
+
     &.kpi-icon-balance {
       background-color: rgba(59, 130, 246, 0.2) !important;
       color: #60a5fa !important;
       border: 1px solid rgba(59, 130, 246, 0.4) !important;
     }
+
     &.kpi-icon-ot {
       background-color: rgba(139, 92, 246, 0.2) !important;
       color: #a78bfa !important;
@@ -7556,6 +7588,7 @@ body[data-theme="semi-dark-glass"],
       color: #fde68a !important;
       border: 1px solid rgba(245, 158, 11, 0.4) !important;
     }
+
     &.ot-badge-ready {
       background-color: rgba(16, 185, 129, 0.2) !important;
       color: #a7f3d0 !important;
@@ -7906,17 +7939,18 @@ body[data-theme="semi-dark-glass"],
 .v-theme--taller,
 [data-theme="taller"],
 body[data-theme="taller"] {
+
   // Quitar cualquier fondo al overlay contenedor completo para evitar recuadros opacos
   .v-overlay--active.v-dialog,
-  .v-overlay--active.v-dialog > .v-overlay__content {
+  .v-overlay--active.v-dialog>.v-overlay__content {
     background: transparent !important;
     background-color: transparent !important;
     box-shadow: none !important;
   }
 
   // VDialogs - Fondo blanco con bordes visibles en la tarjeta interna
-  .v-overlay--active.v-dialog > .v-overlay__content > .v-card,
-  .v-overlay--active .v-dialog > .v-card,
+  .v-overlay--active.v-dialog>.v-overlay__content>.v-card,
+  .v-overlay--active .v-dialog>.v-card,
   .v-overlay--active .v-card.modal-glass,
   .v-overlay--active.v-dialog .v-card,
   .v-dialog.v-overlay--active .v-card,
@@ -7951,12 +7985,12 @@ body[data-theme="taller"] {
   .v-dialog .v-card-item.bg-primary,
   .custom-dialog-card .v-card-title.bg-primary,
   .custom-dialog-card .v-card-item.bg-primary,
-  .v-dialog .v-card > .bg-primary:first-child,
-  .custom-dialog-card > .bg-primary:first-child,
-  .v-dialog .v-card > div:first-child[class*="custom-dialog-header"],
-  .v-dialog .v-card > div:first-child[class*="dialog-header"],
-  .v-dialog .v-card > div:first-child[class*="header"],
-  .v-dialog .v-card > div:first-child[class*="banner"],
+  .v-dialog .v-card>.bg-primary:first-child,
+  .custom-dialog-card>.bg-primary:first-child,
+  .v-dialog .v-card>div:first-child[class*="custom-dialog-header"],
+  .v-dialog .v-card>div:first-child[class*="dialog-header"],
+  .v-dialog .v-card>div:first-child[class*="header"],
+  .v-dialog .v-card>div:first-child[class*="banner"],
   .v-dialog [class*="dialog-header"],
   .v-dialog [class*="header-primary"],
   .custom-dialog-header-primary,
@@ -7974,7 +8008,12 @@ body[data-theme="taller"] {
     .v-card-title,
     .v-card-item,
     .title-text,
-    h1, h2, h3, h4, h5, h6 {
+    h1,
+    h2,
+    h3,
+    h4,
+    h5,
+    h6 {
       color: #ffffff !important;
     }
 
@@ -8041,10 +8080,10 @@ body[data-theme="taller"] {
   }
 
   // Botón de cerrar (X) en modales sobre fondo blanco (DialogCloseBtn o modales sin banner)
-  .v-dialog .v-card > .v-dialog-close-btn,
-  .v-dialog .v-card > .custom-dialog-close-btn,
-  .v-dialog .v-card > div:not([class*="header"]):not([class*="banner"]) .v-dialog-close-btn,
-  .v-dialog .v-card > div:not([class*="header"]):not([class*="banner"]) .custom-dialog-close-btn,
+  .v-dialog .v-card>.v-dialog-close-btn,
+  .v-dialog .v-card>.custom-dialog-close-btn,
+  .v-dialog .v-card>div:not([class*="header"]):not([class*="banner"]) .v-dialog-close-btn,
+  .v-dialog .v-card>div:not([class*="header"]):not([class*="banner"]) .custom-dialog-close-btn,
   .v-dialog-close-btn:not([class*="header"] *):not([class*="banner"] *),
   .custom-dialog-close-btn:not([class*="header"] *):not([class*="banner"] *) {
     position: absolute !important;
@@ -8109,6 +8148,7 @@ body[data-theme="taller"] {
   // Iconos en dialogos y componentes: Nítidos y respetando colores semánticos
   .v-dialog .v-card,
   .custom-dialog-card {
+
     .v-icon,
     i,
     svg {
@@ -8166,8 +8206,8 @@ body[data-theme="taller"] {
   }
 
   // Scrim - Suave y translúcido para que los componentes detrás de la página sean claramente visibles
-  .v-overlay--active > .v-overlay__scrim,
-  .v-overlay--active.v-dialog > .v-overlay__scrim {
+  .v-overlay--active>.v-overlay__scrim,
+  .v-overlay--active.v-dialog>.v-overlay__scrim {
     background: rgba(15, 23, 42, 0.25) !important;
     background-color: rgba(15, 23, 42, 0.25) !important;
     backdrop-filter: blur(1.5px) !important;
@@ -8182,7 +8222,7 @@ body[data-theme="taller"] {
   }
 
   // Menús y dropdowns - Fondo blanco
-  .v-menu > .v-overlay__content > .v-list,
+  .v-menu>.v-overlay__content>.v-list,
   .v-select__content,
   .v-autocomplete__content {
     background: #ffffff !important;
@@ -8230,14 +8270,34 @@ body[data-theme="taller"] {
 // ====================================================================
 .v-theme--light-glass,
 [data-theme="light-glass"] {
+
   // Letras y Textos en color negro
-  h1, h2, h3, h4, h5, h6,
-  p, span, label,
-  .text-h1, .text-h2, .text-h3, .text-h4, .text-h5, .text-h6,
-  .text-body-1, .text-body-2, .text-caption,
-  .text-medium-emphasis, .text-high-emphasis,
-  .text-slate-900, .text-slate-800, .text-slate-700,
-  .text-grey-darken-1, .text-grey-darken-2, .text-grey-darken-3 {
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6,
+  p,
+  span,
+  label,
+  .text-h1,
+  .text-h2,
+  .text-h3,
+  .text-h4,
+  .text-h5,
+  .text-h6,
+  .text-body-1,
+  .text-body-2,
+  .text-caption,
+  .text-medium-emphasis,
+  .text-high-emphasis,
+  .text-slate-900,
+  .text-slate-800,
+  .text-slate-700,
+  .text-grey-darken-1,
+  .text-grey-darken-2,
+  .text-grey-darken-3 {
     color: #000000 !important;
   }
 
@@ -8277,7 +8337,9 @@ body[data-theme="taller"] {
       background: rgba(0, 0, 0, 0.06) !important;
       border: 1px solid rgba(0, 0, 0, 0.12) !important;
 
-      .v-icon, i, svg {
+      .v-icon,
+      i,
+      svg {
         color: #000000 !important;
         fill: #000000 !important;
         opacity: 1 !important;
@@ -8290,7 +8352,10 @@ body[data-theme="taller"] {
       border: 1px solid rgba(0, 0, 0, 0.12) !important;
       color: #000000 !important;
 
-      .v-icon, i, svg, * {
+      .v-icon,
+      i,
+      svg,
+      * {
         color: #000000 !important;
         fill: #000000 !important;
       }
@@ -8307,7 +8372,15 @@ body[data-theme="taller"] {
     border: 1px solid rgba(0, 0, 0, 0.1) !important;
     color: #000000 !important;
 
-    h1, h2, h3, h4, h5, h6, p, span, div {
+    h1,
+    h2,
+    h3,
+    h4,
+    h5,
+    h6,
+    p,
+    span,
+    div {
       color: #000000 !important;
     }
 
@@ -8315,7 +8388,9 @@ body[data-theme="taller"] {
       background-color: rgba(0, 0, 0, 0.06) !important;
       border: 1px solid rgba(0, 0, 0, 0.1) !important;
 
-      .v-icon, i, svg {
+      .v-icon,
+      i,
+      svg {
         color: #000000 !important;
         fill: #000000 !important;
         opacity: 1 !important;
@@ -8367,7 +8442,9 @@ body[data-theme="taller"] {
     background-color: rgba(0, 0, 0, 0.06) !important;
     border: 1px solid rgba(0, 0, 0, 0.12) !important;
 
-    .v-icon, i, svg {
+    .v-icon,
+    i,
+    svg {
       color: #000000 !important;
       fill: #000000 !important;
     }
@@ -8447,6 +8524,7 @@ body[data-theme="taller"] {
 .layout-wrapper.layout-nav-type-vertical,
 .layout-wrapper.layout-nav-type-horizontal,
 .layout-wrapper {
+
   // Desactiva el padding top estático del wrapper y layout-page-content para evitar espacios dobles con el navbar sticky
   .layout-content-wrapper {
     padding-top: 0 !important;
@@ -8467,13 +8545,13 @@ body[data-theme="taller"] {
     margin-top: 0 !important;
 
     // Sobrescribe pa-4 / pa-sm-6 / pa-3 / pa-6 superior en el contenedor raíz de CADA página del sistema
-    > *,
-    > .pa-4,
-    > .pa-sm-6,
-    > .pa-3,
-    > .pa-6,
-    > [class*="-page"],
-    > [class*="-container"] {
+    >*,
+    >.pa-4,
+    >.pa-sm-6,
+    >.pa-3,
+    >.pa-6,
+    >[class*="-page"],
+    >[class*="-container"] {
       padding-top: var(--app-content-padding-top) !important;
       margin-top: 0 !important;
     }
@@ -8494,11 +8572,12 @@ body[data-theme="taller"] {
 .page-content-container,
 .layout-content-wrapper,
 .layout-page-content {
+
   // Elimina paddings y margins superiores en cabeceras de página
-  > * > .d-flex.justify-space-between,
-  > * > .d-flex.align-center,
-  > * > div > .d-flex.justify-space-between,
-  > div > .d-flex.justify-space-between,
+  >*>.d-flex.justify-space-between,
+  >*>.d-flex.align-center,
+  >*>div>.d-flex.justify-space-between,
+  >div>.d-flex.justify-space-between,
   .page-header-wrapper,
   .crud-header-wrapper {
     padding-top: 0 !important;
@@ -8516,6 +8595,7 @@ body[data-theme="taller"] {
   .text-h4,
   .text-h5,
   .text-h6 {
+
     &.font-weight-bold,
     &.font-weight-black,
     &.operations-page-title,
@@ -8553,9 +8633,9 @@ body[data-theme="taller"] {
   // Avatares e iconos que acompañan al título como hermanos
   .page-header-avatar,
   .page-title-avatar,
-  > * > .d-flex > div > .v-avatar,
-  > * > .d-flex > .v-avatar,
-  > * > div > .d-flex > .v-avatar {
+  >*>.d-flex>div>.v-avatar,
+  >*>.d-flex>.v-avatar,
+  >*>div>.d-flex>.v-avatar {
     width: var(--app-page-title-avatar-size) !important;
     height: var(--app-page-title-avatar-size) !important;
     min-width: var(--app-page-title-avatar-size) !important;
@@ -8584,9 +8664,10 @@ body[data-theme="taller"] {
 // Mantén los estilos de escritorio tal como estaban antes (distribución condicional de Vuetify)
 @media (min-width: 961px) {
   .page-content-container {
-    > * > .d-flex.justify-space-between,
-    > * > div > .d-flex.justify-space-between,
-    > div > .d-flex.justify-space-between,
+
+    >*>.d-flex.justify-space-between,
+    >*>div>.d-flex.justify-space-between,
+    >div>.d-flex.justify-space-between,
     .page-header-wrapper,
     .crud-header-wrapper {
       display: flex !important;
@@ -8596,9 +8677,9 @@ body[data-theme="taller"] {
       flex-wrap: wrap !important;
       gap: 0.75rem 1rem !important;
 
-      > div:first-child,
-      > .page-title-block,
-      > .page-header-title-wrapper {
+      >div:first-child,
+      >.page-title-block,
+      >.page-header-title-wrapper {
         width: auto !important;
         flex: 0 1 auto !important;
       }
@@ -8613,7 +8694,7 @@ body[data-theme="taller"] {
         gap: 0.5rem !important;
         flex-wrap: wrap !important;
 
-        > .v-btn,
+        >.v-btn,
         .v-btn {
           width: auto !important;
           min-width: unset !important;
@@ -8650,7 +8731,7 @@ body[data-theme="taller"] {
   width: auto !important;
   flex-shrink: 0 !important;
 
-  > .v-btn,
+  >.v-btn,
   .v-btn {
     width: auto !important;
     min-width: unset !important;
@@ -8681,10 +8762,11 @@ body[data-theme="taller"] {
 // 2. FILA INFERIOR: Botón de Acción Principal y secundarios a Ancho Completo (block / w-100)
 @media (max-width: 960px) {
   .page-content-container {
+
     // Contenedor principal de la cabecera
-    > * > .d-flex.justify-space-between,
-    > * > div > .d-flex.justify-space-between,
-    > div > .d-flex.justify-space-between,
+    >*>.d-flex.justify-space-between,
+    >*>div>.d-flex.justify-space-between,
+    >div>.d-flex.justify-space-between,
     .page-header-wrapper,
     .crud-header-wrapper {
       display: flex !important;
@@ -8695,9 +8777,9 @@ body[data-theme="taller"] {
       gap: 0.55rem !important;
 
       // 1. FILA SUPERIOR (Ícono + Título a Ancho Completo)
-      > div:first-child,
-      > .page-title-block,
-      > .page-header-title-wrapper {
+      >div:first-child,
+      >.page-title-block,
+      >.page-header-title-wrapper {
         width: 100% !important;
         flex: 1 1 100% !important;
         flex-grow: 1 !important;
@@ -8710,7 +8792,9 @@ body[data-theme="taller"] {
         margin: 0 !important;
         padding: 0 !important;
 
-        h1, .page-title, .operations-page-title {
+        h1,
+        .page-title,
+        .operations-page-title {
           width: 100% !important;
           max-width: 100% !important;
           flex: 1 1 auto !important;
@@ -8757,7 +8841,7 @@ body[data-theme="taller"] {
         margin-right: 0 !important;
 
         // Botón principal y secundarios a 100% de ancho (block / w-100)
-        > .v-btn,
+        >.v-btn,
         .v-btn {
           width: 100% !important;
           min-width: 100% !important;
@@ -8820,7 +8904,7 @@ body[data-theme="taller"] {
     grid-template-columns: repeat(3, 1fr) !important;
     gap: 0.4rem !important;
 
-    > .v-btn,
+    >.v-btn,
     .v-btn {
       width: 100% !important;
       min-width: 0 !important;
@@ -8840,10 +8924,11 @@ body[data-theme="taller"] {
 // C. PANTALLAS ULTRA PEQUEÑAS (<= 375px / iPhone SE)
 @media (max-width: 375px) {
   .page-content-container {
-    > * > .d-flex.justify-space-between,
-    > * > div > .d-flex.justify-space-between,
-    > div > .d-flex.justify-space-between,
-    .dashboard-container > .d-flex.justify-space-between {
+
+    >*>.d-flex.justify-space-between,
+    >*>div>.d-flex.justify-space-between,
+    >div>.d-flex.justify-space-between,
+    .dashboard-container>.d-flex.justify-space-between {
       margin-bottom: var(--app-header-margin-bottom) !important;
       gap: 0.35rem !important;
 
@@ -8851,7 +8936,7 @@ body[data-theme="taller"] {
       .crud-actions-wrapper {
         gap: 0.35rem !important;
 
-        > .v-btn,
+        >.v-btn,
         .v-btn {
           min-height: 40px !important;
           height: 40px !important;
@@ -8914,8 +8999,9 @@ body[data-theme="taller"] {
 .custom-dialog-card .v-card-actions,
 .dialog-actions-responsive,
 .form-actions-responsive {
-  .v-btn ~ .v-btn,
-  > .v-btn + .v-btn {
+
+  .v-btn~.v-btn,
+  >.v-btn+.v-btn {
     margin-inline-start: 0 !important;
     margin-left: 0 !important;
   }
@@ -8924,7 +9010,8 @@ body[data-theme="taller"] {
 // 2. PANTALLAS GRANDES Y ESCRITORIO (> 640px)
 // Botones alineados a la derecha, con misma altura, espaciado uniforme y SIN quebrar líneas
 @media (min-width: 641px) {
-  .v-dialog:not(.v-dialog--no-fullscreen) .v-card > .v-card-actions,
+
+  .v-dialog:not(.v-dialog--no-fullscreen) .v-card>.v-card-actions,
   .v-dialog:not(.v-dialog--no-fullscreen) .v-card-actions,
   .custom-dialog-card .v-card-actions,
   .dialog-actions-responsive,
@@ -8937,7 +9024,7 @@ body[data-theme="taller"] {
     flex-wrap: nowrap !important;
     padding: 0.85rem 1.25rem !important;
 
-    > .v-btn:not(.v-pagination *),
+    >.v-btn:not(.v-pagination *),
     .v-btn:not(.v-pagination *) {
       min-height: 40px !important;
       height: 40px !important;
@@ -8954,7 +9041,7 @@ body[data-theme="taller"] {
       flex-shrink: 0 !important;
     }
 
-    > .v-spacer,
+    >.v-spacer,
     .v-spacer {
       flex-grow: 1 !important;
     }
@@ -8963,7 +9050,8 @@ body[data-theme="taller"] {
 
 // 3. DIÁLOGOS & MODALES: Sticky Bottom Footer en Móvil/Tablet (<= 960px)
 @media (max-width: 960px) {
-  .v-dialog:not(.v-dialog--no-fullscreen) .v-card > .v-card-actions,
+
+  .v-dialog:not(.v-dialog--no-fullscreen) .v-card>.v-card-actions,
   .v-dialog:not(.v-dialog--no-fullscreen) .v-card-actions,
   .custom-dialog-card .v-card-actions {
     position: sticky !important;
@@ -8990,7 +9078,8 @@ body[data-theme="taller"] {
 // 4. MÓVIL Y DISPOSITIVOS TOUCH (<= 640px)
 // Par de botones perfectamente simétricos (50% / 50% cada uno), misma altura, mismo radio y totalmente alineados.
 @media (max-width: 640px) {
-  .v-dialog .v-card > .v-card-actions,
+
+  .v-dialog .v-card>.v-card-actions,
   .v-dialog .v-card-actions,
   .custom-dialog-card .v-card-actions,
   .dialog-actions-responsive,
@@ -9005,7 +9094,7 @@ body[data-theme="taller"] {
     box-sizing: border-box !important;
 
     // Par de botones ocupan exactamente 50% cada uno sin descuadre
-    > .v-btn:not(.v-pagination *),
+    >.v-btn:not(.v-pagination *),
     .v-btn:not(.v-pagination *) {
       flex: 1 1 0 !important;
       width: 100% !important;
@@ -9037,7 +9126,7 @@ body[data-theme="taller"] {
     }
 
     // Si solo hay 1 botón (ej: Cerrar / Entendido), toma el 100%
-    > .v-btn:only-child,
+    >.v-btn:only-child,
     .v-btn:only-child {
       flex: 1 1 100% !important;
       max-width: 100% !important;
@@ -9049,14 +9138,14 @@ body[data-theme="taller"] {
       flex-direction: column !important;
       gap: 0.5rem !important;
 
-      > .v-btn,
+      >.v-btn,
       .v-btn {
         width: 100% !important;
         flex: 1 1 auto !important;
       }
     }
 
-    > .v-spacer,
+    >.v-spacer,
     .v-spacer {
       display: none !important;
     }
@@ -9071,6 +9160,7 @@ body[data-theme="taller"] {
 
 // 3. TABLAS RESPONSIVAS CON SCROLL SUAVE
 @media (max-width: 960px) {
+
   .v-table__wrapper,
   .responsive-table-wrapper,
   .products-modern-table,
@@ -9087,13 +9177,13 @@ body[data-theme="taller"] {
 .arqueo-action-buttons {
   width: 100% !important;
 
-  .v-btn ~ .v-btn,
-  > .v-btn + .v-btn {
+  .v-btn~.v-btn,
+  >.v-btn+.v-btn {
     margin-inline-start: 0 !important;
     margin-left: 0 !important;
   }
 
-  > .v-btn,
+  >.v-btn,
   .v-btn,
   .arqueo-btn {
     width: 100% !important;
@@ -9114,7 +9204,7 @@ body[data-theme="taller"] {
     flex-direction: row !important;
     gap: 0.75rem !important;
 
-    > .v-btn,
+    >.v-btn,
     .v-btn,
     .arqueo-btn {
       flex: 1 1 0 !important;
@@ -9266,6 +9356,7 @@ body[data-theme="taller"] {
 [data-theme="ocean-glass"] .v-pagination,
 [data-theme="emerald-glass"] .v-pagination,
 [data-theme="purple-glass"] .v-pagination {
+
   .v-pagination__item,
   .v-pagination__first,
   .v-pagination__prev,
@@ -9334,6 +9425,7 @@ body[data-theme="taller"] {
 
 // Tema Claro Transparente
 [data-theme="light-glass"] .v-pagination {
+
   .v-pagination__item,
   .v-pagination__first,
   .v-pagination__prev,
@@ -9383,6 +9475,7 @@ body[data-theme="taller"] {
 // Tema Taller (taller): Circular con fondo vino y número blanco
 [data-theme="taller"] .v-pagination,
 .v-theme--taller .v-pagination {
+
   .v-pagination__item,
   .v-pagination__first,
   .v-pagination__prev,
@@ -9478,7 +9571,11 @@ body[data-theme="taller"] {
     background: rgba(102, 108, 255, 0.12) !important;
     color: #666CFF !important;
     border: 1px solid rgba(102, 108, 255, 0.24) !important;
-    .v-icon { color: #666CFF !important; fill: #666CFF !important; }
+
+    .v-icon {
+      color: #666CFF !important;
+      fill: #666CFF !important;
+    }
   }
 
   &.text-success,
@@ -9486,7 +9583,11 @@ body[data-theme="taller"] {
     background: rgba(16, 185, 129, 0.12) !important;
     color: #10B981 !important;
     border: 1px solid rgba(16, 185, 129, 0.24) !important;
-    .v-icon { color: #10B981 !important; fill: #10B981 !important; }
+
+    .v-icon {
+      color: #10B981 !important;
+      fill: #10B981 !important;
+    }
   }
 
   &.text-warning,
@@ -9494,7 +9595,11 @@ body[data-theme="taller"] {
     background: rgba(245, 158, 11, 0.14) !important;
     color: #F59E0B !important;
     border: 1px solid rgba(245, 158, 11, 0.28) !important;
-    .v-icon { color: #F59E0B !important; fill: #F59E0B !important; }
+
+    .v-icon {
+      color: #F59E0B !important;
+      fill: #F59E0B !important;
+    }
   }
 
   &.text-info,
@@ -9502,7 +9607,11 @@ body[data-theme="taller"] {
     background: rgba(14, 165, 233, 0.12) !important;
     color: #0EA5E9 !important;
     border: 1px solid rgba(14, 165, 233, 0.24) !important;
-    .v-icon { color: #0EA5E9 !important; fill: #0EA5E9 !important; }
+
+    .v-icon {
+      color: #0EA5E9 !important;
+      fill: #0EA5E9 !important;
+    }
   }
 
   &.text-error,
@@ -9510,7 +9619,11 @@ body[data-theme="taller"] {
     background: rgba(239, 68, 68, 0.12) !important;
     color: #EF4444 !important;
     border: 1px solid rgba(239, 68, 68, 0.24) !important;
-    .v-icon { color: #EF4444 !important; fill: #EF4444 !important; }
+
+    .v-icon {
+      color: #EF4444 !important;
+      fill: #EF4444 !important;
+    }
   }
 
   &.text-secondary,
@@ -9518,7 +9631,11 @@ body[data-theme="taller"] {
     background: rgba(100, 116, 139, 0.10) !important;
     color: #64748B !important;
     border: 1px solid rgba(100, 116, 139, 0.20) !important;
-    .v-icon { color: #64748B !important; fill: #64748B !important; }
+
+    .v-icon {
+      color: #64748B !important;
+      fill: #64748B !important;
+    }
   }
 }
 
@@ -9617,6 +9734,7 @@ h1 .v-avatar {
 // 4. Iconos en Sección de Filtros y Búsqueda
 .v-card {
   .v-card-text {
+
     .ri-filter-3-line,
     .ri-filter-line,
     .ri-filter-2-line {
@@ -9645,7 +9763,9 @@ td .d-flex .v-btn,
     color: #0284c7 !important;
     border: 1px solid rgba(14, 165, 233, 0.28) !important;
 
-    .v-icon, i, svg {
+    .v-icon,
+    i,
+    svg {
       color: #0284c7 !important;
       fill: #0284c7 !important;
       opacity: 1 !important;
@@ -9668,7 +9788,9 @@ td .d-flex .v-btn,
     color: #d97706 !important;
     border: 1px solid rgba(245, 158, 11, 0.32) !important;
 
-    .v-icon, i, svg {
+    .v-icon,
+    i,
+    svg {
       color: #d97706 !important;
       fill: #d97706 !important;
       opacity: 1 !important;
@@ -9691,7 +9813,9 @@ td .d-flex .v-btn,
     color: #dc2626 !important;
     border: 1px solid rgba(239, 68, 68, 0.28) !important;
 
-    .v-icon, i, svg {
+    .v-icon,
+    i,
+    svg {
       color: #dc2626 !important;
       fill: #dc2626 !important;
       opacity: 1 !important;
@@ -9714,7 +9838,9 @@ td .d-flex .v-btn,
     color: #059669 !important;
     border: 1px solid rgba(16, 185, 129, 0.28) !important;
 
-    .v-icon, i, svg {
+    .v-icon,
+    i,
+    svg {
       color: #059669 !important;
       fill: #059669 !important;
       opacity: 1 !important;
@@ -9737,7 +9863,9 @@ td .d-flex .v-btn,
     color: #5C61E6 !important;
     border: 1px solid rgba(102, 108, 255, 0.28) !important;
 
-    .v-icon, i, svg {
+    .v-icon,
+    i,
+    svg {
       color: #5C61E6 !important;
       fill: #5C61E6 !important;
       opacity: 1 !important;
@@ -9760,7 +9888,9 @@ td .d-flex .v-btn,
     color: #475569 !important;
     border: 1px solid rgba(100, 116, 139, 0.22) !important;
 
-    .v-icon, i, svg {
+    .v-icon,
+    i,
+    svg {
       color: #475569 !important;
       fill: #475569 !important;
       opacity: 1 !important;
@@ -9782,6 +9912,7 @@ td .d-flex .v-btn,
 
 // 6. Iconos en celdas de las tablas de listados
 .v-table {
+
   // Iniciales de clientes y personas en tablas
   .v-avatar {
     font-weight: 700 !important;
@@ -9843,22 +9974,32 @@ td .d-flex .v-btn,
 // 7. Adaptaciones específicas para el tema del taller
 [data-theme="taller"],
 .v-application.v-theme--taller {
+
   .page-header-avatar,
   .page-title-avatar,
   h1 .v-avatar {
     background: rgba(138, 21, 56, 0.12) !important;
     color: #8A1538 !important;
     border: 1px solid rgba(138, 21, 56, 0.24) !important;
-    .v-icon { color: #8A1538 !important; fill: #8A1538 !important; }
+
+    .v-icon {
+      color: #8A1538 !important;
+      fill: #8A1538 !important;
+    }
   }
 
   .kpi-stat-card {
+
     .v-avatar.text-primary,
     .v-avatar.bg-primary {
       background: rgba(138, 21, 56, 0.12) !important;
       color: #8A1538 !important;
       border: 1px solid rgba(138, 21, 56, 0.24) !important;
-      .v-icon { color: #8A1538 !important; fill: #8A1538 !important; }
+
+      .v-icon {
+        color: #8A1538 !important;
+        fill: #8A1538 !important;
+      }
     }
 
     .text-h6.text-primary {
@@ -9867,6 +10008,7 @@ td .d-flex .v-btn,
   }
 
   .v-card .v-card-text {
+
     .ri-filter-3-line,
     .ri-filter-line,
     .ri-filter-2-line {
@@ -9901,38 +10043,68 @@ td .d-flex .v-btn,
       color: #ffffff !important;
     }
 
-    .text-h6.text-success { color: #34d399 !important; }
-    .text-h6.text-warning { color: #fbbf24 !important; }
-    .text-h6.text-info { color: #38bdf8 !important; }
-    .text-h6.text-primary { color: #a78bfa !important; }
-    .text-h6.text-error { color: #f87171 !important; }
+    .text-h6.text-success {
+      color: #34d399 !important;
+    }
+
+    .text-h6.text-warning {
+      color: #fbbf24 !important;
+    }
+
+    .text-h6.text-info {
+      color: #38bdf8 !important;
+    }
+
+    .text-h6.text-primary {
+      color: #a78bfa !important;
+    }
+
+    .text-h6.text-error {
+      color: #f87171 !important;
+    }
 
     .v-avatar.text-primary {
       background: rgba(115, 103, 240, 0.20) !important;
       color: #a78bfa !important;
       border-color: rgba(115, 103, 240, 0.35) !important;
-      .v-icon { color: #a78bfa !important; fill: #a78bfa !important; }
+
+      .v-icon {
+        color: #a78bfa !important;
+        fill: #a78bfa !important;
+      }
     }
 
     .v-avatar.text-success {
       background: rgba(34, 197, 94, 0.20) !important;
       color: #4ade80 !important;
       border-color: rgba(34, 197, 94, 0.35) !important;
-      .v-icon { color: #4ade80 !important; fill: #4ade80 !important; }
+
+      .v-icon {
+        color: #4ade80 !important;
+        fill: #4ade80 !important;
+      }
     }
 
     .v-avatar.text-warning {
       background: rgba(245, 158, 11, 0.22) !important;
       color: #fbbf24 !important;
       border-color: rgba(245, 158, 11, 0.38) !important;
-      .v-icon { color: #fbbf24 !important; fill: #fbbf24 !important; }
+
+      .v-icon {
+        color: #fbbf24 !important;
+        fill: #fbbf24 !important;
+      }
     }
 
     .v-avatar.text-info {
       background: rgba(14, 165, 233, 0.20) !important;
       color: #38bdf8 !important;
       border-color: rgba(14, 165, 233, 0.35) !important;
-      .v-icon { color: #38bdf8 !important; fill: #38bdf8 !important; }
+
+      .v-icon {
+        color: #38bdf8 !important;
+        fill: #38bdf8 !important;
+      }
     }
   }
 
@@ -9950,41 +10122,83 @@ td .d-flex .v-btn,
   .listing-item-actions .v-btn,
   .table-actions .v-btn,
   .action-btn {
-    &.bg-info, &.text-info, &[color="info"] {
+
+    &.bg-info,
+    &.text-info,
+    &[color="info"] {
       background-color: rgba(56, 189, 248, 0.16) !important;
       color: #38bdf8 !important;
       border-color: rgba(56, 189, 248, 0.35) !important;
-      .v-icon { color: #38bdf8 !important; fill: #38bdf8 !important; }
+
+      .v-icon {
+        color: #38bdf8 !important;
+        fill: #38bdf8 !important;
+      }
     }
-    &.bg-warning, &.text-warning, &[color="warning"] {
+
+    &.bg-warning,
+    &.text-warning,
+    &[color="warning"] {
       background-color: rgba(251, 191, 36, 0.16) !important;
       color: #fbbf24 !important;
       border-color: rgba(251, 191, 36, 0.35) !important;
-      .v-icon { color: #fbbf24 !important; fill: #fbbf24 !important; }
+
+      .v-icon {
+        color: #fbbf24 !important;
+        fill: #fbbf24 !important;
+      }
     }
-    &.bg-error, &.text-error, &[color="error"] {
+
+    &.bg-error,
+    &.text-error,
+    &[color="error"] {
       background-color: rgba(248, 113, 113, 0.16) !important;
       color: #f87171 !important;
       border-color: rgba(248, 113, 113, 0.35) !important;
-      .v-icon { color: #f87171 !important; fill: #f87171 !important; }
+
+      .v-icon {
+        color: #f87171 !important;
+        fill: #f87171 !important;
+      }
     }
-    &.bg-success, &.text-success, &[color="success"] {
+
+    &.bg-success,
+    &.text-success,
+    &[color="success"] {
       background-color: rgba(74, 222, 128, 0.16) !important;
       color: #4ade80 !important;
       border-color: rgba(74, 222, 128, 0.35) !important;
-      .v-icon { color: #4ade80 !important; fill: #4ade80 !important; }
+
+      .v-icon {
+        color: #4ade80 !important;
+        fill: #4ade80 !important;
+      }
     }
-    &.bg-primary, &.text-primary, &[color="primary"] {
+
+    &.bg-primary,
+    &.text-primary,
+    &[color="primary"] {
       background-color: rgba(167, 139, 250, 0.18) !important;
       color: #a78bfa !important;
       border-color: rgba(167, 139, 250, 0.35) !important;
-      .v-icon { color: #a78bfa !important; fill: #a78bfa !important; }
+
+      .v-icon {
+        color: #a78bfa !important;
+        fill: #a78bfa !important;
+      }
     }
-    &.bg-secondary, &.text-secondary, &[color="secondary"] {
+
+    &.bg-secondary,
+    &.text-secondary,
+    &[color="secondary"] {
       background-color: rgba(148, 163, 184, 0.14) !important;
       color: #cbd5e1 !important;
       border-color: rgba(148, 163, 184, 0.28) !important;
-      .v-icon { color: #cbd5e1 !important; fill: #cbd5e1 !important; }
+
+      .v-icon {
+        color: #cbd5e1 !important;
+        fill: #cbd5e1 !important;
+      }
     }
   }
 }
@@ -10049,12 +10263,22 @@ td .d-flex .v-btn,
 
   // Textos y títulos de cabecera en blanco puro
   *,
-  h1, h2, h3, h4, h5, h6,
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6,
   .custom-dialog-title,
   .custom-dialog-subtitle,
   .dialog-title,
   .dialog-subtitle,
-  p, span, label, strong, b, div {
+  p,
+  span,
+  label,
+  strong,
+  b,
+  div {
     color: #ffffff !important;
     -webkit-text-fill-color: #ffffff !important;
   }
@@ -10075,7 +10299,9 @@ td .d-flex .v-btn,
     border: 1.5px solid rgba(255, 255, 255, 0.45) !important;
     border-radius: 16px !important;
 
-    .v-icon, i, svg {
+    .v-icon,
+    i,
+    svg {
       color: #ffffff !important;
       fill: #ffffff !important;
       opacity: 1 !important;
@@ -10098,7 +10324,9 @@ td .d-flex .v-btn,
     opacity: 1 !important;
     transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1) !important;
 
-    .v-icon, i, svg {
+    .v-icon,
+    i,
+    svg {
       color: #ffffff !important;
       fill: #ffffff !important;
       font-size: 20px !important;
@@ -10110,7 +10338,9 @@ td .d-flex .v-btn,
       border-color: rgba(255, 255, 255, 0.65) !important;
       transform: scale(1.08) !important;
 
-      .v-icon, i, svg {
+      .v-icon,
+      i,
+      svg {
         color: #ffffff !important;
         fill: #ffffff !important;
       }
@@ -10131,12 +10361,18 @@ td .d-flex .v-btn,
     color: #ffffff !important;
     -webkit-text-fill-color: #ffffff !important;
 
-    *, span, strong, b, div {
+    *,
+    span,
+    strong,
+    b,
+    div {
       color: #ffffff !important;
       -webkit-text-fill-color: #ffffff !important;
     }
 
-    .v-icon, i, svg {
+    .v-icon,
+    i,
+    svg {
       color: #ffffff !important;
       fill: #ffffff !important;
       opacity: 1 !important;
@@ -10170,15 +10406,15 @@ td .d-flex .v-btn,
 
 // 1.2 Pie de Página de V-Dialogs (Footer)
 .v-dialog .v-card-actions,
-.v-dialog .v-card > .v-card-actions,
+.v-dialog .v-card>.v-card-actions,
 .custom-dialog-card .v-card-actions,
 .v-dialog .dialog-footer,
 .v-dialog .sticky-dialog-footer,
 .v-dialog .dialog-actions-responsive,
 .v-dialog .v-card-actions[style*="sticky"],
 .v-card-actions.dialog-actions-responsive,
-.v-dialog .v-card > div:last-child,
-.v-dialog .v-card > footer:last-child {
+.v-dialog .v-card>div:last-child,
+.v-dialog .v-card>footer:last-child {
   border-bottom-left-radius: 20px !important;
   border-bottom-right-radius: 20px !important;
   border-top-left-radius: 0 !important;
@@ -10197,9 +10433,11 @@ td .d-flex .v-btn,
   border-top: 1px solid #e2e8f0 !important;
   color: #64748b !important;
 
-  *, span {
+  *,
+  span {
     color: #64748b !important;
   }
+
   strong {
     color: #1e293b !important;
   }
@@ -10308,8 +10546,9 @@ td .d-flex .v-btn,
 .v-theme--dark,
 .v-theme--dark-glass,
 .v-theme--semi-dark-glass {
+
   .v-dialog .v-card-actions,
-  .v-dialog .v-card > .v-card-actions,
+  .v-dialog .v-card>.v-card-actions,
   .custom-dialog-card .v-card-actions {
     background: #181d2e !important;
     background-color: #181d2e !important;
@@ -10321,9 +10560,11 @@ td .d-flex .v-btn,
     border-top: 1px solid rgba(255, 255, 255, 0.1) !important;
     color: rgba(255, 255, 255, 0.7) !important;
 
-    *, span {
+    *,
+    span {
       color: rgba(255, 255, 255, 0.7) !important;
     }
+
     strong {
       color: #ffffff !important;
     }
@@ -10434,6 +10675,7 @@ td .d-flex .v-btn,
   .confirm-section-card {
     border-color: rgba(255, 255, 255, 0.08) !important;
   }
+
   .confirm-detail-row,
   .confirm-section-card .border-b,
   .border-b {
@@ -10647,6 +10889,7 @@ td .d-flex .v-btn.v-btn--variant-tonal.v-btn--icon:not(.btn-attach-comprobante),
 .v-application.v-theme--dark,
 .v-application.v-theme--dark-glass,
 .v-application.v-theme--semi-dark-glass {
+
   .v-btn.v-btn--variant-tonal.v-btn--icon,
   .v-table td .v-btn.v-btn--variant-tonal.v-btn--icon:not(.btn-attach-comprobante),
   td .d-flex .v-btn.v-btn--variant-tonal.v-btn--icon:not(.btn-attach-comprobante),
@@ -10655,6 +10898,7 @@ td .d-flex .v-btn.v-btn--variant-tonal.v-btn--icon:not(.btn-attach-comprobante),
   .v-btn.v-btn--icon.action-btn,
   .v-table td .action-btn,
   .table-actions .action-btn {
+
     &.text-info,
     &.bg-info,
     &[color="info"] {
@@ -10738,6 +10982,7 @@ td .d-flex .v-btn.v-btn--variant-tonal.v-btn--icon:not(.btn-attach-comprobante),
 // Adaptación de botones de acción en Tema Taller
 [data-theme="taller"],
 .v-application.v-theme--taller {
+
   .v-btn.v-btn--variant-tonal.v-btn--icon,
   .v-table td .v-btn.v-btn--variant-tonal.v-btn--icon:not(.btn-attach-comprobante),
   td .d-flex .v-btn.v-btn--variant-tonal.v-btn--icon:not(.btn-attach-comprobante),
@@ -10746,6 +10991,7 @@ td .d-flex .v-btn.v-btn--variant-tonal.v-btn--icon:not(.btn-attach-comprobante),
   .v-btn.v-btn--icon.action-btn,
   .v-table td .action-btn,
   .table-actions .action-btn {
+
     &.text-primary,
     &.bg-primary,
     &[color="primary"] {
@@ -10897,6 +11143,7 @@ td .d-flex .v-btn.v-btn--variant-tonal.v-btn--icon:not(.btn-attach-comprobante),
     opacity: 0;
     transform: translateY(-8px) scale(0.98);
   }
+
   to {
     opacity: 1;
     transform: translateY(0) scale(1);
@@ -10904,12 +11151,29 @@ td .d-flex .v-btn.v-btn--variant-tonal.v-btn--icon:not(.btn-attach-comprobante),
 }
 
 @keyframes errorFieldPulse {
-  0% { transform: translateX(0); }
-  20% { transform: translateX(-3px); }
-  40% { transform: translateX(3px); }
-  60% { transform: translateX(-2px); }
-  80% { transform: translateX(2px); }
-  100% { transform: translateX(0); }
+  0% {
+    transform: translateX(0);
+  }
+
+  20% {
+    transform: translateX(-3px);
+  }
+
+  40% {
+    transform: translateX(3px);
+  }
+
+  60% {
+    transform: translateX(-2px);
+  }
+
+  80% {
+    transform: translateX(2px);
+  }
+
+  100% {
+    transform: translateX(0);
+  }
 }
 
 .form-validation-alert {
@@ -12095,21 +12359,30 @@ td .d-flex .v-btn.v-btn--variant-tonal.v-btn--icon:not(.btn-attach-comprobante),
         background: rgba(16, 185, 129, 0.15) !important;
         color: #10b981 !important;
         border: 1px solid rgba(16, 185, 129, 0.35) !important;
-        .status-dot { background: #10b981 !important; }
+
+        .status-dot {
+          background: #10b981 !important;
+        }
       }
 
       &.status-pending {
         background: rgba(239, 68, 68, 0.15) !important;
         color: #ef4444 !important;
         border: 1px solid rgba(239, 68, 68, 0.35) !important;
-        .status-dot { background: #ef4444 !important; }
+
+        .status-dot {
+          background: #ef4444 !important;
+        }
       }
 
       &.status-partial {
         background: rgba(245, 158, 11, 0.15) !important;
         color: #f59e0b !important;
         border: 1px solid rgba(245, 158, 11, 0.35) !important;
-        .status-dot { background: #f59e0b !important; }
+
+        .status-dot {
+          background: #f59e0b !important;
+        }
       }
     }
 
@@ -12159,10 +12432,13 @@ td .d-flex .v-btn.v-btn--variant-tonal.v-btn--icon:not(.btn-attach-comprobante),
 }
 
 @keyframes empty-aura-pulse {
-  0%, 100% {
+
+  0%,
+  100% {
     transform: scale(1);
     opacity: 0.8;
   }
+
   50% {
     transform: scale(1.14);
     opacity: 1;
@@ -12170,9 +12446,12 @@ td .d-flex .v-btn.v-btn--variant-tonal.v-btn--icon:not(.btn-attach-comprobante),
 }
 
 @keyframes pulse-fab-badge {
-  0%, 100% {
+
+  0%,
+  100% {
     transform: scale(1);
   }
+
   50% {
     transform: scale(1.15);
   }
@@ -12182,6 +12461,7 @@ td .d-flex .v-btn.v-btn--variant-tonal.v-btn--icon:not(.btn-attach-comprobante),
   from {
     transform: rotate(0deg);
   }
+
   to {
     transform: rotate(360deg);
   }
@@ -12193,6 +12473,3 @@ td .d-flex .v-btn.v-btn--variant-tonal.v-btn--icon:not(.btn-attach-comprobante),
     color: #ffffff !important;
   }
 }
-
-
-

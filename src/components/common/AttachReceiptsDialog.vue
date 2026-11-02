@@ -104,7 +104,7 @@ const closeDialog = () => {
 const saveReceipts = async () => {
   if (newFiles.value.length === 0) {
     showNotification('No has seleccionado nuevos comprobantes para subir', 'warning')
-    
+
     return
   }
 
@@ -213,14 +213,8 @@ const openAttachment = att => {
 </script>
 
 <template>
-  <VDialog
-    :model-value="props.isDialogVisible"
-    max-width="580"
-    :fullscreen="$vuetify.display.smAndDown"
-    scrollable
-    persistent
-    @update:model-value="closeDialog"
-  >
+  <VDialog :model-value="props.isDialogVisible" max-width="580" :fullscreen="$vuetify.display.smAndDown" scrollable
+    persistent @update:model-value="closeDialog">
     <VCard class="rounded-lg overflow-hidden elevation-10">
       <!-- Header Banner -->
       <VCardTitle class="d-flex align-center justify-space-between bg-primary text-white pa-4">
@@ -230,34 +224,21 @@ const openAttachment = att => {
             <div class="text-subtitle-1 font-weight-bold text-white">
               {{ title }}
             </div>
-            <div
-              v-if="identifier || partyName"
-              class="text-caption text-white opacity-80"
-            >
+            <div v-if="identifier || partyName" class="text-caption text-white opacity-80">
               {{ identifier }} {{ partyName ? '— ' + partyName : '' }}
             </div>
           </div>
         </div>
-        <VBtn
-          icon="ri-close-line"
-          variant="text"
-          size="small"
-          color="white"
-          @click="closeDialog"
-        />
+        <VBtn icon="ri-close-line" variant="text" size="small" color="white" @click="closeDialog" />
       </VCardTitle>
 
       <VCardText class="pa-5">
         <!-- Sección 1: Subir Nuevos Comprobantes (Modo Edición / Adjuntar) -->
         <template v-if="!props.readOnly">
           <div class="mb-5">
-            <ReceiptUploader
-              v-model="newFiles"
-              label="Adjuntar Nuevos Comprobantes"
-              hint="Arrastra o toma foto del comprobante de transferencia / depósito"
-              :disabled="isSaving"
-              @error="msg => showNotification(msg, 'error')"
-            />
+            <ReceiptUploader v-model="newFiles" label="Adjuntar Nuevos Comprobantes"
+              hint="Arrastra o toma foto del comprobante de transferencia / depósito" :disabled="isSaving"
+              @error="msg => showNotification(msg, 'error')" />
           </div>
           <VDivider class="my-5" />
         </template>
@@ -266,54 +247,28 @@ const openAttachment = att => {
         <div>
           <div class="d-flex align-center justify-space-between mb-3">
             <span class="text-subtitle-2 font-weight-bold text-high-emphasis d-flex align-center gap-1">
-              <VIcon
-                icon="ri-check-double-line"
-                size="18"
-                color="success"
-              />
+              <VIcon icon="ri-check-double-line" size="18" color="success" />
               Archivos Guardados en Servidor
             </span>
-            <VChip
-              size="x-small"
-              color="success"
-              variant="tonal"
-              class="font-weight-bold"
-            >
+            <VChip size="x-small" color="success" variant="tonal" class="font-weight-bold">
               {{ existingAttachments.length }} archivo(s)
             </VChip>
           </div>
 
-          <div
-            v-if="isLoading"
-            class="py-3"
-          >
+          <div v-if="isLoading" class="py-3">
             <VRow dense>
               <VCol cols="6">
-                <VSkeletonLoader
-                  type="card"
-                  height="120"
-                  class="rounded-lg"
-                />
+                <VSkeletonLoader type="card" height="120" class="rounded-lg" />
               </VCol>
               <VCol cols="6">
-                <VSkeletonLoader
-                  type="card"
-                  height="120"
-                  class="rounded-lg"
-                />
+                <VSkeletonLoader type="card" height="120" class="rounded-lg" />
               </VCol>
             </VRow>
           </div>
 
-          <div
-            v-else-if="existingAttachments.length === 0"
-            class="empty-attachments-box pa-5 text-center rounded-lg border border-dashed"
-          >
-            <VIcon
-              icon="ri-file-cloud-line"
-              size="38"
-              class="mb-2 empty-box-icon"
-            />
+          <div v-else-if="existingAttachments.length === 0"
+            class="empty-attachments-box pa-5 text-center rounded-lg border border-dashed">
+            <VIcon icon="ri-file-cloud-line" size="38" class="mb-2 empty-box-icon" />
             <div class="text-body-2 font-weight-medium empty-box-text">
               No hay comprobantes guardados todavía para este registro.
             </div>
@@ -323,90 +278,40 @@ const openAttachment = att => {
           </div>
 
           <!-- Grid de Archivos Existentes -->
-          <div
-            v-else
-            class="existing-grid"
-          >
-            <div
-              v-for="att in existingAttachments"
-              :key="att.id"
-              class="existing-card elevation-1"
-            >
+          <div v-else class="existing-grid">
+            <div v-for="att in existingAttachments" :key="att.id" class="existing-card elevation-1">
               <!-- Imagen Thumbnail -->
-              <div
-                v-if="att.is_image"
-                class="existing-media"
-                @click="openAttachment(att)"
-              >
-                <img
-                  :src="getFullUrl(att.file_path)"
-                  :alt="att.file_name"
-                  class="existing-img"
-                >
+              <div v-if="att.is_image" class="existing-media" @click="openAttachment(att)">
+                <img :src="getFullUrl(att.file_path)" :alt="att.file_name" class="existing-img">
                 <div class="existing-overlay">
-                  <VIcon
-                    icon="ri-external-link-line"
-                    color="white"
-                    size="18"
-                  />
+                  <VIcon icon="ri-external-link-line" color="white" size="18" />
                 </div>
               </div>
 
               <!-- PDF Thumbnail -->
-              <div
-                v-else-if="att.is_pdf"
-                class="existing-media pdf-media"
-                @click="openAttachment(att)"
-              >
-                <VIcon
-                  icon="ri-file-pdf-2-fill"
-                  size="36"
-                  color="error"
-                />
+              <div v-else-if="att.is_pdf" class="existing-media pdf-media" @click="openAttachment(att)">
+                <VIcon icon="ri-file-pdf-2-fill" size="36" color="error" />
                 <span class="pdf-tag">PDF</span>
               </div>
 
               <!-- General Media -->
-              <div
-                v-else
-                class="existing-media"
-                @click="openAttachment(att)"
-              >
-                <VIcon
-                  icon="ri-file-3-line"
-                  size="32"
-                  color="primary"
-                />
+              <div v-else class="existing-media" @click="openAttachment(att)">
+                <VIcon icon="ri-file-3-line" size="32" color="primary" />
               </div>
 
               <!-- Info -->
               <div class="existing-info pa-2">
-                <div
-                  class="text-caption font-weight-medium text-truncate text-high-emphasis"
-                  :title="att.file_name"
-                >
+                <div class="text-caption font-weight-medium text-truncate text-high-emphasis" :title="att.file_name">
                   {{ att.file_name }}
                 </div>
                 <div class="d-flex align-center justify-space-between text-caption text-disabled mt-1">
-                  <span style="font-size: 10px;">{{ att.created_at ? new Date(att.created_at).toLocaleDateString() : '' }}</span>
+                  <span style="font-size: 10px;">{{ att.created_at ? new Date(att.created_at).toLocaleDateString() : ''
+                  }}</span>
                   <div class="d-flex gap-1">
-                    <VBtn
-                      icon="ri-download-2-line"
-                      size="x-small"
-                      variant="text"
-                      color="primary"
-                      title="Descargar"
-                      @click.stop="openAttachment(att)"
-                    />
-                    <VBtn
-                      v-if="!props.readOnly"
-                      icon="ri-delete-bin-line"
-                      size="x-small"
-                      variant="text"
-                      color="error"
-                      title="Eliminar"
-                      @click.stop="openDeleteConfirm(att)"
-                    />
+                    <VBtn icon="ri-download-2-line" size="x-small" variant="text" color="primary" title="Descargar"
+                      @click.stop="openAttachment(att)" />
+                    <VBtn v-if="!props.readOnly" icon="ri-delete-bin-line" size="x-small" variant="text" color="error"
+                      title="Eliminar" @click.stop="openDeleteConfirm(att)" />
                   </div>
                 </div>
               </div>
@@ -418,45 +323,24 @@ const openAttachment = att => {
       <VDivider />
 
       <VCardActions class="pa-4 d-flex justify-space-between align-center">
-        <VBtn
-          color="secondary"
-          variant="outlined"
-          @click="closeDialog"
-        >
-          Cerrar
-        </VBtn>
 
-        <VBtn
-          v-if="!props.readOnly && newFiles.length > 0"
-          color="primary"
-          variant="elevated"
-          prepend-icon="ri-save-3-line"
-          :loading="isSaving"
-          @click="saveReceipts"
-        >
+        <VBtn v-if="!props.readOnly && newFiles.length > 0" color="primary" variant="elevated"
+          prepend-icon="ri-save-3-line" :loading="isSaving" @click="saveReceipts">
           Guardar Comprobantes ({{ newFiles.length }})
         </VBtn>
-            </VCardActions>
+        <VBtn prepend-icon="ri-close-line" color="secondary" variant="outlined" @click="closeDialog">
+          Cerrar
+        </VBtn>
+      </VCardActions>
     </VCard>
 
     <!-- Modal de Confirmación para Eliminar Comprobante -->
-    <VDialog
-      v-model="isDeleteConfirmVisible"
-      max-width="440"
-      persistent
-      transition="dialog-bottom-transition"
-    >
+    <VDialog v-model="isDeleteConfirmVisible" max-width="440" persistent transition="dialog-bottom-transition">
       <VCard class="custom-dialog-card rounded-xl elevation-16 overflow-hidden">
         <!-- Header Banner Danger -->
         <div class="custom-dialog-header-danger bg-error text-white">
-          <VBtn
-            icon="ri-close-line"
-            variant="text"
-            size="small"
-            class="custom-dialog-close-btn"
-            :disabled="isDeletingAttachment"
-            @click="cancelDeleteAttachment"
-          />
+          <VBtn icon="ri-close-line" variant="text" size="small" class="custom-dialog-close-btn"
+            :disabled="isDeletingAttachment" @click="cancelDeleteAttachment" />
           <div class="custom-dialog-avatar">
             <VIcon icon="ri-delete-bin-line" />
           </div>
@@ -470,49 +354,27 @@ const openAttachment = att => {
 
         <VCardText class="pa-4 text-center">
           <!-- Preview del archivo a eliminar -->
-          <div
-            v-if="attachmentToDelete"
-            class="d-flex flex-column align-center"
-          >
+          <div v-if="attachmentToDelete" class="d-flex flex-column align-center">
             <!-- Preview miniatura si es imagen -->
-            <div
-              v-if="attachmentToDelete.is_image"
-              class="attachment-delete-preview rounded-lg overflow-hidden border mb-3 elevation-1"
-            >
-              <img
-                :src="getFullUrl(attachmentToDelete.file_path)"
-                :alt="attachmentToDelete.file_name"
-                class="attachment-preview-img"
-              >
+            <div v-if="attachmentToDelete.is_image"
+              class="attachment-delete-preview rounded-lg overflow-hidden border mb-3 elevation-1">
+              <img :src="getFullUrl(attachmentToDelete.file_path)" :alt="attachmentToDelete.file_name"
+                class="attachment-preview-img">
             </div>
             <!-- Preview icono si es PDF -->
-            <div
-              v-else-if="attachmentToDelete.is_pdf"
-              class="attachment-delete-preview rounded-lg border mb-3 d-flex align-center justify-center bg-red-lighten-5"
-            >
-              <VIcon
-                icon="ri-file-pdf-2-fill"
-                size="44"
-                color="error"
-              />
+            <div v-else-if="attachmentToDelete.is_pdf"
+              class="attachment-delete-preview rounded-lg border mb-3 d-flex align-center justify-center bg-red-lighten-5">
+              <VIcon icon="ri-file-pdf-2-fill" size="44" color="error" />
             </div>
             <!-- Preview otro archivo -->
-            <div
-              v-else
-              class="attachment-delete-preview rounded-lg border mb-3 d-flex align-center justify-center bg-grey-lighten-4"
-            >
-              <VIcon
-                icon="ri-file-3-line"
-                size="44"
-                color="primary"
-              />
+            <div v-else
+              class="attachment-delete-preview rounded-lg border mb-3 d-flex align-center justify-center bg-grey-lighten-4">
+              <VIcon icon="ri-file-3-line" size="44" color="primary" />
             </div>
 
             <!-- Nombre de archivo -->
-            <div
-              class="text-subtitle-2 font-weight-bold text-high-emphasis text-truncate mb-1 w-100 px-2"
-              :title="attachmentToDelete.file_name"
-            >
+            <div class="text-subtitle-2 font-weight-bold text-high-emphasis text-truncate mb-1 w-100 px-2"
+              :title="attachmentToDelete.file_name">
               {{ attachmentToDelete.file_name }}
             </div>
 
@@ -526,26 +388,14 @@ const openAttachment = att => {
         <VDivider />
 
         <VCardActions class="pa-4 d-flex justify-end align-center gap-3">
-          <VBtn
-            color="secondary"
-            variant="outlined"
-            prepend-icon="ri-close-line"
-            class="rounded-lg px-5 font-weight-medium"
-            height="40"
-            :disabled="isDeletingAttachment"
-            @click="cancelDeleteAttachment"
-          >
+          <VBtn color="secondary" variant="outlined" prepend-icon="ri-close-line"
+            class="rounded-lg px-5 font-weight-medium" height="40" :disabled="isDeletingAttachment"
+            @click="cancelDeleteAttachment">
             Cancelar
           </VBtn>
-          <VBtn
-            color="error"
-            variant="elevated"
-            prepend-icon="ri-delete-bin-line"
-            class="rounded-lg px-5 font-weight-bold"
-            height="40"
-            :loading="isDeletingAttachment"
-            @click="confirmDeleteAttachment"
-          >
+          <VBtn color="error" variant="elevated" prepend-icon="ri-delete-bin-line"
+            class="rounded-lg px-5 font-weight-bold" height="40" :loading="isDeletingAttachment"
+            @click="confirmDeleteAttachment">
             Eliminar Comprobante
           </VBtn>
         </VCardActions>
@@ -570,6 +420,7 @@ const openAttachment = att => {
 }
 
 .empty-attachments-box {
+
   [data-theme="light"] &,
   .v-theme--light & {
     background: #f8fafc;
@@ -578,6 +429,7 @@ const openAttachment = att => {
 }
 
 .empty-box-icon {
+
   [data-theme="light"] &,
   .v-theme--light & {
     color: #94a3b8;
@@ -585,6 +437,7 @@ const openAttachment = att => {
 }
 
 .empty-box-text {
+
   [data-theme="light"] &,
   .v-theme--light & {
     color: #334155;

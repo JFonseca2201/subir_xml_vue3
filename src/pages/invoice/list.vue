@@ -336,26 +336,26 @@ onActivated(() => {
             <span>Filtros de Búsqueda</span>
           </div>
 
-          <VBtn variant="text" color="error" size="small" prepend-icon="ri-filter-off-line"
-            class="font-weight-semibold" @click="refresh">
+          <VBtn variant="text" color="error" size="small" prepend-icon="ri-filter-off-line" class="font-weight-semibold"
+            @click="refresh">
             Limpiar Filtros
           </VBtn>
         </div>
 
         <VRow dense class="gap-y-3">
-          <VCol cols="12" md="4">
+          <VCol cols="12" md="6">
             <VTextField v-model="search" label="Buscar factura" placeholder="Número, proveedor, RUC..."
               prepend-inner-icon="ri-search-2-line" variant="outlined" density="comfortable" hide-details="auto"
               clearable color="primary" :loading="isLoading || isSearching" />
           </VCol>
 
-          <VCol cols="12" sm="6" md="4">
+          <VCol cols="12" sm="6" md="3">
             <VAutocomplete v-model="supplier_id" label="Proveedor" placeholder="Todos los proveedores"
               :items="providers" item-title="name" item-value="id" clearable variant="outlined" density="comfortable"
               hide-details="auto" color="primary" />
           </VCol>
 
-          <VCol cols="12" sm="6" md="4">
+          <VCol cols="12" sm="6" md="3">
             <AppDateTimePicker v-model="range_date" label="Rango de fecha" placeholder="Seleccionar período..."
               :config="{ mode: 'range' }" variant="outlined" density="comfortable" hide-details="auto"
               color="primary" />
@@ -702,4 +702,3 @@ onActivated(() => {
       :invoice="invoiceToProcess" @process-success="onProcessSuccess" />
   </div>
 </template>
-
