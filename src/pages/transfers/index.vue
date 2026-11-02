@@ -830,9 +830,8 @@ onMounted(() => {
           </tbody>
         </VTable>
       </VCard>
-    </div>
 
-    <!-- Paginación -->
+      <!-- Paginación -->
     <VCard v-if="allFilteredTransfers.length > 0" class="mt-4 rounded-xl border elevation-0 pa-4 bg-surface">
       <div class="d-flex flex-column flex-sm-row align-center justify-space-between gap-3 w-100">
         <div class="d-flex align-center gap-4 flex-wrap">
@@ -850,10 +849,9 @@ onMounted(() => {
           rounded="circle" :total-visible="$vuetify.display.xs ? 4 : 7"
           :size="$vuetify.display.xs ? 'small' : 'default'" density="comfortable" color="primary" class="my-0" />
       </div>
-    </VCard>
+      </VCard>
+    </div>
   </div>
-
-
 
   <!-- Modal Ver Nota de Transferencia -->
   <MovementReceiptNoteDialog v-model="showNoteDialog" :movement="selectedTransferForNote" :accounts="accounts"

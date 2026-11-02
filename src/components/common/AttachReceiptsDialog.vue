@@ -140,25 +140,43 @@ const saveReceipts = async () => {
   }
 }
 
-// Eliminar un adjunto existente
-const deleteAttachment = async attachment => {
-  if (!confirm(`¿Estás seguro de eliminar el comprobante "${attachment.file_name}"?`)) {
-    return
-  }
+// Estado para modal de confirmación de eliminación
+const isDeleteConfirmVisible = ref(false)
+const attachmentToDelete = ref(null)
+const isDeletingAttachment = ref(false)
 
+const openDeleteConfirm = attachment => {
+  attachmentToDelete.value = attachment
+  isDeleteConfirmVisible.value = true
+}
+
+const cancelDeleteAttachment = () => {
+  if (isDeletingAttachment.value) return
+  isDeleteConfirmVisible.value = false
+  attachmentToDelete.value = null
+}
+
+const confirmDeleteAttachment = async () => {
+  if (!attachmentToDelete.value) return
+
+  isDeletingAttachment.value = true
   try {
-    const res = await $api(`attachments/${attachment.id}`, {
+    const res = await $api(`attachments/${attachmentToDelete.value.id}`, {
       method: 'DELETE',
     })
 
     if (res && res.status === 'success') {
-      showNotification('Comprobante eliminado', 'success')
+      showNotification(res.message || 'Comprobante eliminado exitosamente', 'success')
+      isDeleteConfirmVisible.value = false
+      attachmentToDelete.value = null
       await fetchAttachments()
       emit('updated', existingAttachments.value)
     }
   } catch (error) {
-    console.error('Error al eliminar:', error)
+    console.error('Error al eliminar comprobante:', error)
     showNotification('Error al eliminar el comprobante', 'error')
+  } finally {
+    isDeletingAttachment.value = false
   }
 }
 
@@ -387,7 +405,7 @@ const openAttachment = att => {
                       variant="text"
                       color="error"
                       title="Eliminar"
-                      @click.stop="deleteAttachment(att)"
+                      @click.stop="openDeleteConfirm(att)"
                     />
                   </div>
                 </div>
@@ -418,8 +436,121 @@ const openAttachment = att => {
         >
           Guardar Comprobantes ({{ newFiles.length }})
         </VBtn>
-      </VCardActions>
+            </VCardActions>
     </VCard>
+
+    <!-- Modal de Confirmación para Eliminar Comprobante -->
+    <VDialog
+      v-model="isDeleteConfirmVisible"
+      max-width="440"
+      persistent
+      transition="dialog-bottom-transition"
+    >
+      <VCard class="custom-dialog-card rounded-xl elevation-16 overflow-hidden">
+        <!-- Header Banner Danger -->
+        <div class="custom-dialog-header-danger bg-error text-white">
+          <VBtn
+            icon="ri-close-line"
+            variant="text"
+            size="small"
+            class="custom-dialog-close-btn"
+            :disabled="isDeletingAttachment"
+            @click="cancelDeleteAttachment"
+          />
+          <div class="custom-dialog-avatar">
+            <VIcon icon="ri-delete-bin-line" />
+          </div>
+          <h3 class="custom-dialog-title">
+            Eliminar Comprobante
+          </h3>
+          <p class="custom-dialog-subtitle">
+            Esta acción no se puede deshacer
+          </p>
+        </div>
+
+        <VCardText class="pa-4 text-center">
+          <!-- Preview del archivo a eliminar -->
+          <div
+            v-if="attachmentToDelete"
+            class="d-flex flex-column align-center"
+          >
+            <!-- Preview miniatura si es imagen -->
+            <div
+              v-if="attachmentToDelete.is_image"
+              class="attachment-delete-preview rounded-lg overflow-hidden border mb-3 elevation-1"
+            >
+              <img
+                :src="getFullUrl(attachmentToDelete.file_path)"
+                :alt="attachmentToDelete.file_name"
+                class="attachment-preview-img"
+              >
+            </div>
+            <!-- Preview icono si es PDF -->
+            <div
+              v-else-if="attachmentToDelete.is_pdf"
+              class="attachment-delete-preview rounded-lg border mb-3 d-flex align-center justify-center bg-red-lighten-5"
+            >
+              <VIcon
+                icon="ri-file-pdf-2-fill"
+                size="44"
+                color="error"
+              />
+            </div>
+            <!-- Preview otro archivo -->
+            <div
+              v-else
+              class="attachment-delete-preview rounded-lg border mb-3 d-flex align-center justify-center bg-grey-lighten-4"
+            >
+              <VIcon
+                icon="ri-file-3-line"
+                size="44"
+                color="primary"
+              />
+            </div>
+
+            <!-- Nombre de archivo -->
+            <div
+              class="text-subtitle-2 font-weight-bold text-high-emphasis text-truncate mb-1 w-100 px-2"
+              :title="attachmentToDelete.file_name"
+            >
+              {{ attachmentToDelete.file_name }}
+            </div>
+
+            <!-- Advertencia -->
+            <p class="text-caption text-medium-emphasis mb-0 px-3">
+              ¿Estás seguro de que deseas eliminar permanentemente este comprobante del servidor?
+            </p>
+          </div>
+        </VCardText>
+
+        <VDivider />
+
+        <VCardActions class="pa-4 d-flex justify-end align-center gap-3">
+          <VBtn
+            color="secondary"
+            variant="outlined"
+            prepend-icon="ri-close-line"
+            class="rounded-lg px-5 font-weight-medium"
+            height="40"
+            :disabled="isDeletingAttachment"
+            @click="cancelDeleteAttachment"
+          >
+            Cancelar
+          </VBtn>
+          <VBtn
+            color="error"
+            variant="elevated"
+            prepend-icon="ri-delete-bin-line"
+            class="rounded-lg px-5 font-weight-bold"
+            height="40"
+            :loading="isDeletingAttachment"
+            @click="confirmDeleteAttachment"
+          >
+            Eliminar Comprobante
+          </VBtn>
+        </VCardActions>
+      </VCard>
+    </VDialog>
   </VDialog>
 </template>
 
@@ -473,6 +604,21 @@ const openAttachment = att => {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
   gap: 12px;
+}
+
+.attachment-delete-preview {
+  width: 140px;
+  height: 95px;
+  background: rgba(0, 0, 0, 0.04);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  .attachment-preview-img {
+    max-width: 100%;
+    max-height: 100%;
+    object-fit: cover;
+  }
 }
 
 .existing-card {
