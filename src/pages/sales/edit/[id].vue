@@ -51,7 +51,29 @@ const isDispatching = ref(false)
 const isConfirmInvoiceDialogVisible = ref(false)
 const isSriProgressDialogVisible = ref(false)
 const sriSalePayload = ref({})
-const sriAmbiente = ref('1')
+
+const getStoredSriAmbiente = () => {
+  try {
+    const storedAmb = localStorage.getItem('sri_ambiente')
+    if (storedAmb) return String(storedAmb)
+
+    const sucursalData = localStorage.getItem('sucursal')
+    if (sucursalData) {
+      const parsed = JSON.parse(sucursalData)
+      if (parsed?.ambiente) return String(parsed.ambiente)
+    }
+
+    const userData = localStorage.getItem('user')
+    if (userData) {
+      const parsedUser = JSON.parse(userData)
+      if (parsedUser?.sucursal?.ambiente) return String(parsedUser.sucursal.ambiente)
+    }
+  } catch (_) {}
+
+  return '1'
+}
+
+const sriAmbiente = ref(getStoredSriAmbiente())
 const originalDocumentType = ref('')
 const originalDocumentNumber = ref('')
 const originalServiceDate = ref('')
@@ -739,14 +761,26 @@ const getVehicleBrandModel = vehicle => {
 const loadSaleData = async () => {
   isLoading.value = true
   try {
-    const [saleRes, clientsRes, vehiclesRes, productsRes, accountsRes, employeesRes] = await Promise.all([
+    const sucursalId = JSON.parse(localStorage.getItem('user') || '{}')?.sucursale_id || localStorage.getItem('sucursal_id') || 1
+
+    const [saleRes, clientsRes, vehiclesRes, productsRes, accountsRes, employeesRes, sucursalRes] = await Promise.all([
       $api(`sales/${route.params.id}`),
       Promise.resolve([]),
       Promise.resolve([]),
       $api('products', { params: { per_page: 1000 } }),
       $api('accounts', { params: { per_page: 1000 } }),
       $api('employees', { params: { per_page: 1000 } }),
+      $api(`sucursales/${sucursalId}`).catch(() => $api('configuracion-facturacion').catch(() => null)),
     ])
+
+    // Obtener el ambiente SRI configurado directamente en la base de datos (sucursales)
+    if (saleRes?.sri_ambiente) {
+      sriAmbiente.value = String(saleRes.sri_ambiente)
+    } else if (saleRes?.sucursal?.ambiente) {
+      sriAmbiente.value = String(saleRes.sucursal.ambiente)
+    } else if (sucursalRes?.sucursal?.ambiente) {
+      sriAmbiente.value = String(sucursalRes.sucursal.ambiente)
+    }
 
     const extractArray = (res, key) => {
       if (Array.isArray(res)) return res
@@ -868,13 +902,16 @@ const loadSaleData = async () => {
       initializePaymentDistribution()
     }
 
-    try {
-      const sucursalRes = await $api('configuracion-facturacion')
-      if (sucursalRes?.sucursal?.ambiente) {
-        sriAmbiente.value = String(sucursalRes.sucursal.ambiente)
+    // Verificar si el cliente de la venta pertenece a otra sucursal con configuración específica
+    if (saleData?.client?.sucursale_id && Number(saleData.client.sucursale_id) !== Number(sucursalId)) {
+      try {
+        const clientSucursalRes = await $api(`sucursales/${saleData.client.sucursale_id}`).catch(() => null)
+        if (clientSucursalRes?.sucursal?.ambiente) {
+          sriAmbiente.value = String(clientSucursalRes.sucursal.ambiente)
+        }
+      } catch (e) {
+        console.warn('No se pudo cargar ambiente SRI de la sucursal del cliente:', e)
       }
-    } catch (e) {
-      console.warn('No se pudo cargar ambiente SRI:', e)
     }
 
   } catch (error) {

@@ -39,7 +39,7 @@ const validationErrorMessage = ref('')
 const isConfirmInvoiceDialogVisible = ref(false)
 const isSriProgressDialogVisible = ref(false)
 const sriSalePayload = ref({})
-const sriAmbiente = ref('1')
+const sriAmbiente = ref(localStorage.getItem('sri_ambiente') || '1')
 
 const triggerValidationError = message => {
   showValidationError.value = true

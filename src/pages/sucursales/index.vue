@@ -166,11 +166,18 @@ const loadSucursal = async () => {
     })
 
     if (resp.sucursal) {
-      sucursal.value = resp.sucursal
+      sucursal.value = {
+        ...resp.sucursal,
+        ambiente: resp.sucursal.ambiente ? String(resp.sucursal.ambiente) : '2',
+      }
 
       const sName = resp.sucursal.name || resp.sucursal.trade_name || 'LUXURY EVYS'
 
       localStorage.setItem('sucursal_name', sName)
+      if (resp.sucursal.ambiente) {
+        localStorage.setItem('sri_ambiente', String(resp.sucursal.ambiente))
+      }
+      localStorage.setItem('sucursal', JSON.stringify(resp.sucursal))
       if (themeConfig.app) themeConfig.app.title = sName
       if (layoutConfig?.app) layoutConfig.app.title = sName
 
@@ -282,7 +289,10 @@ const saveSucursal = async () => {
     })
 
     if (resp.sucursal) {
-      sucursal.value = resp.sucursal
+      sucursal.value = {
+        ...resp.sucursal,
+        ambiente: resp.sucursal.ambiente ? String(resp.sucursal.ambiente) : '2',
+      }
       isEditing.value = false
       fileFirma.value = null
       fileLoginBg.value = null
@@ -298,6 +308,10 @@ const saveSucursal = async () => {
       const sName = sucursal.value.name || sucursal.value.trade_name || 'LUXURY EVYS'
 
       localStorage.setItem('sucursal_name', sName)
+      if (resp.sucursal.ambiente) {
+        localStorage.setItem('sri_ambiente', String(resp.sucursal.ambiente))
+      }
+      localStorage.setItem('sucursal', JSON.stringify(resp.sucursal))
       if (themeConfig.app) themeConfig.app.title = sName
       if (layoutConfig?.app) layoutConfig.app.title = sName
 
