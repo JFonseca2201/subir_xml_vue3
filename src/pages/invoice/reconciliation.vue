@@ -563,12 +563,12 @@ onMounted(() => {
       <VCol cols="12" lg="4">
         <!-- Card de Cuadratura Financiera -->
         <VCard class="mb-6 rounded-xl border border-light elevation-1 sticky-card">
-          <VCardItem class="bg-primary text-white py-4">
-            <VCardTitle class="text-subtitle-1 font-weight-bold text-white d-flex align-center gap-2">
+          <VCardItem class="bg-primary  py-4">
+            <VCardTitle class="text-subtitle-1 font-weight-bold d-flex align-center gap-2">
               <VIcon icon="ri-calculator-line" size="20" />
               Cuadratura de Pago
             </VCardTitle>
-            <VCardSubtitle class="text-caption text-white text-opacity-75">
+            <VCardSubtitle class="text-caption  text-opacity-75">
               Comparativa entre desembolso y facturas
             </VCardSubtitle>
           </VCardItem>
@@ -716,5 +716,3 @@ onMounted(() => {
     </VRow>
   </div>
 </template>
-
-
