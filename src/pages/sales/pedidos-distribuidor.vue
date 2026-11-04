@@ -900,7 +900,7 @@ onActivated(async () => {
                           </button>
                           <input v-model.number="item.cantidad" type="number" min="1" max="999"
                             class="qty-mini-val font-mono text-center"
-                            style="width: 28px; border: none; background: transparent; outline: none; -moz-appearance: textfield; padding: 0;" />
+                            style="width: 28px; border: none; background: transparent; outline: none; padding: 0;" />
                           <button type="button" class="qty-mini-btn" :disabled="Number(item.cantidad) >= 9999"
                             @click="item.cantidad++">
                             <VIcon icon="ri-add-line" size="12" />

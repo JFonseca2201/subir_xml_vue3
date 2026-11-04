@@ -510,20 +510,46 @@ const downloadMovementPdf = async () => {
   }
 }
 
-// Eliminar un adjunto existente
-const deleteAttachment = async att => {
-  if (!confirm(`¿Estás seguro de eliminar el comprobante "${att.file_name}"?`)) return
+// Estado para modal de confirmación de eliminación
+const isDeleteConfirmVisible = ref(false)
+const attachmentToDelete = ref(null)
+const isDeletingAttachment = ref(false)
 
+const openDeleteConfirm = att => {
+  attachmentToDelete.value = att
+  isDeleteConfirmVisible.value = true
+}
+
+const cancelDeleteAttachment = () => {
+  if (isDeletingAttachment.value) return
+  isDeleteConfirmVisible.value = false
+  attachmentToDelete.value = null
+}
+
+const confirmDeleteAttachment = async () => {
+  if (!attachmentToDelete.value) return
+
+  isDeletingAttachment.value = true
   try {
-    const res = await $api(`attachments/${att.id}`, { method: 'DELETE' })
-    if (res && res.status === 'success') {
-      showNotification('Comprobante eliminado', 'success')
+    const res = await $api(`attachments/${attachmentToDelete.value.id}`, { method: 'DELETE' })
+    if (res && (res.status === 'success' || res.message)) {
+      showNotification(res.message || 'Comprobante eliminado exitosamente', 'success')
+      isDeleteConfirmVisible.value = false
+      attachmentToDelete.value = null
       await loadAttachments()
       emit('updated')
+      if (activePhotoIndex.value >= attachments.value.length) {
+        activePhotoIndex.value = Math.max(0, attachments.value.length - 1)
+      }
+      if (attachments.value.length === 0) {
+        isLightboxOpen.value = false
+      }
     }
   } catch (error) {
     console.error('Error al eliminar adjunto:', error)
     showNotification('Error al eliminar el comprobante', 'error')
+  } finally {
+    isDeletingAttachment.value = false
   }
 }
 
@@ -754,8 +780,12 @@ watch(
                     class="font-weight-medium" @click="openLightbox(idx)">
                     Ver
                   </VBtn>
-                  <VBtn size="x-small" variant="text" color="secondary" icon="ri-download-2-line"
-                    title="Descargar archivo" @click.stop="downloadSingleAttachment(att)" />
+                  <div class="d-flex align-center gap-1">
+                    <VBtn size="x-small" variant="text" color="secondary" icon="ri-download-2-line"
+                      title="Descargar archivo" @click.stop="downloadSingleAttachment(att)" />
+                    <VBtn size="x-small" variant="text" color="error" icon="ri-delete-bin-line"
+                      title="Eliminar comprobante" @click.stop="openDeleteConfirm(att)" />
+                  </div>
                 </div>
               </div>
             </VCard>
@@ -802,6 +832,11 @@ watch(
             </div>
           </div>
           <div class="d-flex align-center gap-1 gap-sm-2 flex-shrink-0">
+            <VBtn color="error" variant="tonal" size="small" class="font-weight-medium text-white me-1"
+              @click="openDeleteConfirm(attachments[activePhotoIndex])">
+              <VIcon icon="ri-delete-bin-line" class="me-sm-1" />
+              <span class="d-none d-sm-inline">Eliminar</span>
+            </VBtn>
             <VBtn color="white" variant="tonal" size="small" class="font-weight-medium text-white me-1"
               @click="downloadSingleAttachment(attachments[activePhotoIndex])">
               <VIcon icon="ri-download-2-line" class="me-sm-1" />
@@ -866,6 +901,70 @@ watch(
           <VBtn prepend-icon="ri-close-line" variant="outlined" color="secondary"
             class="font-weight-medium px-6 w-100 w-sm-auto order-0 order-sm-1" @click="isLightboxOpen = false">
             Cerrar
+          </VBtn>
+        </VCardActions>
+      </VCard>
+    </VDialog>
+
+    <!-- Modal de Confirmación para Eliminar Comprobante -->
+    <VDialog v-model="isDeleteConfirmVisible" max-width="440" persistent transition="dialog-bottom-transition">
+      <VCard class="custom-dialog-card rounded-xl elevation-16 overflow-hidden">
+        <!-- Header Banner Danger -->
+        <div class="custom-dialog-header-danger bg-error text-white pa-4 text-center position-relative">
+          <VBtn icon="ri-close-line" variant="text" size="small" class="custom-dialog-close-btn"
+            :disabled="isDeletingAttachment" @click="cancelDeleteAttachment" />
+          <div class="custom-dialog-avatar mx-auto mb-2 d-flex align-center justify-center rounded-circle">
+            <VIcon icon="ri-delete-bin-line" size="28" />
+          </div>
+          <h3 class="custom-dialog-title font-weight-bold mb-1">
+            Eliminar Comprobante
+          </h3>
+          <p class="custom-dialog-subtitle text-caption mb-0 opacity-80">
+            Esta acción no se puede deshacer
+          </p>
+        </div>
+
+        <VCardText class="pa-4 text-center">
+          <div v-if="attachmentToDelete" class="d-flex flex-column align-center">
+            <!-- Preview miniatura si es imagen -->
+            <div v-if="isImageFile(attachmentToDelete)"
+              class="attachment-delete-preview rounded-lg overflow-hidden border mb-3 elevation-1"
+              style="width: 120px; height: 120px;">
+              <img :src="getFullUrl(attachmentToDelete.file_path || attachmentToDelete.url)"
+                :alt="attachmentToDelete.file_name" class="w-100 h-100" style="object-fit: cover;">
+            </div>
+            <!-- Preview icono si es PDF -->
+            <div v-else
+              class="attachment-delete-preview rounded-lg border mb-3 d-flex align-center justify-center bg-red-lighten-5"
+              style="width: 120px; height: 120px;">
+              <VIcon icon="ri-file-pdf-2-fill" size="48" color="error" />
+            </div>
+
+            <!-- Nombre de archivo -->
+            <div class="text-subtitle-2 font-weight-bold text-high-emphasis text-truncate mb-1 w-100 px-2"
+              :title="attachmentToDelete.file_name">
+              {{ attachmentToDelete.file_name }}
+            </div>
+
+            <!-- Advertencia -->
+            <p class="text-caption text-medium-emphasis mb-0 px-3">
+              ¿Estás seguro de que deseas eliminar permanentemente este comprobante del servidor?
+            </p>
+          </div>
+        </VCardText>
+
+        <VDivider />
+
+        <VCardActions class="pa-4 d-flex justify-end align-center gap-3">
+          <VBtn color="secondary" variant="outlined" prepend-icon="ri-close-line"
+            class="rounded-lg px-5 font-weight-medium" height="40" :disabled="isDeletingAttachment"
+            @click="cancelDeleteAttachment">
+            Cancelar
+          </VBtn>
+          <VBtn color="error" variant="elevated" prepend-icon="ri-delete-bin-line"
+            class="rounded-lg px-5 font-weight-bold" height="40" :loading="isDeletingAttachment"
+            @click="confirmDeleteAttachment">
+            Eliminar Comprobante
           </VBtn>
         </VCardActions>
       </VCard>

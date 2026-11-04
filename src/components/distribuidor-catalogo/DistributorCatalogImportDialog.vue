@@ -22,675 +22,354 @@ const emit = defineEmits(['update:isDialogVisible', 'imported'])
 
 const { showNotification } = useGlobalToast()
 
-const isSubmitting = ref(false)
+// Estado del formulario
 const selectedSupplier = ref(null)
-const customSupplierName = ref('')
-const isNewSupplier = ref(false)
-const importMode = ref('replace') // replace or append
-const fileInput = ref(null)
+const catalogTitle = ref('')
 const selectedFile = ref(null)
-const parsedRows = ref([])
-const previewRows = ref([])
-const totalParsed = ref(0)
-const detectedCategories = ref([])
-const parseError = ref('')
+const fileInputRef = ref(null)
+const isDragging = ref(false)
 
-watch(() => props.isDialogVisible, val => {
-  if (val) {
-    selectedSupplier.value = props.selectedSupplierId && props.selectedSupplierId !== 'all' ? props.selectedSupplierId : (props.suppliers[0]?.id || null)
-    customSupplierName.value = ''
-    isNewSupplier.value = false
-    importMode.value = 'replace'
-    selectedFile.value = null
-    parsedRows.value = []
-    previewRows.value = []
-    totalParsed.value = 0
-    detectedCategories.value = []
-    parseError.value = ''
-  }
+// Estados de subida y procesamiento en segundo plano
+const isSubmitting = ref(false)
+const uploadProgress = ref(0)
+const uploadStatusText = ref('')
+
+// Opciones de proveedores normalizadas
+const supplierOptions = computed(() => {
+  return props.suppliers
+    .filter(s => s && s.id !== 'all')
+    .map(s => ({
+      title: s.name,
+      value: s.id,
+      ruc: s.ruc,
+    }))
 })
 
-// Parsear CSV en el navegador de manera robusta
-const parseCSV = text => {
-  if (!text) {
-    throw new Error('El archivo está vacío.')
-  }
-
-  // Eliminar BOM (Byte Order Mark) de UTF-8 si existe
-  const cleanText = text.replace(/^\uFEFF/, '')
-  const rawLines = cleanText.split(/\r\n|\n|\r/).map(l => l.trim()).filter(l => l.length > 0)
-
-  if (rawLines.length < 2) {
-    throw new Error('El archivo no contiene suficientes filas de datos.')
-  }
-
-  // 1. Detectar delimitador inspeccionando las primeras 10 líneas
-  const sample = rawLines.slice(0, Math.min(10, rawLines.length)).join('\n')
-  const countCommas = (sample.match(/,/g) || []).length
-  const countSemicolons = (sample.match(/;/g) || []).length
-  const countTabs = (sample.match(/\t/g) || []).length
-
-  let delimiter = ','
-  if (countSemicolons > countCommas && countSemicolons > countTabs) {
-    delimiter = ';'
-  } else if (countTabs > countCommas && countTabs > countSemicolons) {
-    delimiter = '\t'
-  }
-
-  // Función para parsear una línea respetando comillas y caracteres especiales (como comillas de pulgadas 14" o 1/2")
-  const parseLine = line => {
-    const values = []
-    let current = ''
-    let inQuotedField = false
-    let i = 0
-
-    while (i < line.length) {
-      const char = line[i]
-
-      if (!inQuotedField) {
-        if (char === '"' && current.trim() === '') {
-          inQuotedField = true
-          current = ''
-          i++
-        } else if (char === delimiter) {
-          values.push(current.trim().replace(/^"|"$/g, '').trim())
-          current = ''
-          i++
-        } else {
-          current += char
-          i++
-        }
+// Al abrir el modal, inicializar campos
+watch(
+  () => props.isDialogVisible,
+  isOpen => {
+    if (isOpen) {
+      if (props.selectedSupplierId && props.selectedSupplierId !== 'all') {
+        selectedSupplier.value = props.selectedSupplierId
+      } else if (supplierOptions.value.length > 0) {
+        selectedSupplier.value = supplierOptions.value[0].value
       } else {
-        if (char === '"') {
-          if (i + 1 < line.length && line[i + 1] === '"') {
-            current += '"'
-            i += 2
-          } else if (
-            i + 1 === line.length ||
-            line[i + 1] === delimiter ||
-            line[i + 1] === '\r' ||
-            line[i + 1] === '\n'
-          ) {
-            inQuotedField = false
-            i++
-          } else {
-            current += '"'
-            i++
-          }
-        } else {
-          current += char
-          i++
-        }
+        selectedSupplier.value = null
+      }
+
+      catalogTitle.value = ''
+      selectedFile.value = null
+      uploadProgress.value = 0
+      isSubmitting.value = false
+      uploadStatusText.value = ''
+      if (fileInputRef.value) {
+        fileInputRef.value.value = ''
       }
     }
-    values.push(current.trim().replace(/^"|"$/g, '').trim())
-    
-    return values
-  }
+  },
+)
 
-  // 2. Buscar la fila de cabeceras en las primeras 15 líneas
-  let headerRowIndex = 0
-  let rawHeaders = []
-  let colMap = {
-    code: -1,
-    description: -1,
-    reference: -1,
-    price: -1,
-    category_code: -1,
-    category_name: -1,
-    stock_status: -1,
-  }
-
-  const headerKeywords = ['code', 'codigo', 'cod', 'sku', 'descripcion', 'description', 'detalle', 'nombre', 'referencia', 'precio', 'price', 'costo']
-
-  for (let r = 0; r < Math.min(15, rawLines.length); r++) {
-    const cols = parseLine(rawLines[r]).map(h => h.toLowerCase().trim())
-    const matches = cols.filter(c => headerKeywords.some(k => c.includes(k)))
-    if (matches.length >= 2 || (matches.length >= 1 && (cols.includes('code') || cols.includes('codigo') || cols.includes('cod')))) {
-      headerRowIndex = r
-      rawHeaders = cols
-      break
-    }
-  }
-
-  if (rawHeaders.length === 0) {
-    headerRowIndex = 0
-    rawHeaders = parseLine(rawLines[0]).map(h => h.toLowerCase().trim())
-  }
-
-  const getColIndex = (exactMatches, partialMatches = []) => {
-    for (const name of exactMatches) {
-      const idx = rawHeaders.indexOf(name)
-      if (idx !== -1) return idx
-    }
-    for (const part of partialMatches) {
-      const idx = rawHeaders.findIndex(h => h.includes(part))
-      if (idx !== -1) return idx
-    }
-    
-    return -1
-  }
-
-  colMap = {
-    code: getColIndex(['code', 'codigo', 'cod', 'sku', 'item', 'parte'], ['codigo', 'sku', 'cod']),
-    description: getColIndex(['description', 'descripcion', 'nombre', 'detalle', 'articulo', 'producto'], ['desc', 'nom', 'detal']),
-    reference: getColIndex(['reference', 'referencia', 'ref', 'oem', 'cod_oem', 'cross'], ['referencia', 'ref', 'oem']),
-    price: getColIndex(['price', 'precio', 'costo', 'pvp', 'valor', 'p_publico'], ['prec', 'cost', 'pvp', 'val']),
-    category_code: getColIndex(['category_code', 'cod_categoria', 'codigo_categoria', 'category_id', 'cod_cat', 'id_cat'], ['category_code', 'cod_cat', 'id_cat']),
-    category_name: getColIndex(['category_name', 'nombre_categoria', 'categoria_nombre', 'category', 'categoria', 'grupo', 'linea', 'familia'], ['category_name', 'categoria', 'nom_cat', 'grup']),
-    stock_status: getColIndex(['stock_status', 'stock', 'estado', 'disponibilidad', 'status', 'existencia', 'disp'], ['stock_status', 'estado', 'disponib', 'exist']),
-  }
-
-  // Fallbacks si no se encontraron columnas por nombre
-  if (colMap.code === -1) colMap.code = 0
-  if (colMap.description === -1) colMap.description = rawHeaders.length > 1 ? 1 : 0
-  if (colMap.reference === -1 && rawHeaders.length > 2) colMap.reference = 2
-  if (colMap.price === -1 && rawHeaders.length > 3) colMap.price = 3
-  if (colMap.category_code === -1 && rawHeaders.length > 4) colMap.category_code = 4
-  if (colMap.category_name === -1 && rawHeaders.length > 5) colMap.category_name = 5
-  if (colMap.stock_status === -1 && rawHeaders.length > 6) colMap.stock_status = 6
-
-  const items = []
-  const catsSet = new Set()
-
-  for (let i = headerRowIndex + 1; i < rawLines.length; i++) {
-    const cols = parseLine(rawLines[i])
-    if (!cols || cols.length === 0 || (cols.length === 1 && !cols[0])) continue
-
-    const code = String(cols[colMap.code] || '').trim()
-    const description = String(cols[colMap.description] || (cols[1] || '')).trim()
-    
-    // Si no tiene código ni descripción, ignorar fila vacía
-    if (!code && !description) continue
-
-    const refVal = colMap.reference !== -1 && cols[colMap.reference] ? String(cols[colMap.reference]).trim() : ''
-    const rawPrice = colMap.price !== -1 && cols[colMap.price] !== undefined ? String(cols[colMap.price]) : '0'
-    let catCode = colMap.category_code !== -1 && cols[colMap.category_code] ? String(cols[colMap.category_code]).trim() : ''
-    let catName = colMap.category_name !== -1 && cols[colMap.category_name] ? String(cols[colMap.category_name]).trim().toUpperCase() : 'GENERAL'
-    const stockVal = colMap.stock_status !== -1 && cols[colMap.stock_status] ? String(cols[colMap.stock_status]).trim() : 'Disponible'
-
-    // Si la categoría detectada es un número y el category_code es texto, intercambiarlos
-    if (catName && /^\d+$/.test(catName.trim()) && catCode && !/^\d+$/.test(catCode.trim())) {
-      const temp = catName
-
-      catName = catCode.toUpperCase()
-      catCode = temp
-    }
-
-    if (!catName || catName === '0' || catName === '-') {
-      catName = 'GENERAL'
-    }
-
-    catsSet.add(catName)
-
-    // Formatear precio
-    const cleanPrice = parseFloat(rawPrice.replace(/[^0-9.,]/g, '').replace(',', '.')) || 0
-
-    items.push({
-      code: code || description.slice(0, 20),
-      description: description || code,
-      reference: refVal || null,
-      price: cleanPrice,
-      category_code: catCode || null,
-      category_name: catName,
-      stock_status: stockVal || 'Disponible',
-    })
-  }
-
-  return {
-    items,
-    categories: Array.from(catsSet),
-  }
+const formatFileSize = bytes => {
+  if (!bytes || bytes <= 0) return '0 KB'
+  const units = ['B', 'KB', 'MB', 'GB']
+  const power = Math.min(Math.floor(Math.log(bytes) / Math.log(1024)), units.length - 1)
+  return `${(bytes / Math.pow(1024, power)).toFixed(2)} ${units[power]}`
 }
 
-const handleFileUpload = event => {
+const validatePdfFile = file => {
+  if (!file) return false
+
+  const isPdf = file.type === 'application/pdf' || file.name.toLowerCase().endsWith('.pdf')
+  if (!isPdf) {
+    showNotification('Formato no válido. Debe adjuntar un archivo en formato PDF (.pdf)', 'error')
+    return false
+  }
+
+  // Límite de 100 MB
+  if (file.size > 100 * 1024 * 1024) {
+    showNotification('El archivo excede el tamaño máximo permitido (100 MB).', 'error')
+    return false
+  }
+
+  return true
+}
+
+const onFileSelected = event => {
   const file = event.target.files?.[0]
-  if (!file) return
-  processFile(file)
-}
-
-const handleDrop = event => {
-  const file = event.dataTransfer?.files?.[0]
-  if (!file) return
-  processFile(file)
-}
-
-const processFile = file => {
-  selectedFile.value = file
-  parseError.value = ''
-  
-  const reader = new FileReader()
-
-  reader.onload = e => {
-    try {
-      const text = e.target.result
-      const { items, categories } = parseCSV(text)
-
-      parsedRows.value = items
-      previewRows.value = items.slice(0, 5)
-      totalParsed.value = items.length
-      detectedCategories.value = categories
-    } catch (err) {
-      console.error('Error al parsear archivo:', err)
-      parseError.value = err.message || 'Error al procesar el archivo CSV.'
-      parsedRows.value = []
-      previewRows.value = []
-      totalParsed.value = 0
+  if (validatePdfFile(file)) {
+    selectedFile.value = file
+    if (!catalogTitle.value) {
+      // Usar nombre del archivo sin extensión como título inicial sugerido
+      catalogTitle.value = file.name.replace(/\.[^/.]+$/, '')
     }
   }
-  reader.readAsText(file, 'UTF-8')
 }
 
-const submitImport = async () => {
-  if (parsedRows.value.length === 0) {
-    showNotification('Por favor selecciona un archivo con datos válidos', 'warning')
-    
+const onFileDropped = event => {
+  isDragging.value = false
+  const file = event.dataTransfer?.files?.[0]
+  if (validatePdfFile(file)) {
+    selectedFile.value = file
+    if (!catalogTitle.value) {
+      catalogTitle.value = file.name.replace(/\.[^/.]+$/, '')
+    }
+  }
+}
+
+const triggerFileInput = () => {
+  if (isSubmitting.value) return
+  fileInputRef.value?.click()
+}
+
+const removeFile = () => {
+  if (isSubmitting.value) return
+  selectedFile.value = null
+  if (fileInputRef.value) {
+    fileInputRef.value.value = ''
+  }
+}
+
+const closeDialog = () => {
+  if (isSubmitting.value) {
+    showNotification('Hay una subida en proceso, por favor espere...', 'warning')
+    return
+  }
+  emit('update:isDialogVisible', false)
+}
+
+/**
+ * Enviar el catálogo PDF al backend:
+ * 1. Guarda el PDF físico en storage/app/public/catalogs/
+ * 2. Guarda UN ÚNICO registro de metadatos ligero en distributor_catalogs
+ * 3. NO inserta líneas de texto del PDF como productos en la BD relacional
+ * 4. Lanza el Job en segundo plano (smalot/pdfparser) para indexar el texto plano
+ */
+const submitPdfCatalog = async () => {
+  if (!selectedSupplier.value) {
+    showNotification('Por favor, selecciona el distribuidor o proveedor del catálogo.', 'warning')
     return
   }
 
-  let supplierId = selectedSupplier.value
-  let supplierName = ''
-
-  if (isNewSupplier.value) {
-    if (!customSupplierName.value.trim()) {
-      showNotification('Ingresa el nombre del nuevo distribuidor', 'warning')
-      
-      return
-    }
-    supplierName = customSupplierName.value.trim().toUpperCase()
-    supplierId = null
-  } else {
-    const found = props.suppliers.find(s => s.id === supplierId)
-
-    supplierName = found ? found.name : 'DISTRIBUIDOR'
+  if (!selectedFile.value) {
+    showNotification('Debes adjuntar el archivo PDF del catálogo.', 'warning')
+    return
   }
 
   isSubmitting.value = true
+  uploadProgress.value = 25
+  uploadStatusText.value = 'Subiendo archivo PDF al servidor...'
+
   try {
-    const response = await $api('distributor-catalog/import', {
+    const formData = new FormData()
+    formData.append('supplier_id', selectedSupplier.value)
+    formData.append('title', catalogTitle.value.trim() || selectedFile.value.name)
+    formData.append('file', selectedFile.value)
+
+    uploadProgress.value = 65
+    uploadStatusText.value = 'Guardando metadatos y programando extracción...'
+
+    const response = await $api('distributor-catalog-pdf/upload', {
       method: 'POST',
-      body: {
-        supplier_id: supplierId,
-        supplier_name: supplierName,
-        mode: importMode.value,
-        items: parsedRows.value,
-      },
+      body: formData,
     })
 
-    if (response?.success) {
-      showNotification(response.message || 'Catálogo importado exitosamente', 'success')
-      emit('imported', response.data?.supplier_id || supplierId)
-      emit('update:isDialogVisible', false)
-    } else {
-      showNotification(response?.message || 'Error al importar catálogo', 'error')
-    }
+    uploadProgress.value = 100
+    uploadStatusText.value = '¡Catálogo PDF registrado correctamente!'
+
+    showNotification(
+      response?.message || 'Catálogo PDF subido exitosamente. Indexación en proceso en segundo plano.',
+      'success',
+    )
+
+    emit('imported', selectedSupplier.value)
+    emit('update:isDialogVisible', false)
   } catch (error) {
-    console.error('Error en importación:', error)
-
-    const msg = error?.response?.data?.message || 'Error al subir catálogo de distribuidor'
-
-    showNotification(msg, 'error')
+    console.error('Error al subir catálogo PDF:', error)
+    const backendData = error?.response?._data || error?.data || {}
+    let errorMsg = backendData.message || error?.message || 'Error al procesar y subir el archivo PDF.'
+    if (backendData.errors && typeof backendData.errors === 'object') {
+      const details = Object.values(backendData.errors).flat().join(' ')
+      if (details) errorMsg = `${errorMsg}: ${details}`
+    }
+    showNotification(errorMsg, 'error')
   } finally {
     isSubmitting.value = false
+    uploadProgress.value = 0
+    uploadStatusText.value = ''
   }
-}
-
-const formatCurrency = val => {
-  return new Intl.NumberFormat('es-EC', {
-    style: 'currency',
-    currency: 'USD',
-  }).format(Number(val) || 0)
-}
-
-const filterSupplier = (value, query, item) => {
-  if (!query) return true
-  const q = String(query).toLowerCase().trim()
-  const name = String(item.raw?.name || '').toLowerCase()
-  const ruc = String(item.raw?.ruc || '').toLowerCase()
-  const phone = String(item.raw?.phone || '').toLowerCase()
-  const id = String(item.raw?.id || '')
-  
-  return name.includes(q) || ruc.includes(q) || phone.includes(q) || id.includes(q)
 }
 </script>
 
 <template>
-  <VDialog
-    :model-value="props.isDialogVisible"
-    max-width="850"
-    persistent
-    @update:model-value="val => emit('update:isDialogVisible', val)"
-  >
-    <VCard class="rounded-xl overflow-hidden border">
-      <!-- Header -->
-      <VCardItem class="bg-primary text-white py-4 px-6">
-        <template #prepend>
-          <VAvatar
-            size="42"
-            color="white"
-            variant="tonal"
-            class="rounded-lg me-2"
-          >
-            <VIcon
-              icon="ri-file-upload-line"
-              size="26"
-              color="white"
-            />
+  <VDialog :model-value="props.isDialogVisible" max-width="620" persistent scrollable
+    transition="dialog-bottom-transition" @update:model-value="closeDialog">
+    <VCard class="rounded-xl overflow-hidden elevation-16">
+      <!-- Header Banner Rojo / PDF -->
+      <VCardTitle class="pa-4 bg-primary text-white d-flex align-center justify-space-between flex-none">
+        <!-- bg-primary -->
+        <div class="d-flex align-center gap-3">
+          <VAvatar color="white" variant="tonal" size="42" rounded="lg">
+            <VIcon icon="ri-file-pdf-2-fill" size="24" color="white" />
           </VAvatar>
-        </template>
-        <VCardTitle class="text-h6 font-weight-bold text-white">
-          Importar Catálogo / Lista de Precios de Distribuidor
-        </VCardTitle>
-        <VCardSubtitle class="text-white text-opacity-90 text-caption mt-0.5">
-          Soporta archivos CSV con cabeceras: code, description, reference, price, category_name, stock_status
-        </VCardSubtitle>
-        <template #append>
-          <VBtn
-            icon="ri-close-line"
-            variant="text"
-            color="white"
-            density="compact"
-            @click="emit('update:isDialogVisible', false)"
-          />
-        </template>
-      </VCardItem>
-
-      <VCardText class="pa-6 bg-background">
-        <!-- Paso 1: Distribuidor y Modo -->
-        <VCard class="border rounded-xl mb-4 bg-surface elevation-0 pa-4">
-          <div class="text-subtitle-2 font-weight-bold mb-3 d-flex align-center gap-2 text-primary">
-            <VIcon
-              icon="ri-store-2-line"
-              size="18"
-            />
-            <span>1. Seleccionar Distribuidor y Modo de Carga</span>
+          <div>
+            <div class="text-subtitle-1 font-weight-bold text-white leading-tight">
+              Subir Catálogo PDF de Proveedor
+            </div>
+            <div class="text-caption text-white opacity-80" style="font-size: 11px;">
+              Escenario 1: Almacenamiento e indexación de texto plano en archivo independiente
+            </div>
           </div>
+        </div>
+        <VBtn icon="ri-close-line" variant="text" size="small" color="white" :disabled="isSubmitting"
+          @click="closeDialog" />
+      </VCardTitle>
 
-          <VRow dense>
-            <VCol
-              cols="12"
-              sm="7"
-            >
-              <div v-if="!isNewSupplier">
-                <VAutocomplete
-                  v-model="selectedSupplier"
-                  :items="props.suppliers"
-                  item-title="name"
-                  item-value="id"
-                  :custom-filter="filterSupplier"
-                  label="Buscar Proveedor / Distribuidor"
-                  placeholder="Ingresa dígitos de RUC o nombre (ej: JAROMA)..."
-                  prepend-inner-icon="ri-search-2-line"
-                  variant="outlined"
-                  density="comfortable"
-                  color="primary"
-                  hide-details="auto"
-                  clearable
-                >
-                  <template #item="{ props: itemProps, item }">
-                    <VListItem
-                      v-bind="itemProps"
-                      :title="item.raw.name"
-                    >
-                      <template #subtitle>
-                        <span class="text-caption text-medium-emphasis">
-                          RUC: <strong class="font-mono text-primary">{{ item.raw.ruc || 'S/N' }}</strong> · {{ item.raw.total_items || 0 }} productos actuales
-                        </span>
-                      </template>
-                    </VListItem>
-                  </template>
-                  <template #selection="{ item }">
-                    <div class="d-flex align-center gap-2">
-                      <span class="font-weight-semibold">{{ item.raw.name }}</span>
-                      <span
-                        v-if="item.raw.ruc"
-                        class="text-caption font-mono text-medium-emphasis"
-                      >({{ item.raw.ruc }})</span>
-                    </div>
-                  </template>
-                </VAutocomplete>
-              </div>
+      <VCardText class="pa-5 overflow-y-auto" style="max-height: 75vh;">
 
-              <div v-else>
-                <VTextField
-                  v-model="customSupplierName"
-                  label="Nombre del Nuevo Distribuidor"
-                  placeholder="Ej: JAROMA, IMPORTADORA X, etc."
-                  prepend-inner-icon="ri-add-box-line"
-                  variant="outlined"
-                  density="comfortable"
-                  color="primary"
-                  hide-details="auto"
-                />
-              </div>
 
-              <div class="mt-1">
-                <VBtn
-                  variant="text"
-                  size="small"
-                  color="primary"
-                  class="px-0 font-weight-medium"
-                  @click="isNewSupplier = !isNewSupplier"
-                >
-                  {{ isNewSupplier ? '← Seleccionar distribuidor existente' : '+ Crear nuevo distribuidor' }}
-                </VBtn>
-              </div>
-            </VCol>
+        <!-- 1. Selección de Distribuidor -->
+        <div class="mb-4">
+          <label class="text-caption font-weight-bold text-medium-emphasis mb-1.5 d-block">
+            Distribuidor / Proveedor <span class="text-error">*</span>
+          </label>
+          <VSelect v-model="selectedSupplier" :items="supplierOptions" item-title="title" item-value="value"
+            placeholder="Selecciona el distribuidor del catálogo" prepend-inner-icon="ri-truck-line" variant="outlined"
+            density="comfortable" hide-details="auto" color="primary" :disabled="isSubmitting">
+            <template #item="{ props: itemProps, item }">
+              <VListItem v-bind="itemProps">
+                <template #title>
+                  <span class="font-weight-medium text-body-2">{{ item.raw.title }}</span>
+                </template>
+                <template v-if="item.raw.ruc" #subtitle>
+                  <span class="text-caption text-disabled font-mono">RUC: {{ item.raw.ruc }}</span>
+                </template>
+              </VListItem>
+            </template>
+          </VSelect>
+        </div>
 
-            <VCol
-              cols="12"
-              sm="5"
-            >
-              <VRadioGroup
-                v-model="importMode"
-                inline
-                density="compact"
-                hide-details="auto"
-                class="mt-1"
-              >
-                <div class="d-flex flex-column gap-1">
-                  <VRadio
-                    value="replace"
-                    label="Reemplazar catálogo completo"
-                    color="primary"
-                  />
-                  <VRadio
-                    value="append"
-                    label="Agregar / Actualizar a los existentes"
-                    color="primary"
-                  />
-                </div>
-              </VRadioGroup>
-            </VCol>
-          </VRow>
-        </VCard>
+        <!-- 2. Título / Nombre Descriptivo del Catálogo -->
+        <div class="mb-4">
+          <label class="text-caption font-weight-bold text-medium-emphasis mb-1.5 d-block">
+            Título o Identificador del Catálogo (Opcional)
+          </label>
+          <VTextField v-model="catalogTitle" placeholder="Ej: Catálogo General 2026 - Pastillas y Discos"
+            prepend-inner-icon="ri-bookmark-3-line" variant="outlined" density="comfortable" hide-details="auto"
+            color="primary" :disabled="isSubmitting" />
+          <span class="text-caption text-disabled mt-1 d-block" style="font-size: 11px;">
+            Si se deja en blanco, se usará el nombre original del archivo PDF.
+          </span>
+        </div>
 
-        <!-- Paso 2: Zona de Carga de Archivo -->
-        <VCard class="border rounded-xl mb-4 bg-surface elevation-0 pa-4">
-          <div class="text-subtitle-2 font-weight-bold mb-3 d-flex align-center gap-2 text-primary">
-            <VIcon
-              icon="ri-file-text-line"
-              size="18"
-            />
-            <span>2. Subir Archivo CSV</span>
-          </div>
+        <!-- 3. Zona de Carga de Archivo PDF (Drag & Drop) -->
+        <div class="mb-2">
+          <label class="text-caption font-weight-bold text-medium-emphasis mb-1.5 d-block">
+            Archivo PDF del Catálogo <span class="text-error">*</span>
+          </label>
 
-          <div
-            class="upload-dropzone rounded-xl pa-6 text-center cursor-pointer border-dashed"
-            @dragover.prevent
-            @drop.prevent="handleDrop"
-            @click="fileInput?.click()"
-          >
-            <input
-              ref="fileInput"
-              type="file"
-              accept=".csv,.txt,.tsv"
-              class="d-none"
-              @change="handleFileUpload"
-            >
-            <VAvatar
-              size="54"
-              color="primary"
-              variant="tonal"
-              class="mb-2"
-            >
-              <VIcon
-                icon="ri-upload-cloud-2-line"
-                size="28"
-              />
+          <!-- Input oculto -->
+          <input ref="fileInputRef" type="file" accept="application/pdf,.pdf" class="d-none" @change="onFileSelected">
+
+          <!-- Zona Drag & Drop cuando no hay archivo -->
+          <div v-if="!selectedFile" class="pdf-dropzone rounded-xl pa-6 text-center cursor-pointer border-dashed"
+            :class="{ 'dropzone-active': isDragging, 'dropzone-disabled': isSubmitting }" @click="triggerFileInput"
+            @dragover.prevent="isDragging = true" @dragleave.prevent="isDragging = false" @drop.prevent="onFileDropped">
+            <VAvatar color="error" variant="tonal" size="56" class="mb-3">
+              <VIcon icon="ri-upload-cloud-2-line" size="30" color="error" />
             </VAvatar>
-            <div class="text-subtitle-1 font-weight-bold text-high-emphasis">
-              {{ selectedFile ? selectedFile.name : 'Haz clic o arrastra tu archivo CSV aquí' }}
+            <div class="text-subtitle-2 font-weight-bold text-high-emphasis mb-1">
+              Haz clic para seleccionar o arrastra tu archivo PDF aquí
             </div>
-            <p class="text-caption text-medium-emphasis mb-0 mt-1">
-              Archivos delimitados por comas o punto y coma (.csv) con cabeceras estándar
-            </p>
-          </div>
-
-          <VAlert
-            v-if="parseError"
-            type="error"
-            variant="tonal"
-            class="mt-3 rounded-lg"
-            density="compact"
-          >
-            {{ parseError }}
-          </VAlert>
-        </VCard>
-
-        <!-- Paso 3: Previsualización de Datos -->
-        <div v-if="totalParsed > 0">
-          <div class="d-flex align-center justify-space-between mb-2">
-            <div class="text-subtitle-2 font-weight-bold d-flex align-center gap-2 text-success">
-              <VIcon
-                icon="ri-checkbox-circle-line"
-                size="18"
-              />
-              <span>Vista previa ({{ totalParsed }} registros detectados, {{ detectedCategories.length }} categorías)</span>
+            <div class="text-caption text-medium-emphasis">
+              Solo formato <strong>.PDF</strong> (hasta 100 MB de tamaño)
             </div>
-            <VChip
-              size="small"
-              color="success"
-              variant="tonal"
-              class="font-weight-bold"
-            >
-              Listo para importar
-            </VChip>
           </div>
 
-          <VCard class="border rounded-xl bg-surface elevation-0 overflow-hidden mb-2">
-            <VTable
-              density="compact"
-              class="text-caption preview-table"
-            >
-              <thead>
-                <tr class="bg-slate-50 text-uppercase font-weight-bold">
-                  <th>Código</th>
-                  <th>Descripción</th>
-                  <th>Referencia</th>
-                  <th>Categoría</th>
-                  <th class="text-right">
-                    Precio
-                  </th>
-                  <th class="text-center">
-                    Stock
-                  </th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr
-                  v-for="(row, idx) in previewRows"
-                  :key="idx"
-                >
-                  <td class="font-mono font-weight-bold text-primary">
-                    {{ row.code }}
-                  </td>
-                  <td
-                    class="text-truncate"
-                    style="max-width: 250px;"
-                  >
-                    {{ row.description }}
-                  </td>
-                  <td class="font-mono">
-                    {{ row.reference || '-' }}
-                  </td>
-                  <td>
-                    <VChip
-                      size="x-small"
-                      color="secondary"
-                      variant="tonal"
-                    >
-                      {{ row.category_name }}
-                    </VChip>
-                  </td>
-                  <td class="text-right font-weight-bold font-mono">
-                    {{ formatCurrency(row.price) }}
-                  </td>
-                  <td class="text-center">
-                    <VChip
-                      size="x-small"
-                      :color="row.stock_status.includes('Disponible') ? 'success' : 'warning'"
-                      variant="flat"
-                    >
-                      {{ row.stock_status }}
-                    </VChip>
-                  </td>
-                </tr>
-              </tbody>
-            </VTable>
-          </VCard>
-          <div class="text-caption text-disabled text-center">
-            Mostrando las primeras 5 filas de {{ totalParsed }} productos
+          <!-- Card de Archivo PDF Seleccionado -->
+          <div v-else
+            class="selected-file-card rounded-xl pa-3.5 border d-flex align-center justify-space-between gap-3"
+            style="background-color: rgba(var(--v-theme-error), 0.08);">
+            <div class="d-flex align-center gap-3 overflow-hidden min-w-0">
+              <VAvatar color="error" variant="flat" size="42" rounded="lg" class="flex-shrink-0">
+                <VIcon icon="ri-file-pdf-2-fill" size="24" color="white" />
+              </VAvatar>
+              <div class="overflow-hidden min-w-0">
+                <div class="text-body-2 font-weight-bold text-high-emphasis text-truncate" :title="selectedFile.name">
+                  {{ selectedFile.name }}
+                </div>
+                <div class="text-caption text-medium-emphasis font-mono">
+                  {{ formatFileSize(selectedFile.size) }} • Documento PDF
+                </div>
+              </div>
+            </div>
+
+            <div class="d-flex align-center gap-1 flex-shrink-0">
+              <VBtn icon="ri-refresh-line" size="small" variant="text" color="primary" title="Cambiar archivo"
+                :disabled="isSubmitting" @click.stop="triggerFileInput" />
+              <VBtn icon="ri-delete-bin-line" size="small" variant="text" color="error" title="Quitar archivo"
+                :disabled="isSubmitting" @click.stop="removeFile" />
+            </div>
           </div>
+        </div>
+
+        <!-- Barra de Progreso durante la Subida -->
+        <div v-if="isSubmitting" class="mt-4 pa-3 rounded-lg bg-surface border">
+          <div class="d-flex align-center justify-space-between mb-1">
+            <span class="text-caption font-weight-medium text-high-emphasis">
+              {{ uploadStatusText }}
+            </span>
+            <span class="text-caption font-weight-bold text-error font-mono">
+              {{ uploadProgress }}%
+            </span>
+          </div>
+          <VProgressLinear :model-value="uploadProgress" color="error" height="8" rounded striped indeterminate />
         </div>
       </VCardText>
 
       <VDivider />
 
-      <VCardActions class="pa-4 bg-surface d-flex justify-space-between">
-        <VBtn
-          variant="outlined"
-          color="secondary"
-          @click="emit('update:isDialogVisible', false)"
-        >
+      <!-- Footer de Acciones -->
+      <VCardActions class="pa-4 d-flex justify-space-between align-center bg-surface">
+        <VBtn color="secondary" variant="outlined" prepend-icon="ri-close-line"
+          class="rounded-lg px-5 font-weight-medium" :disabled="isSubmitting" @click="closeDialog">
           Cancelar
         </VBtn>
 
-        <VBtn
-          color="primary"
-          variant="elevated"
-          prepend-icon="ri-check-line"
-          :loading="isSubmitting"
-          :disabled="totalParsed === 0"
-          class="font-weight-bold px-6"
-          @click="submitImport"
-        >
-          Confirmar e Importar {{ totalParsed > 0 ? `(${totalParsed} items)` : '' }}
+        <VBtn color="error" variant="elevated" prepend-icon="ri-upload-cloud-2-line"
+          class="rounded-lg px-6 font-weight-bold elevation-2" :loading="isSubmitting"
+          :disabled="!selectedFile || !selectedSupplier" @click="submitPdfCatalog">
+          Subir Catálogo PDF
         </VBtn>
       </VCardActions>
     </VCard>
   </VDialog>
 </template>
 
-<style scoped lang="scss">
-.upload-dropzone {
-  border: 2px dashed rgba(var(--v-theme-primary), 0.35);
-  background-color: rgba(var(--v-theme-primary), 0.02);
-  transition: all 0.2s ease;
-
-  &:hover {
-    border-color: rgb(var(--v-theme-primary));
-    background-color: rgba(var(--v-theme-primary), 0.05);
-  }
+<style scoped>
+.pdf-dropzone {
+  border: 2px dashed rgba(var(--v-theme-error), 0.35);
+  background-color: rgba(var(--v-theme-error), 0.02);
+  transition: all 0.25s ease;
 }
 
-.font-mono {
-  font-family: 'Consolas', 'Monaco', 'Courier New', monospace !important;
+.pdf-dropzone:hover {
+  border-color: rgba(var(--v-theme-error), 0.8);
+  background-color: rgba(var(--v-theme-error), 0.05);
 }
 
-.preview-table {
-  th, td {
-    padding: 6px 12px !important;
-  }
+.dropzone-active {
+  border-color: rgb(var(--v-theme-error)) !important;
+  background-color: rgba(var(--v-theme-error), 0.1) !important;
+  transform: scale(0.99);
+}
+
+.dropzone-disabled {
+  pointer-events: none;
+  opacity: 0.6;
+}
+
+.selected-file-card {
+  border-color: rgba(var(--v-theme-error), 0.2) !important;
 }
 </style>

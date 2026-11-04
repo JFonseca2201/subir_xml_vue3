@@ -62,6 +62,7 @@ declare module 'vue' {
     DialogCloseBtn: typeof import('./src/@core/components/DialogCloseBtn.vue')['default']
     DistributorCatalogDetailDialog: typeof import('./src/components/distribuidor-catalogo/DistributorCatalogDetailDialog.vue')['default']
     DistributorCatalogImportDialog: typeof import('./src/components/distribuidor-catalogo/DistributorCatalogImportDialog.vue')['default']
+    DistributorCatalogPdfUploadDialog: typeof import('./src/components/distribuidor-catalogo/DistributorCatalogPdfUploadDialog.vue')['default']
     DistributorCatalogSearchDialog: typeof import('./src/components/distribuidor-catalogo/DistributorCatalogSearchDialog.vue')['default']
     EditEmployeeAdvanceDialog: typeof import('./src/components/inventory/employee-expenses/EditEmployeeAdvanceDialog.vue')['default']
     EditEmployeePaymentDialog: typeof import('./src/components/inventory/employee-expenses/EditEmployeePaymentDialog.vue')['default']
