@@ -1312,12 +1312,18 @@ onActivated(async () => {
                     </div>
                   </div>
                   <div class="d-flex gap-2">
-                    <VBtn size="small" color="primary" variant="tonal" prepend-icon="ri-box-3-line"
+                    <!-- <VBtn size="small" color="primary" variant="tonal" prepend-icon="ri-box-3-line"
                       class="font-weight-semibold" @click="addTemporaryProduct">
                       Producto Temporal
+                    </VBtn> -->
+
+                    <VBtn size="small" color="primary" variant="flat" prepend-icon="ri-draft-line"
+                      class="rounded-lg font-weight-semibold text-none" style="flex: 1;" @click="addTemporaryProduct">
+                      Producto Temporal
                     </VBtn>
-                    <VBtn size="small" color="info" variant="tonal" prepend-icon="ri-tools-line"
-                      class="font-weight-semibold" @click="showAddServiceDialog = true">
+
+                    <VBtn size="small" color="info" variant="flat" prepend-icon="ri-tools-line"
+                      class="rounded-lg font-weight-semibold text-none" @click="showAddServiceDialog = true">
                       Servicio Express
                     </VBtn>
                   </div>

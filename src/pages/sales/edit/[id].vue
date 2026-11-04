@@ -68,7 +68,7 @@ const getStoredSriAmbiente = () => {
       const parsedUser = JSON.parse(userData)
       if (parsedUser?.sucursal?.ambiente) return String(parsedUser.sucursal.ambiente)
     }
-  } catch (_) {}
+  } catch (_) { }
 
   return '1'
 }
@@ -1813,11 +1813,11 @@ onMounted(() => {
                       </div>
                     </div>
                     <div class="d-flex gap-2">
-                      <VBtn :disabled="sale.status === 'canceled'" size="small" color="primary" variant="tonal"
+                      <VBtn :disabled="sale.status === 'canceled'" size="small" color="primary" variant="flat"
                         prepend-icon="ri-box-3-line" class="font-weight-semibold" @click="addTemporaryProduct">
                         Producto Temporal
                       </VBtn>
-                      <VBtn :disabled="sale.status === 'canceled'" size="small" color="info" variant="tonal"
+                      <VBtn :disabled="sale.status === 'canceled'" size="small" color="info" variant="flat"
                         prepend-icon="ri-tools-line" class="font-weight-semibold"
                         @click="isAddServiceDialogVisible = true">
                         Servicio Express
