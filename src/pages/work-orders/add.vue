@@ -904,9 +904,13 @@ onActivated(async () => {
         </div>
 
         <div class="d-flex align-center justify-end gap-2 flex-wrap ms-auto">
-          <VBtn variant="outlined" color="secondary" prepend-icon="ri-arrow-left-line" class="font-weight-medium"
-            @click="cancel">
-            Volver al Listado
+          <VBtn variant="text" color="info" class="text-capitalize font-weight-medium px-2" @click="cancel">
+            <template #prepend>
+              <VAvatar color="info" size="36" class="mr-2">
+                <VIcon icon="ri-arrow-left-s-line" color="white" size="22" />
+              </VAvatar>
+            </template>
+            Listado
           </VBtn>
         </div>
       </div>
@@ -1567,11 +1571,13 @@ onActivated(async () => {
                 </VBtn>
 
                 <div class="d-flex align-center gap-2 w-100 mt-1" style="gap: 8px;">
-                  <VBtn color="secondary" variant="tonal" height="38" prepend-icon="ri-draft-line"
+
+                  <VBtn color="info" variant="flat" height="38" prepend-icon="ri-draft-line"
                     class="rounded-lg font-weight-semibold text-none" style="flex: 1;" :loading="isSavingDraft"
                     @click="saveDraft">
                     Borrador
                   </VBtn>
+
                   <VBtn color="secondary" variant="outlined" height="38" prepend-icon="ri-close-line"
                     class="rounded-lg font-weight-medium text-none" style="flex: 1;" @click="cancel">
                     Cancelar

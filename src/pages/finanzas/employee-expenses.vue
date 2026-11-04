@@ -439,63 +439,70 @@ onMounted(() => {
     </div>
 
     <!-- Barra de Métricas Rápidas (KPIs) -->
-    <VRow class="mb-5 d-none d-sm-flex" dense>
-      <!-- Total Pagos -->
-      <VCol cols="12" sm="4">
-        <VCard class="kpi-stat-card elevation-0 border rounded-xl pa-4 bg-surface d-flex align-center gap-3 h-100">
-          <VAvatar size="46" color="primary" variant="tonal" rounded="lg" class="flex-shrink-0">
-            <VIcon icon="ri-file-user-line" size="26" />
-          </VAvatar>
-          <div class="min-w-0 flex-grow-1">
-            <div class="text-caption text-medium-emphasis font-weight-medium text-truncate">
-              Total Roles de Pago
+
+    <VRow class="mb-5 d-none d-sm-flex">
+      <!-- Aportes Hoy -->
+      <VCol cols="12" sm="6" md="4">
+        <VCard class="pa-4 rounded-xl tonal-card bg-primary-tonal border-primary operations-kpi-card" elevation="0">
+          <div class="d-flex align-center justify-space-between">
+            <div>
+              <span class="text-overline font-weight-bold text-primary text-uppercase tracking-wider">
+                Total Roles de Pago
+              </span>
+              <div class="text-h5 font-weight-extrabold text-high-emphasis mt-1 kpi-amount">
+                {{ formatCurrency(summary.total_payments) }}
+              </div>
+              <span class="text-caption text-medium-emphasis font-weight-medium">
+                Total acumulado jornada de hoy
+              </span>
             </div>
-            <div class="text-h6 font-weight-bold text-primary font-mono text-truncate">
-              {{ formatCurrency(summary.total_payments) }}
-            </div>
-            <div class="text-caption text-disabled text-truncate font-weight-regular">
-              Suma acumulada de pagos de nómina
-            </div>
+            <VAvatar color="primary" variant="elevated" size="42" class="elevation-2 kpi-avatar">
+              <VIcon size="24" icon="ri-calendar-check-line" color="white" />
+            </VAvatar>
           </div>
         </VCard>
       </VCol>
 
-      <!-- Total Adelantos -->
-      <VCol cols="12" sm="4">
-        <VCard class="kpi-stat-card elevation-0 border rounded-xl pa-4 bg-surface d-flex align-center gap-3 h-100">
-          <VAvatar size="46" color="warning" variant="tonal" rounded="lg" class="flex-shrink-0">
-            <VIcon icon="ri-hand-coin-line" size="26" />
-          </VAvatar>
-          <div class="min-w-0 flex-grow-1">
-            <div class="text-caption text-medium-emphasis font-weight-medium text-truncate">
-              Total Adelantos
+      <!-- Aportes del Mes -->
+      <VCol cols="12" sm="6" md="4">
+        <VCard class="pa-4 rounded-xl tonal-card bg-success-tonal border-success operations-kpi-card" elevation="0">
+          <div class="d-flex align-center justify-space-between">
+            <div>
+              <span class="text-overline font-weight-bold text-success text-uppercase tracking-wider">
+                Adelantos del Mes
+              </span>
+              <div class="text-h5 font-weight-extrabold text-high-emphasis mt-1 kpi-amount">
+                {{ formatCurrency(summary.total_advances) }}
+              </div>
+              <span class="text-caption text-medium-emphasis font-weight-medium">
+                Total acumulado mes en curso
+              </span>
             </div>
-            <div class="text-h6 font-weight-bold text-warning font-mono text-truncate">
-              {{ formatCurrency(summary.total_advances) }}
-            </div>
-            <div class="text-caption text-disabled text-truncate font-weight-regular">
-              Adelantos concedidos a empleados
-            </div>
+            <VAvatar color="success" variant="elevated" size="42" class="elevation-2 kpi-avatar">
+              <VIcon size="24" icon="ri-calendar-event-fill" color="white" />
+            </VAvatar>
           </div>
         </VCard>
       </VCol>
 
       <!-- Total General -->
-      <VCol cols="12" sm="4">
-        <VCard class="kpi-stat-card elevation-0 border rounded-xl pa-4 bg-surface d-flex align-center gap-3 h-100">
-          <VAvatar size="46" color="info" variant="tonal" rounded="lg" class="flex-shrink-0">
-            <VIcon icon="ri-funds-line" size="26" />
-          </VAvatar>
-          <div class="min-w-0 flex-grow-1">
-            <div class="text-caption text-medium-emphasis font-weight-medium text-truncate">
-              Total General Nómina
+      <VCol cols="12" sm="12" md="4">
+        <VCard class="pa-4 rounded-xl tonal-card bg-info-tonal border-info operations-kpi-card" elevation="0">
+          <div class="d-flex align-center justify-space-between">
+            <div>
+              <span class="text-overline font-weight-bold text-info text-uppercase tracking-wider">
+                Total General
+              </span>
+              <div class="text-h5 font-weight-extrabold text-high-emphasis mt-1 kpi-amount">
+                {{ formatCurrency(summary.total_general) }}
+              </div>
+              <span class="text-caption text-medium-emphasis font-weight-medium">
+                Suma histórica total de pagos
+              </span>
             </div>
-            <div class="text-h6 font-weight-bold text-info font-mono text-truncate">
-              {{ formatCurrency(summary.total_general) }}
-            </div>
-            <div class="text-caption text-disabled text-truncate font-weight-regular">
-              Egresos totales acumulados
-            </div>
+            <VAvatar color="info" variant="elevated" size="42" class="elevation-2 kpi-avatar">
+              <VIcon size="24" icon="ri-money-dollar-box-line" color="white" />
+            </VAvatar>
           </div>
         </VCard>
       </VCol>

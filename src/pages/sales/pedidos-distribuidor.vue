@@ -600,10 +600,16 @@ onActivated(async () => {
         </div>
 
         <div class="d-flex align-center justify-end gap-2 flex-wrap ms-auto">
-          <VBtn variant="outlined" color="secondary" prepend-icon="ri-arrow-left-line" class="font-weight-medium"
-            @click="cancelAndReturn">
-            Volver al Listado
+
+          <VBtn variant="text" color="info" class="text-capitalize font-weight-medium px-2" @click="cancelAndReturn">
+            <template #prepend>
+              <VAvatar color="info" size="36" class="mr-2">
+                <VIcon icon="ri-arrow-left-s-line" color="white" size="22" />
+              </VAvatar>
+            </template>
+            Listado
           </VBtn>
+
         </div>
       </div>
     </VCard>
@@ -833,78 +839,98 @@ onActivated(async () => {
 
               <!-- Tabla de Items Agregados -->
               <div v-if="pedido.items.length > 0" class="rounded-xl border overflow-hidden">
-                <VTable hover class="w-100">
-                  <thead class="bg-grey-lighten-5">
-                    <tr>
-                      <th class="text-left font-weight-bold text-grey-darken-3">
-                        Ítem / Descripción
+                <table class="custom-sales-items-table">
+                  <thead>
+                    <tr class="bg-slate-50 text-caption font-weight-bold">
+                      <th class="text-left th-desc">
+                        Cod./Descripción
                       </th>
-                      <th class="text-center font-weight-bold text-grey-darken-3" style="width: 110px;">
+                      <th class="text-center th-qty">
                         Cant.
                       </th>
-                      <th class="text-right font-weight-bold text-grey-darken-3" style="width: 150px;">
-                        Costo Compra ($)
+                      <th class="text-center th-price">
+                        Costo ($)
                       </th>
-                      <th class="text-right font-weight-bold text-grey-darken-3" style="width: 130px;">
+                      <th class="text-right th-subtotal">
                         Subtotal ($)
                       </th>
-                      <th class="text-center" style="width: 50px;" />
+                      <th class="text-center th-actions">
+                        Acc.
+                      </th>
                     </tr>
                   </thead>
                   <tbody>
-                    <tr v-for="(item, index) in pedido.items" :key="index">
-                      <td class="pa-3">
-                        <div v-if="item.producto_id || item.source !== 'manual'">
-                          <div class="font-weight-medium text-body-2 text-grey-darken-4">
-                            {{ item.description }}
-                          </div>
-                          <div class="d-flex align-center gap-2 mt-1 flex-wrap">
-                            <span v-if="item.sku" class="text-caption text-medium-emphasis font-mono">
-                              SKU/Ref: {{ item.sku }}
-                            </span>
-                            <VChip size="x-small"
-                              :color="item.source === 'catalog' ? 'info' : (item.source === 'replacement' ? 'warning' : 'success')"
-                              variant="tonal" class="font-weight-bold">
-                              {{ item.source === 'catalog' ? 'Catálogo' : (item.source === 'replacement' ? 'Repuesto OT'
-                                :
-                                'Inventario') }}
-                            </VChip>
+                    <tr v-for="(item, index) in pedido.items" :key="index" class="sales-item-row">
+                      <!-- Columna Descripción -->
+                      <td class="td-desc">
+                        <div class="d-flex align-center gap-2 py-1">
+                          <VAvatar size="28"
+                            :color="item.source === 'catalog' ? 'info' : (item.source === 'replacement' ? 'warning' : (item.source === 'manual' ? 'secondary' : 'primary'))"
+                            variant="tonal" class="rounded-lg flex-shrink-0">
+                            <VIcon
+                              :icon="item.source === 'catalog' ? 'ri-book-read-line' : (item.source === 'replacement' ? 'ri-tools-line' : (item.source === 'manual' ? 'ri-edit-line' : 'ri-box-3-line'))"
+                              size="14" />
+                          </VAvatar>
+                          <div class="desc-content-col">
+                            <input v-model="item.description" type="text"
+                              :placeholder="item.source === 'manual' ? 'Descripción del producto manual *' : 'Descripción del ítem...'"
+                              class="item-title-input" :title="item.description">
+                            <div class="item-meta-row mt-0.5">
+                              <span class="meta-tag" :class="item.source === 'catalog' ? 'tag-service' : (item.source === 'replacement' ? 'tag-warning'
+                                : 'tag-product')">
+                                {{ item.source === 'catalog' ? 'Catálogo'
+                                  : (item.source === 'replacement' ? 'Repuesto OT' :
+                                    (item.source === 'manual' ? 'Producto Manual' : 'Inventario')) }}
+                              </span>
+                              <span v-if="item.sku && item.sku !== 'MANUAL'" class="meta-sku font-mono">
+                                Cod.: {{ item.sku }}
+                              </span>
+                            </div>
                           </div>
                         </div>
-                        <div v-else class="d-flex flex-column gap-1">
-                          <div class="d-flex align-center gap-2">
-                            <VChip size="x-small" color="primary" variant="tonal" class="font-weight-bold">
-                              Producto Manual
-                            </VChip>
-                            <span v-if="item.sku && item.sku !== 'MANUAL'"
-                              class="text-caption text-medium-emphasis font-mono font-weight-medium">
-                              Ref: {{ item.sku }}
-                            </span>
-                          </div>
-                          <VTextField v-model="item.description" placeholder="Descripción del producto manual *"
-                            variant="underlined" density="compact" hide-details="auto" :rules="[requiredRule]"
-                            class="font-weight-medium mt-1" />
+                      </td>
+
+                      <!-- Columna Cantidad -->
+                      <td class="td-qty text-center">
+                        <div class="qty-stepper-mini">
+                          <button type="button" class="qty-mini-btn" :disabled="Number(item.cantidad) <= 1"
+                            @click="item.cantidad > 1 ? item.cantidad-- : null">
+                            <VIcon icon="ri-subtract-line" size="12" />
+                          </button>
+                          <input v-model.number="item.cantidad" type="number" min="1" max="999"
+                            class="qty-mini-val font-mono text-center"
+                            style="width: 28px; border: none; background: transparent; outline: none; -moz-appearance: textfield; padding: 0;" />
+                          <button type="button" class="qty-mini-btn" :disabled="Number(item.cantidad) >= 9999"
+                            @click="item.cantidad++">
+                            <VIcon icon="ri-add-line" size="12" />
+                          </button>
                         </div>
                       </td>
-                      <td class="pa-2 text-center">
-                        <VTextField v-model.number="item.cantidad" type="number" min="1" variant="outlined"
-                          density="compact" hide-details="auto" :rules="[requiredRule]" class="text-center" />
+
+                      <!-- Columna Costo ($) -->
+                      <td class="td-price text-center">
+                        <div class="cell-input-wrapper">
+                          <span class="cell-prefix">$</span>
+                          <input v-model.number="item.precio_compra_estimado" type="number" min="0" step="0.01"
+                            class="cell-number-input font-mono font-weight-bold text-slate-800" placeholder="0.00">
+                        </div>
                       </td>
-                      <td class="pa-2 text-right">
-                        <VTextField v-model.number="item.precio_compra_estimado" type="number" min="0" step="0.01"
-                          variant="outlined" density="compact" hide-details="auto" :rules="[requiredRule]" prefix="$"
-                          class="text-right" />
+
+                      <!-- Columna Subtotal ($) -->
+                      <td class="td-subtotal text-right">
+                        <span class="font-mono font-weight-black text-success" style="font-size: 0.88rem;">
+                          ${{ ((Number(item.cantidad) || 0) * (Number(item.precio_compra_estimado) || 0)).toFixed(2) }}
+                        </span>
                       </td>
-                      <td class="pa-2 text-right font-weight-bold font-mono text-body-2 text-primary">
-                        ${{ ((Number(item.cantidad) || 0) * (Number(item.precio_compra_estimado) || 0)).toFixed(2) }}
-                      </td>
-                      <td class="pa-2 text-center">
-                        <VBtn icon="ri-delete-bin-line" variant="text" color="error" size="small"
-                          @click="removeItem(index)" />
+
+                      <!-- Columna Acciones -->
+                      <td class="td-actions text-center">
+                        <VBtn icon="ri-delete-bin-line" size="x-small" color="error" variant="text"
+                          class="delete-item-btn" title="Eliminar ítem" @click="removeItem(index)" />
                       </td>
                     </tr>
                   </tbody>
-                </VTable>
+                </table>
               </div>
 
               <!-- Empty State -->
@@ -924,37 +950,39 @@ onActivated(async () => {
             </VCardText>
           </VCard>
 
-          <!-- Tarjeta 3: Observaciones -->
-          <VCard class="rounded-xl border-light elevation-1 mb-6 overflow-hidden">
-            <VCardItem class="bg-white py-3 px-4 border-b">
-              <template #title>
-                <div class="d-flex align-center gap-3">
-                  <VAvatar size="36" color="secondary" variant="tonal" class="rounded-lg">
-                    <VIcon icon="ri-edit-2-line" size="20" />
-                  </VAvatar>
-                  <div>
-                    <h3 class="text-subtitle-1 font-weight-bold text-slate-900 mb-0">
-                      Notas y Observaciones
-                    </h3>
-                    <p class="text-caption text-medium-emphasis mb-0">
-                      Información complementaria para la entrega o despacho
-                    </p>
-                  </div>
-                </div>
-              </template>
-            </VCardItem>
-            <VCardText class="pa-4 pa-sm-5 bg-white">
-              <VTextarea v-model="pedido.observations" label="Notas / Observaciones del Pedido"
-                placeholder="Escribe alguna nota adicional o condición especial para el distribuidor..."
-                variant="outlined" prepend-inner-icon="ri-file-text-line" hide-details="auto" rows="3"
-                color="primary" />
-            </VCardText>
-          </VCard>
+
         </VCol>
 
         <!-- Columna Derecha (4 cols): Resumen Financiero y Acciones -->
         <VCol cols="12" lg="4">
           <div class="position-sticky" style="top: 24px; z-index: 1;">
+            <!-- Tarjeta 3: Observaciones -->
+            <VCard class="rounded-xl border-light elevation-1 mb-6 overflow-hidden">
+              <VCardItem class="bg-white py-3 px-4 border-b">
+                <template #title>
+                  <div class="d-flex align-center gap-3">
+                    <VAvatar size="36" color="secondary" variant="tonal" class="rounded-lg">
+                      <VIcon icon="ri-edit-2-line" size="20" />
+                    </VAvatar>
+                    <div>
+                      <h3 class="text-subtitle-1 font-weight-bold text-slate-900 mb-0">
+                        Notas y Observaciones
+                      </h3>
+                      <p class="text-caption text-medium-emphasis mb-0">
+                        Información complementaria para la entrega o despacho
+                      </p>
+                    </div>
+                  </div>
+                </template>
+              </VCardItem>
+              <VCardText class="pa-4 pa-sm-5 bg-white">
+                <VTextarea v-model="pedido.observations" label="Notas / Observaciones del Pedido"
+                  placeholder="Escribe alguna nota adicional o condición especial para el distribuidor..."
+                  variant="outlined" prepend-inner-icon="ri-file-text-line" hide-details="auto" rows="3"
+                  color="primary" />
+              </VCardText>
+            </VCard>
+
             <VCard class="rounded-xl border-light elevation-1 overflow-hidden">
               <VCardItem class="bg-white py-3 px-4 border-b">
                 <template #title>
@@ -1003,18 +1031,7 @@ onActivated(async () => {
                   </VAvatar>
                 </div>
 
-                <!-- Banner Informativo -->
-                <div class="mt-2 pa-3 bg-purple-lighten-5 rounded-lg border border-purple-lighten-4">
-                  <div class="d-flex align-start gap-2">
-                    <VIcon icon="ri-information-fill" color="primary" class="mt-1" size="18" />
-                    <div class="text-caption text-primary" style="line-height: 1.35;">
-                      <strong>Información Importante:</strong>
-                      Este pedido se registrará en estado <strong>Pendiente</strong>. No afecta el stock actual ni
-                      genera
-                      facturación financiera hasta la recepción de los repuestos.
-                    </div>
-                  </div>
-                </div>
+
               </VCardText>
 
               <VDivider />
@@ -1030,9 +1047,10 @@ onActivated(async () => {
 
                 <!-- Fila de Acciones Secundarias Equilibradas -->
                 <div class="d-flex align-center gap-2 w-100 mt-1" style="gap: 8px;">
-                  <VBtn color="secondary" variant="tonal" height="38" prepend-icon="ri-draft-line"
+
+                  <VBtn color="info" variant="flat" height="38" prepend-icon="ri-draft-line"
                     class="rounded-lg font-weight-semibold text-none" style="flex: 1;" :loading="isSavingDraft"
-                    @click.prevent="saveDraft">
+                    @click="saveDraft">
                     {{ pedidoId ? 'Borrador' : 'Guardar Borrador' }}
                   </VBtn>
 
@@ -1209,7 +1227,8 @@ onActivated(async () => {
           <div class="text-caption text-medium-emphasis">
             Mostrando {{ filteredReplacements.length }} de {{ pendingReplacements.length }} repuestos sugeridos
           </div>
-          <VBtn color="secondary" variant="outlined" @click="isReplacementsDialogVisible = false">
+          <VBtn color="secondary" variant="outlined" @click="isReplacementsDialogVisible = false"
+            prepend-icon="ri-close-line">
             Cerrar
           </VBtn>
         </VCardActions>
@@ -1217,4 +1236,3 @@ onActivated(async () => {
     </VDialog>
   </div>
 </template>
-

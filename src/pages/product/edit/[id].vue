@@ -568,10 +568,17 @@ onMounted(() => {
         </div>
 
         <div class="d-flex align-center justify-end gap-2 flex-wrap ms-auto">
-          <VBtn variant="outlined" color="secondary" prepend-icon="ri-arrow-left-line" class="font-weight-medium"
+
+          <VBtn variant="text" color="info" class="text-capitalize font-weight-medium px-2"
             :disabled="isLoading || isLoadingConfig || loader.loading" @click="router.push('/product/list')">
-            Volver al Listado
+            <template #prepend>
+              <VAvatar color="info" size="36" class="mr-2">
+                <VIcon icon="ri-arrow-left-s-line" color="white" size="22" />
+              </VAvatar>
+            </template>
+            Listado
           </VBtn>
+
         </div>
       </div>
     </VCard>
@@ -1030,7 +1037,7 @@ onMounted(() => {
                 </div>
                 <VChip color="success" variant="tonal" size="small" class="font-weight-bold">
                   {{ (((Number(product.price_sale) - Number(product.purchase_price)) / Number(product.purchase_price)) *
-                  100).toFixed(1) }}% Rentabilidad
+                    100).toFixed(1) }}% Rentabilidad
                 </VChip>
               </div>
             </VCardText>
@@ -1176,7 +1183,7 @@ onMounted(() => {
                     +${{ (Number(product.price_sale) - Number(product.purchase_price)).toFixed(2) }}
                     ({{ (((Number(product.price_sale) - Number(product.purchase_price)) /
                       Number(product.purchase_price)) *
-                    100).toFixed(1) }}%)
+                      100).toFixed(1) }}%)
                   </span>
                 </div>
               </VCardText>
@@ -1208,5 +1215,3 @@ onMounted(() => {
       :search-field="checkSearchField" />
   </div>
 </template>
-
-

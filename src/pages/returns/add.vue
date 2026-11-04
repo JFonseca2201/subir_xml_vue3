@@ -338,10 +338,15 @@ onMounted(() => {
             @click="clearSelectedSale">
             Cambiar de Venta
           </VBtn>
-          <VBtn variant="outlined" color="secondary" prepend-icon="ri-arrow-left-line" class="font-weight-medium"
-            @click="cancelAndReturn">
-            Volver al Listado
+          <VBtn variant="text" color="info" class="text-capitalize font-weight-medium px-2" @click="cancelAndReturn">
+            <template #prepend>
+              <VAvatar color="info" size="36" class="mr-2">
+                <VIcon icon="ri-arrow-left-s-line" color="white" size="22" />
+              </VAvatar>
+            </template>
+            Listado
           </VBtn>
+
         </div>
       </div>
     </VCard>
@@ -528,7 +533,7 @@ onMounted(() => {
                 <div class="d-flex justify-space-between align-center pt-2.5 border-t">
                   <span class="text-caption text-medium-emphasis font-weight-medium">Total Cobrado</span>
                   <span class="text-subtitle-1 font-weight-bold text-success font-mono">{{ formatCurrency(s.total)
-                  }}</span>
+                    }}</span>
                 </div>
               </VCardText>
 
@@ -850,4 +855,3 @@ onMounted(() => {
     </VExpandTransition>
   </div>
 </template>
-

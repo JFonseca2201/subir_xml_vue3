@@ -1132,17 +1132,17 @@ onActivated(() => {
           class="font-weight-semibold" @click="openExpenseDialog">
           Nuevo Egreso
         </VBtn>
-        <VBtn color="warning" variant="tonal" size="default" prepend-icon="ri-arrow-left-right-line"
+        <!--  <VBtn color="warning" variant="tonal" size="default" prepend-icon="ri-arrow-left-right-line"
           class="font-weight-semibold" @click="openTransferDialog">
           Nueva Transferencia
-        </VBtn>
+        </VBtn> -->
         <VBtn color="secondary" variant="outlined" size="default" prepend-icon="ri-file-pdf-line"
           class="font-weight-medium" :loading="isGeneratingPDF" @click="generatePDF">
           Exportar PDF
         </VBtn>
         <VBtn title="Actualizar datos" variant="outlined" color="secondary" prepend-icon="ri-refresh-line"
           size="default" class="font-weight-medium" :loading="loading" @click="() => loadMovements(false)">
-          Actualizar
+
         </VBtn>
       </div>
     </div>

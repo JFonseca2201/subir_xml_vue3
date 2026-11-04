@@ -218,29 +218,29 @@ onMounted(() => {
             <span>Filtros de Búsqueda</span>
           </div>
 
-          <VBtn variant="text" color="error" size="small" prepend-icon="ri-filter-off-line"
-            class="font-weight-semibold" @click="resetFilters">
+          <VBtn variant="text" color="error" size="small" prepend-icon="ri-filter-off-line" class="font-weight-semibold"
+            @click="resetFilters">
             Limpiar Filtros
           </VBtn>
         </div>
 
         <VRow dense class="gap-y-3">
           <!-- Búsqueda General -->
-          <VCol cols="12" sm="6" md="4">
+          <VCol cols="12" sm="6" md="6">
             <VTextField v-model="searchQuery" label="Buscar por Palabra Clave"
               placeholder="Ej: Chevrolet, Vitara, Amortiguador, Monroe..." clearable variant="outlined"
               density="comfortable" hide-details="auto" prepend-inner-icon="ri-search-2-line" />
           </VCol>
 
           <!-- Filtro Categoría -->
-          <VCol cols="12" sm="6" md="3">
+          <VCol cols="12" sm="6" md="2">
             <VAutocomplete v-model="categoryFilter" label="Categoría del Repuesto" :items="categoryOptions"
               item-title="title" item-value="value" clearable variant="outlined" density="comfortable"
               hide-details="auto" prepend-inner-icon="ri-price-tag-3-line" placeholder="Todas las Categorías" />
           </VCol>
 
           <!-- Tracción -->
-          <VCol cols="12" sm="6" md="3">
+          <VCol cols="12" sm="6" md="2">
             <VSelect v-model="tractionFilter" label="Tracción / Suspensión" :items="[
               { title: 'Todas las Tracciones', value: 'ALL' },
               { title: '4x4', value: '4X4' },
@@ -533,4 +533,3 @@ onMounted(() => {
       @delete-success="handleDeleteSuccess" />
   </div>
 </template>
-

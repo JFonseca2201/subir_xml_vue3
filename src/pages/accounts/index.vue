@@ -362,7 +362,7 @@ onMounted(() => {
         </VBtn>
         <VBtn title="Actualizar cuentas" variant="outlined" color="secondary" prepend-icon="ri-refresh-line"
           size="default" class="font-weight-medium" :loading="loading" @click="loadAccounts">
-          Actualizar
+
         </VBtn>
       </div>
     </div>
@@ -811,5 +811,3 @@ onMounted(() => {
     </VDialog>
   </div>
 </template>
-
-

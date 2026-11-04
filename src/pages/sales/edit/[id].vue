@@ -1290,10 +1290,18 @@ onMounted(() => {
         </div>
 
         <div class="d-flex align-center justify-end gap-2 flex-wrap ms-auto">
-          <VBtn variant="outlined" color="secondary" prepend-icon="ri-arrow-left-line" class="font-weight-medium"
-            :disabled="isProcessing" :to="sale.document_type === 'quote' ? '/quotes/list' : '/sales/list'">
-            Volver al Listado
+
+          <VBtn variant="text" color="info" class="text-capitalize font-weight-medium px-2" :disabled="isProcessing"
+            :to="sale.document_type === 'quote' ? '/quotes/list' : '/sales/list'">
+            <template #prepend>
+              <VAvatar color="info" size="36" class="mr-2">
+                <VIcon icon="ri-arrow-left-s-line" color="white" size="22" />
+              </VAvatar>
+            </template>
+            Listado
           </VBtn>
+
+
         </div>
       </div>
     </VCard>
@@ -2221,10 +2229,11 @@ onMounted(() => {
 
                   <!-- Fila de Acciones Secundarias Equilibradas -->
                   <div class="d-flex align-center gap-2 w-100 mt-1" style="gap: 8px;">
-                    <VBtn v-if="sale.status === 'draft' && sale.document_type !== 'quote'" color="secondary"
-                      variant="tonal" height="38" prepend-icon="ri-draft-line"
-                      class="rounded-lg font-weight-semibold text-none" style="flex: 1;"
-                      :loading="loader.loading && !isDispatching" :disabled="isProcessing" @click.prevent="saveDraft">
+
+                    <VBtn v-if="sale.status === 'draft' && sale.document_type !== 'quote'" color="info" variant="flat"
+                      height="38" prepend-icon="ri-draft-line" class="rounded-lg font-weight-semibold text-none"
+                      style="flex: 1;" :loading="loader.loading && !isDispatching" :disabled="isProcessing"
+                      @click.prevent="saveDraft">
                       Borrador
                     </VBtn>
 
