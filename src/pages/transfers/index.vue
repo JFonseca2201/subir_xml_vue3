@@ -520,17 +520,17 @@ onActivated(() => {
             <div class="finance-filter-btn-group">
               <VBtn size="small" :variant="selectedFilter === 'all' ? 'elevated' : 'tonal'"
                 :color="selectedFilter === 'all' ? 'primary' : 'secondary'" class="font-weight-semibold"
-                @click="selectedFilter = 'all'">
+                prepend-icon="ri-apps-2-line" @click="selectedFilter = 'all'">
                 Todos
               </VBtn>
               <VBtn size="small" :variant="selectedFilter === 'today' ? 'elevated' : 'tonal'"
                 :color="selectedFilter === 'today' ? 'primary' : 'secondary'" class="font-weight-semibold"
-                @click="selectedFilter = 'today'">
+                prepend-icon="ri-file-user-line" @click="selectedFilter = 'today'">
                 Hoy
               </VBtn>
               <VBtn size="small" :variant="selectedFilter === 'month' ? 'elevated' : 'tonal'"
                 :color="selectedFilter === 'month' ? 'primary' : 'secondary'" class="font-weight-semibold"
-                @click="selectedFilter = 'month'">
+                prepend-icon="ri-file-pdf-line" @click="selectedFilter = 'month'">
                 Este Mes
               </VBtn>
             </div>
@@ -838,23 +838,23 @@ onActivated(() => {
       </VCard>
 
       <!-- Paginación -->
-    <VCard v-if="allFilteredTransfers.length > 0" class="mt-4 rounded-xl border elevation-0 pa-4 bg-surface">
-      <div class="d-flex flex-column flex-sm-row align-center justify-space-between gap-3 w-100">
-        <div class="d-flex align-center gap-4 flex-wrap">
-          <div class="text-body-2 text-medium-emphasis">
-            Mostrando <strong class="text-high-emphasis">{{ paginatedTransfers.length }}</strong> de <strong
-              class="text-high-emphasis">{{ allFilteredTransfers.length }}</strong> transferencias
+      <VCard v-if="allFilteredTransfers.length > 0" class="mt-4 rounded-xl border elevation-0 pa-4 bg-surface">
+        <div class="d-flex flex-column flex-sm-row align-center justify-space-between gap-3 w-100">
+          <div class="d-flex align-center gap-4 flex-wrap">
+            <div class="text-body-2 text-medium-emphasis">
+              Mostrando <strong class="text-high-emphasis">{{ paginatedTransfers.length }}</strong> de <strong
+                class="text-high-emphasis">{{ allFilteredTransfers.length }}</strong> transferencias
+            </div>
+            <div class="d-flex align-center gap-2" style="min-width: 140px;">
+              <span class="text-caption text-medium-emphasis">Por pág:</span>
+              <VSelect v-model="itemsPerPage" :items="[10, 15, 25, 50, 100]" variant="outlined" density="compact"
+                hide-details style="max-width: 95px;" @update:model-value="currentPage = 1" />
+            </div>
           </div>
-          <div class="d-flex align-center gap-2" style="min-width: 140px;">
-            <span class="text-caption text-medium-emphasis">Por pág:</span>
-            <VSelect v-model="itemsPerPage" :items="[10, 15, 25, 50, 100]" variant="outlined" density="compact"
-              hide-details style="max-width: 95px;" @update:model-value="currentPage = 1" />
-          </div>
+          <VPagination v-if="totalPages > 1" v-model="currentPage" :length="totalPages" :disabled="loading"
+            rounded="circle" :total-visible="$vuetify.display.xs ? 4 : 7"
+            :size="$vuetify.display.xs ? 'small' : 'default'" density="comfortable" color="primary" class="my-0" />
         </div>
-        <VPagination v-if="totalPages > 1" v-model="currentPage" :length="totalPages" :disabled="loading"
-          rounded="circle" :total-visible="$vuetify.display.xs ? 4 : 7"
-          :size="$vuetify.display.xs ? 'small' : 'default'" density="comfortable" color="primary" class="my-0" />
-      </div>
       </VCard>
     </div>
   </div>

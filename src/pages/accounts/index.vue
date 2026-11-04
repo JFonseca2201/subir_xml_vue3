@@ -355,8 +355,8 @@ onMounted(() => {
           class="font-weight-bold elevation-1" @click="openAccountDialog">
           Nueva Cuenta
         </VBtn>
-        <VBtn :title="showBalances ? 'Ocultar saldos' : 'Mostrar saldos'" variant="tonal"
-          :color="showBalances ? 'info' : 'secondary'" :prepend-icon="showBalances ? 'ri-eye-off-line' : 'ri-eye-line'"
+        <VBtn :title="showBalances ? 'Ocultar saldos' : 'Mostrar saldos'" variant="flat"
+          :color="showBalances ? 'warning' : 'info'" :prepend-icon="showBalances ? 'ri-eye-off-line' : 'ri-eye-line'"
           size="default" class="font-weight-medium" @click="toggleShowBalances">
           <span>{{ showBalances ? 'Ocultar saldos' : 'Mostrar saldos' }}</span>
         </VBtn>

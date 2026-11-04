@@ -765,7 +765,7 @@ onActivated(() => {
         </VBtn>
 
         <!-- Botón Buscar / Historial -->
-        <VBtn variant="tonal" color="primary" size="small" class="rounded-lg text-none font-weight-bold"
+        <VBtn variant="flat" color="primary" size="small" class="rounded-lg text-none font-weight-bold"
           prepend-icon="ri-history-line" @click="openHistoryDialog">
           Buscar / Historial
         </VBtn>
@@ -1471,7 +1471,7 @@ onActivated(() => {
                   <div class="d-flex align-center gap-1">
                     <span class="text-caption font-weight-medium text-slate-500">
                       Sistema: <strong class="font-mono text-slate-900">{{ formatCurrency(systemBalances.pichincha)
-                        }}</strong>
+                      }}</strong>
                     </span>
                     <VBtn v-if="!isSealed" variant="text" color="primary" size="x-small" density="compact"
                       class="px-1 text-none font-weight-bold" title="Copiar saldo de sistema al conteo de hoy"
@@ -1497,7 +1497,7 @@ onActivated(() => {
                   <div class="d-flex align-center gap-1">
                     <span class="text-caption font-weight-medium text-slate-500">
                       Sistema: <strong class="font-mono text-slate-900">{{ formatCurrency(systemBalances.guayaquil)
-                        }}</strong>
+                      }}</strong>
                     </span>
                     <VBtn v-if="!isSealed" variant="text" color="primary" size="x-small" density="compact"
                       class="px-1 text-none font-weight-bold" title="Copiar saldo de sistema al conteo de hoy"
@@ -2022,8 +2022,7 @@ onActivated(() => {
           </span>
           <VPagination v-if="historyLastPage > 1" v-model="historyPage" :length="historyLastPage"
             :disabled="historyLoading" rounded="circle" :total-visible="$vuetify.display.xs ? 4 : 7"
-            density="comfortable" color="primary" class="my-0"
-            @update:model-value="fetchHistory" />
+            density="comfortable" color="primary" class="my-0" @update:model-value="fetchHistory" />
         </div>
       </VCard>
     </VDialog>
@@ -2196,5 +2195,3 @@ onActivated(() => {
 meta:
   navActiveLink: 'finanzas-arqueo'
 </route>
-
-

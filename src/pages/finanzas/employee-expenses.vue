@@ -426,7 +426,7 @@ onMounted(() => {
           Nuevo Pago
         </VBtn>
 
-        <VBtn color="info" variant="tonal" size="default" prepend-icon="ri-hand-coin-line" class="font-weight-semibold"
+        <VBtn color="info" variant="flat" size="default" prepend-icon="ri-hand-coin-line" class="font-weight-semibold"
           @click="openAddAdvanceDialog">
           Nuevo Adelanto
         </VBtn>
@@ -544,7 +544,7 @@ onMounted(() => {
                 Pagos
               </VBtn>
               <VBtn size="small" :variant="selectedType === 'advances' ? 'elevated' : 'tonal'"
-                :color="selectedType === 'advances' ? 'primary' : 'secondary'" prepend-icon="ri-hand-coin-line"
+                :color="selectedType === 'advances' ? 'primary' : 'secondary'" prepend-icon="ri-file-pdf-line"
                 class="font-weight-semibold px-3" @click="selectedType = 'advances'">
                 Adelantos
               </VBtn>

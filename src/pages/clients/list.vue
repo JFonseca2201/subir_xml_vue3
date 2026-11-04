@@ -270,7 +270,7 @@ onActivated(() => {
           Cliente Empresa
         </VBtn>
 
-        <VBtn v-if="can('register_client')" color="primary" variant="outlined" prepend-icon="ri-user-add-line"
+        <VBtn v-if="can('register_client')" color="info" variant="flat" prepend-icon="ri-user-add-line"
           class="font-weight-medium order-2 order-sm-2" size="default" @click="addNewClientFinal">
           Cliente Final
         </VBtn>
@@ -733,5 +733,3 @@ onActivated(() => {
     <ImportData v-model:is-dialog-visible="isImportDialogVisible" default-tab="clients" @import-success="loadClients" />
   </div>
 </template>
-
-

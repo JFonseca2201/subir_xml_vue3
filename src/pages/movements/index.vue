@@ -1128,7 +1128,7 @@ onActivated(() => {
           class="font-weight-bold elevation-1" @click="openIncomeDialog">
           Nuevo Ingreso
         </VBtn>
-        <VBtn color="info" variant="tonal" size="default" prepend-icon="ri-indeterminate-circle-line"
+        <VBtn color="info" variant="flat" size="default" prepend-icon="ri-indeterminate-circle-line"
           class="font-weight-semibold" @click="openExpenseDialog">
           Nuevo Egreso
         </VBtn>

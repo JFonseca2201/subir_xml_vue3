@@ -1167,11 +1167,11 @@ onActivated(() => {
           class="elevation-1 font-weight-bold">
           Nueva Venta
         </VBtn>
-        <VBtn v-if="can('register_sale')" variant="tonal" color="primary" prepend-icon="ri-tools-line"
+        <VBtn v-if="can('register_sale')" variant="flat" color="primary" prepend-icon="ri-tools-line"
           to="/work-orders/add" size="default" class="font-weight-semibold">
           Nueva O/T
         </VBtn>
-        <VBtn variant="tonal" color="info" prepend-icon="ri-wifi-line" size="default" class="font-weight-medium"
+        <VBtn variant="flat" color="info" prepend-icon="ri-wifi-line" size="default" class="font-weight-medium"
           @click="isSriStatusDialogVisible = true">
           Estado SRI
         </VBtn>

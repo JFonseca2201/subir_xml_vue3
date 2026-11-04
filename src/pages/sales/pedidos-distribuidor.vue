@@ -772,15 +772,16 @@ onActivated(async () => {
                     </div>
                   </div>
                   <div class="d-flex gap-2">
-                    <VBtn size="small" color="primary" variant="tonal" prepend-icon="ri-add-circle-line"
+                    <VBtn size="small" color="primary" variant="flat" prepend-icon="ri-add-circle-line"
                       class="font-weight-semibold" :disabled="!pedido.distribuidor_id" @click="openManualProductDialog">
-                      + Producto Manual
+                      Producto Manual
                     </VBtn>
-                    <VBtn size="small" color="warning" variant="tonal" prepend-icon="ri-history-line"
+                    <VBtn size="small" color="warning" variant="flat" prepend-icon="ri-history-line"
                       class="font-weight-semibold" @click="isReplacementsDialogVisible = true">
-                      Repuestos Sugeridos
-                      <VChip v-if="pendingReplacements.length > 0" size="x-small" color="warning"
-                        class="ml-1.5 font-weight-bold">
+                      Repuestos Sugeridos &nbsp;
+                      <VChip v-if="pendingReplacements.length > 0" size="x-small"
+                        class="ml-1.5 font-weight-bold text-white"
+                        style="color: white !important; background-color: black !important;">
                         {{ pendingReplacements.length }}
                       </VChip>
                     </VBtn>
@@ -849,10 +850,10 @@ onActivated(async () => {
                         Cant.
                       </th>
                       <th class="text-center th-price">
-                        Costo ($)
+                        Costo
                       </th>
                       <th class="text-right th-subtotal">
-                        Subtotal ($)
+                        Subtot.
                       </th>
                       <th class="text-center th-actions">
                         Acc.

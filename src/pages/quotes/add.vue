@@ -804,15 +804,15 @@ onActivated(async () => {
                     </div>
                   </div>
                   <div class="d-flex gap-2 flex-wrap">
-                    <VBtn size="small" color="primary" variant="tonal" prepend-icon="ri-box-3-line"
+                    <VBtn size="small" color="primary" variant="flat" prepend-icon="ri-box-3-line"
                       class="font-weight-semibold" @click="openManualProductDialog">
                       Producto Temporal
                     </VBtn>
-                    <VBtn size="small" color="info" variant="tonal" prepend-icon="ri-store-2-line"
+                    <VBtn size="small" color="info" variant="flat" prepend-icon="ri-store-2-line"
                       class="font-weight-semibold" @click="isDistributorCatalogDialogVisible = true">
                       Catálogo Distribuidores
                     </VBtn>
-                    <VBtn size="small" color="secondary" variant="tonal" prepend-icon="ri-tools-line"
+                    <VBtn size="small" color="secondary" variant="flat" prepend-icon="ri-tools-line"
                       class="font-weight-semibold" @click="isAddServiceDialogVisible = true">
                       Servicio Express
                     </VBtn>

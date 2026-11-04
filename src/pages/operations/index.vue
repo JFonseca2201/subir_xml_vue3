@@ -673,9 +673,9 @@ onActivated(() => {
 
                 <!-- Botones de Acción (PDF y Actualizar) -->
                 <div class="d-flex align-center gap-1.5 shrink-0">
-                  <VBtn color="secondary" variant="tonal" size="small" prepend-icon="ri-file-pdf-line"
+                  <VBtn color="info" variant="flat" size="small" prepend-icon="ri-download-line"
                     class="font-weight-semibold d-none d-sm-inline-flex" :loading="pdfLoading" @click="generatePDF">
-                    PDF
+                    Reporte PDF
                   </VBtn>
                   <VBtn icon="ri-file-pdf-line" size="small" variant="tonal" color="secondary"
                     class="rounded-lg d-sm-none" title="Exportar PDF" :loading="pdfLoading" @click="generatePDF" />

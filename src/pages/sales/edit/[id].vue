@@ -2001,7 +2001,7 @@ onMounted(() => {
                         </div>
                       </div>
                       <VBtn v-if="!sale.is_credited && paymentDistributions.length > 0 && sale.status !== 'canceled'"
-                        color="primary" variant="tonal" size="x-small" prepend-icon="ri-add-line"
+                        color="primary" variant="flat" size="x-small" prepend-icon="ri-add-line"
                         class="font-weight-bold px-2" @click="addPaymentDistribution">
                         Dividir Pago
                       </VBtn>

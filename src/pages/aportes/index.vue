@@ -402,18 +402,18 @@ onMounted(() => {
             <span class="text-body-2 font-weight-medium text-medium-emphasis finance-filter-label">Filtrar:</span>
             <div class="finance-filter-btn-group">
               <VBtn size="small" :variant="selectedFilter === 'all' ? 'elevated' : 'tonal'"
-                :color="selectedFilter === 'all' ? 'primary' : 'secondary'" class="font-weight-semibold"
-                @click="selectedFilter = 'all'">
+                prepend-icon="ri-apps-2-line" :color="selectedFilter === 'all' ? 'primary' : 'secondary'"
+                class="font-weight-semibold" @click="selectedFilter = 'all'">
                 Todos
               </VBtn>
               <VBtn size="small" :variant="selectedFilter === 'today' ? 'elevated' : 'tonal'"
                 :color="selectedFilter === 'today' ? 'primary' : 'secondary'" class="font-weight-semibold"
-                @click="selectedFilter = 'today'">
+                prepend-icon="ri-file-user-line" @click="selectedFilter = 'today'">
                 Hoy
               </VBtn>
               <VBtn size="small" :variant="selectedFilter === 'month' ? 'elevated' : 'tonal'"
                 :color="selectedFilter === 'month' ? 'primary' : 'secondary'" class="font-weight-semibold"
-                @click="selectedFilter = 'month'">
+                prepend-icon="ri-hand-coin-line" @click="selectedFilter = 'month'">
                 Este Mes
               </VBtn>
             </div>

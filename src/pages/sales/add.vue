@@ -1855,7 +1855,7 @@ onActivated(async () => {
                         OT #{{ sale.work_order_number }}
                       </VChip>
                     </div>
-                    <VBtn color="info" variant="tonal" prepend-icon="ri-file-download-line" size="small"
+                    <VBtn color="info" variant="flat" prepend-icon="ri-file-download-line" size="small"
                       class="font-weight-semibold" @click="openWorkOrderImportDialog">
                       Importar OT
                     </VBtn>
@@ -2341,7 +2341,7 @@ onActivated(async () => {
                         </h3>
                       </div>
                     </div>
-                    <VBtn v-if="!sale.is_credited && paymentDistributions.length > 0" color="primary" variant="tonal"
+                    <VBtn v-if="!sale.is_credited && paymentDistributions.length > 0" color="primary" variant="flat"
                       size="x-small" prepend-icon="ri-add-line" class="font-weight-bold px-2"
                       @click="addPaymentDistribution">
                       Dividir Pago
