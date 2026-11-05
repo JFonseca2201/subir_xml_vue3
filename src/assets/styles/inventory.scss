@@ -1329,7 +1329,7 @@
   display: flex !important;
   align-items: center !important;
   justify-content: space-between !important;
-  padding: 16px 24px !important;
+  padding: 16px 64px 16px 24px !important;
   background: linear-gradient(135deg, #4338ca 0%, #4f46e5 45%, #6366f1 80%, #7c3aed 100%) !important;
   color: #ffffff !important;
   flex-shrink: 0 !important;
@@ -1382,6 +1382,7 @@
     align-items: center;
     gap: 8px;
     flex-wrap: wrap;
+    margin-left: auto;
   }
 
   .glass-header-pill {
@@ -1398,6 +1399,10 @@
   }
 
   .header-close-button {
+    position: absolute !important;
+    top: 14px !important;
+    right: 18px !important;
+    z-index: 10 !important;
     width: 34px !important;
     height: 34px !important;
     min-width: 34px !important;
