@@ -335,10 +335,10 @@ onUnmounted(() => {
     <div class="d-flex align-center justify-space-between flex-wrap gap-4 mb-5">
       <div class="min-w-0">
         <h1 class="text-h5 text-sm-h4 font-weight-bold mb-1 d-flex align-center flex-wrap gap-2 text-high-emphasis">
-          <VAvatar size="40" color="error" variant="tonal" rounded="lg" class="me-1">
-            <VIcon icon="ri-file-pdf-2-fill" size="24" />
+          <VAvatar size="40" color="primary" variant="tonal" rounded="lg" class="me-1">
+            <VIcon icon="ri-file-pdf-2-line" size="24" />
           </VAvatar>
-          <span>Catálogos de Distribuidores (PDF)</span>
+          <span>Catálogos de Distribuidores</span>
         </h1>
         <p class="text-medium-emphasis mb-0 text-caption text-sm-body-2">
           Búsqueda de texto plano en índices independientes y gestión de catálogos oficiales en el servidor
@@ -347,7 +347,7 @@ onUnmounted(() => {
 
       <div class="d-flex align-center justify-end gap-2 flex-wrap ms-auto">
         <VBtn
-          color="error"
+          color="primary"
           prepend-icon="ri-upload-cloud-2-line"
           size="default"
           class="elevation-1 font-weight-bold rounded-lg text-none"
@@ -362,8 +362,8 @@ onUnmounted(() => {
     <VRow class="mb-5" dense>
       <VCol cols="12" sm="6" md="3">
         <VCard class="kpi-stat-card elevation-0 border rounded-xl pa-3 pa-sm-4 bg-surface d-flex align-center gap-3 h-100">
-          <VAvatar size="42" color="error" variant="tonal" rounded="lg" class="flex-shrink-0">
-            <VIcon icon="ri-file-pdf-line" size="22" />
+          <VAvatar size="42" color="primary" variant="tonal" rounded="lg" class="flex-shrink-0">
+            <VIcon icon="ri-file-pdf-2-line" size="22" />
           </VAvatar>
           <div class="min-w-0 flex-grow-1 overflow-hidden">
             <div class="text-caption text-medium-emphasis font-weight-medium text-truncate">
@@ -378,7 +378,7 @@ onUnmounted(() => {
 
       <VCol cols="12" sm="6" md="3">
         <VCard class="kpi-stat-card elevation-0 border rounded-xl pa-3 pa-sm-4 bg-surface d-flex align-center gap-3 h-100">
-          <VAvatar size="42" color="primary" variant="tonal" rounded="lg" class="flex-shrink-0">
+          <VAvatar size="42" color="info" variant="tonal" rounded="lg" class="flex-shrink-0">
             <VIcon icon="ri-building-line" size="22" />
           </VAvatar>
           <div class="min-w-0 flex-grow-1 overflow-hidden">
@@ -394,14 +394,14 @@ onUnmounted(() => {
 
       <VCol cols="12" sm="6" md="3">
         <VCard class="kpi-stat-card elevation-0 border rounded-xl pa-3 pa-sm-4 bg-surface d-flex align-center gap-3 h-100">
-          <VAvatar size="42" color="info" variant="tonal" rounded="lg" class="flex-shrink-0">
+          <VAvatar size="42" color="warning" variant="tonal" rounded="lg" class="flex-shrink-0">
             <VIcon icon="ri-pages-line" size="22" />
           </VAvatar>
           <div class="min-w-0 flex-grow-1 overflow-hidden">
             <div class="text-caption text-medium-emphasis font-weight-medium text-truncate">
               Páginas Indexadas
             </div>
-            <div class="text-subtitle-1 text-sm-h6 font-weight-bold text-info text-truncate">
+            <div class="text-subtitle-1 text-sm-h6 font-weight-bold text-warning text-truncate">
               {{ kpis.totalPages }} <span class="text-caption text-disabled font-weight-regular">páginas</span>
             </div>
           </div>
@@ -430,7 +430,7 @@ onUnmounted(() => {
       <VCardText class="pa-4 pa-sm-5">
         <div class="d-flex align-center justify-space-between mb-3 flex-wrap gap-2">
           <div class="d-flex align-center gap-2">
-            <VIcon icon="ri-search-eye-line" size="20" color="error" />
+            <VIcon icon="ri-search-eye-line" size="20" color="primary" />
             <span class="text-subtitle-1 font-weight-bold text-high-emphasis">
               Buscar dentro de los Catálogos PDF
             </span>
@@ -456,12 +456,12 @@ onUnmounted(() => {
               v-model="searchQuery"
               label="Buscar palabras, modelos o códigos en los PDFs"
               placeholder="Ej: pastilla de freno, corolla, 04465, amortiguador, bujía..."
-              prepend-inner-icon="ri-file-search-line"
+              prepend-inner-icon="ri-search-2-line"
               variant="outlined"
               density="comfortable"
               hide-details="auto"
               clearable
-              color="error"
+              color="primary"
               @keyup.enter="searchPdfCatalogs(1)"
               @click:clear="clearSearch"
             />
@@ -504,27 +504,31 @@ onUnmounted(() => {
 
     <!-- SECCIÓN: RESULTADOS DE BÚSQUEDA DE TEXTO EN LOS PDFS (Si hay búsqueda activa) -->
     <VCard v-if="searchQuery && searchQuery.trim().length >= 2" class="rounded-xl border elevation-0 mb-5 bg-surface overflow-hidden">
-      <div class="pa-4 border-b d-flex align-center justify-space-between flex-wrap gap-2" style="background-color: rgba(var(--v-theme-error), 0.06);">
-        <div class="d-flex align-center gap-2">
-          <VAvatar size="32" color="error" variant="tonal" rounded="lg">
-            <VIcon icon="ri-search-2-line" size="18" />
+      <!-- Header limpio con acento primario sutil -->
+      <div class="pa-4 border-b d-flex align-center justify-space-between flex-wrap gap-2" style="background-color: rgba(var(--v-theme-primary), 0.04);">
+        <div class="d-flex align-center gap-2.5">
+          <VAvatar size="34" color="primary" variant="tonal" rounded="lg">
+            <VIcon icon="ri-search-eye-line" size="20" />
           </VAvatar>
-          <div>
-            <div class="text-subtitle-2 font-weight-bold text-high-emphasis">
-              Resultados de búsqueda para: <span class="font-mono text-error">"{{ debouncedSearch }}"</span>
-            </div>
-            <div class="text-caption text-medium-emphasis">
-              {{ isPdfSearching ? 'Buscando en los índices de texto...' : `${totalPdfResults} coincidencia(s) encontrada(s)` }}
-            </div>
+          <div class="d-flex align-center flex-wrap gap-2">
+            <span class="text-subtitle-2 font-weight-bold text-high-emphasis">
+              Resultados para:
+            </span>
+            <span class="font-mono text-primary font-weight-bold text-subtitle-2">
+              "{{ debouncedSearch }}"
+            </span>
+            <VChip size="x-small" color="primary" variant="tonal" class="font-weight-bold font-mono ms-1">
+              {{ isPdfSearching ? 'Buscando...' : `${totalPdfResults} coincidencia(s)` }}
+            </VChip>
           </div>
         </div>
 
         <VBtn
           size="small"
           variant="tonal"
-          color="error"
+          color="secondary"
           prepend-icon="ri-close-line"
-          class="text-none"
+          class="text-none font-weight-medium rounded-lg"
           @click="clearSearch"
         >
           Cerrar Resultados
@@ -539,50 +543,48 @@ onUnmounted(() => {
 
         <!-- Coincidencias encontradas -->
         <div v-else-if="pdfResults.length > 0">
-          <VTable class="text-no-wrap border rounded-xl overflow-hidden mb-4">
+          <VTable hover class="border rounded-xl overflow-hidden mb-4">
             <thead>
-              <tr class="text-caption font-weight-bold bg-background">
-                <th class="text-left py-3" style="width: 260px;">Distribuidor / Catálogo</th>
-                <th class="text-left py-3">Fragmento Coincidente en el PDF</th>
-                <th class="text-center py-3" style="width: 120px;">Página</th>
-                <th class="text-center py-3" style="width: 150px;">Acción</th>
+              <tr class="text-caption font-weight-bold text-uppercase bg-background">
+                <th class="text-left py-3 px-3" style="width: 170px; max-width: 180px;">Distribuidor / Catálogo</th>
+                <th class="text-left py-3 px-3">Fragmento Coincidente en el PDF</th>
+                <th class="text-center py-3 px-2" style="width: 85px;">Página</th>
+                <th class="text-center py-3 px-2" style="width: 125px;">Acción</th>
               </tr>
             </thead>
             <tbody>
               <tr v-for="res in pdfResults" :key="res.id" class="pdf-result-row">
-                <td class="py-3">
-                  <div class="d-flex align-center gap-2">
-                    <VAvatar size="32" color="error" variant="tonal" rounded="md" class="flex-shrink-0">
-                      <VIcon icon="ri-file-pdf-fill" size="18" />
-                    </VAvatar>
-                    <div class="min-w-0">
-                      <div class="text-body-2 font-weight-bold text-high-emphasis text-truncate">
-                        {{ res.supplier_name }}
-                      </div>
-                      <div class="text-caption text-medium-emphasis text-truncate" :title="res.catalog_title">
-                        {{ res.catalog_title }}
-                      </div>
-                    </div>
+                <!-- Proveedor y Catálogo (espacio compacto para evitar scroll) -->
+                <td class="py-2.5 px-3" style="width: 170px; max-width: 180px;">
+                  <div class="font-weight-bold text-high-emphasis text-uppercase text-caption text-truncate" :title="res.supplier_name">
+                    {{ res.supplier_name }}
+                  </div>
+                  <div class="text-caption text-medium-emphasis text-truncate d-flex align-center gap-1 mt-0.5" :title="res.catalog_title">
+                    <VIcon icon="ri-file-pdf-2-line" size="13" class="text-primary flex-shrink-0" />
+                    <span class="text-truncate" style="font-size: 0.72rem;">{{ res.catalog_title }}</span>
                   </div>
                 </td>
 
-                <td class="py-3 text-wrap-break" style="white-space: normal; min-width: 300px;">
-                  <div class="pdf-snippet-box text-caption text-high-emphasis" v-html="res.snippet" />
+                <!-- Fragmento con borde de acento primario -->
+                <td class="py-2.5 px-3 text-wrap-break" style="white-space: normal;">
+                  <div class="pdf-snippet-quote" v-html="res.snippet" />
                 </td>
 
-                <td class="text-center py-3">
-                  <VChip size="small" color="error" variant="tonal" class="font-weight-bold font-mono">
+                <!-- Página -->
+                <td class="text-center py-2.5 px-2" style="width: 85px;">
+                  <VChip size="small" color="primary" variant="tonal" class="font-weight-bold font-mono px-2">
                     Pág. {{ res.page_number }}
                   </VChip>
                 </td>
 
-                <td class="text-center py-3">
+                <!-- Botón de apertura -->
+                <td class="text-center py-2.5 px-2" style="width: 125px;">
                   <VBtn
                     size="small"
-                    color="error"
-                    variant="elevated"
+                    color="primary"
+                    variant="tonal"
                     prepend-icon="ri-external-link-line"
-                    class="font-weight-bold rounded-lg text-none elevation-1"
+                    class="font-weight-bold rounded-lg text-none px-2.5"
                     :href="res.pdf_url"
                     target="_blank"
                   >
@@ -605,7 +607,7 @@ onUnmounted(() => {
               rounded="circle"
               density="comfortable"
               size="small"
-              color="error"
+              color="primary"
               @update:model-value="page => searchPdfCatalogs(page)"
             />
           </div>
@@ -660,7 +662,7 @@ onUnmounted(() => {
       v-else-if="filteredCatalogs.length === 0"
       class="rounded-xl border elevation-0 pa-8 pa-sm-10 text-center bg-surface"
     >
-      <VAvatar size="64" color="error" variant="tonal" class="mb-3">
+      <VAvatar size="64" color="primary" variant="tonal" class="mb-3">
         <VIcon size="32" icon="ri-file-pdf-2-line" />
       </VAvatar>
       <h3 class="text-h6 font-weight-bold mb-1 text-high-emphasis">
@@ -670,7 +672,7 @@ onUnmounted(() => {
         Sube los catálogos en formato PDF de tus distribuidores. El sistema extraerá el texto plano de forma independiente para permitirte buscar rápidamente cualquier repuesto.
       </p>
       <VBtn
-        color="error"
+        color="primary"
         prepend-icon="ri-upload-cloud-2-line"
         class="font-weight-bold rounded-lg text-none elevation-1"
         @click="isImportDialogVisible = true"
@@ -694,7 +696,7 @@ onUnmounted(() => {
               <VAvatar size="28" color="primary" variant="tonal" rounded="md">
                 <VIcon icon="ri-building-line" size="16" />
               </VAvatar>
-              <span class="text-caption font-weight-bold text-high-emphasis text-truncate">
+              <span class="text-caption font-weight-bold text-high-emphasis text-truncate text-uppercase">
                 {{ cat.supplier_name }}
               </span>
             </div>
@@ -711,8 +713,8 @@ onUnmounted(() => {
 
           <!-- Fila Central: Título del Catálogo y Archivo -->
           <div class="d-flex align-start gap-3 mb-2.5">
-            <VAvatar size="40" color="error" variant="tonal" rounded="lg" class="flex-shrink-0 mt-0.5">
-              <VIcon icon="ri-file-pdf-fill" size="22" />
+            <VAvatar size="40" color="primary" variant="tonal" rounded="lg" class="flex-shrink-0 mt-0.5">
+              <VIcon icon="ri-file-pdf-2-line" size="22" />
             </VAvatar>
             <div class="min-w-0 flex-grow-1">
               <div class="font-weight-bold text-high-emphasis text-body-2 text-truncate" :title="cat.title">
@@ -769,25 +771,25 @@ onUnmounted(() => {
 
       <!-- VISTA ESCRITORIO: TABLA (d-none d-md-block) -->
       <VCard class="d-none d-md-block rounded-xl border overflow-hidden elevation-0 bg-surface">
-        <VTable hover class="text-no-wrap distributor-pdf-table">
+        <VTable hover class="distributor-pdf-table">
           <thead>
-            <tr class="bg-background text-caption font-weight-bold">
-              <th class="text-left py-3.5" style="width: 240px;">
+            <tr class="bg-background text-caption font-weight-bold text-uppercase">
+              <th class="text-left py-3 px-3" style="width: 170px; max-width: 190px;">
                 Distribuidor
               </th>
-              <th class="text-left py-3.5">
+              <th class="text-left py-3 px-3">
                 Catálogo / Archivo PDF
               </th>
-              <th class="text-center py-3.5" style="width: 140px;">
+              <th class="text-center py-3 px-2" style="width: 95px;">
                 Páginas
               </th>
-              <th class="text-center py-3.5" style="width: 160px;">
+              <th class="text-center py-3 px-2" style="width: 130px;">
                 Estado
               </th>
-              <th class="text-left py-3.5" style="width: 170px;">
+              <th class="text-left py-3 px-3" style="width: 135px;">
                 Fecha de Subida
               </th>
-              <th class="text-center py-3.5" style="width: 150px;">
+              <th class="text-center py-3 px-2" style="width: 120px;">
                 Acciones
               </th>
             </tr>
@@ -795,16 +797,16 @@ onUnmounted(() => {
           <tbody>
             <tr v-for="cat in filteredCatalogs" :key="cat.id" class="pdf-catalog-row">
               <!-- Distribuidor -->
-              <td class="py-3">
-                <div class="d-flex align-center gap-2.5">
-                  <VAvatar size="34" color="primary" variant="tonal" rounded="lg" class="flex-shrink-0">
-                    <VIcon icon="ri-building-line" size="18" />
+              <td class="py-2.5 px-3" style="width: 170px; max-width: 190px;">
+                <div class="d-flex align-center gap-2">
+                  <VAvatar size="28" color="primary" variant="tonal" rounded="md" class="flex-shrink-0">
+                    <VIcon icon="ri-store-2-line" size="15" />
                   </VAvatar>
                   <div class="min-w-0">
-                    <div class="font-weight-bold text-high-emphasis text-body-2 text-truncate" :title="cat.supplier_name">
+                    <div class="font-weight-bold text-high-emphasis text-caption text-uppercase text-truncate" :title="cat.supplier_name">
                       {{ cat.supplier_name }}
                     </div>
-                    <div v-if="cat.supplier?.ruc" class="text-caption text-medium-emphasis font-mono">
+                    <div v-if="cat.supplier?.ruc" class="text-caption text-medium-emphasis font-mono" style="font-size: 0.70rem;">
                       RUC: {{ cat.supplier.ruc }}
                     </div>
                   </div>
@@ -812,17 +814,17 @@ onUnmounted(() => {
               </td>
 
               <!-- Catálogo / Archivo -->
-              <td class="py-3">
-                <div class="d-flex align-center gap-2.5">
-                  <VAvatar size="34" color="error" variant="tonal" rounded="lg" class="flex-shrink-0">
-                    <VIcon icon="ri-file-pdf-fill" size="20" />
+              <td class="py-2.5 px-3">
+                <div class="d-flex align-center gap-2">
+                  <VAvatar size="28" color="primary" variant="tonal" rounded="md" class="flex-shrink-0">
+                    <VIcon icon="ri-file-pdf-2-line" size="16" />
                   </VAvatar>
                   <div class="min-w-0">
                     <div class="font-weight-bold text-high-emphasis text-body-2 text-truncate" :title="cat.title">
                       {{ cat.title || cat.file_name }}
                     </div>
-                    <div class="d-flex align-center gap-2 text-caption text-medium-emphasis font-mono">
-                      <span class="text-truncate" style="max-width: 250px;">{{ cat.original_filename || cat.file_name }}</span>
+                    <div class="d-flex align-center gap-1.5 text-caption text-medium-emphasis font-mono" style="font-size: 0.70rem;">
+                      <span class="text-truncate" style="max-width: 220px;">{{ cat.original_filename || cat.file_name }}</span>
                       <span class="text-disabled">•</span>
                       <span>{{ cat.formatted_file_size || 'PDF' }}</span>
                     </div>
@@ -831,47 +833,47 @@ onUnmounted(() => {
               </td>
 
               <!-- Páginas -->
-              <td class="text-center py-3">
+              <td class="text-center py-2.5 px-2">
                 <VChip
                   size="small"
-                  color="info"
+                  color="primary"
                   variant="tonal"
-                  class="font-weight-bold font-mono"
+                  class="font-weight-bold font-mono px-2"
                 >
-                  <VIcon icon="ri-pages-line" size="14" class="me-1" />
+                  <VIcon icon="ri-pages-line" size="13" class="me-1" />
                   {{ cat.total_pages ? `${cat.total_pages} págs.` : '—' }}
                 </VChip>
               </td>
 
               <!-- Estado -->
-              <td class="text-center py-3">
+              <td class="text-center py-2.5 px-2">
                 <VChip
                   size="small"
                   :color="getStatusBadge(cat.status).color"
                   variant="tonal"
-                  class="font-weight-bold"
+                  class="font-weight-bold px-2"
                 >
                   <VIcon
                     :icon="getStatusBadge(cat.status).icon"
-                    size="14"
+                    size="13"
                     class="me-1"
                     :class="cat.status === 'processing' ? 'rotate-animation' : ''"
                   />
                   <span>{{ getStatusBadge(cat.status).text }}</span>
                 </VChip>
-                <div v-if="cat.error_message" class="text-caption text-error text-truncate mt-0.5" style="max-width: 140px;" :title="cat.error_message">
+                <div v-if="cat.error_message" class="text-caption text-error text-truncate mt-0.5" style="max-width: 120px;" :title="cat.error_message">
                   {{ cat.error_message }}
                 </div>
               </td>
 
               <!-- Fecha -->
-              <td class="py-3 text-caption text-medium-emphasis">
+              <td class="py-2.5 px-3 text-caption text-medium-emphasis">
                 {{ formatDate(cat.created_at) }}
               </td>
 
               <!-- Acciones -->
-              <td class="text-center py-3">
-                <div class="d-inline-flex align-center gap-1.5">
+              <td class="text-center py-2.5 px-2">
+                <div class="d-inline-flex align-center gap-1">
                   <VBtn
                     v-if="cat.file_url"
                     icon="ri-eye-line"
@@ -1016,24 +1018,27 @@ onUnmounted(() => {
 </template>
 
 <style scoped>
-/* Resaltado de coincidencias adaptado a temas claro y oscuro */
+/* Resaltado de coincidencias integrado orgánicamente con el color primario del tema */
 :deep(.catalog-highlight) {
-  background-color: rgba(var(--v-theme-warning), 0.3) !important;
-  color: rgb(var(--v-theme-warning)) !important;
+  background-color: rgba(var(--v-theme-primary), 0.16) !important;
+  color: rgb(var(--v-theme-primary)) !important;
   font-weight: 700;
   padding: 1px 5px;
   border-radius: 4px;
 }
 
-/* Caja del extracto de texto del PDF con soporte para dark/light theme */
-.pdf-snippet-box {
-  line-height: 1.6;
-  background-color: rgba(var(--v-theme-on-surface), 0.04);
-  padding: 10px 14px;
-  border-radius: 10px;
-  border: 1px solid rgba(var(--v-theme-on-surface), 0.1);
-  font-family: inherit;
+/* Extracto de texto del PDF con barra de acento primario y fondo sutil adaptativo */
+.pdf-snippet-quote {
+  font-size: 0.8125rem;
+  line-height: 1.5;
+  color: rgba(var(--v-theme-on-surface), 0.88);
+  border-inline-start: 3px solid rgb(var(--v-theme-primary));
+  padding-inline-start: 10px;
+  padding-block: 4px;
+  background-color: rgba(var(--v-theme-on-surface), 0.025);
+  border-radius: 0 6px 6px 0;
   word-break: break-word;
+  white-space: normal;
 }
 
 /* Animación de rotación para cuando está procesando */
@@ -1072,7 +1077,8 @@ onUnmounted(() => {
   background-color: rgba(255, 255, 255, 0.2);
 }
 
-.pdf-catalog-row:hover {
+.pdf-catalog-row:hover,
+.pdf-result-row:hover {
   background-color: rgba(var(--v-theme-on-surface), 0.03);
 }
 </style>

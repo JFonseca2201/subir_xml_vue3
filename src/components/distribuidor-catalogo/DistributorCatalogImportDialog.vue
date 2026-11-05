@@ -275,8 +275,8 @@ const submitPdfCatalog = async () => {
           <div v-if="!selectedFile" class="pdf-dropzone rounded-xl pa-6 text-center cursor-pointer border-dashed"
             :class="{ 'dropzone-active': isDragging, 'dropzone-disabled': isSubmitting }" @click="triggerFileInput"
             @dragover.prevent="isDragging = true" @dragleave.prevent="isDragging = false" @drop.prevent="onFileDropped">
-            <VAvatar color="error" variant="tonal" size="56" class="mb-3">
-              <VIcon icon="ri-upload-cloud-2-line" size="30" color="error" />
+            <VAvatar color="primary" variant="tonal" size="56" class="mb-3">
+              <VIcon icon="ri-upload-cloud-2-line" size="30" />
             </VAvatar>
             <div class="text-subtitle-2 font-weight-bold text-high-emphasis mb-1">
               Haz clic para seleccionar o arrastra tu archivo PDF aquí
@@ -289,10 +289,10 @@ const submitPdfCatalog = async () => {
           <!-- Card de Archivo PDF Seleccionado -->
           <div v-else
             class="selected-file-card rounded-xl pa-3.5 border d-flex align-center justify-space-between gap-3"
-            style="background-color: rgba(var(--v-theme-error), 0.08);">
+            style="background-color: rgba(var(--v-theme-primary), 0.05);">
             <div class="d-flex align-center gap-3 overflow-hidden min-w-0">
-              <VAvatar color="error" variant="flat" size="42" rounded="lg" class="flex-shrink-0">
-                <VIcon icon="ri-file-pdf-2-fill" size="24" color="white" />
+              <VAvatar color="primary" variant="tonal" size="42" rounded="lg" class="flex-shrink-0">
+                <VIcon icon="ri-file-pdf-2-line" size="24" />
               </VAvatar>
               <div class="overflow-hidden min-w-0">
                 <div class="text-body-2 font-weight-bold text-high-emphasis text-truncate" :title="selectedFile.name">
@@ -319,11 +319,11 @@ const submitPdfCatalog = async () => {
             <span class="text-caption font-weight-medium text-high-emphasis">
               {{ uploadStatusText }}
             </span>
-            <span class="text-caption font-weight-bold text-error font-mono">
+            <span class="text-caption font-weight-bold text-primary font-mono">
               {{ uploadProgress }}%
             </span>
           </div>
-          <VProgressLinear :model-value="uploadProgress" color="error" height="8" rounded striped indeterminate />
+          <VProgressLinear :model-value="uploadProgress" color="primary" height="8" rounded striped indeterminate />
         </div>
       </VCardText>
 
@@ -332,12 +332,12 @@ const submitPdfCatalog = async () => {
       <!-- Footer de Acciones -->
       <VCardActions class="pa-4 d-flex justify-space-between align-center bg-surface">
         <VBtn color="secondary" variant="outlined" prepend-icon="ri-close-line"
-          class="rounded-lg px-5 font-weight-medium" :disabled="isSubmitting" @click="closeDialog">
+          class="rounded-lg px-5 font-weight-medium text-none" :disabled="isSubmitting" @click="closeDialog">
           Cancelar
         </VBtn>
 
-        <VBtn color="error" variant="elevated" prepend-icon="ri-upload-cloud-2-line"
-          class="rounded-lg px-6 font-weight-bold elevation-2" :loading="isSubmitting"
+        <VBtn color="primary" variant="elevated" prepend-icon="ri-upload-cloud-2-line"
+          class="rounded-lg px-6 font-weight-bold elevation-2 text-none" :loading="isSubmitting"
           :disabled="!selectedFile || !selectedSupplier" @click="submitPdfCatalog">
           Subir Catálogo PDF
         </VBtn>
@@ -348,19 +348,19 @@ const submitPdfCatalog = async () => {
 
 <style scoped>
 .pdf-dropzone {
-  border: 2px dashed rgba(var(--v-theme-error), 0.35);
-  background-color: rgba(var(--v-theme-error), 0.02);
+  border: 2px dashed rgba(var(--v-theme-primary), 0.35);
+  background-color: rgba(var(--v-theme-primary), 0.02);
   transition: all 0.25s ease;
 }
 
 .pdf-dropzone:hover {
-  border-color: rgba(var(--v-theme-error), 0.8);
-  background-color: rgba(var(--v-theme-error), 0.05);
+  border-color: rgba(var(--v-theme-primary), 0.8);
+  background-color: rgba(var(--v-theme-primary), 0.05);
 }
 
 .dropzone-active {
-  border-color: rgb(var(--v-theme-error)) !important;
-  background-color: rgba(var(--v-theme-error), 0.1) !important;
+  border-color: rgb(var(--v-theme-primary)) !important;
+  background-color: rgba(var(--v-theme-primary), 0.1) !important;
   transform: scale(0.99);
 }
 
@@ -370,6 +370,6 @@ const submitPdfCatalog = async () => {
 }
 
 .selected-file-card {
-  border-color: rgba(var(--v-theme-error), 0.2) !important;
+  border-color: rgba(var(--v-theme-primary), 0.25) !important;
 }
 </style>
