@@ -6,6 +6,7 @@ import { $api } from '@/utils/api'
 import { useRouter } from 'vue-router'
 import TransferDialog from '@/components/inventory/finances-records/TransferDialog.vue'
 import AporteCreateDialog from '@/components/inventory/aportes/AporteCreateDialog.vue'
+import MovementReceiptNoteDialog from '@/components/inventory/finances-records/MovementReceiptNoteDialog.vue'
 import { usePermissions } from '@/composables/usePermissions'
 
 // --- Router y Seguridad ---
@@ -26,7 +27,22 @@ const accounts = ref([]) // Cuentas bancarias del sistema
 const loading = ref(true)
 const isTransferDialogVisible = ref(false)
 const isAporteDialogVisible = ref(false)
+const isReceiptNoteDialogVisible = ref(false)
+const selectedMovementForReceipt = ref(null)
 const pdfLoading = ref(false)
+
+const openMovementReceipt = movement => {
+  selectedMovementForReceipt.value = movement.rawMovement || movement
+  isReceiptNoteDialogVisible.value = true
+}
+
+// Color del VChip según el tipo de valor del movimiento (ingreso: success, egreso: error, transferencia: info)
+const getMovementChipColor = type => {
+  if (type === 'transfer' || type === 'internal_transfer') return 'info'
+  if (type === 'income' || type === 0 || type === '0') return 'success'
+  if (type === 'expense' || type === 1 || type === '1') return 'error'
+  return 'secondary'
+}
 
 // Filtros de movimientos
 const movementFilter = ref('all') // 'all' | 'income' | 'expense' | 'transfer'
@@ -210,7 +226,9 @@ const groupMovementsByDate = movements => {
     }
 
     let moduleName = 'General'
-    if (m.movable_type) {
+    if (m.type === 'transfer' || m.movable_type?.includes('Transfer') || m.movable_type?.includes('InternalTransfer')) {
+      moduleName = 'Internal transfer'
+    } else if (m.movable_type) {
       const type = m.movable_type.split('\\').pop()
 
       const typeMap = {
@@ -227,6 +245,10 @@ const groupMovementsByDate = movements => {
       }
 
       moduleName = typeMap[type] || type.replace(/([A-Z])/g, ' $1').trim()
+    } else if (m.type === 'income') {
+      moduleName = 'Ingreso'
+    } else if (m.type === 'expense') {
+      moduleName = 'Egreso'
     }
 
     const methodInfo = getPaymentMethodInfo(m, accounts.value)
@@ -263,7 +285,16 @@ const groupMovementsByDate = movements => {
       groups[dateKey].totalExpense += amountVal
     }
 
+    const attachmentsCount = (
+      m.attachments?.length ||
+      m.resolved_attachments?.length ||
+      m.movable?.attachments?.length ||
+      m.movable?.finance_record?.attachments?.length ||
+      0
+    )
+
     groups[dateKey].movements.push({
+      ...m,
       id: m.id,
       type: m.type, // 'income' | 'expense' | 'transfer'
       description: finalDesc,
@@ -277,6 +308,8 @@ const groupMovementsByDate = movements => {
       entry_date: m.entry_date || m.created_at,
       time: m.created_at ? new Date(m.created_at).toLocaleTimeString('es-EC', { hour: '2-digit', minute: '2-digit' }) : '--:--',
       amount: amountVal,
+      attachmentsCount: attachmentsCount,
+      rawMovement: m,
     })
   })
 
@@ -811,7 +844,8 @@ onActivated(() => {
                           <div class="d-flex flex-column text-left min-w-0 flex-grow-1">
                             <!-- Línea 1: Título claro + Monto en Móvil -->
                             <div class="d-flex align-center justify-space-between gap-2">
-                              <span class="text-body-2 font-weight-bold text-slate-900 text-truncate">
+                              <span class="text-body-2 font-weight-bold text-slate-900 text-truncate cursor-pointer"
+                                title="Ver comprobante o comprobantes adjuntos" @click="openMovementReceipt(movement)">
                                 {{ movement.displayTitle }}
                               </span>
                               <!-- Monto en móvil arriba a la derecha -->
@@ -833,11 +867,14 @@ onActivated(() => {
 
                             <!-- Línea 3: Badges ordenados compactos -->
                             <div class="movement-badges-row d-flex align-center flex-wrap gap-1 mt-1 text-caption">
-                              <!-- Módulo Origen -->
-                              <span class="status-pill-clean status-canceled">
-                                <span class="status-dot" />
-                                <span>{{ movement.module }}</span>
-                              </span>
+                              <!-- Módulo Origen con VChip con el color del valor -->
+                              <VChip size="x-small" :color="getMovementChipColor(movement.type)" variant="tonal"
+                                class="font-weight-semibold">
+                                <VIcon
+                                  :icon="movement.type === 'transfer' ? 'ri-arrow-left-right-line' : (movement.type === 'income' ? 'ri-arrow-down-line' : 'ri-arrow-up-line')"
+                                  size="12" class="me-1" />
+                                {{ movement.module }}
+                              </VChip>
 
                               <!-- Badge de Orden de Trabajo si existe -->
                               <span v-if="movement.workOrderNumber"
@@ -869,9 +906,26 @@ onActivated(() => {
                           </div>
                         </div>
 
-                        <!-- Derecha: Monto Destacado en Desktop -->
-                        <div class="movement-amount-container text-right shrink-0 ps-3 d-none d-sm-block">
-                          <span class="text-body-2  amount-display"
+                        <!-- Derecha: Monto Destacado + Botón de Comprobante(s) -->
+                        <div class="movement-actions-container d-flex align-center gap-2 shrink-0 ps-2 ps-sm-3">
+                          <!-- Botón Desktop -->
+                          <VBtn size="small" variant="flat" color="primary"
+                            class="rounded-lg text-none font-weight-medium px-2.5 d-none d-sm-inline-flex"
+                            title="Ver comprobante o comprobantes adjuntos" @click.stop="openMovementReceipt(movement)">
+                            <VIcon icon="ri-file-text-line" size="16" class="me-1" />
+                            <span></span>
+                            <!-- <VBadge v-if="movement.attachmentsCount > 0" :content="movement.attachmentsCount"
+                              color="info" inline class="ms-1" /> -->
+                          </VBtn>
+
+                          <!-- Botón Móvil -->
+                          <VBtn icon="ri-file-text-line" size="x-small" variant="tonal" color="primary"
+                            class="rounded-lg d-sm-none" title="Ver comprobante o comprobantes adjuntos"
+                            @click.stop="openMovementReceipt(movement)" />
+                        </div>
+
+                        <div class="movement-amount-container text-right d-none d-sm-block">
+                          <span class="text-body-2 amount-display"
                             :class="movement.type === 'transfer' ? 'text-info' : (movement.type === 'income' ? 'text-emerald' : 'text-rose')">
                             {{ movement.type === 'transfer' ? '' : (movement.type === 'income' ? '+' : '-') }}
                             {{ formatCurrency(movement.amount) }}
@@ -891,8 +945,10 @@ onActivated(() => {
       </VRow>
 
       <!-- Diálogos Globales -->
-      <TransferDialog v-model="isTransferDialogVisible" />
-      <AporteCreateDialog v-model="isAporteDialogVisible" />
+      <TransferDialog v-model="isTransferDialogVisible" @transferred="dashboardOptions" />
+      <AporteCreateDialog v-model="isAporteDialogVisible" @created="dashboardOptions" />
+      <MovementReceiptNoteDialog v-if="selectedMovementForReceipt" v-model="isReceiptNoteDialogVisible"
+        :movement="selectedMovementForReceipt" :accounts="accounts" @updated="dashboardOptions" />
     </div>
   </div>
 </template>
