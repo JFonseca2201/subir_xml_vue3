@@ -566,8 +566,9 @@ const convertToSale = () => {
 </script>
 
 <template>
-  <VDialog :model-value="props.isDialogVisible" max-width="800" :fullscreen="$vuetify.display.smAndDown" scrollable
-    transition="dialog-bottom-transition" @update:model-value="closeDialog">
+  <VDialog :model-value="props.isDialogVisible" min-width="800" width="920" max-width="1000"
+    :fullscreen="$vuetify.display.smAndDown" scrollable transition="dialog-bottom-transition"
+    @update:model-value="closeDialog">
     <VCard class="sale-view-dialog-card rounded-xl overflow-hidden elevation-12">
       <!-- Modern Sleek Horizontal Header Banner -->
       <div class="sale-dialog-header-banner">
@@ -598,7 +599,7 @@ const convertToSale = () => {
 
             <h2 class="header-title-text d-flex align-center gap-2 flex-wrap">
               <span>{{ isInvoice ? 'Factura' : (isQuote ? 'Cotización' : 'Nota de Venta') }} #{{ formattedSequential
-              }}</span>
+                }}</span>
             </h2>
           </div>
         </div>
@@ -610,7 +611,7 @@ const convertToSale = () => {
             class="glass-header-pill">
             <VIcon icon="ri-tools-line" size="14" class="me-1 text-amber-lighten-2" />
             <span>OT #{{ saleData.work_order_number || saleData.work_order?.number || saleData.workOrder?.number
-            }}</span>
+              }}</span>
           </div>
 
           <div v-if="workOrderDate && isWorkOrderDateDifferent" class="glass-header-pill"
@@ -801,20 +802,20 @@ const convertToSale = () => {
                     </span>
                     <span class="detail-value text-lowercase">{{ getClientEmail }}</span>
                   </div>
-                  <div v-if="!hasVehicle && technicians.length" class="detail-row align-start mt-2">
+                  <div v-if="!hasVehicle && technicians.length" class="detail-row flex-column align-start gap-1 mt-2">
                     <span class="detail-label">
                       <VIcon icon="ri-user-settings-line" size="15" /> Técnicos
                     </span>
-                    <span class="detail-value">
-                      <div class="d-flex flex-wrap gap-1.5 justify-end">
-                        <div v-for="tech in technicians" :key="tech.id"
-                          class="status-pill-clean status-transfer font-weight-medium"
-                          style="font-size: 0.72rem; padding: 3px 8px; text-transform: uppercase;">
-                          <span class="status-dot" />
-                          <span>{{ tech.first_name }} {{ tech.last_name }}</span>
-                        </div>
+                    <div class="d-flex flex-wrap gap-1.5 w-100 mt-1">
+                      <div v-for="tech in technicians" :key="tech.id"
+                        class="status-pill-clean status-transfer font-weight-medium d-inline-flex align-center"
+                        style="font-size: 0.72rem; padding: 3px 10px; text-transform: uppercase; max-width: 100%;"
+                        :title="`${tech.first_name || ''} ${tech.last_name || ''}`.trim()">
+                        <span class="status-dot flex-shrink-0" />
+                        <span class="text-truncate" style="max-width: calc(100% - 14px);">{{ tech.first_name }} {{
+                          tech.last_name }}</span>
                       </div>
-                    </span>
+                    </div>
                   </div>
                 </div>
               </div>
@@ -861,20 +862,20 @@ const convertToSale = () => {
                       {{ saleData.mileage ? `${saleData.mileage} km` : '—' }}
                     </span>
                   </div>
-                  <div v-if="technicians.length" class="detail-row align-start mt-2">
+                  <div v-if="technicians.length" class="detail-row flex-column align-start gap-1 mt-2">
                     <span class="detail-label">
                       <VIcon icon="ri-user-settings-line" size="15" /> Técnicos
                     </span>
-                    <span class="detail-value">
-                      <div class="d-flex flex-wrap gap-1.5 justify-end">
-                        <div v-for="tech in technicians" :key="tech.id"
-                          class="status-pill-clean status-transfer font-weight-medium"
-                          style="font-size: 0.72rem; padding: 3px 8px; text-transform: uppercase;">
-                          <span class="status-dot" />
-                          <span>{{ tech.first_name }} {{ tech.last_name }}</span>
-                        </div>
+                    <div class="d-flex flex-wrap gap-1.5 w-100 mt-1">
+                      <div v-for="tech in technicians" :key="tech.id"
+                        class="status-pill-clean status-transfer font-weight-medium d-inline-flex align-center"
+                        style="font-size: 0.72rem; padding: 3px 10px; text-transform: uppercase; max-width: 100%;"
+                        :title="`${tech.first_name || ''} ${tech.last_name || ''}`.trim()">
+                        <span class="status-dot flex-shrink-0" />
+                        <span class="text-truncate" style="max-width: calc(100% - 14px);">{{ tech.first_name }} {{
+                          tech.last_name }}</span>
                       </div>
-                    </span>
+                    </div>
                   </div>
                 </div>
               </div>
@@ -1041,13 +1042,13 @@ const convertToSale = () => {
                 <div class="d-flex justify-space-between align-center mb-2">
                   <span class="text-body-2 text-medium-emphasis font-weight-medium">Subtotal</span>
                   <span class="text-body-1 font-weight-semibold text-slate-800">{{ formatCurrency(displaySubtotal)
-                  }}</span>
+                    }}</span>
                 </div>
 
                 <div v-if="displayTaxAmount > 0" class="d-flex justify-space-between align-center mb-2">
                   <span class="text-body-2 text-medium-emphasis font-weight-medium">IVA (15%)</span>
                   <span class="text-body-1 font-weight-semibold text-slate-800">{{ formatCurrency(displayTaxAmount)
-                  }}</span>
+                    }}</span>
                 </div>
 
                 <div v-if="totalDiscount > 0" class="d-flex justify-space-between align-center mb-2 text-error">
@@ -1070,51 +1071,61 @@ const convertToSale = () => {
       <VDivider />
 
       <!-- Footer Actions Flotante y Moderno -->
-      <VCardActions class="pa-4 px-6 d-flex justify-end align-center gap-3 bg-surface flex-wrap sticky-dialog-footer">
-        <!-- Conversión Directa de Cotizaciones Activas -->
-        <VBtn v-if="canConvertQuote" color="primary" variant="elevated" prepend-icon="ri-tools-line"
-          class="rounded-lg px-4 font-weight-bold elevation-2" height="42" @click="convertToWorkOrder">
-          Convertir a Orden de Trabajo
-        </VBtn>
+      <VCardActions
+        class="py-3 px-6 d-flex align-center justify-space-between flex-wrap gap-3 bg-surface sticky-dialog-footer border-t">
+        <!-- Izquierda: Acciones Operativas -->
+        <div class="d-flex align-center flex-wrap gap-2.5">
+          <!-- Conversión Directa de Cotizaciones Activas -->
+          <VBtn v-if="canConvertQuote" color="primary" variant="elevated" prepend-icon="ri-tools-line"
+            class="rounded-lg px-3.5 font-weight-bold elevation-1" height="40" @click="convertToWorkOrder">
+            Convertir a Orden de Trabajo
+          </VBtn>
 
-        <VBtn v-if="canConvertQuote" color="success" variant="tonal" prepend-icon="ri-shopping-cart-2-line"
-          class="rounded-lg px-4 font-weight-bold" height="42" @click="convertToSale">
-          Facturar Venta
-        </VBtn>
+          <VBtn v-if="canConvertQuote" color="success" variant="elevated" prepend-icon="ri-shopping-cart-2-line"
+            class="rounded-lg px-3.5 font-weight-bold elevation-1" height="40" @click="convertToSale">
+            Facturar Venta
+          </VBtn>
 
-        <!-- Descargar XML (Facturas SRI) -->
-        <VBtn v-if="isInvoice || saleData.sri_access_key" color="info" variant="outlined"
-          prepend-icon="ri-file-code-line" class="rounded-lg px-4 font-weight-bold" height="42" @click="downloadXml">
-          Descargar XML
-        </VBtn>
+          <!-- Imprimir -->
+          <VBtn color="secondary" variant="elevated" prepend-icon="ri-printer-line"
+            class="rounded-lg px-3.5 font-weight-semibold" height="40" @click="printSale(props.saleData.id)">
+            Imprimir
+          </VBtn>
 
-        <!-- Descargar RIDE / Ver PDF -->
-        <VBtn v-if="isInvoice || saleData.sri_access_key" color="primary" variant="elevated"
-          prepend-icon="ri-file-pdf-line" class="rounded-lg px-5 font-weight-bold elevation-2" height="42"
-          @click="downloadRide">
-          Descargar RIDE
-        </VBtn>
-        <VBtn v-else color="secondary" variant="outlined" prepend-icon="ri-file-pdf-line"
-          class="rounded-lg px-5 font-weight-bold" height="42" @click="generateSinglePDF(props.saleData)">
-          Ver PDF
-        </VBtn>
+          <!-- Enviar por Email (si tiene email) -->
+          <VBtn v-if="(isInvoice || saleData.sri_access_key) && saleData.client?.email" color="success"
+            variant="elevated" prepend-icon="ri-mail-send-line" :loading="isSendingEmail"
+            class="rounded-lg px-3.5 font-weight-semibold" height="40" @click="sendEmail">
+            Enviar Email
+          </VBtn>
 
-        <!-- Enviar por Email (si tiene email) -->
-        <VBtn v-if="(isInvoice || saleData.sri_access_key) && saleData.client?.email" color="success" variant="tonal"
-          prepend-icon="ri-mail-send-line" :loading="isSendingEmail" class="rounded-lg px-4 font-weight-bold"
-          height="42" @click="sendEmail">
-          Enviar Email
-        </VBtn>
+          <!-- Botón Desplegable de Descarga -->
+          <VBtn color="primary" variant="elevated" prepend-icon="ri-download-2-line" append-icon="ri-arrow-down-s-line"
+            class="rounded-lg px-4 font-weight-bold elevation-2" height="40">
+            Descargar
+            <VMenu activator="parent" transition="slide-y-transition" location="top end">
+              <VList density="compact" class="py-1 rounded-lg elevation-4 border" min-width="210">
+                <!-- RIDE SRI (si es factura) o PDF normal -->
+                <VListItem v-if="isInvoice || saleData.sri_access_key" prepend-icon="ri-file-pdf-line"
+                  title="Descargar RIDE (PDF)" class="text-body-2 font-weight-medium" @click="downloadRide" />
+                <VListItem v-else prepend-icon="ri-file-pdf-line" title="Ver / Descargar PDF"
+                  class="text-body-2 font-weight-medium" @click="generateSinglePDF(props.saleData)" />
 
-        <VBtn color="secondary" variant="tonal" prepend-icon="ri-printer-line" class="rounded-lg px-4 font-weight-bold"
-          height="42" @click="printSale(props.saleData.id)">
-          Imprimir
-        </VBtn>
+                <!-- XML SRI -->
+                <VListItem v-if="isInvoice || saleData.sri_access_key" prepend-icon="ri-file-code-line"
+                  title="Descargar XML" class="text-body-2 font-weight-medium" @click="downloadXml" />
+              </VList>
+            </VMenu>
+          </VBtn>
+        </div>
 
-        <VBtn color="slate" variant="outlined" prepend-icon="ri-close-line" class="rounded-lg px-5 font-weight-medium"
-          height="42" @click="closeDialog">
-          Cerrar
-        </VBtn>
+        <!-- Derecha: Cerrar -->
+        <div class="d-flex align-center ms-auto">
+          <VBtn color="secondary" variant="outlined" prepend-icon="ri-close-line"
+            class="rounded-lg px-4 font-weight-medium" height="40" @click="closeDialog">
+            Cerrar
+          </VBtn>
+        </div>
       </VCardActions>
     </VCard>
   </VDialog>

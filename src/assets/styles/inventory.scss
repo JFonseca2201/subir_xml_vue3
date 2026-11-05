@@ -1318,6 +1318,10 @@
   background-color: rgb(var(--v-theme-surface)) !important;
   box-shadow: 0 20px 60px rgba(0, 0, 0, 0.22), 0 0 0 1px rgba(var(--v-border-color), 0.08) !important;
 
+  @media (min-width: 820px) {
+    min-width: 800px !important;
+  }
+
   .dialog-body-content {
     background-color: #f8fafc !important;
     overflow-y: auto !important;
