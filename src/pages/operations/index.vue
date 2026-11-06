@@ -393,16 +393,19 @@ const allProcessedMovements = computed(() => {
 
 // Total de registros calculado desde el backend
 const totalFilteredCount = computed(() => {
+  if (selectedMonth.value === 'all') {
+    return rawMovementsList.value.length
+  }
   if (serverPagination.value.total !== undefined && serverPagination.value.total !== null) {
     return serverPagination.value.total
   }
   return allProcessedMovements.value.length
 })
 
-// Paginación activa únicamente cuando se filtra por mes y hay más de 20 registros
+// Paginación activa únicamente cuando se selecciona un mes
 const isPaginationActive = computed(() => {
   if (selectedMonth.value === 'all') return false
-  return serverPagination.value.is_paginated === true || totalFilteredCount.value > itemsPerPage
+  return totalFilteredCount.value > 0
 })
 
 const totalPages = computed(() => {
@@ -413,12 +416,13 @@ const totalPages = computed(() => {
 })
 
 const paginatedMovements = computed(() => {
-  // Cuando la paginación es por servidor, allProcessedMovements ya contiene los 20 registros de la página solicitada
+  // Cuando la paginación es por servidor, allProcessedMovements ya contiene los registros de la página solicitada
   return allProcessedMovements.value
 })
 
 const paginationInfo = computed(() => {
   const total = totalFilteredCount.value
+  if (total === 0) return { start: 0, end: 0 }
   const start = Math.min((currentPage.value - 1) * itemsPerPage + 1, total)
   const end = Math.min(currentPage.value * itemsPerPage, total)
   return { start: Math.max(1, start), end }
@@ -494,59 +498,9 @@ watch(currentPage, (newPage, oldPage) => {
   }
 })
 
-// Re-agrupar movimientos por día manteniendo subtotales y estructura visual
-const groupProcessedMovementsByDate = movements => {
-  if (!movements || !Array.isArray(movements)) return []
-
-  const groups = {}
-
-  movements.forEach(m => {
-    const rawDate = m.entry_date || 'Sin fecha'
-    const dateKey = rawDate !== 'Sin fecha' ? String(rawDate).split('T')[0] : 'Sin fecha'
-
-    if (!groups[dateKey]) {
-      let displayDate = 'Sin fecha'
-      if (rawDate !== 'Sin fecha') {
-        displayDate = new Intl.DateTimeFormat('es-EC', {
-          weekday: 'long',
-          day: 'numeric',
-          month: 'long',
-          year: 'numeric',
-          timeZone: 'UTC',
-        }).format(new Date(rawDate))
-
-        displayDate = displayDate.charAt(0).toUpperCase() + displayDate.slice(1)
-      }
-      groups[dateKey] = {
-        dateKey,
-        date: displayDate,
-        totalIncome: 0,
-        totalExpense: 0,
-        movements: [],
-      }
-    }
-
-    const amountVal = parseFloat(m.amount || 0)
-    if (m.type === 'income') {
-      groups[dateKey].totalIncome += amountVal
-    } else if (m.type === 'expense') {
-      groups[dateKey].totalExpense += amountVal
-    }
-
-    groups[dateKey].movements.push(m)
-  })
-
-  return Object.values(groups).sort((a, b) => {
-    if (a.dateKey === 'Sin fecha') return 1
-    if (b.dateKey === 'Sin fecha') return -1
-
-    return new Date(b.dateKey) - new Date(a.dateKey)
-  })
-}
-
 // Movimientos agrupados para la vista en template
 const filteredGroupedMovements = computed(() => {
-  return groupProcessedMovementsByDate(paginatedMovements.value)
+  return recentMovements.value
 })
 
 // Cargar datos
@@ -905,7 +859,7 @@ onActivated(() => {
                       </h2>
                       <span class="status-pill-clean status-primary shrink-0">
                         <span class="status-dot" />
-                        <span>{{ totalFilteredCount }} registros</span>
+                        <span>{{ selectedMonth === 'all' ? (rawMovementsList.length < 20 ? `${rawMovementsList.length} registros` : 'Primeros 20 registros') : `${totalFilteredCount} registros` }}</span>
                       </span>
                     </div>
                     <p class="text-caption text-medium-emphasis mb-0 d-none d-sm-block text-truncate">

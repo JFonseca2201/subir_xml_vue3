@@ -25,6 +25,7 @@ const pdfResults = ref([])
 const isPdfSearching = ref(false)
 const totalPdfResults = ref(0)
 const pdfCurrentPage = ref(1)
+const currentPdfLoadedPage = ref(1)
 const pdfPerPage = ref(10)
 
 // Modal flotante de resultados de búsqueda (v-dialog)
@@ -315,11 +316,12 @@ const searchPdfCatalogs = async (page = 1) => {
   if (!query || query.length < 2) {
     pdfResults.value = []
     totalPdfResults.value = 0
+    currentPdfLoadedPage.value = 1
+    pdfCurrentPage.value = 1
     return
   }
 
   isPdfSearching.value = true
-  pdfCurrentPage.value = page
   debouncedSearch.value = query
 
   try {
@@ -336,13 +338,23 @@ const searchPdfCatalogs = async (page = 1) => {
     if (response && response.success) {
       pdfResults.value = response.data || []
       totalPdfResults.value = response.total || 0
-      pdfCurrentPage.value = response.current_page || page
+      const serverPage = Number(response.current_page || page)
+      currentPdfLoadedPage.value = serverPage
+      pdfCurrentPage.value = serverPage
     }
   } catch (err) {
     console.error('Error al buscar en catálogos PDF:', err)
     showNotification('Error al buscar dentro de los PDFs', 'error')
   } finally {
     isPdfSearching.value = false
+  }
+}
+
+// Manejador protegido de cambio de página en el paginador para evitar bucles de actualización
+const onPdfPageChange = newPage => {
+  const targetPage = Number(newPage)
+  if (targetPage && targetPage !== currentPdfLoadedPage.value && !isPdfSearching.value) {
+    searchPdfCatalogs(targetPage)
   }
 }
 
@@ -463,6 +475,8 @@ const clearSearch = () => {
   debouncedSearch.value = ''
   pdfResults.value = []
   totalPdfResults.value = 0
+  currentPdfLoadedPage.value = 1
+  pdfCurrentPage.value = 1
 }
 
 onMounted(async () => {
@@ -916,13 +930,21 @@ onUnmounted(() => {
 
         <!-- Cuerpo del Diálogo con Resultados Detallados -->
         <VCardText class="pa-4 pa-sm-5 overflow-y-auto" style="max-height: 65vh;">
-          <!-- Indicador de Carga -->
-          <div v-if="isPdfSearching" class="py-6">
+          <!-- Indicador de Carga Inicial -->
+          <div v-if="isPdfSearching && pdfResults.length === 0" class="py-6">
             <VSkeletonLoader type="table-row@5" />
           </div>
 
           <!-- Listado de Coincidencias Encontradas -->
           <div v-else-if="pdfResults.length > 0">
+            <!-- Barra de progreso lineal durante cambio de página (evita desmontar la tabla y el paginador) -->
+            <VProgressLinear
+              v-if="isPdfSearching"
+              indeterminate
+              height="3"
+              color="primary"
+              class="mb-3 rounded"
+            />
             <!-- VISTA ESCRITORIO: TABLA DETALLADA (d-none d-md-table) -->
             <VTable hover class="d-none d-md-table border rounded-xl overflow-hidden mb-3 w-100">
               <thead>
@@ -1021,13 +1043,24 @@ onUnmounted(() => {
 
             <!-- Paginación dentro del Diálogo -->
             <div v-if="totalPdfPages > 1"
-              class="d-flex justify-space-between align-center flex-wrap gap-2 pt-2 border-t">
+              class="d-flex justify-space-between align-center flex-wrap gap-2 pt-3 mt-2 border-t">
               <span class="text-caption text-medium-emphasis">
                 Página {{ pdfCurrentPage }} de {{ totalPdfPages }} ({{ totalPdfResults }} coincidencias)
               </span>
-              <VPagination v-model="pdfCurrentPage" :length="totalPdfPages" :disabled="isPdfSearching" rounded="circle"
-                density="comfortable" size="small" color="primary"
-                @update:model-value="page => searchPdfCatalogs(page)" />
+              <div style="min-width: 260px; flex-shrink: 0;" class="d-flex justify-end">
+                <VPagination
+                  v-model="pdfCurrentPage"
+                  :length="totalPdfPages"
+                  :total-visible="$vuetify.display.xs ? 4 : 5"
+                  :disabled="isPdfSearching"
+                  rounded="circle"
+                  density="comfortable"
+                  size="small"
+                  color="primary"
+                  class="my-0"
+                  @update:model-value="onPdfPageChange"
+                />
+              </div>
             </div>
           </div>
 
