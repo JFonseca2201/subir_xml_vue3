@@ -44,23 +44,23 @@ const getMovementChipColor = type => {
   return 'secondary'
 }
 
-// Filtros de movimientos
+// Filtros de movimientos y estado de paginación
 const movementFilter = ref('all') // 'all' | 'income' | 'expense' | 'transfer'
 const movementSearch = ref('')
 const selectedMonth = ref('all') // 'all' o 'YYYY-MM' (ej. '2026-11')
 const currentPage = ref(1)
 const itemsPerPage = 20
-
-const resetFilters = () => {
-  movementFilter.value = 'all'
-  movementSearch.value = ''
-  selectedMonth.value = 'all'
-  currentPage.value = 1
-}
-
-watch([selectedMonth, movementFilter, movementSearch], () => {
-  currentPage.value = 1
+const movementsLoading = ref(false)
+const backendAvailableMonths = ref([])
+const serverPagination = ref({
+  total: 0,
+  per_page: 20,
+  current_page: 1,
+  last_page: 1,
+  is_paginated: false,
 })
+
+let searchDebounceTimeout = null
 
 // Órdenes de trabajo
 const workOrdersStats = ref({
@@ -347,9 +347,9 @@ const getMovementYearMonth = m => {
   return null
 }
 
-// Lista de meses disponibles para el selector VSelect
+// Lista de meses disponibles para el selector VSelect (obtenida desde la BD y movimientos)
 const availableMonths = computed(() => {
-  const monthsSet = new Set()
+  const monthsSet = new Set(backendAvailableMonths.value)
 
   rawMovementsList.value.forEach(m => {
     const ym = getMovementYearMonth(m)
@@ -391,77 +391,105 @@ const allProcessedMovements = computed(() => {
   return recentMovements.value.flatMap(group => group.movements)
 })
 
-// Movimientos planos filtrados por búsqueda, tipo y mes
-const filteredFlatMovements = computed(() => {
-  const query = movementSearch.value.toLowerCase().trim()
-  const filterType = movementFilter.value
-  const filterMonth = selectedMonth.value
-
-  return allProcessedMovements.value.filter(m => {
-    // 1. Filtro por mes (si no es 'all')
-    if (filterMonth !== 'all') {
-      const ym = getMovementYearMonth(m)
-      if (ym !== filterMonth) {
-        return false
-      }
-    }
-
-    // 2. Filtro por tipo
-    if (filterType !== 'all' && m.type !== filterType) {
-      return false
-    }
-
-    // 3. Filtro por texto de búsqueda
-    if (query) {
-      const matchesDesc = (m.description || '').toLowerCase().includes(query)
-      const matchesTitle = (m.displayTitle || '').toLowerCase().includes(query)
-      const matchesSub = (m.displaySubtitle || '').toLowerCase().includes(query)
-      const matchesModule = (m.module || '').toLowerCase().includes(query)
-      const matchesMethod = (m.methodInfo?.label || '').toLowerCase().includes(query)
-      const matchesOT = (m.workOrderNumber || '').toLowerCase().includes(query)
-      const matchesPlate = (m.licensePlate || '').toLowerCase().includes(query)
-      const matchesClient = (m.clientName || '').toLowerCase().includes(query)
-
-      if (!(matchesDesc || matchesTitle || matchesSub || matchesModule || matchesMethod || matchesOT || matchesPlate || matchesClient)) {
-        return false
-      }
-    }
-
-    return true
-  })
+// Total de registros calculado desde el backend
+const totalFilteredCount = computed(() => {
+  if (serverPagination.value.total !== undefined && serverPagination.value.total !== null) {
+    return serverPagination.value.total
+  }
+  return allProcessedMovements.value.length
 })
-
-const totalFilteredCount = computed(() => filteredFlatMovements.value.length)
 
 // Paginación activa únicamente cuando se filtra por mes y hay más de 20 registros
 const isPaginationActive = computed(() => {
-  return selectedMonth.value !== 'all' && totalFilteredCount.value > itemsPerPage
+  if (selectedMonth.value === 'all') return false
+  return serverPagination.value.is_paginated === true || totalFilteredCount.value > itemsPerPage
 })
 
 const totalPages = computed(() => {
+  if (serverPagination.value.last_page) {
+    return serverPagination.value.last_page
+  }
   return Math.ceil(totalFilteredCount.value / itemsPerPage) || 1
 })
 
 const paginatedMovements = computed(() => {
-  if (!isPaginationActive.value) {
-    return filteredFlatMovements.value
-  }
-
-  const start = (currentPage.value - 1) * itemsPerPage
-  return filteredFlatMovements.value.slice(start, start + itemsPerPage)
+  // Cuando la paginación es por servidor, allProcessedMovements ya contiene los 20 registros de la página solicitada
+  return allProcessedMovements.value
 })
 
 const paginationInfo = computed(() => {
-  const start = (currentPage.value - 1) * itemsPerPage + 1
-  const end = Math.min(currentPage.value * itemsPerPage, totalFilteredCount.value)
-  return { start, end }
+  const total = totalFilteredCount.value
+  const start = Math.min((currentPage.value - 1) * itemsPerPage + 1, total)
+  const end = Math.min(currentPage.value * itemsPerPage, total)
+  return { start: Math.max(1, start), end }
 })
 
-watch(currentPage, () => {
-  if (typeof window !== 'undefined') {
-    const el = document.querySelector('.movements-scroll-container')
-    if (el) {
-      el.scrollIntoView({ behavior: 'smooth', block: 'start' })
+// Cargar movimientos desde el backend con filtros y paginación
+const fetchMovements = async () => {
+  movementsLoading.value = true
+  try {
+    const params = {
+      month: selectedMonth.value,
+      type: movementFilter.value,
+      search: movementSearch.value,
+      page: currentPage.value,
+      per_page: itemsPerPage,
+      only_movements: 1,
+    }
+
+    const response = await $api('/dashboard-financiero', { params })
+
+    if (response.available_months && Array.isArray(response.available_months)) {
+      backendAvailableMonths.value = response.available_months
+    }
+
+    if (response.pagination) {
+      serverPagination.value = response.pagination
+    }
+
+    rawMovementsList.value = response.movements || []
+    recentMovements.value = groupMovementsByDate(response.movements)
+  } catch (error) {
+    console.error('Error al actualizar movimientos desde el backend:', error)
+  } finally {
+    movementsLoading.value = false
+  }
+}
+
+const resetFilters = () => {
+  movementFilter.value = 'all'
+  movementSearch.value = ''
+  selectedMonth.value = 'all'
+  currentPage.value = 1
+  fetchMovements()
+}
+
+watch(selectedMonth, () => {
+  currentPage.value = 1
+  fetchMovements()
+})
+
+watch(movementFilter, () => {
+  currentPage.value = 1
+  fetchMovements()
+})
+
+watch(movementSearch, () => {
+  currentPage.value = 1
+  if (searchDebounceTimeout) clearTimeout(searchDebounceTimeout)
+  searchDebounceTimeout = setTimeout(() => {
+    fetchMovements()
+  }, 350)
+})
+
+watch(currentPage, (newPage, oldPage) => {
+  if (newPage !== oldPage && isPaginationActive.value) {
+    fetchMovements()
+    if (typeof window !== 'undefined') {
+      const el = document.querySelector('.movements-scroll-container')
+      if (el) {
+        el.scrollIntoView({ behavior: 'smooth', block: 'start' })
+      }
     }
   }
 })
@@ -525,8 +553,16 @@ const filteredGroupedMovements = computed(() => {
 const dashboardOptions = async () => {
   loading.value = true
   try {
+    const params = {
+      month: selectedMonth.value,
+      type: movementFilter.value,
+      search: movementSearch.value,
+      page: currentPage.value,
+      per_page: itemsPerPage,
+    }
+
     const [response, accountsRes] = await Promise.all([
-      $api('/dashboard-financiero'),
+      $api('/dashboard-financiero', { params }),
       $api('accounts').catch(() => []),
     ])
 
@@ -534,6 +570,14 @@ const dashboardOptions = async () => {
       accounts.value = accountsRes
     } else if (response.accountsSummary && Array.isArray(response.accountsSummary)) {
       accounts.value = response.accountsSummary
+    }
+
+    if (response.available_months && Array.isArray(response.available_months)) {
+      backendAvailableMonths.value = response.available_months
+    }
+
+    if (response.pagination) {
+      serverPagination.value = response.pagination
     }
 
     if (response.summary) {
@@ -843,7 +887,7 @@ onActivated(() => {
       <VRow>
         <VCol cols="12">
           <VCard elevation="0" class="border rounded-2xl h-100 position-relative overflow-hidden bg-white">
-            <VProgressLinear v-if="loading" indeterminate color="primary" height="3" class="position-absolute"
+            <VProgressLinear v-if="loading || movementsLoading" indeterminate color="primary" height="3" class="position-absolute"
               style="top: 0; left: 0; right: 0; z-index: 10;" />
 
             <!-- Encabezado de la Tarjeta de Movimientos -->
@@ -1145,7 +1189,7 @@ onActivated(() => {
                   movimientos de {{
                     selectedMonthLabel }}
                 </span>
-                <VPagination v-model="currentPage" :length="totalPages" :disabled="loading" rounded="circle"
+                <VPagination v-model="currentPage" :length="totalPages" :disabled="loading || movementsLoading" rounded="circle"
                   :total-visible="$vuetify.display.xs ? 4 : 7" :size="$vuetify.display.xs ? 'small' : 'default'"
                   density="comfortable" color="primary" class="my-0" />
               </div>
