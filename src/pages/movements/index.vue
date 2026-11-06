@@ -1,4 +1,5 @@
 <script setup>
+
 import { ref, onMounted, onActivated, computed, watch } from 'vue'
 import { $api } from '@/utils/api'
 import { useLoaderStore } from '@/stores/loader'
@@ -1367,6 +1368,7 @@ onActivated(() => {
           <!-- Tarjetas de Movimientos del Día -->
           <div class="day-movements-list">
             <div v-for="movement in day.movements" :key="`mob-mov-${movement.id}`" class="mobile-movement-card">
+
               <!-- Fila Superior: N° Documento, OT, y Tipo -->
               <div class="d-flex align-center justify-space-between pb-2 border-b mb-2 flex-wrap gap-1.5">
                 <div class="d-flex align-center gap-1.5 flex-wrap">

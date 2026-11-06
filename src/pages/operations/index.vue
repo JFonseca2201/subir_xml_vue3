@@ -833,104 +833,120 @@ onActivated(() => {
                     <template v-for="(movement, movIdx) in day.movements" :key="movement.id">
                       <div
                         class="operations-movement-item d-flex align-center justify-space-between gap-3 px-3 px-sm-4 py-3">
-                        <!-- Izquierda: Avatar Icono + Información -->
-                        <div class="d-flex align-start gap-2.5 overflow-hidden flex-grow-1 min-w-0">
-                          <div class="movement-direction-avatar shrink-0 mt-0.5" :class="`avatar-${movement.type}`">
-                            <VIcon
-                              :icon="movement.type === 'transfer' ? 'ri-arrow-left-right-line' : (movement.type === 'income' ? 'ri-arrow-down-line' : 'ri-arrow-up-line')"
-                              size="18" />
-                          </div>
 
-                          <div class="d-flex flex-column text-left min-w-0 flex-grow-1">
-                            <!-- Línea 1: Título claro + Monto en Móvil -->
-                            <div class="d-flex align-center justify-space-between gap-2">
-                              <span class="text-body-2 font-weight-bold text-slate-900 text-truncate cursor-pointer"
-                                title="Ver comprobante o comprobantes adjuntos" @click="openMovementReceipt(movement)">
-                                {{ movement.displayTitle }}
-                              </span>
-                              <!-- Monto en móvil arriba a la derecha -->
-                              <span class="text-body-2 font-weight-bold amount-display d-sm-none shrink-0"
+                        <VRow>
+                          <VCol cols="10">
+
+                            <!-- Izquierda: Avatar Icono + Información -->
+                            <div class="d-flex align-start gap-2.5 overflow-hidden flex-grow-1 min-w-0">
+                              <div class="movement-direction-avatar shrink-0 mt-0.5" :class="`avatar-${movement.type}`">
+                                <VIcon
+                                  :icon="movement.type === 'transfer' ? 'ri-arrow-left-right-line' : (movement.type === 'income' ? 'ri-arrow-down-line' : 'ri-arrow-up-line')"
+                                  size="18" />
+                              </div>
+
+                              <div class="d-flex flex-column text-left min-w-0 flex-grow-1">
+                                <!-- Línea 1: Título claro + Monto en Móvil -->
+                                <div class="d-flex align-center justify-space-between gap-2">
+                                  <span class="text-body-2 font-weight-bold text-slate-900 text-truncate cursor-pointer"
+                                    title="Ver comprobante o comprobantes adjuntos"
+                                    @click="openMovementReceipt(movement)">
+                                    {{ movement.displayTitle }}
+                                  </span>
+                                  <!-- Monto en móvil arriba a la derecha -->
+                                  <span class="text-body-2 font-weight-bold amount-display d-sm-none shrink-0"
+                                    :class="movement.type === 'transfer' ? 'text-info' : (movement.type === 'income' ? 'text-emerald' : 'text-rose')">
+                                    {{ movement.type === 'transfer' ? '' : (movement.type === 'income' ? '+' : '-') }}
+                                    {{ formatCurrency(movement.amount) }}
+                                  </span>
+                                </div>
+
+                                <!-- Línea 2: Datos del Cliente con Icono (si existen) -->
+                                <div v-if="movement.clientName"
+                                  class="movement-client-row d-flex align-center gap-1.5 text-caption font-weight-medium my-0.5 text-truncate">
+                                  <VIcon icon="ri-user-3-line" size="13" class="text-slate-400 shrink-0" />
+                                  <span class="text-slate-700 text-truncate font-weight-semibold">
+                                    {{ movement.clientName }}
+                                  </span>
+                                </div>
+
+                                <!-- Línea 3: Badges ordenados compactos -->
+                                <div class="movement-badges-row d-flex align-center flex-wrap gap-1 mt-1 text-caption">
+                                  <!-- Módulo Origen con VChip con el color del valor -->
+                                  <VChip size="x-small" :color="getMovementChipColor(movement.type)" variant="tonal"
+                                    class="font-weight-semibold">
+                                    <VIcon
+                                      :icon="movement.type === 'transfer' ? 'ri-arrow-left-right-line' : (movement.type === 'income' ? 'ri-arrow-down-line' : 'ri-arrow-up-line')"
+                                      size="12" class="me-1" />
+                                    {{ movement.module }}
+                                  </VChip>
+
+                                  <!-- Badge de Orden de Trabajo si existe -->
+                                  <span v-if="movement.workOrderNumber"
+                                    class="ot-chip-badge d-inline-flex align-center gap-1"
+                                    title="Orden de Trabajo Asociada">
+                                    <VIcon icon="ri-tools-line" size="11" />
+                                    <span>{{ movement.workOrderNumber }}</span>
+                                  </span>
+
+                                  <!-- Badge de Placa Vehicular si existe -->
+                                  <span v-if="movement.licensePlate" class="license-plate-badge" title="Vehículo">
+                                    {{ movement.licensePlate.toUpperCase() }}
+                                  </span>
+
+                                  <!-- Método de Pago / Banco Específico -->
+                                  <span class="payment-method-chip d-inline-flex align-center gap-1"
+                                    :class="movement.methodInfo.badgeClass">
+                                    <VIcon :icon="movement.methodInfo.icon" size="12" />
+                                    <span>{{ movement.methodInfo.label }}</span>
+                                  </span>
+
+                                  <!-- Hora -->
+                                  <span
+                                    class="movement-time-chip text-slate-400 d-inline-flex align-center gap-1 font-weight-medium">
+                                    <VIcon icon="ri-time-line" size="12" />
+                                    {{ movement.time }}
+                                  </span>
+                                </div>
+                              </div>
+                            </div>
+                          </VCol>
+
+                          <VCol cols="1">
+
+                            <!-- Derecha: Monto Destacado + Botón de Comprobante(s) -->
+                            <div class="movement-actions-container d-flex align-center gap-2 shrink-0 ps-2 ps-sm-3">
+                              <!-- Botón Desktop -->
+                              <VBtn size="small" variant="flat" color="primary"
+                                class="rounded-lg text-none font-weight-medium px-2.5 d-none d-sm-inline-flex"
+                                title="Ver comprobante o comprobantes adjuntos"
+                                @click.stop="openMovementReceipt(movement)">
+                                <VIcon icon="ri-file-text-line" size="16" class="me-1" />
+                                <span></span>
+                                <!-- <VBadge v-if="movement.attachmentsCount > 0" :content="movement.attachmentsCount"
+                                  color="info" inline class="ms-1" /> -->
+                              </VBtn>
+
+                              <!-- Botón Móvil -->
+                              <VBtn icon="ri-file-text-line" size="x-small" variant="tonal" color="primary"
+                                class="rounded-lg d-sm-none" title="Ver comprobante o comprobantes adjuntos"
+                                @click.stop="openMovementReceipt(movement)" />
+                            </div>
+                          </VCol>
+
+                          <VCol cols="1">
+                            <div class="movement-amount-container text-right d-none d-sm-block">
+                              <span class="text-body-2 amount-display"
                                 :class="movement.type === 'transfer' ? 'text-info' : (movement.type === 'income' ? 'text-emerald' : 'text-rose')">
                                 {{ movement.type === 'transfer' ? '' : (movement.type === 'income' ? '+' : '-') }}
                                 {{ formatCurrency(movement.amount) }}
                               </span>
                             </div>
 
-                            <!-- Línea 2: Datos del Cliente con Icono (si existen) -->
-                            <div v-if="movement.clientName"
-                              class="movement-client-row d-flex align-center gap-1.5 text-caption font-weight-medium my-0.5 text-truncate">
-                              <VIcon icon="ri-user-3-line" size="13" class="text-slate-400 shrink-0" />
-                              <span class="text-slate-700 text-truncate font-weight-semibold">
-                                {{ movement.clientName }}
-                              </span>
-                            </div>
+                          </VCol>
+                        </VRow>
 
-                            <!-- Línea 3: Badges ordenados compactos -->
-                            <div class="movement-badges-row d-flex align-center flex-wrap gap-1 mt-1 text-caption">
-                              <!-- Módulo Origen con VChip con el color del valor -->
-                              <VChip size="x-small" :color="getMovementChipColor(movement.type)" variant="tonal"
-                                class="font-weight-semibold">
-                                <VIcon
-                                  :icon="movement.type === 'transfer' ? 'ri-arrow-left-right-line' : (movement.type === 'income' ? 'ri-arrow-down-line' : 'ri-arrow-up-line')"
-                                  size="12" class="me-1" />
-                                {{ movement.module }}
-                              </VChip>
 
-                              <!-- Badge de Orden de Trabajo si existe -->
-                              <span v-if="movement.workOrderNumber"
-                                class="ot-chip-badge d-inline-flex align-center gap-1"
-                                title="Orden de Trabajo Asociada">
-                                <VIcon icon="ri-tools-line" size="11" />
-                                <span>{{ movement.workOrderNumber }}</span>
-                              </span>
-
-                              <!-- Badge de Placa Vehicular si existe -->
-                              <span v-if="movement.licensePlate" class="license-plate-badge" title="Vehículo">
-                                {{ movement.licensePlate.toUpperCase() }}
-                              </span>
-
-                              <!-- Método de Pago / Banco Específico -->
-                              <span class="payment-method-chip d-inline-flex align-center gap-1"
-                                :class="movement.methodInfo.badgeClass">
-                                <VIcon :icon="movement.methodInfo.icon" size="12" />
-                                <span>{{ movement.methodInfo.label }}</span>
-                              </span>
-
-                              <!-- Hora -->
-                              <span
-                                class="movement-time-chip text-slate-400 d-inline-flex align-center gap-1 font-weight-medium">
-                                <VIcon icon="ri-time-line" size="12" />
-                                {{ movement.time }}
-                              </span>
-                            </div>
-                          </div>
-                        </div>
-
-                        <!-- Derecha: Monto Destacado + Botón de Comprobante(s) -->
-                        <div class="movement-actions-container d-flex align-center gap-2 shrink-0 ps-2 ps-sm-3">
-                          <!-- Botón Desktop -->
-                          <VBtn size="small" variant="flat" color="primary"
-                            class="rounded-lg text-none font-weight-medium px-2.5 d-none d-sm-inline-flex"
-                            title="Ver comprobante o comprobantes adjuntos" @click.stop="openMovementReceipt(movement)">
-                            <VIcon icon="ri-file-text-line" size="16" class="me-1" />
-                            <span></span>
-                            <!-- <VBadge v-if="movement.attachmentsCount > 0" :content="movement.attachmentsCount"
-                              color="info" inline class="ms-1" /> -->
-                          </VBtn>
-
-                          <!-- Botón Móvil -->
-                          <VBtn icon="ri-file-text-line" size="x-small" variant="tonal" color="primary"
-                            class="rounded-lg d-sm-none" title="Ver comprobante o comprobantes adjuntos"
-                            @click.stop="openMovementReceipt(movement)" />
-                        </div>
-
-                        <div class="movement-amount-container text-right d-none d-sm-block">
-                          <span class="text-body-2 amount-display"
-                            :class="movement.type === 'transfer' ? 'text-info' : (movement.type === 'income' ? 'text-emerald' : 'text-rose')">
-                            {{ movement.type === 'transfer' ? '' : (movement.type === 'income' ? '+' : '-') }}
-                            {{ formatCurrency(movement.amount) }}
-                          </span>
-                        </div>
                       </div>
 
                       <!-- Divider entre movimientos (excepto después del último) -->
