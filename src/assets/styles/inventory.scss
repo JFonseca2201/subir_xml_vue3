@@ -4694,7 +4694,8 @@ html.dark {
 }
 
 .movement-search-input {
-  min-width: 520px;
+  min-width: 0;
+  width: 100%;
 
   .search-field :deep(.v-field),
   .search-field .v-field {

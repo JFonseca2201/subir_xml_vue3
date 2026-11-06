@@ -1,5 +1,5 @@
 <script setup>
-import { ref, onMounted, onActivated, computed } from 'vue'
+import { ref, onMounted, onActivated, computed, watch } from 'vue'
 import { useLoaderStore } from '@/stores/loader'
 import { useGlobalToast } from '@/composables/useGlobalToast'
 import { $api } from '@/utils/api'
@@ -47,11 +47,20 @@ const getMovementChipColor = type => {
 // Filtros de movimientos
 const movementFilter = ref('all') // 'all' | 'income' | 'expense' | 'transfer'
 const movementSearch = ref('')
+const selectedMonth = ref('all') // 'all' o 'YYYY-MM' (ej. '2026-11')
+const currentPage = ref(1)
+const itemsPerPage = 20
 
 const resetFilters = () => {
   movementFilter.value = 'all'
   movementSearch.value = ''
+  selectedMonth.value = 'all'
+  currentPage.value = 1
 }
+
+watch([selectedMonth, movementFilter, movementSearch], () => {
+  currentPage.value = 1
+})
 
 // Órdenes de trabajo
 const workOrdersStats = ref({
@@ -321,42 +330,195 @@ const groupMovementsByDate = movements => {
   })
 }
 
-// Movimientos filtrados por búsqueda y tipo
-const filteredGroupedMovements = computed(() => {
-  let groups = recentMovements.value
+// Nombres de los meses en español
+const monthNames = [
+  'Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio',
+  'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre',
+]
 
+// Extraer año-mes seguro 'YYYY-MM'
+const getMovementYearMonth = m => {
+  const rawDate = m.entry_date || m.created_at
+  if (!rawDate || rawDate === 'Sin fecha') return null
+  const str = String(rawDate).split('T')[0].split(' ')[0]
+  if (/^\d{4}-\d{2}/.test(str)) {
+    return str.substring(0, 7)
+  }
+  return null
+}
+
+// Lista de meses disponibles para el selector VSelect
+const availableMonths = computed(() => {
+  const monthsSet = new Set()
+
+  rawMovementsList.value.forEach(m => {
+    const ym = getMovementYearMonth(m)
+    if (ym) {
+      monthsSet.add(ym)
+    }
+  })
+
+  // Asegurar al menos el mes actual si la lista está cargada
+  const now = new Date()
+  const currentYM = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`
+  monthsSet.add(currentYM)
+
+  const sorted = Array.from(monthsSet).sort().reverse()
+
+  const list = sorted.map(ym => {
+    const [year, month] = ym.split('-')
+    const monthIndex = parseInt(month, 10) - 1
+    const monthName = monthNames[monthIndex] || month
+    return {
+      title: `${monthName} ${year}`,
+      value: ym,
+    }
+  })
+
+  return [
+    { title: 'Todos los meses', value: 'all' },
+    ...list,
+  ]
+})
+
+const selectedMonthLabel = computed(() => {
+  const found = availableMonths.value.find(item => item.value === selectedMonth.value)
+  return found ? found.title : selectedMonth.value
+})
+
+// Todos los movimientos ya procesados de forma plana
+const allProcessedMovements = computed(() => {
+  return recentMovements.value.flatMap(group => group.movements)
+})
+
+// Movimientos planos filtrados por búsqueda, tipo y mes
+const filteredFlatMovements = computed(() => {
   const query = movementSearch.value.toLowerCase().trim()
   const filterType = movementFilter.value
+  const filterMonth = selectedMonth.value
 
-  return groups.map(group => {
-    const filteredMovements = group.movements.filter(m => {
-      // Filtro por tipo
-      if (filterType !== 'all' && m.type !== filterType) {
+  return allProcessedMovements.value.filter(m => {
+    // 1. Filtro por mes (si no es 'all')
+    if (filterMonth !== 'all') {
+      const ym = getMovementYearMonth(m)
+      if (ym !== filterMonth) {
         return false
       }
-
-      // Filtro por texto
-      if (query) {
-        const matchesDesc = (m.description || '').toLowerCase().includes(query)
-        const matchesTitle = (m.displayTitle || '').toLowerCase().includes(query)
-        const matchesSub = (m.displaySubtitle || '').toLowerCase().includes(query)
-        const matchesModule = (m.module || '').toLowerCase().includes(query)
-        const matchesMethod = (m.methodInfo?.label || '').toLowerCase().includes(query)
-        const matchesOT = (m.workOrderNumber || '').toLowerCase().includes(query)
-        const matchesPlate = (m.licensePlate || '').toLowerCase().includes(query)
-        const matchesClient = (m.clientName || '').toLowerCase().includes(query)
-
-        return matchesDesc || matchesTitle || matchesSub || matchesModule || matchesMethod || matchesOT || matchesPlate || matchesClient
-      }
-
-      return true
-    })
-
-    return {
-      ...group,
-      movements: filteredMovements,
     }
-  }).filter(group => group.movements.length > 0)
+
+    // 2. Filtro por tipo
+    if (filterType !== 'all' && m.type !== filterType) {
+      return false
+    }
+
+    // 3. Filtro por texto de búsqueda
+    if (query) {
+      const matchesDesc = (m.description || '').toLowerCase().includes(query)
+      const matchesTitle = (m.displayTitle || '').toLowerCase().includes(query)
+      const matchesSub = (m.displaySubtitle || '').toLowerCase().includes(query)
+      const matchesModule = (m.module || '').toLowerCase().includes(query)
+      const matchesMethod = (m.methodInfo?.label || '').toLowerCase().includes(query)
+      const matchesOT = (m.workOrderNumber || '').toLowerCase().includes(query)
+      const matchesPlate = (m.licensePlate || '').toLowerCase().includes(query)
+      const matchesClient = (m.clientName || '').toLowerCase().includes(query)
+
+      if (!(matchesDesc || matchesTitle || matchesSub || matchesModule || matchesMethod || matchesOT || matchesPlate || matchesClient)) {
+        return false
+      }
+    }
+
+    return true
+  })
+})
+
+const totalFilteredCount = computed(() => filteredFlatMovements.value.length)
+
+// Paginación activa únicamente cuando se filtra por mes y hay más de 20 registros
+const isPaginationActive = computed(() => {
+  return selectedMonth.value !== 'all' && totalFilteredCount.value > itemsPerPage
+})
+
+const totalPages = computed(() => {
+  return Math.ceil(totalFilteredCount.value / itemsPerPage) || 1
+})
+
+const paginatedMovements = computed(() => {
+  if (!isPaginationActive.value) {
+    return filteredFlatMovements.value
+  }
+
+  const start = (currentPage.value - 1) * itemsPerPage
+  return filteredFlatMovements.value.slice(start, start + itemsPerPage)
+})
+
+const paginationInfo = computed(() => {
+  const start = (currentPage.value - 1) * itemsPerPage + 1
+  const end = Math.min(currentPage.value * itemsPerPage, totalFilteredCount.value)
+  return { start, end }
+})
+
+watch(currentPage, () => {
+  if (typeof window !== 'undefined') {
+    const el = document.querySelector('.movements-scroll-container')
+    if (el) {
+      el.scrollIntoView({ behavior: 'smooth', block: 'start' })
+    }
+  }
+})
+
+// Re-agrupar movimientos por día manteniendo subtotales y estructura visual
+const groupProcessedMovementsByDate = movements => {
+  if (!movements || !Array.isArray(movements)) return []
+
+  const groups = {}
+
+  movements.forEach(m => {
+    const rawDate = m.entry_date || 'Sin fecha'
+    const dateKey = rawDate !== 'Sin fecha' ? String(rawDate).split('T')[0] : 'Sin fecha'
+
+    if (!groups[dateKey]) {
+      let displayDate = 'Sin fecha'
+      if (rawDate !== 'Sin fecha') {
+        displayDate = new Intl.DateTimeFormat('es-EC', {
+          weekday: 'long',
+          day: 'numeric',
+          month: 'long',
+          year: 'numeric',
+          timeZone: 'UTC',
+        }).format(new Date(rawDate))
+
+        displayDate = displayDate.charAt(0).toUpperCase() + displayDate.slice(1)
+      }
+      groups[dateKey] = {
+        dateKey,
+        date: displayDate,
+        totalIncome: 0,
+        totalExpense: 0,
+        movements: [],
+      }
+    }
+
+    const amountVal = parseFloat(m.amount || 0)
+    if (m.type === 'income') {
+      groups[dateKey].totalIncome += amountVal
+    } else if (m.type === 'expense') {
+      groups[dateKey].totalExpense += amountVal
+    }
+
+    groups[dateKey].movements.push(m)
+  })
+
+  return Object.values(groups).sort((a, b) => {
+    if (a.dateKey === 'Sin fecha') return 1
+    if (b.dateKey === 'Sin fecha') return -1
+
+    return new Date(b.dateKey) - new Date(a.dateKey)
+  })
+}
+
+// Movimientos agrupados para la vista en template
+const filteredGroupedMovements = computed(() => {
+  return groupProcessedMovementsByDate(paginatedMovements.value)
 })
 
 // Cargar datos
@@ -486,6 +648,10 @@ const generatePDF = async () => {
       include_transfers: true,
       include_incomes: true,
       include_expenses: true,
+    }
+
+    if (selectedMonth.value && selectedMonth.value !== 'all') {
+      params.month = selectedMonth.value
     }
 
     let response
@@ -695,7 +861,7 @@ onActivated(() => {
                       </h2>
                       <span class="status-pill-clean status-primary shrink-0">
                         <span class="status-dot" />
-                        <span>{{ rawMovementsList.length }} registros</span>
+                        <span>{{ totalFilteredCount }} registros</span>
                       </span>
                     </div>
                     <p class="text-caption text-medium-emphasis mb-0 d-none d-sm-block text-truncate">
@@ -720,45 +886,59 @@ onActivated(() => {
             </div>
 
             <!-- Barra de Filtros y Búsqueda de Movimientos -->
-            <div
-              class="px-3 px-sm-4 py-2.5 py-sm-3 bg-slate-50 border-b d-flex flex-column flex-sm-row align-stretch align-sm-center justify-space-between gap-2.5">
+            <div class="px-3 px-sm-4 py-2.5 bg-slate-50 border-b">
+              <VRow class="align-center" dense>
+                <!-- 6 Columnas: Búsqueda y Selector de Mes -->
+                <VCol cols="12" md="6">
+                  <div class="d-flex align-center gap-2">
+                    <div class="flex-grow-1 min-w-0">
+                      <VTextField v-model="movementSearch" density="compact" variant="outlined"
+                        placeholder="Buscar movimiento, OT, placa..." prepend-inner-icon="ri-search-line" hide-details
+                        clearable class="search-field bg-white" />
+                    </div>
 
-              <!-- Input de Búsqueda Rápida  -->
-              <div class="d-flex align-center gap-2 flex-grow-1 flex-sm-grow-0">
-                <div class="movement-search-input flex-grow-1 flex-sm-grow-0">
-                  <VTextField v-model="movementSearch" density="compact" variant="outlined"
-                    placeholder="Buscar movimiento, OT, placa..." prepend-inner-icon="ri-search-line" hide-details
-                    clearable class="search-field" />
-                </div>
-              </div>
-              <!-- Filtros de Segmento -->
-              <div class="movement-filter-pills">
-                <button type="button" class="filter-pill-btn" :class="{ active: movementFilter === 'all' }"
-                  @click="movementFilter = 'all'">
-                  Todos
-                </button>
-                <button type="button" class="filter-pill-btn" :class="{ active: movementFilter === 'income' }"
-                  @click="movementFilter = 'income'">
-                  <span class="pill-dot dot-income" />
-                  Ingresos
-                </button>
-                <button type="button" class="filter-pill-btn" :class="{ active: movementFilter === 'expense' }"
-                  @click="movementFilter = 'expense'">
-                  <span class="pill-dot dot-expense" />
-                  Egresos
-                </button>
-                <button type="button" class="filter-pill-btn" :class="{ active: movementFilter === 'transfer' }"
-                  @click="movementFilter = 'transfer'">
-                  <span class="pill-dot dot-transfer" />
-                  Transf.
-                </button>
-                <VBtn variant="text" color="error" size="small" prepend-icon="ri-filter-off-line"
-                  class="font-weight-semibold shrink-0" @click="resetFilters">
-                  Limpiar Filtros
-                </VBtn>
-              </div>
+                    <!-- Filtro por Mes -->
+                    <div style="min-width: 175px; max-width: 210px;" class="flex-shrink-0">
+                      <VSelect v-model="selectedMonth" :items="availableMonths" item-title="title" item-value="value"
+                        density="compact" variant="outlined" prepend-inner-icon="ri-calendar-line" hide-details
+                        class="bg-white rounded-lg" />
+                    </div>
+                  </div>
+                </VCol>
 
+                <!-- 1 Columna: Espaciador -->
+                <VCol cols="12" md="1" class="d-none d-md-block" />
 
+                <!-- 5 Columnas Restantes: Filtros de Segmento -->
+                <VCol cols="12" md="5">
+                  <div
+                    class="movement-filter-pills d-block align-center flex-wrap gap-1.5 justify-start justify-md-end">
+                    <button type="button" class="filter-pill-btn" :class="{ active: movementFilter === 'all' }"
+                      @click="movementFilter = 'all'">
+                      Todos
+                    </button>
+                    <button type="button" class="filter-pill-btn" :class="{ active: movementFilter === 'income' }"
+                      @click="movementFilter = 'income'">
+                      <span class="pill-dot dot-income" />
+                      Ingresos
+                    </button>
+                    <button type="button" class="filter-pill-btn" :class="{ active: movementFilter === 'expense' }"
+                      @click="movementFilter = 'expense'">
+                      <span class="pill-dot dot-expense" />
+                      Egresos
+                    </button>
+                    <button type="button" class="filter-pill-btn" :class="{ active: movementFilter === 'transfer' }"
+                      @click="movementFilter = 'transfer'">
+                      <span class="pill-dot dot-transfer" />
+                      Transf.
+                    </button>
+                    <VBtn variant="text" color="error" size="small" prepend-icon="ri-filter-off-line"
+                      class="font-weight-semibold shrink-0" @click="resetFilters">
+                      Limpiar Filtros
+                    </VBtn>
+                  </div>
+                </VCol>
+              </VRow>
             </div>
 
             <!-- Contenido de Movimientos -->
@@ -784,11 +964,12 @@ onActivated(() => {
                   No se encontraron movimientos
                 </h3>
                 <p class="text-body-2 text-slate-500 mt-1 max-w-sm mx-auto">
-                  {{ movementSearch ? 'No hay registros que coincidan con la búsqueda.' :
+                  {{ movementSearch || selectedMonth !== 'all' || movementFilter !== 'all'
+                    ? 'No hay registros que coincidan con los filtros seleccionados.' :
                     'No hay movimientos registrados para este período.' }}
                 </p>
-                <VBtn v-if="movementSearch || movementFilter !== 'all'" size="small" variant="tonal" color="primary"
-                  class="mt-2" @click="movementSearch = ''; movementFilter = 'all'">
+                <VBtn v-if="movementSearch || movementFilter !== 'all' || selectedMonth !== 'all'" size="small"
+                  variant="tonal" color="primary" class="mt-2" @click="resetFilters">
                   Limpiar Filtros
                 </VBtn>
               </div>
@@ -954,6 +1135,19 @@ onActivated(() => {
                     </template>
                   </VCard>
                 </template>
+              </div>
+
+              <!-- Paginación: Únicamente cuando se filtra por mes y hay más de 20 registros -->
+              <div v-if="isPaginationActive"
+                class="px-4 py-3 border-t d-flex flex-column flex-sm-row align-center justify-space-between gap-3 bg-slate-50">
+                <span class="text-caption text-medium-emphasis">
+                  Mostrando {{ paginationInfo.start }} a {{ paginationInfo.end }} de {{ totalFilteredCount }}
+                  movimientos de {{
+                    selectedMonthLabel }}
+                </span>
+                <VPagination v-model="currentPage" :length="totalPages" :disabled="loading" rounded="circle"
+                  :total-visible="$vuetify.display.xs ? 4 : 7" :size="$vuetify.display.xs ? 'small' : 'default'"
+                  density="comfortable" color="primary" class="my-0" />
               </div>
             </div>
           </VCard>
