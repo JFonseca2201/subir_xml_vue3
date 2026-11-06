@@ -18,6 +18,7 @@ declare global {
   const autoResetRef: typeof import('@vueuse/core')['autoResetRef']
   const avatarText: typeof import('./src/@core/utils/formatters.js')['avatarText']
   const betweenValidator: typeof import('./src/@core/utils/validators.js')['betweenValidator']
+  const cleanEcuadorianPlate: typeof import('./src/utils/ecuadorianPlateValidator.js')['cleanEcuadorianPlate']
   const compressFiles: typeof import('./src/utils/imageCompressor.js')['compressFiles']
   const compressImage: typeof import('./src/utils/imageCompressor.js')['compressImage']
   const computed: typeof import('vue')['computed']
@@ -401,6 +402,7 @@ declare module 'vue' {
     readonly autoResetRef: UnwrapRef<typeof import('@vueuse/core')['autoResetRef']>
     readonly avatarText: UnwrapRef<typeof import('./src/@core/utils/formatters.js')['avatarText']>
     readonly betweenValidator: UnwrapRef<typeof import('./src/@core/utils/validators.js')['betweenValidator']>
+    readonly cleanEcuadorianPlate: UnwrapRef<typeof import('./src/utils/ecuadorianPlateValidator.js')['cleanEcuadorianPlate']>
     readonly compressFiles: UnwrapRef<typeof import('./src/utils/imageCompressor.js')['compressFiles']>
     readonly compressImage: UnwrapRef<typeof import('./src/utils/imageCompressor.js')['compressImage']>
     readonly computed: UnwrapRef<typeof import('vue')['computed']>
@@ -767,6 +769,7 @@ declare module '@vue/runtime-core' {
     readonly autoResetRef: UnwrapRef<typeof import('@vueuse/core')['autoResetRef']>
     readonly avatarText: UnwrapRef<typeof import('./src/@core/utils/formatters.js')['avatarText']>
     readonly betweenValidator: UnwrapRef<typeof import('./src/@core/utils/validators.js')['betweenValidator']>
+    readonly cleanEcuadorianPlate: UnwrapRef<typeof import('./src/utils/ecuadorianPlateValidator.js')['cleanEcuadorianPlate']>
     readonly compressFiles: UnwrapRef<typeof import('./src/utils/imageCompressor.js')['compressFiles']>
     readonly compressImage: UnwrapRef<typeof import('./src/utils/imageCompressor.js')['compressImage']>
     readonly computed: UnwrapRef<typeof import('vue')['computed']>

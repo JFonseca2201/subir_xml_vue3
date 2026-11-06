@@ -4,6 +4,7 @@ import { $api } from '@/utils/api'
 import { getBrandOptions, filterBrands } from '@/data/vehicleBrands.js'
 import {
   formatEcuadorianPlate,
+  cleanEcuadorianPlate,
   plateValidationRule,
 } from '@/utils/ecuadorianPlateValidator.js'
 import { getVehicleTypeOptions, getVehicleUsageTypeOptions } from '@/data/vehicleTypes.js'
@@ -217,7 +218,10 @@ const saveVehicle = async () => {
   try {
     const resp = await $api("vehicles", {
       method: "POST",
-      body: vehicleForm.value,
+      body: {
+        ...vehicleForm.value,
+        license_plate: cleanEcuadorianPlate(vehicleForm.value.license_plate),
+      },
     })
 
     showNotification('Vehículo guardado correctamente', 'success')

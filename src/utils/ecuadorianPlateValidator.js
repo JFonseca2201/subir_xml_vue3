@@ -2,13 +2,31 @@
  * Lógica de Placas Ecuador - Vue 3 Composition API Friendly
  */
 
-// Centralizamos los Regex para mantenimiento
+// Centralizamos los Regex para mantenimiento (soporta con o sin guion)
 const PATTERNS = {
-  PARTICULAR: /^[A-Z]{3}-\d{4}$/,   // ABC-1234
-  COMERCIAL: /^[A-Z]{3}-\d{3}$/,   // XYZ-999
-  MOTO: /^[A-Z]{1}-\d{3}[A-Z]{1}$/, // A-123B
-  ANTIGUA: /^\d{4}-[A-Z]{3}$/,    // 1234-ABC
+  PARTICULAR: /^[A-Z]{3}-?\d{4}$/,   // ABC-1234 o ABC1234
+  COMERCIAL: /^[A-Z]{3}-?\d{3}$/,   // XYZ-999 o XYZ999
+  MOTO: /^[A-Z]{1}-?\d{3}[A-Z]{1}$/, // A-123B o A123B
+  ANTIGUA: /^\d{4}-?[A-Z]{3}$/,    // 1234-ABC o 1234ABC
   GENERICO: /^(SIN-PLACA|SIN PLACA|S\/P|S\/P-[A-Z0-9]+|SP-\d{3,4})$/i,
+}
+
+/**
+ * Limpiador de Placas para el Backend
+ * Remueve guiones, espacios y caracteres especiales, dejando la placa estrictamente limpia
+ * (Ej: 'PBA-854' -> 'PBA854', 'pba-854' -> 'PBA854')
+ */
+export const cleanEcuadorianPlate = input => {
+  if (!input) return ''
+  const trimmed = String(input).trim().toUpperCase()
+
+  // Preservar valor comodín genérico de vehículos sin placa
+  if (/^(SIN-PLACA|SIN PLACA|S\/P|S\/P-[A-Z0-9]+|SP-\d{3,4})$/i.test(trimmed)) {
+    return 'SIN-PLACA'
+  }
+
+  // Quitar cualquier carácter no alfanumérico (guiones, espacios, puntos, etc.)
+  return trimmed.replace(/[^A-Z0-9]/g, '')
 }
 
 /**

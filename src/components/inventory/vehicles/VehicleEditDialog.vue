@@ -2,7 +2,7 @@
 import { ref, onMounted, watch } from 'vue'
 import { $api } from '@/utils/api'
 import { getBrandOptions, getBrandNameById, getBrandSearchOptions, filterBrands } from '@/data/vehicleBrands.js'
-import { formatEcuadorianPlate, plateValidationRule } from '@/utils/ecuadorianPlateValidator.js'
+import { formatEcuadorianPlate, cleanEcuadorianPlate, plateValidationRule } from '@/utils/ecuadorianPlateValidator.js'
 import { getVehicleTypeOptions, getVehicleUsageTypeOptions } from '@/data/vehicleTypes.js'
 import VSearch from '@/components/common/VSearch.vue'
 import FormValidationAlert from '@/components/common/FormValidationAlert.vue'
@@ -268,7 +268,7 @@ const updateVehicle = async () => {
     // Construir un payload limpio solo con los campos de la tabla vehicles para evitar desajustes o ignores de Eloquent
     const payload = {
       id: vehicleForm.value.id,
-      license_plate: vehicleForm.value.license_plate,
+      license_plate: cleanEcuadorianPlate(vehicleForm.value.license_plate),
       brand: vehicleForm.value.brand,
       model: vehicleForm.value.model,
       year: vehicleForm.value.year,

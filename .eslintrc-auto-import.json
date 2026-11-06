@@ -384,6 +384,7 @@
     "DEFAULT_TAX_RATE": true,
     "useTaxConfig": true,
     "useMaintenanceReminders": true,
-    "useFormValidation": true
+    "useFormValidation": true,
+    "cleanEcuadorianPlate": true
   }
 }

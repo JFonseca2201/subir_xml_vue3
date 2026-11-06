@@ -136,6 +136,9 @@ const resolveItemTitle = item => {
     return props.itemTitle(item)
   }
   if (typeof props.itemTitle === 'string' && item[props.itemTitle] !== undefined && item[props.itemTitle] !== null) {
+    if (props.itemTitle === 'license_plate') {
+      return item.formatted_plate || item[props.itemTitle]
+    }
     return item[props.itemTitle]
   }
   return item.full_name || (item.name ? `${item.name} ${item.surname || ''}`.trim() : '') || item.description || item.license_plate || item.title || item.name || ''
