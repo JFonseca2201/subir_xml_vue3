@@ -918,11 +918,16 @@ const convertToSale = () => {
                           {{ index + 1 }}
                         </td>
                         <td>
-                          <span class="status-pill-clean"
-                            :class="dist.payment_method?.toLowerCase().includes('transf') ? 'status-transfer' : 'status-paid'">
-                            <span class="status-dot" />
-                            {{ dist.payment_method }}
-                          </span>
+                          <div class="d-flex align-center flex-wrap gap-1">
+                            <span class="status-pill-clean"
+                              :class="dist.payment_method?.toLowerCase().includes('transf') ? 'status-transfer' : 'status-paid'">
+                              <span class="status-dot" />
+                              {{ dist.payment_method }}
+                            </span>
+                            <VChip v-if="dist.is_advance" size="x-small" color="success" variant="tonal" class="font-weight-bold">
+                              Anticipo OT
+                            </VChip>
+                          </div>
                         </td>
                         <td class="text-slate-700 font-weight-medium">
                           {{ dist.account?.name || `Cuenta ${dist.account_id}` }}

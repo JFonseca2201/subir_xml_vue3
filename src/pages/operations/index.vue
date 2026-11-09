@@ -189,6 +189,17 @@ const extractWorkOrderAndVehicle = m => {
     }
   }
 
+  // Si es Aporte de socio, asignar el nombre del socio como titular
+  if (!clientName) {
+    if (m.metadata?.partner_name) {
+      clientName = m.metadata.partner_name
+    } else if (m.movable?.partner?.name) {
+      clientName = m.movable.partner.name
+    } else if (m.movable?.partner_nombre) {
+      clientName = m.movable.partner_nombre
+    }
+  }
+
   // Si el número de OT no tiene prefijo "OT-", formatearlo
   if (workOrderNumber && !String(workOrderNumber).toUpperCase().startsWith('OT')) {
     workOrderNumber = `OT-${workOrderNumber}`

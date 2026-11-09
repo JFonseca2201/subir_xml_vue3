@@ -162,28 +162,54 @@ const loadAporteData = async () => {
   showUploadBox.value = existingAttachments.value.length === 0
 
   const obj = props.aporte
-  const partnerId = obj.partner?.id || obj.partner_id || null
-  const cuentaId = obj.cuenta?.id || obj.cuenta_id || null
+  const rawPartnerId = obj.partner_id ?? obj.partner?.id ?? obj.movable?.partner_id ?? obj.movable?.partner?.id ?? obj.metadata?.partner_id ?? null
+  const partnerId = rawPartnerId !== null && rawPartnerId !== undefined && rawPartnerId !== '' ? Number(rawPartnerId) : null
+
+  const rawCuentaId = obj.cuenta_id ?? obj.cuenta?.id ?? obj.account_id ?? obj.movable?.cuenta_id ?? obj.metadata?.account_id ?? null
+  const cuentaId = rawCuentaId !== null && rawCuentaId !== undefined && rawCuentaId !== '' ? Number(rawCuentaId) : null
 
   form.value.partner_id = partnerId
-  form.value.monto = obj.monto || null
-  form.value.descripcion = obj.descripcion || ''
+  form.value.monto = obj.monto ?? obj.amount ?? null
+  form.value.descripcion = obj.descripcion || obj.description || ''
   form.value.cuenta_id = cuentaId
-  form.value.metodo_pago = obj.metodo_pago || ''
-  form.value.fecha_aporte = formatDate(obj.fecha_aporte) || ''
-  form.value.hora_aporte = obj.hora_aporte || ''
+  form.value.metodo_pago = obj.metodo_pago || obj.payment_method || obj.metadata?.metodo || 'EFECTIVO'
+  form.value.fecha_aporte = formatDate(obj.fecha_aporte || obj.entry_date) || ''
+  form.value.hora_aporte = obj.hora_aporte || obj.hora || '12:00'
+
+  // Si tenemos un nombre de socio pero no está en la lista de socios cargada, agregarlo para que el selector siempre lo muestre
+  const partnerName = obj.partner_nombre || obj.partner?.name || obj.movable?.partner?.name || obj.metadata?.partner_name
+  if (partnerId && partnerName && !partners.value.some(p => Number(p.id) === partnerId)) {
+    partners.value.unshift({ id: partnerId, name: partnerName })
+  }
 }
 
 const loadPartners = async () => {
   try {
-    const response = await $api('partners')
+    const response = await $api('partners', { params: { per_page: 100 } })
     let partnersData = []
     if (response && response.partners && response.partners.data && Array.isArray(response.partners.data)) {
       partnersData = response.partners.data
+    } else if (response && response.partners && Array.isArray(response.partners)) {
+      partnersData = response.partners
+    } else if (response && response.data && Array.isArray(response.data)) {
+      partnersData = response.data
     } else if (Array.isArray(response)) {
       partnersData = response
     }
-    partners.value = partnersData
+    partners.value = partnersData.map(p => ({
+      ...p,
+      id: Number(p.id),
+      name: p.name || p.nombre || p.full_name || 'Socio'
+    }))
+
+    // Si ya teníamos un socio seleccionado con nombre, asegurar que esté presente
+    if (form.value.partner_id) {
+      const obj = props.aporte || {}
+      const pName = obj.partner_nombre || obj.partner?.name || obj.movable?.partner?.name || obj.metadata?.partner_name
+      if (pName && !partners.value.some(p => Number(p.id) === Number(form.value.partner_id))) {
+        partners.value.unshift({ id: Number(form.value.partner_id), name: pName })
+      }
+    }
   } catch (error) {
     console.error('Error al cargar socios:', error)
   }

@@ -10,6 +10,7 @@ import DeleteDialog from '@/components/inventory/finances-records/DeleteDialog.v
 import AttachReceiptsDialog from '@/components/common/AttachReceiptsDialog.vue'
 import MovementReceiptNoteDialog from '@/components/inventory/finances-records/MovementReceiptNoteDialog.vue'
 import AporteCreateDialog from '@/components/inventory/aportes/AporteCreateDialog.vue'
+import AporteEditDialog from '@/components/inventory/aportes/AporteEditDialog.vue'
 import TransferDialog from '@/components/inventory/finances-records/TransferDialog.vue'
 
 // Composable instances
@@ -20,6 +21,8 @@ const { showNotification } = useGlobalToast()
 const showIncomeDialog = ref(false)
 const showExpenseDialog = ref(false)
 const showAporteDialog = ref(false)
+const showAporteEditDialog = ref(false)
+const editingAporte = ref(null)
 const showTransferDialog = ref(false)
 const isSavingIncome = ref(false)
 const isSavingExpense = ref(false)
@@ -479,6 +482,40 @@ const getFinanceRecordId = movement => {
 }
 
 const editMovement = movement => {
+  // Si el movimiento corresponde a un Aporte de Socio, abrir el diálogo especializado de aporte
+  const isAporte = (movement.movable_type && movement.movable_type.includes('Aporte')) ||
+                   (movement.metadata && movement.metadata.aporte_id) ||
+                   movement.module === 'Aporte Socio'
+
+  if (isAporte) {
+    const rawPartnerId = movement.metadata?.partner_id 
+      ?? movement.movable?.partner_id 
+      ?? movement.movable?.partner?.id 
+      ?? null
+    const partnerId = rawPartnerId !== null && rawPartnerId !== undefined ? Number(rawPartnerId) : null
+
+    const partnerName = movement.metadata?.partner_name 
+      ?? movement.movable?.partner?.name 
+      ?? movement.movable?.partner_nombre 
+      ?? movement.clientName 
+      ?? null
+
+    editingAporte.value = {
+      id: movement.metadata?.aporte_id || movement.movable_id || movement.id,
+      partner_id: partnerId,
+      partner_nombre: partnerName,
+      monto: parseFloat(movement.amount || 0),
+      descripcion: movement.description,
+      cuenta_id: movement.account_id,
+      metodo_pago: movement.metadata?.metodo || movement.payment_method || (movement.account_id === 1 ? 'EFECTIVO' : 'TRANSFERENCIA'),
+      fecha_aporte: movement.entry_date || (movement.created_at ? movement.created_at.substring(0, 10) : ''),
+      hora_aporte: movement.time || '12:00',
+      attachments: movement.attachments || movement.movable?.attachments || [],
+    }
+    showAporteEditDialog.value = true
+    return
+  }
+
   let movementForEdit = { ...movement }
 
   // Extraer datos del FinanceRecord si es un registro manual
@@ -1767,6 +1804,7 @@ onActivated(() => {
 
     <!-- Diálogo de Aporte de Socio (VDialog) -->
     <AporteCreateDialog v-model="showAporteDialog" @created="() => loadMovements(false)" />
+    <AporteEditDialog v-model="showAporteEditDialog" :aporte="editingAporte" @updated="() => loadMovements(false)" />
     <TransferDialog v-model="showTransferDialog" @transferred="onTransferCompleted" />
 
     <!-- Diálogo de Nota de Movimiento y Comprobantes -->

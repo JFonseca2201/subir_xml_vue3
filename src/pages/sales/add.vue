@@ -999,7 +999,14 @@ const total = computed(() => {
 watch(total, newTotal => {
   // Solo actualizar automáticamente si hay un único método de pago
   if (paymentDistributions.value.length === 1) {
-    paymentDistributions.value[0].amount = newTotal
+    const target = importedWorkOrderTotalAdvances.value > 0 ? balanceToCollectToday.value : newTotal
+    paymentDistributions.value[0].amount = target
+  }
+})
+
+watch(importedWorkOrderTotalAdvances, () => {
+  if (paymentDistributions.value.length === 1) {
+    paymentDistributions.value[0].amount = balanceToCollectToday.value
   }
 })
 
@@ -1161,8 +1168,9 @@ const submitForm = async () => {
 
     const totalDist = Math.round(paymentDistributions.value.reduce((sum, dist) => sum + (Number(dist.amount) || 0), 0) * 100) / 100
     const currentTotal = Math.round(total.value * 100) / 100
+    const targetBalance = importedWorkOrderTotalAdvances.value > 0 ? Math.round(balanceToCollectToday.value * 100) / 100 : currentTotal
 
-    if (totalDist <= 0) {
+    if (totalDist <= 0 && targetBalance > 0) {
       if (sale.value.document_type === 'invoice') {
         showNotification('Revise los datos de la factura y seleccione el tipo de pago', 'info')
         isConfirmInvoiceDialogVisible.value = true
@@ -1212,16 +1220,16 @@ const submitForm = async () => {
       }
     }
 
-    if (totalDist > currentTotal + 0.01) {
-      triggerValidationError(`La suma de los pagos ($${totalDist.toFixed(2)}) no puede ser mayor al total ($${currentTotal.toFixed(2)})`)
+    if (totalDist > targetBalance + 0.01) {
+      triggerValidationError(`La suma de los pagos ($${totalDist.toFixed(2)}) no puede ser mayor al saldo a cobrar hoy ($${targetBalance.toFixed(2)})`)
 
       return
     }
 
-    // Si el pago no está completado, el estado debe quedar en pendiente o partial.
-    if (Math.abs(totalDist - currentTotal) <= 0.01) {
+    // Si el pago cubre el saldo a cobrar hoy, el estado de la venta es paid
+    if (Math.abs(totalDist - targetBalance) <= 0.01) {
       sale.value.payment_status = 'paid'
-    } else if (totalDist > 0) {
+    } else if (totalDist > 0 || importedWorkOrderTotalAdvances.value > 0) {
       sale.value.payment_status = 'partial'
     }
   }
@@ -1272,8 +1280,36 @@ const triggerInvoiceEmission = (paymentData = null) => {
     total: total.value,
   }
 
-  if (paymentDistributions.value.length > 0) {
-    payload['payment_distributions'] = paymentDistributions.value
+  // Asegurar que las distribuciones incluyan el anticipo de forma dividida
+  let distsToSend = paymentDistributions.value || []
+  if (importedWorkOrderTotalAdvances.value > 0) {
+    const hasAdvanceDist = distsToSend.some(d => d.is_advance)
+    if (!hasAdvanceDist) {
+      const advanceDists = []
+      if (importedWorkOrderAdvances.value && importedWorkOrderAdvances.value.length > 0) {
+        importedWorkOrderAdvances.value.forEach(a => {
+          advanceDists.push({
+            account_id: a.account_id,
+            amount: Number(parseFloat(a.amount) || 0),
+            payment_method: a.payment_method || 'Efectivo',
+            is_advance: true,
+            work_order_advance_id: a.id,
+          })
+        })
+      } else {
+        advanceDists.push({
+          account_id: accounts.value[0]?.id || 1,
+          amount: importedWorkOrderTotalAdvances.value,
+          payment_method: 'Efectivo',
+          is_advance: true,
+        })
+      }
+      distsToSend = [...advanceDists, ...distsToSend.map(d => ({ ...d, is_advance: false }))]
+    }
+  }
+
+  if (distsToSend.length > 0) {
+    payload['payment_distributions'] = distsToSend
   }
 
   sriSalePayload.value = payload
@@ -1315,9 +1351,29 @@ const executeSaleSubmission = async () => {
       total: total.value,
     }
 
-    // Enviar pagos distribuidos
+    // Enviar pagos distribuidos divididos (Anticipo + Saldo)
     if (paymentDistributions.value.length > 0) {
-      payload.payment_distributions = paymentDistributions.value
+      const fullDists = []
+      if (importedWorkOrderTotalAdvances.value > 0) {
+        importedWorkOrderAdvances.value.forEach(a => {
+          fullDists.push({
+            account_id: a.account_id,
+            amount: parseFloat(a.amount) || 0,
+            payment_method: a.payment_method || 'Efectivo',
+            is_advance: true,
+            work_order_advance_id: a.id,
+          })
+        })
+      }
+      paymentDistributions.value.forEach(d => {
+        if (!d.is_advance) {
+          fullDists.push({
+            ...d,
+            is_advance: false,
+          })
+        }
+      })
+      payload.payment_distributions = fullDists.length > 0 ? fullDists : paymentDistributions.value
     }
 
     const response = await $api('sales', {
@@ -2422,6 +2478,16 @@ onActivated(async () => {
 
                 <!-- Lista de Pagos cuando es al contado -->
                 <template v-else>
+                  <!-- Anticipo OT previo compacto y sobrio -->
+                  <div v-if="importedWorkOrderTotalAdvances > 0" class="d-flex justify-space-between align-center py-2 px-3 mb-3 rounded-lg bg-slate-50 border">
+                    <span class="text-caption font-weight-medium text-slate-700">
+                      Anticipo en OT #{{ sale.work_order_number || '' }}: <strong class="text-success font-mono">${{ importedWorkOrderTotalAdvances.toFixed(2) }}</strong>
+                    </span>
+                    <span class="text-caption text-slate-600">
+                      Saldo a cobrar: <strong class="text-primary font-mono">${{ balanceToCollectToday.toFixed(2) }}</strong>
+                    </span>
+                  </div>
+
                   <div v-if="paymentDistributions.length === 0" class="pa-3 text-center rounded-xl border bg-slate-50">
                     <div class="text-caption text-medium-emphasis mb-2">
                       No hay método de cobro seleccionado
@@ -2498,7 +2564,9 @@ onActivated(async () => {
 
                     <!-- Fila de Monto a Cobrar -->
                     <div class="payment-amount-row">
-                      <span class="text-caption font-weight-bold text-slate-700">Monto:</span>
+                      <span class="text-caption font-weight-bold text-slate-700">
+                        {{ importedWorkOrderTotalAdvances > 0 ? 'Saldo a Cobrar Hoy:' : 'Monto:' }}
+                      </span>
                       <div style="width: 140px;">
                         <VTextField v-model.number="dist.amount" type="number" min="0" step="0.01" prefix="$"
                           variant="outlined" density="compact" hide-details="auto" class="font-mono font-weight-bold"
@@ -2574,13 +2642,32 @@ onActivated(async () => {
                   <span class="font-mono font-weight-bold">${{ taxAmount.toFixed(2) }}</span>
                 </div>
 
+                <!-- Desglose de Anticipo si la OT tiene abonos -->
+                <div v-if="importedWorkOrderTotalAdvances > 0"
+                  class="d-flex justify-space-between align-center text-body-2 py-1 px-2.5 rounded-lg bg-emerald-50 border border-emerald-200">
+                  <span class="text-caption font-weight-bold text-emerald-900 d-flex align-center gap-1">
+                    <VIcon icon="ri-hand-coin-line" size="15" color="success" />
+                    Menos Anticipo OT:
+                  </span>
+                  <span class="font-mono font-weight-bold text-success">- ${{ importedWorkOrderTotalAdvances.toFixed(2) }}</span>
+                </div>
+
+                <div v-if="importedWorkOrderTotalAdvances > 0"
+                  class="d-flex justify-space-between align-center text-body-2 font-weight-bold text-slate-800">
+                  <span>Saldo a Cobrar Hoy:</span>
+                  <span class="font-mono text-subtitle-2 text-primary font-weight-black">${{ balanceToCollectToday.toFixed(2) }}</span>
+                </div>
+
                 <div class="d-flex justify-space-between align-center pa-3 rounded-xl bg-slate-50 border mt-1">
                   <div>
                     <div class="text-caption font-weight-bold text-slate-500 text-uppercase">
-                      {{ sale.document_type === 'quote' ? 'Total Cotizado' : 'Total a Pagar' }}
+                      {{ sale.document_type === 'quote' ? 'Total Cotizado' : (sale.document_type === 'invoice' ? 'Total Factura (SRI)' : 'Total a Pagar') }}
                     </div>
                     <div class="text-h4 font-weight-black text-primary font-mono mt-0.5">
                       ${{ total.toFixed(2) }}
+                    </div>
+                    <div v-if="importedWorkOrderTotalAdvances > 0" class="text-caption text-success font-weight-semibold" style="font-size: 0.72rem;">
+                      Cobro neto hoy: ${{ balanceToCollectToday.toFixed(2) }}
                     </div>
                   </div>
                   <VAvatar color="primary" variant="tonal" size="44" class="rounded-xl">
@@ -2654,7 +2741,8 @@ onActivated(async () => {
     <!-- Diálogo de confirmación para Factura -->
     <SaleInvoiceConfirmDialog v-model:is-dialog-visible="isConfirmInvoiceDialogVisible" :client="selectedClient"
       :vehicle="selectedVehicle" :sale="sale" :payment-distributions="paymentDistributions" :accounts="accounts"
-      :total="total" :sri-environment="sriAmbiente" :is-submitting="isSubmitting" @confirm="triggerInvoiceEmission" />
+      :total="total" :advances="importedWorkOrderAdvances" :advance-amount="importedWorkOrderTotalAdvances"
+      :sri-environment="sriAmbiente" :is-submitting="isSubmitting" @confirm="triggerInvoiceEmission" />
 
     <!-- Modal de Progreso y Autorización SRI Animado -->
     <SriInvoiceProgressDialog v-model:is-dialog-visible="isSriProgressDialogVisible" :sale-payload="sriSalePayload"
