@@ -376,115 +376,183 @@ const onConfirm = () => {
 <template>
   <VDialog :model-value="isDialogVisible" max-width="660px" persistent
     @update:model-value="val => emit('update:isDialogVisible', val)">
-    <VCard class="custom-dialog-card rounded-xl overflow-hidden elevation-16 border">
-      <!-- 1. Header Banner Primary Acorde al Sistema -->
-      <div class="custom-dialog-header-primary bg-primary text-white pa-5 text-center position-relative">
-        <VBtn icon="ri-close-line" variant="text" size="small" class="custom-dialog-close-btn position-absolute"
-          style="top: 14px; right: 14px; color: white;" :disabled="isSubmitting" @click="closeDialog" />
-        <div class="custom-dialog-avatar mx-auto mb-2.5 d-flex align-center justify-center rounded-circle"
-          style="width: 54px; height: 54px; background: rgba(255, 255, 255, 0.22); backdrop-filter: blur(6px); border: 1.5px solid rgba(255, 255, 255, 0.35);">
-          <VIcon icon="ri-bill-line" size="28" color="white" />
+    <VCard class="invoice-confirm-card rounded-xl overflow-hidden elevation-24 border">
+      <!-- 1. Header Banner Ejecutivo & Sobrio (Estilo Pepa) -->
+      <div class="invoice-dialog-header">
+        <!-- Botón Cerrar Superior Derecho -->
+        <VBtn icon="ri-close-line" variant="text" size="small" class="header-close-btn" title="Cerrar ventana"
+          :disabled="isSubmitting" @click="closeDialog" />
+
+        <!-- Top Row: Icono + Eyebrow + SRI Chip -->
+        <div class="d-flex align-center gap-3">
+          <div class="header-avatar shrink-0">
+            <VIcon icon="ri-file-shield-2-line" size="26" color="white" />
+          </div>
+
+          <div class="min-w-0 flex-grow-1 pe-8">
+            <div class="d-flex align-center gap-2 flex-wrap mb-1">
+              <span class="eyebrow-tag">
+                Comprobante Electrónico SRI
+              </span>
+              <span class="sri-env-pill" :class="sriEnvironmentInfo.isProd ? 'env-prod' : 'env-test'">
+                <VIcon :icon="sriEnvironmentInfo.icon" size="12" />
+                <span>{{ sriEnvironmentInfo.text }}</span>
+              </span>
+            </div>
+
+            <h2 class="header-title">
+              Confirmación de Factura Electrónica
+            </h2>
+            <p class="header-subtitle mb-0 text-truncate">
+              Revisa los datos fiscales del comprobante y confirma la forma de pago.
+            </p>
+          </div>
         </div>
-        <h3 class="custom-dialog-title text-h5 font-weight-bold text-white mb-1">
-          ¿Estás seguro que deseas realizar esta "FACTURA"?
-        </h3>
-        <p class="custom-dialog-subtitle text-body-2 text-white opacity-90 mb-0">
-          Se emitirá el comprobante electrónico fiscal con autorización oficial del SRI.
-        </p>
       </div>
 
       <VCardText class="pa-6 bg-background d-flex flex-column gap-4" style="max-height: calc(85vh - 170px); overflow-y: auto;">
-        <!-- 2. Datos de la Factura y Desglose Financiero -->
-        <VCard class="pa-5 rounded-xl border elevation-0 bg-surface">
-          <!-- Datos del Cliente, Vehículo y Ambiente SRI -->
-          <div class="d-flex flex-column gap-2.5">
-            <div class="d-flex justify-space-between align-center">
-              <span class="text-caption font-weight-bold text-slate-600 text-uppercase tracking-wider">CLIENTE</span>
-              <span class="text-body-1 font-weight-bold text-slate-900 text-right text-truncate ms-3" style="max-width: 420px;">
-                {{ clientDisplayName }}
+        <!-- 2. Tarjeta de Información: Cliente, RUC/Cédula, Vehículo y OT -->
+        <VCard class="pa-4 rounded-xl border elevation-0 bg-surface">
+          <div class="d-flex align-center justify-space-between mb-3 pb-2 border-b">
+            <div class="d-flex align-center gap-2">
+              <VIcon icon="ri-user-follow-line" size="18" color="primary" />
+              <span class="text-subtitle-2 font-weight-bold text-slate-800">
+                Datos del Comprobante
               </span>
             </div>
-
-            <div v-if="client?.n_document" class="d-flex justify-space-between align-center">
-              <span class="text-caption font-weight-bold text-slate-600 text-uppercase tracking-wider">RUC / CÉDULA</span>
-              <span class="text-body-1 font-weight-bold text-slate-900 font-mono">
-                {{ client.n_document }}
-              </span>
-            </div>
-
-            <div v-if="vehicle" class="d-flex justify-space-between align-start gap-3">
-              <span class="text-caption font-weight-bold text-slate-600 text-uppercase tracking-wider shrink-0 pt-0.5">VEHÍCULO</span>
-              <span class="text-body-1 font-weight-bold text-slate-900 text-right">
-                {{ vehicle.license_plate }} &bull; {{ getBrandNameById(vehicle.brand) }} {{ vehicle.model }}
-              </span>
-            </div>
-
-            <div class="d-flex justify-space-between align-center">
-              <span class="text-caption font-weight-bold text-slate-600 text-uppercase tracking-wider">AMBIENTE SRI</span>
-              <VChip size="small" :color="sriEnvironmentInfo.isProd ? 'success' : 'warning'" variant="flat"
-                class="font-weight-bold text-white px-3">
-                <VIcon :icon="sriEnvironmentInfo.icon" size="14" class="me-1" />
-                {{ sriEnvironmentInfo.text }}
-              </VChip>
+            <div v-if="sale?.work_order_number || sale?.work_order?.number"
+              class="d-flex align-center gap-1 text-caption font-mono font-weight-bold text-primary px-2.5 py-0.5 rounded-md bg-blue-50 border border-blue-200">
+              <VIcon icon="ri-tools-line" size="13" />
+              <span>OT #{{ sale?.work_order_number || sale?.work_order?.number }}</span>
             </div>
           </div>
 
-          <VDivider class="my-4" />
+          <VRow dense class="gy-3">
+            <!-- Cliente -->
+            <VCol cols="12" :sm="client?.n_document ? 7 : 12">
+              <div class="d-flex flex-column">
+                <span class="text-caption font-weight-bold text-slate-500 text-uppercase tracking-wider">
+                  Cliente / Razón Social
+                </span>
+                <div class="d-flex align-center gap-1.5 mt-0.5">
+                  <VIcon icon="ri-user-3-line" size="16" class="text-slate-400 shrink-0" />
+                  <span class="text-body-1 font-weight-bold text-slate-900 text-truncate" :title="clientDisplayName">
+                    {{ clientDisplayName }}
+                  </span>
+                </div>
+              </div>
+            </VCol>
+
+            <!-- RUC / Cédula -->
+            <VCol v-if="client?.n_document" cols="12" sm="5">
+              <div class="d-flex flex-column">
+                <span class="text-caption font-weight-bold text-slate-500 text-uppercase tracking-wider">
+                  RUC / Cédula
+                </span>
+                <div class="d-flex align-center gap-1.5 mt-0.5">
+                  <VIcon icon="ri-id-card-line" size="16" class="text-slate-400 shrink-0" />
+                  <span class="text-body-1 font-mono font-weight-bold text-slate-900">
+                    {{ client.n_document }}
+                  </span>
+                </div>
+              </div>
+            </VCol>
+
+            <!-- Vehículo (si existe) -->
+            <VCol v-if="vehicle" cols="12" class="pt-2 border-t">
+              <div class="d-flex flex-column">
+                <span class="text-caption font-weight-bold text-slate-500 text-uppercase tracking-wider">
+                  Vehículo Asociado
+                </span>
+                <div class="d-flex align-center flex-wrap gap-2 mt-1">
+                  <span class="font-mono font-weight-bold text-slate-900 px-2.5 py-0.5 rounded bg-slate-100 border border-slate-300 text-body-2 d-inline-flex align-center">
+                    <VIcon icon="ri-car-line" size="14" class="me-1.5 text-slate-500" />
+                    {{ vehicle.license_plate }}
+                  </span>
+                  <span v-if="vehicle.brand || vehicle.model" class="text-body-2 font-weight-semibold text-slate-700">
+                    {{ getBrandNameById(vehicle.brand) || vehicle.brand }} {{ vehicle.model }}
+                    <span v-if="vehicle.year" class="text-slate-400 font-normal">({{ vehicle.year }})</span>
+                  </span>
+                </div>
+              </div>
+            </VCol>
+          </VRow>
+        </VCard>
+
+        <!-- 3. Desglose Financiero -->
+        <VCard class="pa-4 rounded-xl border elevation-0 bg-surface">
+          <div class="d-flex align-center justify-space-between mb-3 pb-2 border-b">
+            <div class="d-flex align-center gap-2">
+              <VIcon icon="ri-calculator-line" size="18" color="primary" />
+              <span class="text-subtitle-2 font-weight-bold text-slate-800">
+                Resumen de Liquidación
+              </span>
+            </div>
+            <VChip size="small" :color="sriEnvironmentInfo.isProd ? 'success' : 'warning'" variant="flat"
+              class="font-weight-bold text-white px-2.5">
+              <VIcon :icon="sriEnvironmentInfo.icon" size="13" class="me-1" />
+              {{ sriEnvironmentInfo.text }}
+            </VChip>
+          </div>
 
           <!-- Desglose Numérico con Gran Claridad y Alto Contraste -->
           <template v-if="hasAdvance">
-            <!-- TOTAL A FACTURAR (SRI) -->
-            <div class="d-flex justify-space-between align-center py-2 px-3 rounded-lg bg-blue-50/60 border border-blue-100 mb-2.5">
-              <div>
-                <div class="text-caption font-weight-bold text-primary text-uppercase d-flex align-center gap-1.5">
-                  <VIcon icon="ri-file-shield-2-line" size="16" />
-                  TOTAL A FACTURAR (SRI)
+            <div class="d-flex flex-column gap-2">
+              <!-- TOTAL A FACTURAR (SRI) -->
+              <div class="d-flex justify-space-between align-center py-2 px-3 rounded-lg bg-blue-50/70 border border-blue-200">
+                <div>
+                  <div class="text-caption font-weight-bold text-primary text-uppercase d-flex align-center gap-1.5">
+                    <VIcon icon="ri-file-shield-2-line" size="16" />
+                    TOTAL A FACTURAR (SRI)
+                  </div>
+                  <div class="text-caption text-slate-600" style="font-size: 0.75rem;">
+                    Monto oficial declarado en el comprobante electrónico
+                  </div>
                 </div>
-                <div class="text-caption text-slate-600" style="font-size: 0.75rem;">
-                  Monto oficial declarado en el comprobante electrónico
-                </div>
+                <span class="text-h5 font-weight-black text-primary font-mono">
+                  ${{ Number(total || 0).toFixed(2) }}
+                </span>
               </div>
-              <span class="text-h5 font-weight-black text-primary font-mono">
-                ${{ Number(total || 0).toFixed(2) }}
-              </span>
-            </div>
 
-            <!-- MENOS ANTICIPO APLICADO -->
-            <div class="d-flex justify-space-between align-center py-2 px-3 rounded-lg bg-emerald-50 border border-emerald-200 mb-2.5">
-              <div>
-                <div class="text-caption font-weight-bold text-emerald-900 d-flex align-center gap-1.5">
-                  <VIcon icon="ri-hand-coin-line" size="16" color="success" />
-                  MENOS ANTICIPO PREVIO EN OT #{{ sale?.work_order_number || '' }}
+              <!-- MENOS ANTICIPO APLICADO -->
+              <div class="d-flex justify-space-between align-center py-2 px-3 rounded-lg bg-emerald-50 border border-emerald-200">
+                <div>
+                  <div class="text-caption font-weight-bold text-emerald-900 d-flex align-center gap-1.5">
+                    <VIcon icon="ri-hand-coin-line" size="16" color="success" />
+                    MENOS ANTICIPO PREVIO EN OT {{ sale?.work_order_number ? `#${sale.work_order_number}` : '' }}
+                  </div>
+                  <div class="text-caption text-emerald-700" style="font-size: 0.75rem;">
+                    Cobrado anteriormente &bull; No genera nuevo ingreso en caja
+                  </div>
                 </div>
-                <div class="text-caption text-emerald-700" style="font-size: 0.75rem;">
-                  Cobrado anteriormente &bull; No genera nuevo ingreso en caja
-                </div>
+                <span class="text-h6 font-weight-black text-success font-mono">
+                  - ${{ effectiveAdvanceAmount.toFixed(2) }}
+                </span>
               </div>
-              <span class="text-h6 font-weight-black text-success font-mono">
-                - ${{ effectiveAdvanceAmount.toFixed(2) }}
-              </span>
-            </div>
 
-            <!-- SALDO A CANCELAR HOY -->
-            <div class="d-flex justify-space-between align-center py-2.5 px-3 rounded-lg bg-slate-100 border border-slate-200">
-              <div>
-                <div class="text-subtitle-1 font-weight-black text-slate-900 text-uppercase">
-                  SALDO A CANCELAR HOY
+              <!-- SALDO A CANCELAR HOY -->
+              <div class="d-flex justify-space-between align-center py-2.5 px-3 rounded-lg bg-slate-100 border border-slate-300">
+                <div>
+                  <div class="text-subtitle-1 font-weight-black text-slate-900 text-uppercase d-flex align-center gap-1.5">
+                    <VIcon icon="ri-hand-coin-line" size="16" color="primary" />
+                    SALDO A CANCELAR HOY
+                  </div>
+                  <div class="text-caption text-slate-600" style="font-size: 0.75rem;">
+                    Dinero que ingresa hoy a tu Caja / Banco
+                  </div>
                 </div>
-                <div class="text-caption text-slate-600" style="font-size: 0.75rem;">
-                  Dinero que ingresa hoy a tu Caja / Banco
-                </div>
+                <span class="text-h5 font-weight-black text-slate-900 font-mono">
+                  ${{ balanceToCollect.toFixed(2) }}
+                </span>
               </div>
-              <span class="text-h5 font-weight-black text-slate-900 font-mono">
-                ${{ balanceToCollect.toFixed(2) }}
-              </span>
             </div>
           </template>
 
           <template v-else>
-            <div class="d-flex justify-space-between align-center py-2 px-3 rounded-lg bg-blue-50/60 border border-blue-100">
+            <div class="d-flex justify-space-between align-center py-3 px-4 rounded-lg bg-blue-50/70 border border-blue-200">
               <div>
-                <div class="text-caption font-weight-bold text-primary text-uppercase">
+                <div class="text-caption font-weight-bold text-primary text-uppercase d-flex align-center gap-1.5">
+                  <VIcon icon="ri-file-shield-2-line" size="16" />
                   TOTAL A FACTURAR (SRI)
                 </div>
                 <div class="text-caption text-slate-600">
@@ -603,4 +671,100 @@ const onConfirm = () => {
     </VCard>
   </VDialog>
 </template>
+<style scoped lang="scss">
+.invoice-confirm-card {
+  box-shadow: 0 20px 45px rgba(15, 23, 42, 0.22) !important;
+  border-radius: 20px !important;
+  overflow: hidden !important;
+}
 
+// Header Banner Ejecutivo (Estilo Pepa)
+.invoice-dialog-header {
+  position: relative !important;
+  background: linear-gradient(135deg, #1e1b4b 0%, #312e81 40%, #4338ca 75%, #4f46e5 100%) !important;
+  color: #ffffff !important;
+  padding: 22px 24px 20px 24px !important;
+  border-top-left-radius: 20px !important;
+  border-top-right-radius: 20px !important;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.16) !important;
+  box-shadow: 0 6px 24px rgba(67, 56, 202, 0.25) !important;
+
+  .header-close-btn {
+    position: absolute !important;
+    top: 14px !important;
+    right: 14px !important;
+    color: #ffffff !important;
+    background: rgba(255, 255, 255, 0.14) !important;
+    border: 1px solid rgba(255, 255, 255, 0.25) !important;
+    border-radius: 50% !important;
+    width: 32px !important;
+    height: 32px !important;
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1) !important;
+
+    &:hover {
+      background: rgba(255, 255, 255, 0.28) !important;
+      transform: rotate(90deg);
+    }
+  }
+
+  .header-avatar {
+    width: 48px;
+    height: 48px;
+    min-width: 48px;
+    border-radius: 14px;
+    background: rgba(255, 255, 255, 0.16);
+    border: 1px solid rgba(255, 255, 255, 0.28);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.15);
+  }
+
+  .eyebrow-tag {
+    font-size: 0.68rem;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.8px;
+    color: rgba(255, 255, 255, 0.82);
+  }
+
+  .header-title {
+    font-size: 1.25rem;
+    font-weight: 800;
+    color: #ffffff !important;
+    line-height: 1.25;
+    margin: 0;
+    letter-spacing: -0.2px;
+  }
+
+  .header-subtitle {
+    font-size: 0.82rem;
+    color: rgba(255, 255, 255, 0.88);
+    line-height: 1.35;
+  }
+
+  .sri-env-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 2px 9px;
+    border-radius: 9999px;
+    font-size: 0.68rem;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.4px;
+
+    &.env-prod {
+      background: rgba(16, 185, 129, 0.25);
+      border: 1px solid rgba(52, 211, 153, 0.5);
+      color: #d1fae5;
+    }
+
+    &.env-test {
+      background: rgba(245, 158, 11, 0.25);
+      border: 1px solid rgba(251, 191, 36, 0.5);
+      color: #fef3c7;
+    }
+  }
+}
+</style>

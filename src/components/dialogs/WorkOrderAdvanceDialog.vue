@@ -442,64 +442,89 @@ const formatDate = dateStr => {
         </VAlert>
 
         <!-- Formulario de Nuevo Abono -->
-        <VCard v-if="!isInvoiced" class="advance-form-card border rounded-2xl mb-5 elevation-0 bg-white">
+        <VCard v-if="!isInvoiced" class="advance-form-card border rounded-xl mb-4 elevation-0 bg-white">
           <!-- Encabezado del Formulario -->
-          <div class="form-header px-4 py-3 border-b d-flex align-center justify-space-between bg-slate-50">
+          <div class="form-header px-4 py-2.5 border-b d-flex align-center justify-space-between bg-slate-50">
             <div class="d-flex align-center gap-2">
               <div class="form-header-badge">
                 <VIcon icon="ri-add-circle-fill" color="primary" size="18" />
               </div>
-              <div>
-                <h4 class="text-subtitle-2 font-weight-bold text-slate-900 mb-0">
-                  Registrar Nuevo Abono
-                </h4>
-                <p class="text-caption text-medium-emphasis mb-0">
-                  Ingresa el valor recibido y el tipo de pago
-                </p>
-              </div>
+              <span class="text-subtitle-2 font-weight-bold text-slate-800">
+                Registrar Nuevo Abono
+              </span>
             </div>
 
-            <!-- Botón de Saldo Completo Rápido -->
-            <VBtn v-if="balanceDue > 0" size="small" variant="tonal" color="primary"
+            <!-- Boton de Saldo Completo Rapido -->
+            <VBtn v-if="balanceDue > 0" size="x-small" variant="tonal" color="primary"
               class="font-weight-bold rounded-lg text-none" prepend-icon="ri-flashlight-line"
               @click="setQuickAmount('full')">
               Abonar Todo ({{ formatCurrency(balanceDue) }})
             </VBtn>
           </div>
 
-          <VCardText class="pa-4 pa-sm-5">
-            <VRow dense>
-              <!-- 1. Selector de Cuenta de Destino (Banco / Caja) -->
-              <VCol cols="12" class="mb-2">
+          <VCardText class="pa-4">
+            <VRow dense class="gy-3">
+              <!-- Fila 1 - Col 1: Monto a Abonar + Chips Rapidos -->
+              <VCol cols="12" md="6">
+                <VTextField v-model="form.amount" type="number" step="0.01" min="0.01" label="Monto a Abonar *"
+                  placeholder="0.00" variant="outlined" density="comfortable" color="primary" prefix="$" hide-details
+                  class="bg-white font-mono-input rounded-lg" @keydown.enter.prevent="submitAdvance" />
+
+                <!-- Chips de montos sugeridos -->
+                <div class="d-flex align-center gap-1.5 mt-2 flex-wrap">
+                  <span class="text-caption text-slate-400 font-weight-medium me-0.5">Rapido:</span>
+                  <button v-for="amt in suggestedAmounts" :key="amt" type="button" class="quick-amt-chip"
+                    :class="{ active: Number(form.amount) === amt }" @click="setQuickAmount(amt)">
+                    ${{ amt }}
+                  </button>
+                  <button v-if="balanceDue > 0" type="button" class="quick-amt-chip chip-total"
+                    :class="{ active: Number(form.amount) === Number(balanceDue.toFixed(2)) }"
+                    @click="setQuickAmount('full')">
+                    Saldo ({{ formatCurrency(balanceDue) }})
+                  </button>
+                </div>
+              </VCol>
+
+              <!-- Fila 1 - Col 2: Cuenta de Destino (Banco / Caja) 100% Dinamico -->
+              <VCol cols="12" md="6">
                 <VSelect v-model="form.account_id" :items="formattedAccounts" item-value="id"
-                  item-title="accountDisplay" label="Cuenta de Destino (Banco o Caja) *"
-                  placeholder="Selecciona la cuenta donde ingresó el dinero" variant="outlined" density="comfortable"
-                  color="primary" :loading="isLoadingAccounts" hide-details class="bg-white rounded-lg">
+                  item-title="accountDisplay" label="Cuenta de Destino *" placeholder="Seleccionar cuenta de ingreso"
+                  variant="outlined" density="comfortable" color="primary" :loading="isLoadingAccounts" hide-details
+                  class="bg-white rounded-lg">
+                  <!-- Icono en el campo cerrado -->
+                  <template #prepend-inner>
+                    <VIcon :icon="selectedAccount?.icon || 'ri-bank-line'"
+                      :color="selectedAccount?.isBank ? 'primary' : 'success'" size="20" class="me-1" />
+                  </template>
+
+                  <!-- Visualizacion limpia cuando esta seleccionada -->
                   <template #selection="{ item }">
-                    <div class="d-flex align-center gap-2 py-0.5">
-                      <VIcon :icon="item.raw.icon" size="18"
-                        :class="item.raw.isBank ? 'text-primary' : 'text-emerald'" />
-                      <span class="font-weight-bold text-slate-800">{{ item.raw.name }}</span>
-                      <span class="method-tag ms-2" :class="item.raw.isBank ? 'tag-transfer' : 'tag-cash'">
+                    <div class="d-flex align-center justify-space-between w-100 pe-1">
+                      <span class="font-weight-semibold text-slate-800 text-truncate">
+                        {{ item.raw.name }}
+                      </span>
+                      <span class="method-pill-badge ms-2" :class="item.raw.isBank ? 'pill-transfer' : 'pill-cash'">
                         {{ item.raw.methodLabel }}
                       </span>
                     </div>
                   </template>
+
+                  <!-- Opciones en el menu desplegable -->
                   <template #item="{ item, props: itemProps }">
                     <VListItem v-bind="itemProps" :title="undefined">
                       <template #prepend>
-                        <VIcon :icon="item.raw.icon" size="20"
-                          :class="item.raw.isBank ? 'text-primary' : 'text-emerald'" class="me-2" />
+                        <VIcon :icon="item.raw.icon" :color="item.raw.isBank ? 'primary' : 'success'" size="20"
+                          class="me-2" />
                       </template>
                       <VListItemTitle class="font-weight-bold text-slate-900">
                         {{ item.raw.name }}
                       </VListItemTitle>
-                      <VListItemSubtitle class="text-caption text-slate-500">
-                        {{ item.raw.isBank ? (item.raw.bank_name || 'Cuenta Bancaria · Transferencia')
-                          : 'Caja · Pago en Efectivo' }}
+                      <VListItemSubtitle v-if="item.raw.bank_name && item.raw.bank_name !== item.raw.name"
+                        class="text-caption text-slate-500">
+                        {{ item.raw.bank_name }}
                       </VListItemSubtitle>
                       <template #append>
-                        <span class="method-tag" :class="item.raw.isBank ? 'tag-transfer' : 'tag-cash'">
+                        <span class="method-pill-badge" :class="item.raw.isBank ? 'pill-transfer' : 'pill-cash'">
                           {{ item.raw.methodLabel }}
                         </span>
                       </template>
@@ -507,91 +532,40 @@ const formatDate = dateStr => {
                   </template>
                 </VSelect>
 
-                <!-- Indicador sutil y limpio debajo del selector -->
-                <div v-if="selectedAccount"
-                  class="d-flex align-center gap-1.5 mt-1.5 px-1 text-caption font-weight-medium"
+                <!-- Pequeno texto de confirmacion debajo -->
+                <div v-if="selectedAccount" class="d-flex align-center gap-1 mt-2 text-caption font-weight-medium"
                   :class="selectedAccount.isBank ? 'text-primary' : 'text-emerald'">
-                  <VIcon :icon="selectedAccount.isBank ? 'ri-bank-line' : 'ri-wallet-3-line'" size="14" />
-                  <span>Ingreso a <strong>{{ selectedAccount.name }}</strong> · Método: <strong>{{
-                    selectedAccount.methodLabel
-                      }}</strong></span>
-                </div>
-              </VCol>
-
-              <VCol cols="12">
-                <VDivider class="my-2" />
-              </VCol>
-
-              <!-- 2. Monto a Abonar + Botones Rápidos -->
-              <VCol cols="12">
-                <div class="form-group-label mb-1.5 d-flex align-center justify-space-between">
-                  <span class="text-caption font-weight-bold text-slate-700">Monto del Abono *</span>
-                  <span class="text-caption text-muted">En dólares (USD)</span>
-                </div>
-
-                <div class="d-flex align-center gap-3 flex-wrap flex-sm-nowrap">
-                  <!-- Input Grande de Monto -->
-                  <div class="amount-input-wrapper flex-grow-1" style="min-width: 200px;">
-                    <span class="currency-symbol">$</span>
-                    <input v-model="form.amount" type="number" step="0.01" min="0.01" placeholder="0.00"
-                      class="amount-native-input" autofocus @keydown.enter.prevent="submitAdvance" />
-                  </div>
-
-                  <!-- Botones de montos sugeridos -->
-                  <div class="quick-amounts-bar d-flex align-center gap-1.5 flex-wrap shrink-0">
-                    <span class="text-caption text-slate-400 me-0.5 d-none d-sm-inline">Rápido:</span>
-                    <button v-for="amt in suggestedAmounts" :key="amt" type="button" class="quick-amt-chip"
-                      :class="{ active: Number(form.amount) === amt }" @click="setQuickAmount(amt)">
-                      ${{ amt }}
-                    </button>
-                    <button v-if="balanceDue > 0" type="button" class="quick-amt-chip chip-total"
-                      :class="{ active: Number(form.amount) === Number(balanceDue.toFixed(2)) }"
-                      @click="setQuickAmount('full')">
-                      Saldo (${{ balanceDue.toFixed(2) }})
-                    </button>
-                  </div>
-                </div>
-              </VCol>
-
-              <VCol cols="12">
-                <VDivider class="my-2" />
-              </VCol>
-
-              <!-- 3. Fecha de Recepción -->
-              <VCol cols="12" sm="5">
-                <div class="form-group-label mb-1.5">
-                  <span class="text-caption font-weight-bold text-slate-700">Fecha de Recepción</span>
-                </div>
-                <VTextField v-model="form.advance_date" type="date" prepend-inner-icon="ri-calendar-line"
-                  variant="outlined" density="compact" color="primary" hide-details class="bg-white rounded-lg" />
-              </VCol>
-
-              <!-- 4. Detalle / Referencia (Opcional) -->
-              <VCol cols="12" sm="7">
-                <div class="form-group-label mb-1.5">
-                  <span class="text-caption font-weight-bold text-slate-700">
-                    {{ selectedAccount?.isBank ? 'N° Comprobante / Referencia de Transferencia'
-                      : 'Detalle u Observación (Opcional)'
-                    }}
-                  </span>
-                </div>
-                <VTextField v-model="form.notes"
-                  :placeholder="selectedAccount?.isBank ? 'Ej: Transf. #12345678, comprobante bancario...' : 'Ej: Anticipo para repuestos, abono en efectivo...'"
-                  :prepend-inner-icon="selectedAccount?.isBank ? 'ri-file-shield-line' : 'ri-chat-1-line'"
-                  variant="outlined" density="compact" color="primary" hide-details class="bg-white rounded-lg" />
-              </VCol>
-
-              <!-- 5. Botón de Confirmación -->
-              <VCol cols="12" class="mt-3">
-                <VBtn color="primary" variant="elevated" block height="46" :loading="isSubmitting"
-                  :disabled="!form.amount || Number(form.amount) <= 0"
-                  class="register-advance-btn font-weight-bold rounded-xl elevation-2 text-none" @click="submitAdvance">
-                  <VIcon icon="ri-hand-coin-line" class="me-2" size="20" />
+                  <VIcon :icon="selectedAccount.isBank ? 'ri-bank-line' : 'ri-wallet-3-line'" size="13" />
                   <span>
-                    {{ form.amount && Number(form.amount) > 0
-                      ? `Registrar Abono de ${formatCurrency(form.amount)}`
-                      : 'Registrar Abono' }}
+                    Ingresa a <strong>{{ selectedAccount.name }}</strong> &middot; Registra como <strong>{{ selectedAccount.methodLabel }}</strong>
                   </span>
+                </div>
+              </VCol>
+
+              <!-- Fila 2 - Col 1: Fecha de Recepcion -->
+              <VCol cols="12" sm="4">
+                <VTextField v-model="form.advance_date" type="date" label="Fecha de Recepción *" variant="outlined"
+                  density="comfortable" color="primary" prepend-inner-icon="ri-calendar-line" hide-details
+                  class="bg-white rounded-lg" />
+              </VCol>
+
+              <!-- Fila 2 - Col 2: Detalle / Referencia -->
+              <VCol cols="12" sm="5">
+                <VTextField v-model="form.notes"
+                  :label="selectedAccount?.isBank ? 'N° Comprobante / Referencia' : 'Detalle u Observación (Opcional)'"
+                  :placeholder="selectedAccount?.isBank ? 'Ej: Transf. #00984521' : 'Ej: Abono en efectivo...'"
+                  :prepend-inner-icon="selectedAccount?.isBank ? 'ri-hashtag' : 'ri-chat-1-line'" variant="outlined"
+                  density="comfortable" color="primary" hide-details class="bg-white rounded-lg"
+                  @keydown.enter.prevent="submitAdvance" />
+              </VCol>
+
+              <!-- Fila 2 - Col 3: Boton de Registrar Abono -->
+              <VCol cols="12" sm="3" class="d-flex align-center">
+                <VBtn color="primary" variant="elevated" block height="44" :loading="isSubmitting"
+                  :disabled="!form.amount || Number(form.amount) <= 0"
+                  class="font-weight-bold rounded-lg elevation-2 text-none" @click="submitAdvance">
+                  <VIcon icon="ri-check-line" size="18" class="me-1" />
+                  <span>Registrar</span>
                 </VBtn>
               </VCol>
             </VRow>
@@ -1004,52 +978,20 @@ const formatDate = dateStr => {
   }
 }
 
-.amount-input-wrapper {
-  display: flex;
-  align-items: center;
-  position: relative;
-  background: #ffffff;
-  border: 2px solid #e2e8f0;
-  border-radius: 12px;
-  padding: 0 14px;
-  transition: all 0.2s ease;
-
-  &:focus-within {
-    border-color: #6366f1;
-    box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.15);
-  }
-
-  .currency-symbol {
-    font-size: 1.3rem;
-    font-weight: 800;
-    color: #6366f1;
-    margin-right: 6px;
-  }
-
-  .amount-native-input {
-    width: 100%;
-    height: 44px;
-    border: none;
-    outline: none;
-    font-size: 1.35rem;
-    font-weight: 800;
-    font-family: 'Consolas', 'Monaco', monospace;
-    color: #0f172a;
-    background: transparent;
-
-    &::placeholder {
-      color: #cbd5e1;
-      font-weight: 400;
-    }
+.font-mono-input {
+  :deep(input) {
+    font-family: 'Consolas', 'Monaco', monospace !important;
+    font-weight: 700 !important;
+    font-size: 1.15rem !important;
   }
 }
 
 .quick-amt-chip {
-  padding: 4px 10px;
-  border-radius: 8px;
+  padding: 3px 9px;
+  border-radius: 7px;
   border: 1px solid #e2e8f0;
   background: #f8fafc;
-  font-size: 0.74rem;
+  font-size: 0.73rem;
   font-weight: 700;
   color: #475569;
   cursor: pointer;
@@ -1085,237 +1027,26 @@ const formatDate = dateStr => {
   }
 }
 
-// Grid de Selección de Cuentas (100% Dinámico y Escalable)
-.accounts-selection-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-  gap: 10px;
-  width: 100%;
-  box-sizing: border-box;
-
-  @media (max-width: 520px) {
-    grid-template-columns: 1fr;
-  }
-}
-
-.account-card-btn {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  padding: 10px 12px;
-  border-radius: 12px;
-  border: 2px solid #e2e8f0;
-  background: #ffffff;
-  text-align: left;
-  cursor: pointer;
-  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-  width: 100%;
-  min-width: 0;
-  box-sizing: border-box;
-
-  &:hover {
-    border-color: #cbd5e1;
-    background: #f8fafc;
-    transform: translateY(-1px);
-  }
-
-  &.active-bank {
-    border-color: #6366f1;
-    background: #f5f3ff;
-    box-shadow: 0 4px 14px rgba(99, 102, 241, 0.12);
-
-    .account-card-name {
-      color: #4338ca;
-    }
-  }
-
-  &.active-cash {
-    border-color: #10b981;
-    background: #f0fdf4;
-    box-shadow: 0 4px 14px rgba(16, 185, 129, 0.12);
-
-    .account-card-name {
-      color: #065f46;
-    }
-  }
-
-  .account-card-icon {
-    width: 36px;
-    height: 36px;
-    min-width: 36px;
-    border-radius: 10px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    flex-shrink: 0;
-
-    &.icon-bank {
-      background: rgba(99, 102, 241, 0.12);
-      color: #4f46e5;
-    }
-
-    &.icon-cash {
-      background: rgba(16, 185, 129, 0.12);
-      color: #059669;
-    }
-  }
-
-  .account-card-info {
-    flex-grow: 1;
-    min-width: 0;
-
-    .account-card-name {
-      font-size: 0.85rem;
-      font-weight: 800;
-      color: #1e293b;
-      line-height: 1.25;
-      overflow: hidden;
-      text-overflow: ellipsis;
-      white-space: nowrap;
-    }
-
-    .account-card-method {
-      margin-top: 3px;
-    }
-  }
-
-  .account-card-check {
-    margin-left: auto;
-    flex-shrink: 0;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-
-    .check-placeholder {
-      width: 18px;
-      height: 18px;
-      border-radius: 50%;
-      border: 2px solid #cbd5e1;
-      background: transparent;
-    }
-  }
-}
-
-.account-quick-chip {
+.method-pill-badge {
   display: inline-flex;
   align-items: center;
-  padding: 5px 10px;
-  border-radius: 8px;
-  border: 1px solid #e2e8f0;
-  background: #ffffff;
-  font-size: 0.74rem;
-  font-weight: 700;
-  color: #475569;
-  cursor: pointer;
-  transition: all 0.15s ease;
-
-  &:hover {
-    border-color: #cbd5e1;
-    background: #f8fafc;
-  }
-
-  &.active-bank {
-    background: #eff6ff;
-    border-color: #3b82f6;
-    color: #1d4ed8;
-
-    .chip-badge {
-      background: #bfdbfe;
-      color: #1e40af;
-    }
-  }
-
-  &.active-cash {
-    background: #ecfdf5;
-    border-color: #10b981;
-    color: #047857;
-
-    .chip-badge {
-      background: #a7f3d0;
-      color: #065f46;
-    }
-  }
-
-  .chip-badge {
-    font-size: 0.65rem;
-    font-weight: 800;
-    padding: 1px 5px;
-    border-radius: 4px;
-    background: #f1f5f9;
-    color: #64748b;
-    text-transform: uppercase;
-  }
-}
-
-.method-tag {
-  display: inline-flex;
-  align-items: center;
-  padding: 1px 7px;
+  padding: 2px 7px;
   border-radius: 6px;
-  font-size: 0.66rem;
+  font-size: 0.67rem;
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.3px;
 
-  &.tag-transfer {
+  &.pill-transfer {
     background: #eff6ff;
     color: #1d4ed8;
     border: 1px solid #bfdbfe;
   }
 
-  &.tag-cash {
+  &.pill-cash {
     background: #ecfdf5;
     color: #047857;
     border: 1px solid #a7f3d0;
-  }
-}
-
-.account-select-icon-pill {
-  width: 28px;
-  height: 28px;
-  min-width: 28px;
-  border-radius: 8px;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-
-  &.pill-bank {
-    background: rgba(99, 102, 241, 0.12);
-    color: #4f46e5;
-  }
-
-  &.pill-cash {
-    background: rgba(16, 185, 129, 0.12);
-    color: #059669;
-  }
-}
-
-.account-summary-bar {
-  display: flex;
-  align-items: center;
-  padding: 6px 12px;
-  border-radius: 8px;
-  background: #f8fafc;
-  border: 1px dashed #cbd5e1;
-
-  .summary-icon {
-    width: 24px;
-    height: 24px;
-    min-width: 24px;
-    border-radius: 6px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-
-    &.is-bank {
-      background: rgba(99, 102, 241, 0.12);
-      color: #4f46e5;
-    }
-
-    &.is-cash {
-      background: rgba(16, 185, 129, 0.12);
-      color: #059669;
-    }
   }
 }
 
