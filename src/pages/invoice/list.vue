@@ -264,11 +264,11 @@ onActivated(() => {
           class="elevation-2 font-weight-bold order-1 order-sm-3">
           Nueva Compra
         </VBtn>
-        <VBtn color="info" variant="tonal" prepend-icon="ri-exchange-dollar-line" to="/invoice/reconciliation"
+        <VBtn color="info" variant="flat" prepend-icon="ri-exchange-dollar-line" to="/invoice/reconciliation"
           size="default" class="font-weight-medium order-2 order-sm-1">
           Conciliación de Pagos
         </VBtn>
-        <VBtn color="success" variant="tonal" prepend-icon="ri-hand-coin-line" to="/invoice/supplier-credits"
+        <VBtn color="success" variant="flat" prepend-icon="ri-hand-coin-line" to="/invoice/supplier-credits"
           size="default" class="font-weight-medium order-3 order-sm-2">
           Saldos a Favor
         </VBtn>
@@ -608,10 +608,16 @@ onActivated(() => {
 
                 <!-- Factura -->
                 <td class="py-3">
-                  <span class="font-mono font-weight-bold text-primary cursor-pointer hover-underline text-body-2"
-                    @click="showItem(invoice)">
-                    {{ invoice.invoice_number || 'S/N' }}
-                  </span>
+                  <div class="d-flex flex-column align-start gap-1">
+                    <span class="font-mono font-weight-bold text-primary cursor-pointer hover-underline text-body-2"
+                      @click="showItem(invoice)">
+                      {{ invoice.invoice_number || 'S/N' }}
+                    </span>
+                    <VChip v-if="invoice.is_expense" size="x-small" color="warning" variant="tonal"
+                      class="font-weight-bold" style="height: 18px; font-size: 0.65rem;">
+                      Gasto General
+                    </VChip>
+                  </div>
                 </td>
 
                 <!-- Fecha -->

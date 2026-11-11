@@ -165,6 +165,18 @@ const filteredItems = computed(() => {
   }) || []
 })
 
+// Computed para filtrar los detalles de gasto general
+const filteredExpenseDetails = computed(() => {
+  const details = invoice.value?.expense_details || []
+  const searchTerm = (searchProduct.value || '').toLowerCase()
+  if (!searchTerm) return details
+
+  return details.filter(detail =>
+    (detail.description || '').toLowerCase().includes(searchTerm)
+    || (detail.category || '').toLowerCase().includes(searchTerm),
+  )
+})
+
 // Función para obtener el nombre de la categoría
 const getCategoryName = (categoryId, itemType) => {
   // Si no es producto, mostrar mensaje específico
@@ -334,6 +346,19 @@ onMounted(() => {
             />
             <span><strong>Fecha:</strong> {{ formatDate(invoice?.issue_date) }}</span>
           </div>
+
+          <div
+            v-if="invoice?.is_expense"
+            class="d-inline-flex align-center px-3 py-1 rounded-pill text-caption font-weight-bold"
+            style="background: #ff9f43; color: #ffffff;"
+          >
+            <VIcon
+              icon="ri-receipt-line"
+              size="14"
+              class="me-1"
+            />
+            <span>Gasto General</span>
+          </div>
         </div>
 
         <!-- Buscador y Acciones Fijos en Cabecera (Tarjeta Blanca de Alto Contraste) -->
@@ -431,7 +456,67 @@ onMounted(() => {
 
       <!-- 📦 CONTENIDO DEL MODAL (TABLA Y FOOTER) -->
       <VCardText class="pa-6">
-        <div class="invoice-table-wrap">
+        <div v-if="invoice?.is_expense" class="invoice-table-wrap">
+          <VTable
+            hover
+            class="invoice-table"
+          >
+            <thead class="bg-grey-lighten-4">
+              <tr>
+                <th class="text-uppercase text-caption font-weight-bold" style="width: 50px">
+                  #
+                </th>
+                <th class="text-uppercase text-caption font-weight-bold">
+                  Descripción del Gasto
+                </th>
+                <th class="text-uppercase text-caption font-weight-bold" style="width: 240px">
+                  Categoría
+                </th>
+                <th class="text-uppercase text-caption font-weight-bold text-end" style="width: 140px">
+                  Total
+                </th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr
+                v-for="(expense, index) in filteredExpenseDetails"
+                :key="expense.id"
+                class="align-middle"
+              >
+                <td class="text-caption text-medium-emphasis">
+                  {{ index + 1 }}
+                </td>
+                <td class="py-3 text-body-2 font-weight-medium text-high-emphasis">
+                  {{ expense.description }}
+                </td>
+                <td class="py-3">
+                  <VChip
+                    size="small"
+                    color="warning"
+                    variant="tonal"
+                    class="font-weight-medium"
+                  >
+                    {{ expense.category }}
+                  </VChip>
+                </td>
+                <td class="text-end text-body-2 font-weight-bold text-primary">
+                  ${{ Number(expense.total || 0).toFixed(2) }}
+                </td>
+              </tr>
+
+              <tr v-if="!filteredExpenseDetails.length">
+                <td colspan="4" class="text-center text-medium-emphasis py-8">
+                  <VIcon size="28" class="mb-2">
+                    ri-receipt-line
+                  </VIcon>
+                  <div>Este comprobante no tiene líneas de gasto registradas</div>
+                </td>
+              </tr>
+            </tbody>
+          </VTable>
+        </div>
+
+        <div v-else class="invoice-table-wrap">
           <VTable
             hover
             class="invoice-table"

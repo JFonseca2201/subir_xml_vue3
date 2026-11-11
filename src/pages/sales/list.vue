@@ -1695,13 +1695,13 @@ onActivated(() => {
                         class="text-caption text-medium-emphasis mt-0.5 font-mono"
                         style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis; display: block;"
                         :title="getClientPhone(item.client)">
-                        {{ getClientPhone(item.client) }}
+                        {{ item.client.n_document }} - {{ getClientPhone(item.client) }}
                       </span>
-                      <span v-else-if="item.client?.n_document" class="text-caption text-medium-emphasis font-mono"
+                      <!-- <span v-if="item.client?.n_document" class="text-caption text-medium-emphasis font-mono"
                         style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis; display: block;"
                         :title="item.client.n_document">
                         {{ item.client.n_document }}
-                      </span>
+                      </span> -->
                     </div>
                   </div>
                 </td>
