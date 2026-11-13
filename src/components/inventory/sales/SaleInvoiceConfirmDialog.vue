@@ -374,54 +374,52 @@ const onConfirm = () => {
 </script>
 
 <template>
-  <VDialog :model-value="isDialogVisible" max-width="660px" persistent
+  <VDialog :model-value="isDialogVisible" max-width="840px" persistent
     @update:model-value="val => emit('update:isDialogVisible', val)">
-    <VCard class="invoice-confirm-card rounded-xl overflow-hidden elevation-24 border">
-      <!-- 1. Header Banner Ejecutivo & Sobrio (Estilo Pepa) -->
+    <VCard class="invoice-confirm-card rounded-2xl overflow-hidden elevation-24 border">
+      <!-- 1. Header Banner Ejecutivo & Sobrio (Adaptable a cada Tema) -->
       <div class="invoice-dialog-header">
         <!-- Botón Cerrar Superior Derecho -->
         <VBtn icon="ri-close-line" variant="text" size="small" class="header-close-btn" title="Cerrar ventana"
           :disabled="isSubmitting" @click="closeDialog" />
 
-        <!-- Top Row: Icono + Eyebrow + SRI Chip -->
-        <div class="d-flex align-center gap-3">
-          <div class="header-avatar shrink-0">
-            <VIcon icon="ri-file-shield-2-line" size="26" color="white" />
+        <!-- Centro: Icono + Eyebrow + SRI Chip + Títulos -->
+        <div class="d-flex flex-column align-center text-center px-4">
+          <div class="header-avatar mb-3 shrink-0">
+            <VIcon icon="ri-file-shield-2-line" size="28" color="white" />
           </div>
 
-          <div class="min-w-0 flex-grow-1 pe-8">
-            <div class="d-flex align-center gap-2 flex-wrap mb-1">
-              <span class="eyebrow-tag">
-                Comprobante Electrónico SRI
-              </span>
-              <span class="sri-env-pill" :class="sriEnvironmentInfo.isProd ? 'env-prod' : 'env-test'">
-                <VIcon :icon="sriEnvironmentInfo.icon" size="12" />
-                <span>{{ sriEnvironmentInfo.text }}</span>
-              </span>
-            </div>
-
-            <h2 class="header-title">
-              Confirmación de Factura Electrónica
-            </h2>
-            <p class="header-subtitle mb-0 text-truncate">
-              Revisa los datos fiscales del comprobante y confirma la forma de pago.
-            </p>
+          <div class="d-flex align-center justify-center gap-2 flex-wrap mb-1.5">
+            <span class="eyebrow-tag">
+              Comprobante Electrónico SRI
+            </span>
+            <span class="sri-env-pill" :class="sriEnvironmentInfo.isProd ? 'env-prod' : 'env-test'">
+              <VIcon :icon="sriEnvironmentInfo.icon" size="12" />
+              <span>{{ sriEnvironmentInfo.text }}</span>
+            </span>
           </div>
+
+          <h2 class="header-title mb-1">
+            ¿Estás seguro que deseas realizar esta "FACTURA"?
+          </h2>
+          <p class="header-subtitle mb-0">
+            Se emitirá el comprobante electrónico fiscal con autorización oficial del SRI.
+          </p>
         </div>
       </div>
 
-      <VCardText class="pa-6 bg-background d-flex flex-column gap-4" style="max-height: calc(85vh - 170px); overflow-y: auto;">
+      <VCardText class="pa-6 d-flex flex-column gap-5 invoice-confirm-body" style="max-height: calc(88vh - 200px); overflow-y: auto;">
         <!-- 2. Tarjeta de Información: Cliente, RUC/Cédula, Vehículo y OT -->
-        <VCard class="pa-4 rounded-xl border elevation-0 bg-surface">
+        <div class="info-surface-card pa-4 rounded-xl border">
           <div class="d-flex align-center justify-space-between mb-3 pb-2 border-b">
             <div class="d-flex align-center gap-2">
               <VIcon icon="ri-user-follow-line" size="18" color="primary" />
-              <span class="text-subtitle-2 font-weight-bold text-slate-800">
+              <span class="text-subtitle-2 font-weight-bold card-heading">
                 Datos del Comprobante
               </span>
             </div>
             <div v-if="sale?.work_order_number || sale?.work_order?.number"
-              class="d-flex align-center gap-1 text-caption font-mono font-weight-bold text-primary px-2.5 py-0.5 rounded-md bg-blue-50 border border-blue-200">
+              class="d-flex align-center gap-1 text-caption font-mono font-weight-bold text-primary px-2.5 py-0.5 rounded-md ot-tag-badge border">
               <VIcon icon="ri-tools-line" size="13" />
               <span>OT #{{ sale?.work_order_number || sale?.work_order?.number }}</span>
             </div>
@@ -431,12 +429,12 @@ const onConfirm = () => {
             <!-- Cliente -->
             <VCol cols="12" :sm="client?.n_document ? 7 : 12">
               <div class="d-flex flex-column">
-                <span class="text-caption font-weight-bold text-slate-500 text-uppercase tracking-wider">
+                <span class="text-caption font-weight-bold card-label text-uppercase tracking-wider">
                   Cliente / Razón Social
                 </span>
                 <div class="d-flex align-center gap-1.5 mt-0.5">
-                  <VIcon icon="ri-user-3-line" size="16" class="text-slate-400 shrink-0" />
-                  <span class="text-body-1 font-weight-bold text-slate-900 text-truncate" :title="clientDisplayName">
+                  <VIcon icon="ri-user-3-line" size="16" class="text-medium-emphasis shrink-0" />
+                  <span class="text-body-1 font-weight-bold card-value text-truncate" :title="clientDisplayName">
                     {{ clientDisplayName }}
                   </span>
                 </div>
@@ -446,12 +444,12 @@ const onConfirm = () => {
             <!-- RUC / Cédula -->
             <VCol v-if="client?.n_document" cols="12" sm="5">
               <div class="d-flex flex-column">
-                <span class="text-caption font-weight-bold text-slate-500 text-uppercase tracking-wider">
+                <span class="text-caption font-weight-bold card-label text-uppercase tracking-wider">
                   RUC / Cédula
                 </span>
                 <div class="d-flex align-center gap-1.5 mt-0.5">
-                  <VIcon icon="ri-id-card-line" size="16" class="text-slate-400 shrink-0" />
-                  <span class="text-body-1 font-mono font-weight-bold text-slate-900">
+                  <VIcon icon="ri-id-card-line" size="16" class="text-medium-emphasis shrink-0" />
+                  <span class="text-body-1 font-mono font-weight-bold card-value">
                     {{ client.n_document }}
                   </span>
                 </div>
@@ -461,30 +459,30 @@ const onConfirm = () => {
             <!-- Vehículo (si existe) -->
             <VCol v-if="vehicle" cols="12" class="pt-2 border-t">
               <div class="d-flex flex-column">
-                <span class="text-caption font-weight-bold text-slate-500 text-uppercase tracking-wider">
+                <span class="text-caption font-weight-bold card-label text-uppercase tracking-wider">
                   Vehículo Asociado
                 </span>
                 <div class="d-flex align-center flex-wrap gap-2 mt-1">
-                  <span class="font-mono font-weight-bold text-slate-900 px-2.5 py-0.5 rounded bg-slate-100 border border-slate-300 text-body-2 d-inline-flex align-center">
-                    <VIcon icon="ri-car-line" size="14" class="me-1.5 text-slate-500" />
+                  <span class="font-mono font-weight-bold card-plate-chip px-2.5 py-0.5 rounded border text-body-2 d-inline-flex align-center">
+                    <VIcon icon="ri-car-line" size="14" class="me-1.5 text-medium-emphasis" />
                     {{ vehicle.license_plate }}
                   </span>
-                  <span v-if="vehicle.brand || vehicle.model" class="text-body-2 font-weight-semibold text-slate-700">
+                  <span v-if="vehicle.brand || vehicle.model" class="text-body-2 font-weight-semibold card-value-secondary">
                     {{ getBrandNameById(vehicle.brand) || vehicle.brand }} {{ vehicle.model }}
-                    <span v-if="vehicle.year" class="text-slate-400 font-normal">({{ vehicle.year }})</span>
+                    <span v-if="vehicle.year" class="card-label font-normal">({{ vehicle.year }})</span>
                   </span>
                 </div>
               </div>
             </VCol>
           </VRow>
-        </VCard>
+        </div>
 
         <!-- 3. Desglose Financiero -->
-        <VCard class="pa-4 rounded-xl border elevation-0 bg-surface">
+        <div class="info-surface-card pa-4 rounded-xl border">
           <div class="d-flex align-center justify-space-between mb-3 pb-2 border-b">
             <div class="d-flex align-center gap-2">
               <VIcon icon="ri-calculator-line" size="18" color="primary" />
-              <span class="text-subtitle-2 font-weight-bold text-slate-800">
+              <span class="text-subtitle-2 font-weight-bold card-heading">
                 Resumen de Liquidación
               </span>
             </div>
@@ -497,51 +495,51 @@ const onConfirm = () => {
 
           <!-- Desglose Numérico con Gran Claridad y Alto Contraste -->
           <template v-if="hasAdvance">
-            <div class="d-flex flex-column gap-2">
+            <div class="d-flex flex-column gap-2.5">
               <!-- TOTAL A FACTURAR (SRI) -->
-              <div class="d-flex justify-space-between align-center py-2 px-3 rounded-lg bg-blue-50/70 border border-blue-200">
+              <div class="d-flex justify-space-between align-center py-2.5 px-4 rounded-lg summary-box-sri border">
                 <div>
                   <div class="text-caption font-weight-bold text-primary text-uppercase d-flex align-center gap-1.5">
                     <VIcon icon="ri-file-shield-2-line" size="16" />
                     TOTAL A FACTURAR (SRI)
                   </div>
-                  <div class="text-caption text-slate-600" style="font-size: 0.75rem;">
-                    Monto oficial declarado en el comprobante electrónico
+                  <div class="text-caption card-subtext" style="font-size: 0.78rem;">
+                    Monto oficial declarado en el comprobante electrónico al SRI
                   </div>
                 </div>
-                <span class="text-h5 font-weight-black text-primary font-mono">
+                <span class="text-h4 font-weight-black text-primary font-mono">
                   ${{ Number(total || 0).toFixed(2) }}
                 </span>
               </div>
 
               <!-- MENOS ANTICIPO APLICADO -->
-              <div class="d-flex justify-space-between align-center py-2 px-3 rounded-lg bg-emerald-50 border border-emerald-200">
+              <div class="d-flex justify-space-between align-center py-2.5 px-4 rounded-lg summary-box-advance border">
                 <div>
-                  <div class="text-caption font-weight-bold text-emerald-900 d-flex align-center gap-1.5">
-                    <VIcon icon="ri-hand-coin-line" size="16" color="success" />
+                  <div class="text-caption font-weight-bold text-success text-uppercase d-flex align-center gap-1.5">
+                    <VIcon icon="ri-hand-coin-line" size="16" />
                     MENOS ANTICIPO PREVIO EN OT {{ sale?.work_order_number ? `#${sale.work_order_number}` : '' }}
                   </div>
-                  <div class="text-caption text-emerald-700" style="font-size: 0.75rem;">
-                    Cobrado anteriormente &bull; No genera nuevo ingreso en caja
+                  <div class="text-caption card-subtext" style="font-size: 0.78rem;">
+                    Cobrado anteriormente en la OT &bull; Ya registrado, no duplica ingreso
                   </div>
                 </div>
-                <span class="text-h6 font-weight-black text-success font-mono">
+                <span class="text-h5 font-weight-black text-success font-mono">
                   - ${{ effectiveAdvanceAmount.toFixed(2) }}
                 </span>
               </div>
 
               <!-- SALDO A CANCELAR HOY -->
-              <div class="d-flex justify-space-between align-center py-2.5 px-3 rounded-lg bg-slate-100 border border-slate-300">
+              <div class="d-flex justify-space-between align-center py-3 px-4 rounded-lg summary-box-balance border">
                 <div>
-                  <div class="text-subtitle-1 font-weight-black text-slate-900 text-uppercase d-flex align-center gap-1.5">
-                    <VIcon icon="ri-hand-coin-line" size="16" color="primary" />
+                  <div class="text-subtitle-1 font-weight-black text-uppercase d-flex align-center gap-1.5 card-value">
+                    <VIcon icon="ri-hand-coin-line" size="18" color="primary" />
                     SALDO A CANCELAR HOY
                   </div>
-                  <div class="text-caption text-slate-600" style="font-size: 0.75rem;">
-                    Dinero que ingresa hoy a tu Caja / Banco
+                  <div class="text-caption card-subtext" style="font-size: 0.78rem;">
+                    Dinero líquido que ingresa hoy a tu Caja / Banco
                   </div>
                 </div>
-                <span class="text-h5 font-weight-black text-slate-900 font-mono">
+                <span class="text-h4 font-weight-black card-value font-mono">
                   ${{ balanceToCollect.toFixed(2) }}
                 </span>
               </div>
@@ -549,14 +547,14 @@ const onConfirm = () => {
           </template>
 
           <template v-else>
-            <div class="d-flex justify-space-between align-center py-3 px-4 rounded-lg bg-blue-50/70 border border-blue-200">
+            <div class="d-flex justify-space-between align-center py-3.5 px-4 rounded-lg summary-box-sri border">
               <div>
                 <div class="text-caption font-weight-bold text-primary text-uppercase d-flex align-center gap-1.5">
-                  <VIcon icon="ri-file-shield-2-line" size="16" />
+                  <VIcon icon="ri-file-shield-2-line" size="18" />
                   TOTAL A FACTURAR (SRI)
                 </div>
-                <div class="text-caption text-slate-600">
-                  Monto oficial del comprobante electrónico
+                <div class="text-caption card-subtext">
+                  Monto oficial del comprobante electrónico con autorización del SRI
                 </div>
               </div>
               <span class="text-h4 font-weight-black text-primary font-mono">
@@ -564,10 +562,10 @@ const onConfirm = () => {
               </span>
             </div>
           </template>
-        </VCard>
+        </div>
 
         <!-- 3. Sección Forma de Pago del Saldo -->
-        <VCard class="pa-5 rounded-xl border elevation-0 bg-surface">
+        <div class="info-surface-card pa-5 rounded-xl border">
           <!-- Cabecera de Forma de Pago -->
           <div class="d-flex justify-space-between align-center mb-4 pb-2.5 border-b">
             <div class="d-flex align-center gap-2">
@@ -575,7 +573,7 @@ const onConfirm = () => {
                 <VIcon icon="ri-wallet-3-line" size="18" />
               </VAvatar>
               <div>
-                <span class="text-subtitle-1 font-weight-bold text-slate-900">
+                <span class="text-subtitle-1 font-weight-bold card-heading">
                   {{ hasAdvance ? 'Método de Pago del Saldo Hoy' : 'Forma de Pago' }}
                 </span>
                 <span v-if="hasAdvance" class="text-caption font-weight-black text-primary font-mono ms-2">
@@ -616,7 +614,7 @@ const onConfirm = () => {
                 </div>
 
                 <!-- Input Monto Cómodo y Notorio -->
-                <div class="ms-auto flex-shrink-0" style="width: 150px;">
+                <div class="ms-auto flex-shrink-0" style="width: 160px;">
                   <VTextField v-model="row.amount" type="text" inputmode="decimal" prefix="$"
                     placeholder="0.00" variant="outlined" density="comfortable" hide-details color="primary"
                     class="font-mono font-weight-bold text-body-1" @blur="formatRowAmountOnBlur(row)" />
@@ -646,7 +644,7 @@ const onConfirm = () => {
               Ajustar restante
             </VBtn>
           </div>
-        </VCard>
+        </div>
 
         <!-- Alerta de Validación (solo si existe error al confirmar) -->
         <VAlert v-if="validationError" type="error" variant="tonal" density="compact"
@@ -658,13 +656,13 @@ const onConfirm = () => {
       <VDivider />
 
       <!-- 4. Footer Amplio y Sobrio -->
-      <VCardActions class="pa-5 d-flex justify-end gap-3 bg-surface border-t">
+      <VCardActions class="pa-5 d-flex justify-end gap-3 invoice-confirm-footer border-t">
         <VBtn color="secondary" variant="outlined" prepend-icon="ri-close-line"
-          class="rounded-lg px-6 font-weight-medium text-none text-body-2" height="44" :disabled="isSubmitting" @click="closeDialog">
+          class="rounded-lg px-6 font-weight-medium text-none text-body-2" height="46" :disabled="isSubmitting" @click="closeDialog">
           Cancelar
         </VBtn>
         <VBtn color="primary" variant="elevated" prepend-icon="ri-check-line"
-          class="rounded-lg px-7 font-weight-bold elevation-2 text-none text-body-1" height="44" :loading="isSubmitting" @click="onConfirm">
+          class="rounded-lg px-7 font-weight-bold elevation-2 text-none text-body-1" height="46" :loading="isSubmitting" @click="onConfirm">
           Sí, Emitir Factura por ${{ Number(total || 0).toFixed(2) }}
         </VBtn>
       </VCardActions>
@@ -676,18 +674,20 @@ const onConfirm = () => {
   box-shadow: 0 20px 45px rgba(15, 23, 42, 0.22) !important;
   border-radius: 20px !important;
   overflow: hidden !important;
+  background: var(--bg-dialog, #ffffff) !important;
+  color: var(--text-primary, #0f172a) !important;
 }
 
-// Header Banner Ejecutivo (Estilo Pepa)
+// Header Banner Ejecutivo (Color Establecido según cada Tema del Sistema)
 .invoice-dialog-header {
   position: relative !important;
-  background: linear-gradient(135deg, #1e1b4b 0%, #312e81 40%, #4338ca 75%, #4f46e5 100%) !important;
+  background: var(--bg-dialog-header, var(--bg-header, linear-gradient(135deg, #1e1b4b 0%, #312e81 40%, #4338ca 75%, #4f46e5 100%))) !important;
   color: #ffffff !important;
-  padding: 22px 24px 20px 24px !important;
+  padding: 24px 28px 20px 28px !important;
   border-top-left-radius: 20px !important;
   border-top-right-radius: 20px !important;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.16) !important;
-  box-shadow: 0 6px 24px rgba(67, 56, 202, 0.25) !important;
+  border-bottom: 1px solid var(--border-dialog-header, rgba(255, 255, 255, 0.16)) !important;
+  box-shadow: 0 6px 24px rgba(0, 0, 0, 0.2) !important;
 
   .header-close-btn {
     position: absolute !important;
@@ -708,28 +708,28 @@ const onConfirm = () => {
   }
 
   .header-avatar {
-    width: 48px;
-    height: 48px;
-    min-width: 48px;
+    width: 52px;
+    height: 52px;
+    min-width: 52px;
     border-radius: 14px;
-    background: rgba(255, 255, 255, 0.16);
-    border: 1px solid rgba(255, 255, 255, 0.28);
+    background: var(--dialog-avatar-bg, rgba(255, 255, 255, 0.18)) !important;
+    border: 1px solid var(--dialog-avatar-border, rgba(255, 255, 255, 0.32)) !important;
     display: flex;
     align-items: center;
     justify-content: center;
-    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.15);
+    box-shadow: var(--dialog-avatar-shadow, 0 4px 14px rgba(0, 0, 0, 0.15)) !important;
   }
 
   .eyebrow-tag {
-    font-size: 0.68rem;
+    font-size: 0.70rem;
     font-weight: 800;
     text-transform: uppercase;
     letter-spacing: 0.8px;
-    color: rgba(255, 255, 255, 0.82);
+    color: rgba(255, 255, 255, 0.85);
   }
 
   .header-title {
-    font-size: 1.25rem;
+    font-size: 1.35rem;
     font-weight: 800;
     color: #ffffff !important;
     line-height: 1.25;
@@ -738,8 +738,8 @@ const onConfirm = () => {
   }
 
   .header-subtitle {
-    font-size: 0.82rem;
-    color: rgba(255, 255, 255, 0.88);
+    font-size: 0.84rem;
+    color: rgba(255, 255, 255, 0.90);
     line-height: 1.35;
   }
 
@@ -766,5 +766,68 @@ const onConfirm = () => {
       color: #fef3c7;
     }
   }
+}
+
+// Cuerpo y Tarjetas Adaptables al Tema
+.invoice-confirm-body {
+  background: var(--bg-dialog, transparent);
+}
+
+.info-surface-card {
+  background: var(--bg-surface, #ffffff);
+  border-color: var(--border-glass, #e2e8f0) !important;
+  color: var(--text-primary, #0f172a);
+}
+
+.card-heading {
+  color: var(--text-primary, #0f172a);
+}
+
+.card-label {
+  color: var(--text-muted, #64748b);
+}
+
+.card-value {
+  color: var(--text-primary, #0f172a);
+}
+
+.card-value-secondary {
+  color: var(--text-secondary, #334155);
+}
+
+.card-subtext {
+  color: var(--text-muted, #64748b);
+}
+
+.ot-tag-badge {
+  background: rgba(var(--v-theme-primary), 0.10);
+  border-color: rgba(var(--v-theme-primary), 0.25) !important;
+  color: rgb(var(--v-theme-primary));
+}
+
+.card-plate-chip {
+  background: var(--table-header-bg, rgba(var(--v-theme-on-surface), 0.05));
+  border-color: var(--border-glass, rgba(var(--v-theme-on-surface), 0.12)) !important;
+  color: var(--text-primary, #0f172a);
+}
+
+.summary-box-sri {
+  background: rgba(var(--v-theme-primary), 0.08);
+  border-color: rgba(var(--v-theme-primary), 0.24) !important;
+}
+
+.summary-box-advance {
+  background: rgba(var(--v-theme-success), 0.08);
+  border-color: rgba(var(--v-theme-success), 0.24) !important;
+}
+
+.summary-box-balance {
+  background: rgba(var(--v-theme-on-surface), 0.04);
+  border-color: var(--border-glass, rgba(var(--v-theme-on-surface), 0.15)) !important;
+}
+
+.invoice-confirm-footer {
+  background: var(--bg-surface, #ffffff);
+  border-color: var(--border-glass, #e2e8f0) !important;
 }
 </style>

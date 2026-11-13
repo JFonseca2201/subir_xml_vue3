@@ -943,8 +943,8 @@ onMounted(async () => {
 
 .existing-card {
   border-radius: 8px;
-  border: 1px solid rgba(0, 0, 0, 0.08);
-  background: white;
+  border: 1px solid var(--border-glass, rgba(0, 0, 0, 0.08));
+  background: var(--bg-surface, #ffffff);
   overflow: hidden;
   display: flex;
   flex-direction: column;
@@ -1002,7 +1002,7 @@ onMounted(async () => {
 }
 
 .existing-info {
-  background: white;
-  border-top: 1px solid rgba(0, 0, 0, 0.05);
+  background: var(--bg-surface, #ffffff);
+  border-top: 1px solid var(--border-glass, rgba(0, 0, 0, 0.05));
 }
 </style>

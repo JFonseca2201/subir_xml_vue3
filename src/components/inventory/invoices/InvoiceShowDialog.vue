@@ -424,7 +424,7 @@ onMounted(() => {
                   hide-details
                   color="primary"
                   class="flex-grow-1"
-                  style="background-color: #ffffff; min-width: 160px;"
+                  style="background-color: var(--input-bg, transparent); min-width: 160px;"
                 />
 
                 <VBtn

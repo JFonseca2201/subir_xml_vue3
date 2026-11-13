@@ -12,11 +12,13 @@ import AddServiceDialog from '@/components/inventory/product/AddServiceDialog.vu
 import SriInvoiceProgressDialog from '@/components/inventory/sales/SriInvoiceProgressDialog.vue'
 import SaleInvoiceConfirmDialog from '@/components/inventory/sales/SaleInvoiceConfirmDialog.vue'
 import VSearch from '@/components/common/VSearch.vue'
+import { useTaxConfig } from '@/composables/useTaxConfig'
 
 const router = useRouter()
 const route = useRoute()
 const { showNotification } = useGlobalToast()
 const loader = useLoaderStore()
+const { taxPercent, taxRate } = useTaxConfig()
 
 const formRef = ref(null)
 const isLoading = ref(false)
@@ -565,9 +567,7 @@ const handleServiceAdded = async newService => {
   }
 }
 
-// Cálculos (Los precios de productos y servicios ya incluyen IVA)
-const TAX_RATE = 0.15
-
+// Cálculos (Los precios de productos y servicios ya incluyen IVA dinámico)
 const grossSubtotal = computed(() => {
   return sale.value.items.reduce((sum, item) => sum + (item.quantity * item.price), 0)
 })
@@ -582,7 +582,19 @@ const netItemsTotal = computed(() => {
 
 const subtotal = computed(() => {
   if (sale.value.document_type === 'invoice') {
-    return Number((netItemsTotal.value / (1 + TAX_RATE)).toFixed(2))
+    const sumSubtotal = sale.value.items.reduce((sum, item) => {
+      const price = item.price || item.unit_price || 0
+      const quantity = item.quantity || 0
+      const discount = Number(item.discount) || 0
+      const itemNet = Math.max(0, (quantity * parseFloat(price)) - discount)
+      const currentTaxPercent = item.tax_rate !== undefined && item.tax_rate !== null ? Number(item.tax_rate) : taxPercent.value
+      const rate = currentTaxPercent / 100
+      const base = rate > 0 ? (itemNet / (1 + rate)) : itemNet
+
+      return sum + base
+    }, 0)
+
+    return Number(sumSubtotal.toFixed(2))
   }
 
   return Number(netItemsTotal.value.toFixed(2))

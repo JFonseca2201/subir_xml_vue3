@@ -850,8 +850,8 @@ const formatDate = dateStr => {
   gap: 12px;
   padding: 12px 14px;
   border-radius: 14px;
-  border: 1px solid #e2e8f0;
-  background: #ffffff;
+  border: 1px solid var(--border-glass, #e2e8f0);
+  background: var(--bg-surface, #ffffff);
   transition: all 0.2s ease;
 
   .kpi-icon-wrap {
@@ -874,7 +874,7 @@ const formatDate = dateStr => {
     font-weight: 700;
     text-transform: uppercase;
     letter-spacing: 0.5px;
-    color: #64748b;
+    color: var(--text-muted, #64748b);
     display: block;
     line-height: 1.2;
   }
@@ -885,48 +885,49 @@ const formatDate = dateStr => {
     font-family: 'Consolas', 'Monaco', monospace;
     line-height: 1.25;
     margin-top: 2px;
-    color: #0f172a;
+    color: var(--text-primary, #0f172a);
   }
 
   .kpi-sub {
     font-size: 0.68rem;
-    color: #94a3b8;
+    color: var(--text-muted, #94a3b8);
     display: block;
     line-height: 1.2;
     margin-top: 1px;
   }
 
   &.kpi-budget {
-    background: #f8fafc;
+    background: rgba(var(--v-theme-primary), 0.08);
+    border-color: rgba(var(--v-theme-primary), 0.22);
 
     .kpi-icon-wrap {
-      background: rgba(99, 102, 241, 0.12);
-      color: #4f46e5;
+      background: rgba(var(--v-theme-primary), 0.16);
+      color: rgb(var(--v-theme-primary));
     }
   }
 
   &.kpi-advances {
-    background: #f0fdf4;
-    border-color: #bbf7d0;
+    background: rgba(var(--v-theme-success), 0.10);
+    border-color: rgba(var(--v-theme-success), 0.25);
 
     .kpi-icon-wrap {
-      background: rgba(16, 185, 129, 0.15);
-      color: #059669;
+      background: rgba(var(--v-theme-success), 0.18);
+      color: rgb(var(--v-theme-success));
     }
   }
 
   &.kpi-balance {
-    background: #fffbeb;
-    border-color: #fde68a;
+    background: rgba(var(--v-theme-warning), 0.10);
+    border-color: rgba(var(--v-theme-warning), 0.25);
 
     .kpi-icon-wrap {
-      background: rgba(245, 158, 11, 0.15);
-      color: #d97706;
+      background: rgba(var(--v-theme-warning), 0.18);
+      color: rgb(var(--v-theme-warning));
     }
 
     &.is-zero {
-      background: #f0fdf4;
-      border-color: #bbf7d0;
+      background: rgba(var(--v-theme-success), 0.10);
+      border-color: rgba(var(--v-theme-success), 0.25);
 
       .kpi-icon-wrap {
         background: rgba(16, 185, 129, 0.15);

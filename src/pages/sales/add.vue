@@ -15,11 +15,13 @@ import WorkOrderImportDialog from '@/components/inventory/sales/WorkOrderImportD
 import SaleInvoiceConfirmDialog from '@/components/inventory/sales/SaleInvoiceConfirmDialog.vue'
 import VSearch from '@/components/common/VSearch.vue'
 import { useFormDraft } from '@/composables/useFormDraft'
+import { useTaxConfig } from '@/composables/useTaxConfig'
 
 const router = useRouter()
 const route = useRoute()
 const { showNotification } = useGlobalToast()
 const loader = useLoaderStore()
+const { taxPercent, taxRate } = useTaxConfig()
 const userId = ref(null)
 
 const getUserId = () => {
@@ -945,9 +947,7 @@ const onProductSelected = product => {
 
 
 
-// Cálculos (Los precios de productos y servicios ya incluyen IVA)
-const TAX_RATE = 0.15 // 15% IVA
-
+// Cálculos (Los precios de productos y servicios ya incluyen IVA dinámico)
 const grossSubtotal = computed(() => {
   return sale.value.items.reduce((sum, item) => {
     const price = item.price || item.unit_price || 0
@@ -972,7 +972,8 @@ const subtotal = computed(() => {
       const quantity = item.quantity || 0
       const discount = Number(item.discount) || 0
       const itemNet = Math.max(0, (quantity * parseFloat(price)) - discount)
-      const rate = Number(item.tax_rate ?? 15) / 100
+      const currentTaxPercent = item.tax_rate !== undefined && item.tax_rate !== null ? Number(item.tax_rate) : taxPercent.value
+      const rate = currentTaxPercent / 100
       const base = rate > 0 ? (itemNet / (1 + rate)) : itemNet
 
       return sum + base
