@@ -446,36 +446,86 @@ const saveDraft = async () => {
   }
 }
 
-// Lógica de repuestos a reponer
+// Lógica de repuestos a reponer con Scroll Infinito
 const pendingReplacements = ref([])
+const totalPendingCount = ref(0)
+const totalFilteredCount = ref(0)
 const loadingReplacements = ref(false)
+const loadingMoreReplacements = ref(false)
+const replacementsPage = ref(1)
+const hasMoreReplacements = ref(false)
 const isReplacementsDialogVisible = ref(false)
 const searchReplacementQuery = ref('')
 
-const loadPendingReplacements = async () => {
-  loadingReplacements.value = true
+const loadPendingReplacements = async (reset = true) => {
+  if (reset) {
+    replacementsPage.value = 1
+    loadingReplacements.value = true
+  } else {
+    loadingMoreReplacements.value = true
+  }
+
   try {
-    const response = await $api('repuestos-reposicion/pending')
+    const params = {
+      page: replacementsPage.value,
+      per_page: 20,
+    }
+    if (searchReplacementQuery.value && searchReplacementQuery.value.trim() !== '') {
+      params.search = searchReplacementQuery.value.trim()
+    }
+
+    const response = await $api('repuestos-reposicion/pending', { params })
     if (response.success || response.status === 200) {
-      pendingReplacements.value = response.data || []
+      const items = response.data || []
+      if (reset) {
+        pendingReplacements.value = items
+      } else {
+        const existingIds = new Set(pendingReplacements.value.map(i => i.id))
+        const newItems = items.filter(i => !existingIds.has(i.id))
+        pendingReplacements.value = [...pendingReplacements.value, ...newItems]
+      }
+      totalPendingCount.value = response.total_pending ?? response.total ?? items.length
+      totalFilteredCount.value = response.total ?? items.length
+      hasMoreReplacements.value = Boolean(response.has_more)
     }
   } catch (error) {
     console.error('Error al cargar repuestos a reponer:', error)
   } finally {
     loadingReplacements.value = false
+    loadingMoreReplacements.value = false
   }
 }
 
-const filteredReplacements = computed(() => {
-  if (!searchReplacementQuery.value) return pendingReplacements.value
-  const q = searchReplacementQuery.value.toLowerCase().trim()
-  return pendingReplacements.value.filter(item => {
-    const desc = String(item.description || '').toLowerCase()
-    const sku = String(item.sku || '').toLowerCase()
-    const sup = String(item.supplier?.name || '').toLowerCase()
-    const ruc = String(item.supplier?.ruc || '').toLowerCase()
-    return desc.includes(q) || sku.includes(q) || sup.includes(q) || ruc.includes(q)
-  })
+const loadMoreReplacements = async () => {
+  if (loadingReplacements.value || loadingMoreReplacements.value || !hasMoreReplacements.value) {
+    return
+  }
+  replacementsPage.value++
+  await loadPendingReplacements(false)
+}
+
+const onReplacementsScroll = event => {
+  const target = event?.target
+  if (!target) return
+  // Si el usuario hace scroll cerca del final (a menos de 120px)
+  const isNearBottom = target.scrollTop + target.clientHeight >= target.scrollHeight - 120
+  if (isNearBottom) {
+    loadMoreReplacements()
+  }
+}
+
+let searchReplacementTimeout = null
+watch(searchReplacementQuery, () => {
+  if (searchReplacementTimeout) clearTimeout(searchReplacementTimeout)
+  searchReplacementTimeout = setTimeout(() => {
+    loadPendingReplacements(true)
+  }, 300)
+})
+
+watch(isReplacementsDialogVisible, newVal => {
+  if (newVal && pendingReplacements.value.length === 0) {
+    loadPendingReplacements(true)
+  }
 })
 
 const isItemAlreadyInOrder = item => {
@@ -515,7 +565,10 @@ const markAsAcquired = async replacementId => {
     })
     if (response.success || response.status === 200) {
       showNotification('Repuesto marcado como adquirido', 'success')
-      await loadPendingReplacements()
+      // Remoción reactiva inmediata sin reiniciar el scroll
+      pendingReplacements.value = pendingReplacements.value.filter(item => item.id !== replacementId)
+      if (totalPendingCount.value > 0) totalPendingCount.value--
+      if (totalFilteredCount.value > 0) totalFilteredCount.value--
     }
   } catch (error) {
     console.error('Error al marcar como adquirido:', error)
@@ -779,10 +832,10 @@ onActivated(async () => {
                     <VBtn size="small" color="warning" variant="flat" prepend-icon="ri-history-line"
                       class="font-weight-semibold" @click="isReplacementsDialogVisible = true">
                       Repuestos Sugeridos &nbsp;
-                      <VChip v-if="pendingReplacements.length > 0" size="x-small"
+                      <VChip v-if="totalPendingCount > 0" size="x-small"
                         class="ml-1.5 font-weight-bold text-white"
                         style="color: white !important; background-color: black !important;">
-                        {{ pendingReplacements.length }}
+                        {{ totalPendingCount }}
                       </VChip>
                     </VBtn>
                   </div>
@@ -1132,7 +1185,7 @@ onActivated(async () => {
           </p>
           <div class="d-flex justify-center mb-3">
             <VChip size="small" color="white" variant="tonal" class="font-weight-bold text-white border">
-              {{ pendingReplacements.length }} Repuestos Pendientes
+              {{ totalPendingCount }} Repuestos Pendientes
             </VChip>
           </div>
           <!-- Buscador Fijo en la Cabecera -->
@@ -1145,8 +1198,8 @@ onActivated(async () => {
           </div>
         </div>
 
-        <VCardText class="pa-4 bg-grey-lighten-4">
-          <!-- Tabla de sugerencias -->
+        <VCardText class="pa-4 bg-grey-lighten-4" style="max-height: 560px; overflow-y: auto;" @scroll="onReplacementsScroll">
+          <!-- Tabla de sugerencias con Scroll Infinito -->
           <div class="border rounded-lg overflow-hidden bg-white">
             <VTable class="w-100" density="comfortable" hover>
               <thead class="bg-grey-lighten-5">
@@ -1169,7 +1222,7 @@ onActivated(async () => {
                 </tr>
               </thead>
               <tbody>
-                <tr v-for="item in filteredReplacements" :key="item.id">
+                <tr v-for="item in pendingReplacements" :key="item.id">
                   <td class="py-3">
                     <div class="font-weight-medium text-body-2 text-grey-darken-4">
                       {{ item.description }}
@@ -1216,11 +1269,38 @@ onActivated(async () => {
                     </div>
                   </td>
                 </tr>
-                <tr v-if="filteredReplacements.length === 0">
+
+                <!-- Indicador de carga en scroll infinito -->
+                <tr v-if="loadingMoreReplacements">
+                  <td colspan="5" class="text-center py-3 bg-grey-lighten-5">
+                    <div class="d-flex align-center justify-center gap-2 text-caption text-primary font-weight-medium">
+                      <VProgressCircular indeterminate size="18" width="2" color="primary" />
+                      <span>Cargando más repuestos sugeridos...</span>
+                    </div>
+                  </td>
+                </tr>
+
+                <!-- Estado de carga inicial -->
+                <tr v-if="loadingReplacements && pendingReplacements.length === 0">
+                  <td colspan="5" class="text-center py-8">
+                    <VProgressCircular indeterminate size="36" color="primary" class="mb-2" /><br>
+                    <span class="text-caption text-medium-emphasis">Cargando repuestos pendientes...</span>
+                  </td>
+                </tr>
+
+                <!-- Estado vacío sin resultados -->
+                <tr v-else-if="!loadingReplacements && pendingReplacements.length === 0">
                   <td colspan="5" class="text-center py-8 text-medium-emphasis">
                     <VIcon icon="ri-search-line" size="40" color="grey-lighten-1" class="mb-2" /><br>
                     {{ searchReplacementQuery ? 'No se encontraron repuestos con ese término de búsqueda.' :
                       'No hay repuestos pendientes de reposición.' }}
+                  </td>
+                </tr>
+
+                <!-- Fin del listado alcanzado -->
+                <tr v-else-if="!hasMoreReplacements && pendingReplacements.length > 0">
+                  <td colspan="5" class="text-center py-2 text-caption text-medium-emphasis bg-grey-lighten-5">
+                    Has llegado al final de los repuestos sugeridos ({{ totalFilteredCount }})
                   </td>
                 </tr>
               </tbody>
@@ -1232,7 +1312,7 @@ onActivated(async () => {
 
         <VCardActions class="pa-4 bg-white d-flex justify-space-between align-center">
           <div class="text-caption text-medium-emphasis">
-            Mostrando {{ filteredReplacements.length }} de {{ pendingReplacements.length }} repuestos sugeridos
+            Mostrando {{ pendingReplacements.length }} de {{ totalFilteredCount }} repuestos sugeridos
           </div>
           <VBtn color="secondary" variant="outlined" @click="isReplacementsDialogVisible = false"
             prepend-icon="ri-close-line">
