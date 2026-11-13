@@ -29,15 +29,18 @@ const item_type = ref(1)
 const radioGroup = ref(1)
 const categories = ref([])
 const selectedCategory = ref(null)
+const brands = ref([])
+const selectedBrand = ref('SM')
 const loadingCategories = ref(false)
 
-// Cargar categorías
+// Cargar categorías y marcas
 const loadCategories = async () => {
   loadingCategories.value = true
   try {
     const response = await $api('invoices/config')
     if (response.status === 200) {
       categories.value = response.data || response.categories || []
+      brands.value = response.brands || []
       
       return categories.value // Retornar las categorías
     }
@@ -59,6 +62,9 @@ onMounted(() => {
       console.log('🔍 Categoría establecida:', selectedCategory.value)
       console.log('🔍 Categorías disponibles:', categories.value)
     }
+    if (props.invoiceSelected.brand) {
+      selectedBrand.value = props.invoiceSelected.brand
+    }
   })
 })
 
@@ -73,9 +79,14 @@ const editItemInvoice = async () => {
       item_type: item_type.value,
     }
 
-    // Agregar categoría si es un producto
-    if (item_type.value === 1 && selectedCategory.value) {
-      data.product_categorie_id = selectedCategory.value
+    // Agregar categoría y marca si es un producto
+    if (item_type.value === 1) {
+      if (selectedCategory.value) {
+        data.product_categorie_id = selectedCategory.value
+      }
+      if (selectedBrand.value) {
+        data.brand = (selectedBrand.value || 'SM').toString().trim()
+      }
     }
 
     console.log('🔍 Datos a enviar:', data)
@@ -226,10 +237,9 @@ onMounted(() => {
           </VCol>
           <!-- Contenedor con sombra y bordes redondeados -->
 
-          <VCol cols="6">
+          <VCol cols="12" sm="6" v-if="radioGroup === 1">
             <!-- Selector de Categoría -->
             <VSelect
-              v-if="radioGroup === 1"
               v-model="selectedCategory"
               :items="categories"
               item-title="title"
@@ -242,6 +252,23 @@ onMounted(() => {
               class="mt-4"
               hide-details="auto"
               :rules="[v => !!v || 'Selecciona una categoría']"
+            />
+          </VCol>
+
+          <VCol cols="12" sm="6" v-if="radioGroup === 1">
+            <!-- Selector / Combobox de Marca -->
+            <VCombobox
+              v-model="selectedBrand"
+              :items="brands"
+              label="Marca del Producto / Amortiguador"
+              placeholder="Seleccionar o escribir marca (ej: TOKICO, KYB)..."
+              variant="outlined"
+              density="comfortable"
+              prepend-inner-icon="ri-price-tag-3-line"
+              clearable
+              class="mt-4"
+              hide-details="auto"
+              :return-object="false"
             />
           </VCol>
         </VRow>

@@ -397,6 +397,76 @@ const manualItem = ref({
   is_taxable: true,
 })
 
+// Estado para Diálogo de Edición de Marca del Producto / Amortiguador
+const isBrandDialogOpen = ref(false)
+const selectedBrandItem = ref(null)
+const brandEditValue = ref('')
+const applyToSimilarBrand = ref(false)
+
+const popularShockBrands = [
+  'TOKICO',
+  'KYB',
+  'MONROE',
+  '555',
+  'CORVEN',
+  'GABRIEL',
+  'NAKAMOTO',
+  'BOSCH',
+  'SM',
+]
+
+const openBrandDialog = item => {
+  if (isDuplicateInvoice.value) return
+  if (Number(item.item_type) !== 1) return
+
+  selectedBrandItem.value = item
+  brandEditValue.value = (item.brand && item.brand !== 'N/A') ? item.brand : 'SM'
+  applyToSimilarBrand.value = false
+  isBrandDialogOpen.value = true
+}
+
+const saveBrandEdit = () => {
+  if (!selectedBrandItem.value) return
+
+  const trimmed = (brandEditValue.value || 'SM').toString().trim()
+  const finalBrand = trimmed || 'SM'
+
+  selectedBrandItem.value.brand = finalBrand
+
+  if (finalBrand && !brands.value.includes(finalBrand)) {
+    brands.value.push(finalBrand)
+  }
+
+  if (applyToSimilarBrand.value) {
+    const curDesc = (selectedBrandItem.value.description || '').toLowerCase()
+    let count = 0
+    items.value.forEach(it => {
+      if (Number(it.item_type) === 1 && it.id !== selectedBrandItem.value.id) {
+        const desc = (it.description || '').toLowerCase()
+        if (
+          (curDesc.includes('amortiguador') && desc.includes('amortiguador')) ||
+          (curDesc.includes('pastilla') && desc.includes('pastilla')) ||
+          (curDesc.includes('disco') && desc.includes('disco')) ||
+          (curDesc.includes('filtro') && desc.includes('filtro')) ||
+          (curDesc.includes('aceite') && desc.includes('aceite'))
+        ) {
+          it.brand = finalBrand
+          count++
+        }
+      }
+    })
+    if (count > 0) {
+      showNotification(`Marca "${finalBrand}" asignada a este y ${count} producto(s) similar(es)`, 'success')
+    } else {
+      showNotification(`Marca actualizada a "${finalBrand}"`, 'success')
+    }
+  } else {
+    showNotification(`Marca actualizada a "${finalBrand}"`, 'success')
+  }
+
+  isBrandDialogOpen.value = false
+}
+
 
 
 const openManualProductDialog = (initialSearch = '') => {
@@ -1663,7 +1733,13 @@ onMounted(() => {
                       <td class="py-2.5 px-2">
                         <div
                           class="font-weight-bold text-high-emphasis text-body-2 d-flex align-center gap-1 flex-wrap">
-                          <span>{{ item.description }}</span>
+                          <span
+                            :class="{ 'cursor-pointer hover-product-title': Number(item.item_type) === 1 && !isDuplicateInvoice }"
+                            :title="Number(item.item_type) === 1 && !isDuplicateInvoice ? 'Clic para editar la marca del amortiguador / producto' : ''"
+                            @click="Number(item.item_type) === 1 && !isDuplicateInvoice ? openBrandDialog(item) : null"
+                          >
+                            {{ item.description }}
+                          </span>
                           <VChip v-if="item.is_from_xml" size="x-small" color="success" variant="tonal"
                             class="font-weight-bold px-1" style="height: 17px; font-size: 0.65rem;">
                             XML
@@ -1695,7 +1771,23 @@ onMounted(() => {
                           <span v-else class="text-caption text-medium-emphasis">
                             (Terceros)
                           </span>
-                          <span v-if="Number(item.item_type) === 1 && item.brand && item.brand !== 'N/A'"
+
+                          <!-- Chip interactivo de Marca para abrir el VDialog -->
+                          <VChip
+                            v-if="Number(item.item_type) === 1 && !isDuplicateInvoice"
+                            size="x-small"
+                            color="secondary"
+                            variant="outlined"
+                            class="font-weight-bold cursor-pointer hover-brand-chip px-1.5"
+                            style="height: 20px; font-size: 0.7rem;"
+                            title="Clic para editar la marca del amortiguador / producto"
+                            @click.stop="openBrandDialog(item)"
+                          >
+                            <VIcon icon="ri-price-tag-3-line" size="11" class="me-1 text-primary" />
+                            <span>Marca: <strong class="text-primary">{{ item.brand || 'SM' }}</strong></span>
+                            <VIcon icon="ri-pencil-line" size="10" class="ms-1 opacity-70" />
+                          </VChip>
+                          <span v-else-if="Number(item.item_type) === 1 && item.brand && item.brand !== 'N/A'"
                             class="text-caption text-medium-emphasis">
                             • {{ item.brand }}
                           </span>
@@ -2192,5 +2284,130 @@ onMounted(() => {
       </VCard>
     </VDialog>
 
+    <!-- Modal Dialog para Editar Marca del Amortiguador / Producto -->
+    <VDialog v-model="isBrandDialogOpen" scrollable max-width="520">
+      <VCard class="custom-dialog-card elevation-16">
+        <!-- Header Banner Primary -->
+        <div class="custom-dialog-header-primary">
+          <VBtn icon="ri-close-line" variant="text" size="small" class="custom-dialog-close-btn"
+            @click="isBrandDialogOpen = false" />
+          <div class="custom-dialog-avatar">
+            <VIcon icon="ri-price-tag-3-line" />
+          </div>
+          <h3 class="custom-dialog-title">
+            Editar Marca del Producto
+          </h3>
+          <p class="custom-dialog-subtitle">
+            Asigna o modifica la marca del amortiguador o repuesto
+          </p>
+        </div>
+
+        <VCardText class="pa-4">
+          <!-- Detalle del Producto / Amortiguador -->
+          <div class="pa-3 rounded-xl bg-slate-50 border border-slate-200 mb-4">
+            <div class="d-flex align-center justify-space-between mb-1">
+              <span class="text-caption font-weight-bold text-slate-500 text-uppercase tracking-wider">
+                Amortiguador / Repuesto
+              </span>
+              <VChip size="x-small" color="primary" variant="tonal" class="font-weight-bold">
+                SKU: {{ selectedBrandItem?.code || 'S/N' }}
+              </VChip>
+            </div>
+            <div class="text-body-2 font-weight-bold text-slate-900">
+              {{ selectedBrandItem?.description || 'Sin descripción' }}
+            </div>
+          </div>
+
+          <!-- Combobox de Marca -->
+          <div class="mb-3">
+            <label class="text-caption font-weight-bold text-slate-700 mb-1 d-block">
+              Marca del Amortiguador / Producto:
+            </label>
+            <VCombobox
+              v-model="brandEditValue"
+              :items="brands"
+              placeholder="Seleccionar o escribir marca (ej: TOKICO, KYB, MONROE)..."
+              variant="outlined"
+              density="comfortable"
+              prepend-inner-icon="ri-price-tag-3-line"
+              clearable
+              autofocus
+              :return-object="false"
+              @keydown.enter="saveBrandEdit"
+            />
+          </div>
+
+          <!-- Marcas Sugeridas Rápidas para Amortiguadores -->
+          <div class="mb-4">
+            <div class="text-caption font-weight-medium text-slate-500 mb-1.5">
+              Marcas frecuentes (clic rápido):
+            </div>
+            <div class="d-flex flex-wrap gap-1.5">
+              <VChip
+                v-for="b in popularShockBrands"
+                :key="b"
+                size="small"
+                variant="outlined"
+                :color="brandEditValue?.toUpperCase() === b ? 'primary' : 'default'"
+                class="cursor-pointer font-weight-medium"
+                :class="{ 'bg-primary-tonal font-weight-bold border-primary': brandEditValue?.toUpperCase() === b }"
+                @click="brandEditValue = b"
+              >
+                {{ b }}
+              </VChip>
+            </div>
+          </div>
+
+          <!-- Opción: Aplicar a amortiguadores similares en esta compra -->
+          <div class="pa-2.5 rounded-lg bg-grey-lighten-4 border border-dashed">
+            <VCheckbox
+              v-model="applyToSimilarBrand"
+              color="primary"
+              density="compact"
+              hide-details
+            >
+              <template #label>
+                <span class="text-caption font-weight-medium text-slate-800">
+                  Aplicar también esta marca a otros productos similares en esta compra
+                </span>
+              </template>
+            </VCheckbox>
+          </div>
+        </VCardText>
+
+        <VDivider />
+
+        <VCardActions class="pa-4 d-flex justify-end align-center gap-3 bg-white"
+          style="position: sticky; bottom: 0; z-index: 2;">
+          <VBtn variant="outlined" color="secondary" prepend-icon="ri-close-line"
+            class="rounded-lg px-5 font-weight-medium" height="40" @click="isBrandDialogOpen = false">
+            Cancelar
+          </VBtn>
+          <VBtn color="primary" variant="elevated" prepend-icon="ri-check-line"
+            class="rounded-lg px-6 font-weight-bold" height="40" @click="saveBrandEdit">
+            Guardar Marca
+          </VBtn>
+        </VCardActions>
+      </VCard>
+    </VDialog>
+
   </div>
 </template>
+
+<style scoped>
+.hover-product-title {
+  transition: color 0.15s ease;
+}
+.hover-product-title:hover {
+  color: rgb(var(--v-theme-primary)) !important;
+  text-decoration: underline;
+}
+.hover-brand-chip {
+  transition: all 0.15s ease;
+}
+.hover-brand-chip:hover {
+  background-color: rgba(var(--v-theme-primary), 0.08) !important;
+  border-color: rgb(var(--v-theme-primary)) !important;
+  transform: translateY(-1px);
+}
+</style>
