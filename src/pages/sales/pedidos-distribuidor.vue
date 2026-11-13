@@ -1140,7 +1140,7 @@ onActivated(async () => {
             <VTextField v-model="searchReplacementQuery"
               placeholder="Buscar por repuesto, código SKU o distribuidor sugerido..."
               prepend-inner-icon="ri-search-line" variant="solo" density="comfortable" clearable hide-details
-              bg-color="white" class="elevation-3 rounded-lg text-body-1 text-grey-darken-4"
+              bg-color="white" class="elevation-1 rounded-lg text-body-2 text-grey-darken-4"
               :loading="loadingReplacements" />
           </div>
         </div>
@@ -1201,12 +1201,18 @@ onActivated(async () => {
                   </td>
                   <td class="py-3 text-center">
                     <div class="d-flex justify-center align-center gap-2">
-                      <VBtn :icon="isItemAlreadyInOrder(item) ? 'ri-add-line' : 'ri-check-line'"
-                        :color="isItemAlreadyInOrder(item) ? 'primary' : 'success'" variant="elevated" size="small"
-                        :title="isItemAlreadyInOrder(item) ? 'Sumar 1 unidad más al pedido' : 'Agregar producto al listado del pedido'"
+                      <VBtn icon="ri-add-line"
+                        :color="isItemAlreadyInOrder(item) ? 'success' : 'primary'"
+                        variant="tonal"
+                        size="small"
+                        :title="isItemAlreadyInOrder(item) ? 'Sumar 1 unidad más al pedido' : 'Agregar producto al pedido'"
                         @click="addReplacementsToOrder(item)" />
-                      <VBtn icon="ri-checkbox-circle-line" variant="tonal" color="secondary" size="small"
-                        title="Marcar como adquirido en bodega" @click="markAsAcquired(item.id)" />
+                      <VBtn icon="ri-check-line"
+                        variant="tonal"
+                        color="secondary"
+                        size="small"
+                        title="Marcar como adquirido en bodega"
+                        @click="markAsAcquired(item.id)" />
                     </div>
                   </td>
                 </tr>
