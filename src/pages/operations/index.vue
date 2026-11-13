@@ -1,5 +1,5 @@
 <script setup>
-import { ref, onMounted, onActivated, computed, watch } from 'vue'
+import { ref, onMounted, onUnmounted, onActivated, computed, watch, nextTick } from 'vue'
 import { useLoaderStore } from '@/stores/loader'
 import { useGlobalToast } from '@/composables/useGlobalToast'
 import { $api } from '@/utils/api'
@@ -49,18 +49,22 @@ const movementFilter = ref('all') // 'all' | 'income' | 'expense' | 'transfer'
 const movementSearch = ref('')
 const selectedMonth = ref('all') // 'all' o 'YYYY-MM' (ej. '2026-11')
 const currentPage = ref(1)
-const itemsPerPage = 20
+const itemsPerPage = 25
 const movementsLoading = ref(false)
+const loadingMore = ref(false)
+const hasMore = ref(false)
+const infiniteScrollSentinel = ref(null)
+let scrollObserver = null
+let searchDebounceTimeout = null
 const backendAvailableMonths = ref([])
 const serverPagination = ref({
   total: 0,
-  per_page: 20,
+  per_page: 25,
   current_page: 1,
   last_page: 1,
-  is_paginated: false,
+  has_more: false,
+  is_paginated: true,
 })
-
-let searchDebounceTimeout = null
 
 // Órdenes de trabajo
 const workOrdersStats = ref({
@@ -404,44 +408,61 @@ const allProcessedMovements = computed(() => {
 
 // Total de registros calculado desde el backend
 const totalFilteredCount = computed(() => {
-  if (selectedMonth.value === 'all') {
-    return rawMovementsList.value.length
-  }
   if (serverPagination.value.total !== undefined && serverPagination.value.total !== null) {
     return serverPagination.value.total
   }
-  return allProcessedMovements.value.length
+  return rawMovementsList.value.length
 })
 
-// Paginación activa únicamente cuando se selecciona un mes
-const isPaginationActive = computed(() => {
-  if (selectedMonth.value === 'all') return false
-  return totalFilteredCount.value > 0
-})
-
-const totalPages = computed(() => {
-  if (serverPagination.value.last_page) {
-    return serverPagination.value.last_page
+// Configuración de IntersectionObserver para Scroll Infinito
+const setupIntersectionObserver = () => {
+  if (scrollObserver) {
+    scrollObserver.disconnect()
+    scrollObserver = null
   }
-  return Math.ceil(totalFilteredCount.value / itemsPerPage) || 1
-})
+  if (typeof IntersectionObserver === 'undefined') return
 
-const paginatedMovements = computed(() => {
-  // Cuando la paginación es por servidor, allProcessedMovements ya contiene los registros de la página solicitada
-  return allProcessedMovements.value
-})
+  scrollObserver = new IntersectionObserver(
+    entries => {
+      const entry = entries[0]
+      if (entry && entry.isIntersecting) {
+        if (!loading.value && !movementsLoading.value && !loadingMore.value && hasMore.value) {
+          loadMoreMovements()
+        }
+      }
+    },
+    {
+      root: null,
+      rootMargin: '300px',
+      threshold: 0.05,
+    }
+  )
 
-const paginationInfo = computed(() => {
-  const total = totalFilteredCount.value
-  if (total === 0) return { start: 0, end: 0 }
-  const start = Math.min((currentPage.value - 1) * itemsPerPage + 1, total)
-  const end = Math.min(currentPage.value * itemsPerPage, total)
-  return { start: Math.max(1, start), end }
-})
+  if (infiniteScrollSentinel.value) {
+    scrollObserver.observe(infiniteScrollSentinel.value)
+  }
+}
 
-// Cargar movimientos desde el backend con filtros y paginación
-const fetchMovements = async () => {
-  movementsLoading.value = true
+// Fallback por evento de scroll en ventana
+const handleWindowScroll = () => {
+  if (loading.value || movementsLoading.value || loadingMore.value || !hasMore.value) return
+  const scrollY = window.scrollY || document.documentElement.scrollTop
+  const windowHeight = window.innerHeight
+  const docHeight = document.documentElement.scrollHeight
+  if (scrollY + windowHeight >= docHeight - 350) {
+    loadMoreMovements()
+  }
+}
+
+// Cargar movimientos desde el backend con soporte de Scroll Infinito
+const fetchMovements = async (reset = true) => {
+  if (reset) {
+    currentPage.value = 1
+    movementsLoading.value = true
+  } else {
+    loadingMore.value = true
+  }
+
   try {
     const params = {
       month: selectedMonth.value,
@@ -460,53 +481,57 @@ const fetchMovements = async () => {
 
     if (response.pagination) {
       serverPagination.value = response.pagination
+      hasMore.value = Boolean(response.pagination.has_more)
     }
 
-    rawMovementsList.value = response.movements || []
-    recentMovements.value = groupMovementsByDate(response.movements)
+    const newItems = response.movements || []
+
+    if (reset) {
+      rawMovementsList.value = newItems
+    } else {
+      const existingIds = new Set(rawMovementsList.value.map(m => m.id))
+      const uniqueNew = newItems.filter(m => !existingIds.has(m.id))
+      rawMovementsList.value = [...rawMovementsList.value, ...uniqueNew]
+    }
+
+    recentMovements.value = groupMovementsByDate(rawMovementsList.value)
+    nextTick(() => setupIntersectionObserver())
   } catch (error) {
     console.error('Error al actualizar movimientos desde el backend:', error)
   } finally {
     movementsLoading.value = false
+    loadingMore.value = false
   }
+}
+
+const loadMoreMovements = async () => {
+  if (loading.value || movementsLoading.value || loadingMore.value || !hasMore.value) {
+    return
+  }
+  currentPage.value++
+  await fetchMovements(false)
 }
 
 const resetFilters = () => {
   movementFilter.value = 'all'
   movementSearch.value = ''
   selectedMonth.value = 'all'
-  currentPage.value = 1
-  fetchMovements()
+  fetchMovements(true)
 }
 
 watch(selectedMonth, () => {
-  currentPage.value = 1
-  fetchMovements()
+  fetchMovements(true)
 })
 
 watch(movementFilter, () => {
-  currentPage.value = 1
-  fetchMovements()
+  fetchMovements(true)
 })
 
 watch(movementSearch, () => {
-  currentPage.value = 1
   if (searchDebounceTimeout) clearTimeout(searchDebounceTimeout)
   searchDebounceTimeout = setTimeout(() => {
-    fetchMovements()
+    fetchMovements(true)
   }, 350)
-})
-
-watch(currentPage, (newPage, oldPage) => {
-  if (newPage !== oldPage && isPaginationActive.value) {
-    fetchMovements()
-    if (typeof window !== 'undefined') {
-      const el = document.querySelector('.movements-scroll-container')
-      if (el) {
-        el.scrollIntoView({ behavior: 'smooth', block: 'start' })
-      }
-    }
-  }
 })
 
 // Movimientos agrupados para la vista en template
@@ -566,6 +591,11 @@ const dashboardOptions = async () => {
 
     rawMovementsList.value = response.movements || []
     recentMovements.value = groupMovementsByDate(response.movements)
+    if (response.pagination) {
+      serverPagination.value = response.pagination
+      hasMore.value = Boolean(response.pagination.has_more)
+    }
+    nextTick(() => setupIntersectionObserver())
 
     try {
       const transfersResponse = await $api('transfers')
@@ -700,10 +730,23 @@ const generatePDF = async () => {
 
 onMounted(() => {
   dashboardOptions()
+  if (typeof window !== 'undefined') {
+    window.addEventListener('scroll', handleWindowScroll, { passive: true })
+  }
 })
 
 onActivated(() => {
   dashboardOptions()
+})
+
+onUnmounted(() => {
+  if (scrollObserver) {
+    scrollObserver.disconnect()
+    scrollObserver = null
+  }
+  if (typeof window !== 'undefined') {
+    window.removeEventListener('scroll', handleWindowScroll)
+  }
 })
 </script>
 
@@ -870,7 +913,12 @@ onActivated(() => {
                       </h2>
                       <span class="status-pill-clean status-primary shrink-0">
                         <span class="status-dot" />
-                        <span>{{ selectedMonth === 'all' ? (rawMovementsList.length < 20 ? `${rawMovementsList.length} registros` : 'Primeros 20 registros') : `${totalFilteredCount} registros` }}</span>
+                        <span v-if="rawMovementsList.length < totalFilteredCount">
+                          Mostrando {{ rawMovementsList.length }} de {{ totalFilteredCount }} operaciones
+                        </span>
+                        <span v-else>
+                          {{ totalFilteredCount }} operaciones registradas
+                        </span>
                       </span>
                     </div>
                     <p class="text-caption text-medium-emphasis mb-0 d-none d-sm-block text-truncate">
@@ -1146,17 +1194,18 @@ onActivated(() => {
                 </template>
               </div>
 
-              <!-- Paginación: Únicamente cuando se filtra por mes y hay más de 20 registros -->
-              <div v-if="isPaginationActive"
-                class="px-4 py-3 border-t d-flex flex-column flex-sm-row align-center justify-space-between gap-3 bg-slate-50">
-                <span class="text-caption text-medium-emphasis">
-                  Mostrando {{ paginationInfo.start }} a {{ paginationInfo.end }} de {{ totalFilteredCount }}
-                  movimientos de {{
-                    selectedMonthLabel }}
-                </span>
-                <VPagination v-model="currentPage" :length="totalPages" :disabled="loading || movementsLoading" rounded="circle"
-                  :total-visible="$vuetify.display.xs ? 4 : 7" :size="$vuetify.display.xs ? 'small' : 'default'"
-                  density="comfortable" color="primary" class="my-0" />
+              <!-- Centinela y Loader de Scroll Infinito -->
+              <div ref="infiniteScrollSentinel" class="py-4 text-center">
+                <!-- Spinner cargando más en scroll infinito -->
+                <div v-if="loadingMore" class="d-flex align-center justify-center gap-2 py-3 text-caption text-primary font-weight-semibold">
+                  <VProgressCircular indeterminate size="22" width="2" color="primary" />
+                  <span>Cargando más operaciones...</span>
+                </div>
+
+                <!-- Fin del listado alcanzado -->
+                <div v-else-if="!hasMore && rawMovementsList.length > 0" class="text-caption text-medium-emphasis py-2">
+                  Has llegado al final de las operaciones registradas ({{ totalFilteredCount }} operaciones)
+                </div>
               </div>
             </div>
           </VCard>
