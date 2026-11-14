@@ -1,5 +1,5 @@
 <script setup>
-import { ref, onMounted, computed } from 'vue'
+import { ref, onMounted, onUnmounted, computed, watch, nextTick } from 'vue'
 import { useLoaderStore } from '@/stores/loader'
 import { useGlobalToast } from '@/composables/useGlobalToast'
 import { $api } from '@/utils/api'
@@ -29,16 +29,25 @@ const canAccessAportes = computed(() => {
   return user && roleId === 1
 })
 
-// Estado del componente
-const aportes = ref([])
-
+// Estado del componente con Scroll Infinito
+const aportes = ref([]) // Grupos por día para el template
+const rawAportesList = ref([]) // Lista plana acumulada para Scroll Infinito
 const resumen = ref({
   total_hoy: 0,
   total_mes: 0,
   total_general: 0,
 })
 
+const currentPage = ref(1)
+const itemsPerPage = 25
 const loading = ref(false)
+const loadingMore = ref(false)
+const hasMore = ref(false)
+const totalAportes = ref(0)
+const infiniteScrollSentinel = ref(null)
+let scrollObserver = null
+let searchDebounceTimeout = null
+
 const showCreateDialog = ref(false)
 const showEditDialog = ref(false)
 const editingAporte = ref(null)
@@ -54,6 +63,7 @@ const selectedFilter = ref('all') // 'all', 'today', 'month'
 const resetFilters = () => {
   searchQuery.value = ''
   selectedFilter.value = 'all'
+  loadAportes(true)
 }
 
 // Limpiar nombre de cuenta
@@ -67,27 +77,179 @@ const cleanAccountName = name => {
     .trim()
 }
 
-// Cargar Aportes
-const loadAportes = async () => {
-  loading.value = true
+// Agrupar aportes acumulados por fecha
+const groupAportesByDate = items => {
+  if (!items || !items.length) return []
+  const groups = {}
 
-  try {
-    const response = await $api('aportes')
+  items.forEach(aporte => {
+    const rawDate = aporte.fecha_aporte || 'Sin fecha'
+    const dateKey = rawDate !== 'Sin fecha' ? rawDate.split('T')[0] : 'Sin fecha'
 
-    if (response.data) {
-      aportes.value = response.data
-      resumen.value = response.resumen || {
-        total_hoy: 0,
-        total_mes: 0,
-        total_general: 0,
+    if (!groups[dateKey]) {
+      let displayDate = 'Sin fecha'
+      if (rawDate !== 'Sin fecha') {
+        const todayStr = new Date().toISOString().split('T')[0]
+        const yesterdayObj = new Date()
+        yesterdayObj.setDate(yesterdayObj.getDate() - 1)
+        const yesterdayStr = yesterdayObj.toISOString().split('T')[0]
+
+        if (dateKey === todayStr) {
+          displayDate = 'Hoy'
+        } else if (dateKey === yesterdayStr) {
+          displayDate = 'Ayer'
+        } else {
+          try {
+            displayDate = new Intl.DateTimeFormat('es-EC', {
+              weekday: 'long',
+              day: 'numeric',
+              month: 'long',
+              timeZone: 'UTC',
+            }).format(new Date(rawDate))
+            displayDate = displayDate.charAt(0).toUpperCase() + displayDate.slice(1)
+          } catch (e) {
+            displayDate = dateKey
+          }
+        }
+      }
+
+      groups[dateKey] = {
+        fecha: dateKey,
+        label: displayDate,
+        total_dia: 0,
+        aportes: [],
       }
     }
+
+    groups[dateKey].total_dia += parseFloat(aporte.monto || 0)
+    groups[dateKey].aportes.push(aporte)
+  })
+
+  return Object.values(groups).sort((a, b) => {
+    if (a.fecha === 'Sin fecha') return 1
+    if (b.fecha === 'Sin fecha') return -1
+    return b.fecha.localeCompare(a.fecha)
+  })
+}
+
+// Cargar Aportes con soporte para Scroll Infinito
+const loadAportes = async (reset = true) => {
+  if (reset) {
+    currentPage.value = 1
+    loading.value = true
+  } else {
+    loadingMore.value = true
+  }
+
+  try {
+    const params = {
+      page: currentPage.value,
+      per_page: itemsPerPage,
+    }
+
+    if (searchQuery.value && searchQuery.value.trim() !== '') {
+      params.search = searchQuery.value.trim()
+    }
+    if (selectedFilter.value && selectedFilter.value !== 'all') {
+      params.filter = selectedFilter.value
+    }
+
+    const response = await $api('aportes', { params })
+
+    if (response.resumen) {
+      resumen.value = response.resumen
+    }
+
+    if (response.pagination) {
+      totalAportes.value = response.pagination.total ?? 0
+      hasMore.value = Boolean(response.pagination.has_more)
+    }
+
+    let newItems = []
+    if (response.items && Array.isArray(response.items)) {
+      newItems = response.items
+    } else if (response.data && Array.isArray(response.data)) {
+      response.data.forEach(dia => {
+        if (dia.aportes && Array.isArray(dia.aportes)) {
+          newItems.push(...dia.aportes)
+        }
+      })
+    }
+
+    if (reset) {
+      rawAportesList.value = newItems
+    } else {
+      const existingIds = new Set(rawAportesList.value.map(a => a.id))
+      const uniqueNew = newItems.filter(a => !existingIds.has(a.id))
+      rawAportesList.value = [...rawAportesList.value, ...uniqueNew]
+    }
+
+    aportes.value = groupAportesByDate(rawAportesList.value)
+    nextTick(() => setupIntersectionObserver())
   } catch (error) {
     console.error('Error al cargar aportes:', error)
   } finally {
     loading.value = false
+    loadingMore.value = false
   }
 }
+
+const loadMoreAportes = async () => {
+  if (loading.value || loadingMore.value || !hasMore.value) return
+  currentPage.value++
+  await loadAportes(false)
+}
+
+// Configuración de IntersectionObserver para Scroll Infinito
+const setupIntersectionObserver = () => {
+  if (scrollObserver) {
+    scrollObserver.disconnect()
+    scrollObserver = null
+  }
+  if (typeof IntersectionObserver === 'undefined') return
+
+  scrollObserver = new IntersectionObserver(
+    entries => {
+      const entry = entries[0]
+      if (entry && entry.isIntersecting) {
+        if (!loading.value && !loadingMore.value && hasMore.value) {
+          loadMoreAportes()
+        }
+      }
+    },
+    {
+      root: null,
+      rootMargin: '300px',
+      threshold: 0.05,
+    }
+  )
+
+  if (infiniteScrollSentinel.value) {
+    scrollObserver.observe(infiniteScrollSentinel.value)
+  }
+}
+
+// Fallback por evento de scroll en ventana
+const handleWindowScroll = () => {
+  if (loading.value || loadingMore.value || !hasMore.value) return
+  const scrollY = window.scrollY || document.documentElement.scrollTop
+  const windowHeight = window.innerHeight
+  const docHeight = document.documentElement.scrollHeight
+  if (scrollY + windowHeight >= docHeight - 350) {
+    loadMoreAportes()
+  }
+}
+
+watch(selectedFilter, () => {
+  loadAportes(true)
+})
+
+watch(searchQuery, () => {
+  if (searchDebounceTimeout) clearTimeout(searchDebounceTimeout)
+  searchDebounceTimeout = setTimeout(() => {
+    loadAportes(true)
+  }, 350)
+})
 
 const isNoteDialogVisible = ref(false)
 const selectedAporteForNote = ref(null)
@@ -179,7 +341,11 @@ const confirmDeleteAporte = async () => {
     })
 
     showNotification('Aporte eliminado exitosamente', 'success')
-    loadAportes()
+    // Eliminación reactiva sin reiniciar el scroll
+    const deletedId = aporteToDelete.value.id
+    rawAportesList.value = rawAportesList.value.filter(a => a.id !== deletedId)
+    aportes.value = groupAportesByDate(rawAportesList.value)
+    if (totalAportes.value > 0) totalAportes.value--
     closeDeleteDialog()
   } catch (error) {
     console.error('Error al eliminar aporte:', error)
@@ -193,58 +359,33 @@ const deleteAporte = aporte => {
   openDeleteDialog(aporte)
 }
 
-// Aportes filtrados
+// Aportes listos para renderizar
 const filteredAportes = computed(() => {
-  if (!aportes.value || !aportes.value.length) return []
-
-  const query = searchQuery.value.trim().toLowerCase()
-  const todayObj = new Date()
-  const today = todayObj.getFullYear() + '-' + String(todayObj.getMonth() + 1).padStart(2, '0') + '-' + String(todayObj.getDate()).padStart(2, '0')
-  const currentMonth = today.substring(0, 7)
-
   return aportes.value
-    .map(dia => {
-      const items = dia.aportes || []
-
-      const matchingItems = items.filter(a => {
-        const aDate = (a.fecha || dia.fecha || '').split('T')[0]
-
-        if (selectedFilter.value === 'today' && aDate !== today) return false
-        if (selectedFilter.value === 'month' && aDate.substring(0, 7) !== currentMonth) return false
-
-        if (!query) return true
-
-        const partner = (a.partner_nombre || '').toLowerCase()
-        const desc = (a.descripcion || '').toLowerCase()
-        const cuenta = (cleanAccountName(a.cuenta) || '').toLowerCase()
-        const user = (a.user_nombre || '').toLowerCase()
-        const montoStr = String(a.monto || '')
-
-        return (
-          partner.includes(query) ||
-          desc.includes(query) ||
-          cuenta.includes(query) ||
-          user.includes(query) ||
-          montoStr.includes(query)
-        )
-      })
-
-      return {
-        ...dia,
-        aportes: matchingItems,
-      }
-    })
-    .filter(dia => dia.aportes.length > 0)
 })
 
 const totalAportesCount = computed(() => {
-  return filteredAportes.value.reduce((acc, d) => acc + (d.aportes ? d.aportes.length : 0), 0)
+  if (totalAportes.value) return totalAportes.value
+  return rawAportesList.value.length
 })
 
-// Montar componente
+// Ciclo de vida
 onMounted(() => {
   if (canAccessAportes.value) {
-    loadAportes()
+    loadAportes(true)
+  }
+  if (typeof window !== 'undefined') {
+    window.addEventListener('scroll', handleWindowScroll, { passive: true })
+  }
+})
+
+onUnmounted(() => {
+  if (scrollObserver) {
+    scrollObserver.disconnect()
+    scrollObserver = null
+  }
+  if (typeof window !== 'undefined') {
+    window.removeEventListener('scroll', handleWindowScroll)
   }
 })
 </script>
@@ -301,7 +442,7 @@ onMounted(() => {
           Nuevo Aporte
         </VBtn>
         <VBtn title="Actualizar datos" variant="outlined" color="secondary" prepend-icon="ri-refresh-line"
-          size="default" class="font-weight-medium" :loading="loading" @click="loadAportes">
+          size="default" class="font-weight-medium" :loading="loading" @click="loadAportes(true)">
           Actualizar
         </VBtn>
       </div>
@@ -771,9 +912,36 @@ onMounted(() => {
                 </td>
               </tr>
             </template>
+
+            <!-- Fila de carga en Scroll Infinito Desktop -->
+            <tr v-if="loadingMore">
+              <td colspan="6" class="text-center py-3 bg-slate-50">
+                <div class="d-flex align-center justify-center gap-2 text-caption text-primary font-weight-semibold">
+                  <VProgressCircular indeterminate size="20" width="2" color="primary" />
+                  <span>Cargando más aportes...</span>
+                </div>
+              </td>
+            </tr>
           </tbody>
         </VTable>
+
+        <!-- Fin del listado alcanzado Desktop -->
+        <div v-if="!hasMore && rawAportesList.length > 0" class="py-3 px-4 border-t text-center text-caption text-medium-emphasis bg-slate-50">
+          Has llegado al final de los aportes registrados ({{ totalAportesCount }} aportes)
+        </div>
       </VCard>
+
+      <!-- Centinela de Scroll Infinito Desktop y Móvil -->
+      <div ref="infiniteScrollSentinel" class="py-4 text-center">
+        <!-- Spinner móvil -->
+        <div v-if="loadingMore" class="d-md-none d-flex align-center justify-center gap-2 py-3 text-caption text-primary font-weight-semibold">
+          <VProgressCircular indeterminate size="20" width="2" color="primary" />
+          <span>Cargando más aportes...</span>
+        </div>
+        <div v-else-if="!hasMore && rawAportesList.length > 0" class="d-md-none text-caption text-medium-emphasis py-2">
+          Has llegado al final de los aportes ({{ totalAportesCount }} aportes)
+        </div>
+      </div>
     </div>
   </div>
 

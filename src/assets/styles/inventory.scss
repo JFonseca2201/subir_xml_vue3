@@ -12551,3 +12551,294 @@ td .d-flex .v-btn.v-btn--variant-tonal.v-btn--icon:not(.btn-attach-comprobante),
     color: #ffffff !important;
   }
 }
+
+// =============================================================================
+// MODAL DE CONFIRMACIÓN DE FACTURA ELECTRÓNICA (SaleInvoiceConfirmDialog)
+// =============================================================================
+.invoice-confirm-card {
+  box-shadow: 0 20px 45px rgba(15, 23, 42, 0.22) !important;
+  border-radius: 20px !important;
+  overflow: hidden !important;
+  background: var(--bg-dialog, #ffffff) !important;
+  color: var(--text-primary, #0f172a) !important;
+}
+
+// Header Banner Ejecutivo
+.invoice-dialog-header {
+  position: relative !important;
+  background: var(--bg-header, var(--bg-dialog-header, linear-gradient(135deg, #666CFF 0%, #5B61EB 50%, #4F54E5 100%))) !important;
+  color: #ffffff !important;
+  padding: 22px 28px 20px 28px !important;
+  border-top-left-radius: 20px !important;
+  border-top-right-radius: 20px !important;
+  border-bottom: 1px solid var(--border-dialog-header, rgba(255, 255, 255, 0.16)) !important;
+  box-shadow: 0 6px 24px rgba(0, 0, 0, 0.2) !important;
+
+  .header-close-btn {
+    position: absolute !important;
+    top: 14px !important;
+    right: 14px !important;
+    color: #ffffff !important;
+    -webkit-text-fill-color: #ffffff !important;
+    background: rgba(255, 255, 255, 0.16) !important;
+    border: 1px solid rgba(255, 255, 255, 0.28) !important;
+    border-radius: 8px !important;
+    width: 32px !important;
+    height: 32px !important;
+    min-width: 32px !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1) !important;
+
+    &:hover {
+      background: rgba(255, 255, 255, 0.3) !important;
+      border-color: rgba(255, 255, 255, 0.55) !important;
+      transform: scale(1.05);
+    }
+
+    .v-icon,
+    i {
+      color: #ffffff !important;
+      fill: #ffffff !important;
+      font-size: 18px !important;
+    }
+  }
+
+  .header-avatar {
+    width: 44px !important;
+    height: 44px !important;
+    min-width: 44px !important;
+    min-height: 44px !important;
+    border-radius: 12px !important;
+    background: var(--dialog-avatar-bg, rgba(255, 255, 255, 0.16)) !important;
+    border: 1px solid var(--dialog-avatar-border, rgba(255, 255, 255, 0.28)) !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    box-shadow: none !important;
+    transition: transform 0.2s ease !important;
+
+    &:hover {
+      transform: scale(1.04);
+    }
+
+    .v-icon {
+      color: #ffffff !important;
+      fill: #ffffff !important;
+      font-size: 22px !important;
+    }
+  }
+
+  .eyebrow-tag {
+    font-size: 0.70rem;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.8px;
+    color: rgba(255, 255, 255, 0.90) !important;
+    -webkit-text-fill-color: rgba(255, 255, 255, 0.90) !important;
+  }
+
+  .header-title {
+    font-size: 1.25rem !important;
+    font-weight: 800 !important;
+    color: #ffffff !important;
+    -webkit-text-fill-color: #ffffff !important;
+    line-height: 1.25;
+    margin: 0;
+    letter-spacing: -0.2px;
+  }
+
+  .header-subtitle {
+    font-size: 0.84rem;
+    color: rgba(255, 255, 255, 0.92) !important;
+    -webkit-text-fill-color: rgba(255, 255, 255, 0.92) !important;
+    line-height: 1.35;
+  }
+
+  .sri-env-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 2px 9px;
+    border-radius: 9999px;
+    font-size: 0.68rem;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.4px;
+
+    &.env-prod {
+      background: rgba(16, 185, 129, 0.25);
+      border: 1px solid rgba(52, 211, 153, 0.5);
+      color: #ffffff !important;
+      -webkit-text-fill-color: #ffffff !important;
+    }
+
+    &.env-test {
+      background: rgba(245, 158, 11, 0.25);
+      border: 1px solid rgba(251, 191, 36, 0.5);
+      color: #ffffff !important;
+      -webkit-text-fill-color: #ffffff !important;
+    }
+  }
+}
+
+// Cuerpo y Tarjetas Adaptables al Tema
+.invoice-confirm-body {
+  background: var(--bg-dialog, transparent);
+}
+
+.info-surface-card {
+  background: var(--bg-surface, #ffffff);
+  border-color: var(--border-glass, #e2e8f0) !important;
+  color: var(--text-primary, #0f172a);
+}
+
+.card-heading {
+  color: var(--text-primary, #0f172a);
+}
+
+.card-label {
+  color: var(--text-muted, #64748b);
+}
+
+.card-value {
+  color: var(--text-primary, #0f172a);
+}
+
+.card-value-secondary {
+  color: var(--text-secondary, #334155);
+}
+
+.card-subtext {
+  color: var(--text-muted, #64748b);
+}
+
+.ot-tag-badge {
+  background: rgba(var(--v-theme-primary), 0.10);
+  border-color: rgba(var(--v-theme-primary), 0.25) !important;
+  color: rgb(var(--v-theme-primary));
+}
+
+.card-plate-chip {
+  background: var(--table-header-bg, rgba(var(--v-theme-on-surface), 0.05));
+  border-color: var(--border-glass, rgba(var(--v-theme-on-surface), 0.12)) !important;
+  color: var(--text-primary, #0f172a);
+}
+
+.summary-box-sri {
+  background: rgba(var(--v-theme-primary), 0.08);
+  border-color: rgba(var(--v-theme-primary), 0.24) !important;
+}
+
+.summary-box-advance {
+  background: rgba(var(--v-theme-success), 0.08);
+  border-color: rgba(var(--v-theme-success), 0.24) !important;
+}
+
+.summary-box-balance {
+  background: rgba(var(--v-theme-on-surface), 0.04);
+  border-color: var(--border-glass, rgba(var(--v-theme-on-surface), 0.15)) !important;
+}
+
+.invoice-confirm-footer {
+  background: var(--bg-surface, #ffffff);
+  border-color: var(--border-glass, #e2e8f0) !important;
+}
+
+// Control segmentado para método de pago (Efectivo / Transferencia)
+.payment-segmented-control {
+  display: inline-flex;
+  align-items: center;
+  background: var(--table-header-bg, rgba(var(--v-theme-on-surface), 0.05));
+  border: 1px solid var(--border-glass, rgba(var(--v-theme-on-surface), 0.12)) !important;
+  padding: 4px;
+  border-radius: 12px;
+  gap: 4px;
+}
+
+.payment-segment-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 8px 18px;
+  border-radius: 9px;
+  border: none;
+  background: transparent;
+  color: var(--text-muted, #64748b);
+  font-weight: 700;
+  font-size: 0.86rem;
+  cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  user-select: none;
+
+  .v-icon {
+    color: inherit;
+    transition: transform 0.2s ease;
+  }
+
+  &:hover:not(.active) {
+    background: rgba(var(--v-theme-on-surface), 0.06);
+    color: var(--text-primary, #0f172a);
+  }
+
+  &.active {
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.10);
+
+    .v-icon {
+      transform: scale(1.08);
+    }
+
+    &.active-cash {
+      background: #10b981 !important;
+      color: #ffffff !important;
+    }
+
+    &.active-bank {
+      background: rgb(var(--v-theme-primary)) !important;
+      color: #ffffff !important;
+    }
+  }
+}
+
+.payment-amount-wrapper {
+  width: 110px;
+
+  .payment-amount-field {
+    .v-field {
+      border-radius: 8px !important;
+      background: var(--bg-surface, #ffffff) !important;
+      height: 38px !important;
+      min-height: 38px !important;
+      padding-inline: 10px !important;
+      transition: all 0.2s ease;
+    }
+
+    .v-field__input {
+      min-height: 38px !important;
+      padding-top: 0 !important;
+      padding-bottom: 0 !important;
+    }
+
+    input {
+      text-align: right !important;
+      font-size: 0.95rem !important;
+      font-weight: 800 !important;
+      font-family: 'Consolas', 'Monaco', monospace !important;
+      padding: 0 !important;
+    }
+
+    .v-field__prefix {
+      font-weight: 700 !important;
+      font-size: 0.9rem !important;
+      opacity: 0.85;
+      padding-inline-end: 2px !important;
+      color: var(--text-primary, #0f172a);
+    }
+  }
+}
+
+.bank-select-card {
+  background: rgba(var(--v-theme-primary), 0.04);
+  border-color: rgba(var(--v-theme-primary), 0.18) !important;
+}
