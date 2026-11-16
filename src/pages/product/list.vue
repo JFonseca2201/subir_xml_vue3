@@ -14,7 +14,14 @@ const router = useRouter()
 const loader = useLoaderStore()
 import { usePermissions } from '@/composables/usePermissions'
 
-const { can } = usePermissions()
+const { can, isAdminOrSuperAdmin } = usePermissions()
+
+// Opciones para el filtro de inventario
+const inventoryStatusOptions = [
+  { title: 'Todos', value: 'all' },
+  { title: 'Inventariados', value: 'inventoried' },
+  { title: 'Pendientes', value: 'pending' },
+]
 
 // Estado
 const loading = ref(true)
@@ -30,7 +37,7 @@ const importDialog = ref(false)
 // Estados para diálogos de edición rápida
 const quickEditDialog = ref(false)
 const selectedQuickProduct = ref(null)
-const quickEditTab = ref('all')
+const quickEditTab = ref('stock')
 
 const stockDialog = ref(false)
 const selectedStockProduct = ref(null)
@@ -46,6 +53,7 @@ const searchForm = ref({
   sucursale_id: null,
   disponibilidad: null,
   is_gift: null,
+  inventory_status: 'all',
 })
 
 // Paginación
@@ -112,7 +120,7 @@ const searchProducts = async () => {
 
     // Eliminar parámetros nulos o vacíos
     Object.keys(params).forEach(key => {
-      if (params[key] === null || params[key] === '') {
+      if (params[key] === null || params[key] === '' || (key === 'inventory_status' && params[key] === 'all')) {
         delete params[key]
       }
     })
@@ -157,6 +165,7 @@ const clearSearch = () => {
     sucursale_id: null,
     disponibilidad: null,
     is_gift: null,
+    inventory_status: 'all',
   }
   currentPage.value = 1
   searchProducts()
@@ -176,7 +185,8 @@ const hasActiveFilters = computed(() => {
     (searchForm.value.search && searchForm.value.search.trim()) ||
     searchForm.value.categorie_id ||
     searchForm.value.warehouse_id ||
-    searchForm.value.unit_id
+    searchForm.value.unit_id ||
+    (searchForm.value.inventory_status && searchForm.value.inventory_status !== 'all')
   )
 })
 
@@ -329,13 +339,18 @@ const loadInitialData = async () => {
 }
 
 // Métodos para Diálogos de Edición Rápida (Móvil y Escritorio)
-const openQuickEdit = (product, tab = 'all') => {
+const openQuickEdit = (product, tab = 'stock') => {
   selectedQuickProduct.value = product
-  quickEditTab.value = tab
+  if (product?.item_type == 2) {
+    // Si es un servicio, no se puede modificar stock ni categoría
+    tab = 'price'
+  }
+  quickEditTab.value = (tab === 'all' || !tab) ? 'stock' : tab
   quickEditDialog.value = true
 }
 
 const openStockDialog = product => {
+  if (product?.item_type == 2) return
   selectedStockProduct.value = product
   stockDialog.value = true
 }
@@ -373,6 +388,9 @@ const buildQueryParams = () => {
   }
   if (searchForm.value.unit_id) {
     query_params += "&unit_id=" + searchForm.value.unit_id
+  }
+  if (searchForm.value.inventory_status && searchForm.value.inventory_status !== 'all') {
+    query_params += "&inventory_status=" + searchForm.value.inventory_status
   }
 
   return query_params
@@ -418,7 +436,13 @@ watch(deleteDialog, newValue => {
 
 // Watcher para resetear página cuando los filtros cambian
 let filterTimeout = null
-watch([() => searchForm.value.search, () => searchForm.value.categorie_id, () => searchForm.value.warehouse_id, () => searchForm.value.unit_id], () => {
+watch([
+  () => searchForm.value.search,
+  () => searchForm.value.categorie_id,
+  () => searchForm.value.warehouse_id,
+  () => searchForm.value.unit_id,
+  () => searchForm.value.inventory_status,
+], () => {
   console.log('🔍 Filtros cambiados, reseteando página a 1')
   currentPage.value = 1
 
@@ -447,7 +471,7 @@ watch([() => searchForm.value.search, () => searchForm.value.categorie_id, () =>
       </div>
 
       <div class="d-flex align-center justify-end gap-2 flex-wrap ms-auto crud-header-actions">
-        <VBtn v-if="can('import_xml') || can('register_product')" color="secondary" variant="tonal"
+        <VBtn v-if="can('import_xml') || can('register_product')" color="info" variant="flat"
           prepend-icon="ri-upload-2-line" class="font-weight-medium" @click="importProducts">
           Importar Excel
         </VBtn>
@@ -455,7 +479,7 @@ watch([() => searchForm.value.search, () => searchForm.value.categorie_id, () =>
         <!-- Menú Desplegable de Exportación y Reportes -->
         <VMenu location="bottom end" transition="scale-transition">
           <template #activator="{ props }">
-            <VBtn v-if="can('export_data') || can('list_product')" v-bind="props" color="secondary" variant="tonal"
+            <VBtn v-if="can('export_data') || can('list_product')" v-bind="props" color="info" variant="flat"
               prepend-icon="ri-download-2-line" append-icon="ri-arrow-down-s-line" class="font-weight-medium">
               Exportar / Reportes
             </VBtn>
@@ -568,7 +592,7 @@ watch([() => searchForm.value.search, () => searchForm.value.categorie_id, () =>
         </div>
 
         <VRow dense class="gap-y-3">
-          <VCol cols="12" md="6">
+          <VCol cols="12" :md="isAdminOrSuperAdmin ? 4 : 6">
             <VTextField v-model="searchForm.search" label="Buscar producto"
               placeholder="Descripción, SKU, código auxiliar..." prepend-inner-icon="ri-search-2-line"
               variant="outlined" density="comfortable" hide-details="auto" clearable color="primary"
@@ -591,6 +615,13 @@ watch([() => searchForm.value.search, () => searchForm.value.categorie_id, () =>
             <VSelect v-model="searchForm.unit_id" :items="units" item-title="name" item-value="id" label="Unidad"
               placeholder="Todas" prepend-inner-icon="ri-ruler-line" variant="outlined" density="comfortable"
               hide-details="auto" clearable color="primary" />
+          </VCol>
+
+          <!-- Filtro de Estado de Inventariado (Solo Superadmin y Administrador) -->
+          <VCol v-if="isAdminOrSuperAdmin" cols="12" sm="6" md="2">
+            <VSelect v-model="searchForm.inventory_status" :items="inventoryStatusOptions" item-title="title"
+              item-value="value" label="Inventario" prepend-inner-icon="ri-survey-line" variant="outlined"
+              density="comfortable" hide-details="auto" color="primary" />
           </VCol>
         </VRow>
       </VCardText>
@@ -677,13 +708,26 @@ watch([() => searchForm.value.search, () => searchForm.value.categorie_id, () =>
                 </div>
 
                 <div class="mobile-card-meta">
-                  <VChip size="x-small" variant="tonal" color="primary" class="font-weight-medium cursor-pointer"
-                    @click="openQuickEdit(item, 'category')">
+                  <VChip size="x-small" variant="tonal" color="primary" class="font-weight-medium"
+                    :class="{ 'cursor-pointer': item.item_type != 2 }"
+                    @click="item.item_type != 2 ? openQuickEdit(item, 'category') : null">
                     {{ item.categorie?.title || 'Sin Categoría' }}
                   </VChip>
-                  <VChip v-if="item.brand" size="x-small" variant="outlined" color="secondary" class="cursor-pointer"
-                    @click="openQuickEdit(item, 'category')">
+                  <VChip v-if="item.brand" size="x-small" variant="outlined" color="secondary"
+                    :class="{ 'cursor-pointer': item.item_type != 2 }"
+                    @click="item.item_type != 2 ? openQuickEdit(item, 'category') : null">
                     {{ item.brand }}
+                  </VChip>
+                  <!-- Indicador de Inventariado en Móvil -->
+                  <VChip v-if="isAdminOrSuperAdmin" size="x-small"
+                    :color="item.inventoried_at ? 'success' : 'secondary'"
+                    :variant="item.inventoried_at ? 'tonal' : 'outlined'" class="font-weight-medium">
+                    <VIcon :icon="item.inventoried_at ? 'ri-checkbox-circle-fill' : 'ri-time-line'" size="12"
+                      class="me-1" />
+                    {{ item.inventoried_at ? 'Inventariado' : 'Pendiente' }}
+                    <VTooltip activator="parent" location="top">
+                      {{ item.inventoried_at ? `Inventariado: ${item.inventoried_at}` : 'Pendiente de re-inventario' }}
+                    </VTooltip>
                   </VChip>
                 </div>
               </div>
@@ -702,7 +746,8 @@ watch([() => searchForm.value.search, () => searchForm.value.categorie_id, () =>
                 </span>
               </div>
 
-              <div class="stat-col cursor-pointer" title="Toca para ajuste rápido de stock"
+              <div class="stat-col" :class="{ 'cursor-pointer': item.item_type == 1 }"
+                :title="item.item_type == 1 ? 'Toca para ajuste rápido de stock' : ''"
                 @click="item.item_type == 1 ? openStockDialog(item) : null">
                 <div class="d-flex align-center justify-space-between">
                   <span class="stat-label">Stock Actual</span>
@@ -720,7 +765,7 @@ watch([() => searchForm.value.search, () => searchForm.value.categorie_id, () =>
             <div class="mobile-card-actions">
               <VBtn v-if="can('edit_product')" color="primary" variant="tonal" size="small"
                 prepend-icon="ri-flashlight-line" class="btn-quick-edit font-weight-bold"
-                @click="openQuickEdit(item, 'all')">
+                @click="openQuickEdit(item, item.item_type == 2 ? 'price' : 'stock')">
                 Edición Rápida
               </VBtn>
 
@@ -779,6 +824,11 @@ watch([() => searchForm.value.search, () => searchForm.value.categorie_id, () =>
               <th class="text-center font-weight-bold text-uppercase py-3" style="width: 120px;">
                 Estado
               </th>
+              <!-- Columna Inventariado (Solo Superadmin y Administrador) -->
+              <th v-if="isAdminOrSuperAdmin" class="text-center font-weight-bold text-uppercase py-3"
+                style="width: 85px;" title="Control de Re-inventario Físico">
+                Inv.
+              </th>
               <th class="text-center font-weight-bold text-uppercase py-3" style="width: 90px;">
                 Acciones
               </th>
@@ -809,6 +859,9 @@ watch([() => searchForm.value.search, () => searchForm.value.categorie_id, () =>
                 </td>
                 <td class="py-4 text-center" style="width: 120px;">
                   <div class="shimmer-chip mx-auto" />
+                </td>
+                <td v-if="isAdminOrSuperAdmin" class="py-4 text-center" style="width: 85px;">
+                  <div class="shimmer-circle mx-auto" style="width: 24px; height: 24px;" />
                 </td>
                 <td class="py-4 text-center" style="width: 90px;">
                   <div class="shimmer-button rounded mx-auto" />
@@ -853,15 +906,19 @@ watch([() => searchForm.value.search, () => searchForm.value.categorie_id, () =>
                   </div>
                 </td>
 
-                <!-- Categoría & Marca (Clicable para edición rápida) -->
+                <!-- Categoría & Marca (Clicable para edición rápida solo si NO es servicio) -->
                 <td class="py-3">
                   <div class="d-flex flex-column gap-0.5">
-                    <span class="text-body-2 text-medium-emphasis font-weight-medium cursor-pointer hover-underline"
-                      title="Clic para editar categoría" @click="openQuickEdit(item, 'category')">
+                    <span class="text-body-2 text-medium-emphasis font-weight-medium"
+                      :class="{ 'cursor-pointer hover-underline': item.item_type != 2 }"
+                      :title="item.item_type != 2 ? 'Clic para editar categoría' : ''"
+                      @click="item.item_type != 2 ? openQuickEdit(item, 'category') : null">
                       {{ item.categorie?.title || 'Sin Categoría' }}
                     </span>
-                    <span v-if="item.brand" class="text-caption text-disabled cursor-pointer hover-underline"
-                      title="Clic para editar marca" @click="openQuickEdit(item, 'category')">
+                    <span v-if="item.brand" class="text-caption text-disabled"
+                      :class="{ 'cursor-pointer hover-underline': item.item_type != 2 }"
+                      :title="item.item_type != 2 ? 'Clic para editar marca' : ''"
+                      @click="item.item_type != 2 ? openQuickEdit(item, 'category') : null">
                       Marca: <strong>{{ item.brand }}</strong>
                     </span>
                   </div>
@@ -903,6 +960,22 @@ watch([() => searchForm.value.search, () => searchForm.value.categorie_id, () =>
                   </div>
                 </td>
 
+                <!-- Control de Inventario (Solo Superadmin y Administrador) -->
+                <td v-if="isAdminOrSuperAdmin" class="text-center py-3">
+                  <VTooltip location="top">
+                    <template #activator="{ props: tooltipProps }">
+                      <span v-bind="tooltipProps" class="d-inline-flex align-center justify-center cursor-pointer">
+                        <VIcon v-if="item.inventoried_at" icon="ri-checkbox-circle-fill" color="success" size="22" />
+                        <VIcon v-else icon="ri-time-line" color="secondary" size="20" style="opacity: 0.45;" />
+                      </span>
+                    </template>
+                    <span>
+                      {{ item.inventoried_at ? `Inventariado el: ${item.inventoried_at}`
+                        : 'Pendiente de re-inventario físico' }}
+                    </span>
+                  </VTooltip>
+                </td>
+
                 <!-- Acciones (Menú de 3 puntos desplegable) -->
                 <td class="text-center py-3">
                   <div class="d-flex justify-center align-center gap-1">
@@ -920,7 +993,7 @@ watch([() => searchForm.value.search, () => searchForm.value.categorie_id, () =>
                         <VList density="compact" class="py-1 rounded-lg elevation-4 border" min-width="190">
                           <!-- Edición Rápida (Stock, Precio, Categoría, Marca) -->
                           <VListItem v-if="can('edit_product')" prepend-icon="ri-flashlight-line" title="Edición Rápida"
-                            class="text-primary text-body-2 font-weight-medium" @click="openQuickEdit(item, 'all')" />
+                            class="text-primary text-body-2 font-weight-medium" @click="openQuickEdit(item, item.item_type == 2 ? 'price' : 'stock')" />
 
                           <!-- Ajuste Rápido de Stock -->
                           <VListItem v-if="can('edit_product') && item.item_type == 1" prepend-icon="ri-box-3-line"

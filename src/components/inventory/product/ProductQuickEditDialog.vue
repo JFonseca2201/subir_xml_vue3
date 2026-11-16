@@ -3,6 +3,7 @@ import { ref, watch, computed } from 'vue'
 import { $api } from '@/utils/api'
 import { useGlobalToast } from '@/composables/useGlobalToast'
 import { useTaxConfig } from '@/composables/useTaxConfig'
+import { usePermissions } from '@/composables/usePermissions'
 
 const props = defineProps({
   isDialogVisible: {
@@ -23,7 +24,7 @@ const props = defineProps({
   },
   initialTab: {
     type: String,
-    default: 'all',
+    default: 'stock',
   },
 })
 
@@ -31,8 +32,9 @@ const emit = defineEmits(['update:isDialogVisible', 'updated'])
 
 const { showNotification } = useGlobalToast()
 const { taxPercent } = useTaxConfig()
+const { isAdminOrSuperAdmin } = usePermissions()
 
-const activeTab = ref('all')
+const activeTab = ref('stock')
 const isSubmitting = ref(false)
 const errorMessage = ref('')
 
@@ -64,15 +66,24 @@ const form = ref({
   max_discount: 0,
   discount_percentage: 0,
   imagen: null,
+  is_inventoried: false,
+  inventoried_at: null,
 })
 
 // Pestañas disponibles
-const tabs = [
-  { id: 'all', label: 'Todo', icon: 'ri-flashlight-line' },
+const allTabs = [
   { id: 'stock', label: 'Stock', icon: 'ri-box-3-line' },
   { id: 'price', label: 'Precio', icon: 'ri-money-dollar-circle-line' },
   { id: 'category', label: 'Categoría & Marca', icon: 'ri-price-tag-3-line' },
 ]
+
+const tabs = computed(() => {
+  if (form.value.item_type == 2) {
+    // Si es un servicio, no se puede modificar stock ni categoría
+    return allTabs.filter(t => t.id === 'price')
+  }
+  return allTabs
+})
 
 // Estados internos para categorías auxiliares
 const internalCategories = ref([])
@@ -100,7 +111,12 @@ watch(
   visible => {
     if (visible && props.product) {
       errorMessage.value = ''
-      activeTab.value = props.initialTab || 'all'
+      const isService = parseInt(props.product.item_type || 1) === 2
+      if (isService) {
+        activeTab.value = 'price'
+      } else {
+        activeTab.value = (props.initialTab && props.initialTab !== 'all') ? props.initialTab : 'stock'
+      }
 
       const p = props.product
       const taxRate = parseFloat(p.tax_rate !== undefined && p.tax_rate !== null ? p.tax_rate : taxPercent.value)
@@ -139,6 +155,8 @@ watch(
         max_discount: parseFloat(p.max_discount || 0),
         discount_percentage: parseFloat(p.discount_percentage || 0),
         imagen: p.imagen || null,
+        is_inventoried: Boolean(p.inventoried_at),
+        inventoried_at: p.inventoried_at || null,
       }
 
       loadCategoriesIfEmpty()
@@ -179,14 +197,14 @@ const computedCategories = computed(() => {
 const calculatedSubtotal = computed(() => {
   const tax = form.value.tax_rate || 0
   const final = parseFloat(form.value.final_price) || 0
-  
+
   return (final / (1 + tax / 100)).toFixed(2)
 })
 
 const calculatedTaxAmount = computed(() => {
   const final = parseFloat(form.value.final_price) || 0
   const subtotal = parseFloat(calculatedSubtotal.value) || 0
-  
+
   return Math.max(0, final - subtotal).toFixed(2)
 })
 
@@ -215,7 +233,7 @@ const adjustStock = delta => {
 const stockDelta = computed(() => {
   const current = parseFloat(form.value.stock) || 0
   const initial = parseFloat(form.value.initialStock) || 0
-  
+
   return Math.round((current - initial) * 100) / 100
 })
 
@@ -225,7 +243,7 @@ const combinedBrands = computed(() => {
   if (form.value.brand && !list.includes(form.value.brand)) {
     list.unshift(form.value.brand)
   }
-  
+
   return list.filter(Boolean)
 })
 
@@ -238,19 +256,19 @@ const closeDialog = () => {
 const saveChanges = async () => {
   if (!form.value.product_categorie_id) {
     errorMessage.value = 'Por favor selecciona una categoría'
-    
+
     return
   }
 
   if (parseFloat(form.value.final_price) < 0) {
     errorMessage.value = 'El precio de venta no puede ser negativo'
-    
+
     return
   }
 
   if (form.value.item_type == 1 && parseFloat(form.value.stock) < 0) {
     errorMessage.value = 'El stock no puede ser negativo'
-    
+
     return
   }
 
@@ -275,7 +293,7 @@ const saveChanges = async () => {
     formData.append('sku', form.value.sku || '')
     if (form.value.code_aux) formData.append('code_aux', form.value.code_aux)
     if (form.value.uses) formData.append('uses', form.value.uses)
-    formData.append('product_categorie_id', form.value.product_categorie_id)
+    formData.append('product_categorie_id', isService ? (props.product?.product_categorie_id || props.product?.categorie?.id || form.value.product_categorie_id) : form.value.product_categorie_id)
     if (form.value.warehouse_id) formData.append('warehouse_id', form.value.warehouse_id)
     if (form.value.unit_id) formData.append('unit_id', form.value.unit_id)
     if (form.value.supplier_id) formData.append('supplier_id', form.value.supplier_id)
@@ -294,6 +312,9 @@ const saveChanges = async () => {
     formData.append('is_gift', form.value.is_gift === 1 ? 1 : 2)
     formData.append('notes', form.value.notes || '')
     formData.append('state', form.value.state || 1)
+    if (isAdminOrSuperAdmin.value) {
+      formData.append('is_inventoried', form.value.is_inventoried ? '1' : '0')
+    }
     formData.append('_method', 'PUT')
 
     const response = await $api(`products/${form.value.id}`, {
@@ -310,6 +331,7 @@ const saveChanges = async () => {
         price: basePrice,
         product_categorie_id: form.value.product_categorie_id,
         brand: form.value.brand,
+        inventoried_at: form.value.is_inventoried ? (form.value.inventoried_at || new Date().toISOString()) : null,
         categorie: props.categories.find(c => c.id === form.value.product_categorie_id) || props.product.categorie,
       })
       closeDialog()
@@ -326,84 +348,63 @@ const saveChanges = async () => {
 </script>
 
 <template>
-  <VDialog
-    :model-value="isDialogVisible"
-    max-width="580px"
-    :fullscreen="$vuetify.display.smAndDown"
-    persistent
-    scrollable
-    class="v-dialog-quick-edit"
-    @update:model-value="val => !val && closeDialog()"
-  >
+  <VDialog :model-value="isDialogVisible" max-width="580px" :fullscreen="$vuetify.display.smAndDown" persistent
+    scrollable class="v-dialog-quick-edit" @update:model-value="val => !val && closeDialog()">
     <VCard class="product-quick-dialog-card">
       <!-- Encabezado con degradado moderno -->
       <div class="product-quick-header">
-        <VBtn
-          icon="ri-close-line"
-          variant="text"
-          size="small"
-          class="custom-dialog-close-btn"
-          @click="closeDialog"
-        />
+        <VBtn icon="ri-close-line" variant="text" size="small" class="custom-dialog-close-btn" @click="closeDialog" />
 
-        <div class="d-flex align-center gap-3">
-          <VAvatar
-            size="44"
-            rounded="lg"
-            color="white"
-            class="elevation-2 overflow-hidden flex-shrink-0"
-          >
-            <img
-              v-if="form.imagen"
-              :src="form.imagen"
-              :alt="form.description"
-              style="width: 100%; height: 100%; object-fit: cover;"
-            >
-            <VIcon
-              v-else
-              icon="ri-box-3-line"
-              color="primary"
-              size="24"
-            />
+        <div class="d-flex align-center gap-3" :class="{ 'mb-3': isAdminOrSuperAdmin }">
+          <VAvatar size="44" rounded="lg" color="white" class="elevation-2 overflow-hidden flex-shrink-0">
+            <img v-if="form.imagen" :src="form.imagen" :alt="form.description"
+              style="width: 100%; height: 100%; object-fit: cover;">
+            <VIcon v-else icon="ri-box-3-line" color="primary" size="24" />
           </VAvatar>
 
-          <div
-            class="overflow-hidden"
-            style="flex: 1;"
-          >
+          <div class="overflow-hidden" style="flex: 1; padding-right: 28px;">
             <div class="d-flex align-center gap-2 mb-0.5 flex-wrap">
               <span class="product-mini-badge font-mono">SKU: {{ form.sku || 'S/C' }}</span>
-              <span
-                v-if="form.item_type == 2"
-                class="product-mini-badge bg-white text-primary"
-              >Servicio</span>
+              <span v-if="form.item_type == 2" class="product-mini-badge bg-white text-primary">Servicio</span>
             </div>
-            <h3
-              class="text-white font-weight-bold text-truncate mb-0"
-              style="font-size: 1.05rem;"
-              :title="form.description"
-            >
+            <h3 class="text-white font-weight-bold text-truncate mb-0" style="font-size: 1.05rem;"
+              :title="form.description">
               {{ form.description || 'Edición Rápida' }}
             </h3>
           </div>
         </div>
+
+        <!-- Selector Segmentado Sencillo y Simétrico (Solo Superadmin y Administrador) -->
+        <div v-if="isAdminOrSuperAdmin" class="header-inventory-segment mt-3">
+          <div
+            class="inv-segment-option option-pending"
+            :class="{ active: !form.is_inventoried }"
+            @click="form.is_inventoried = false"
+          >
+            <VIcon icon="ri-time-line" size="16" class="me-1.5" />
+            <span>Pendiente</span>
+          </div>
+
+          <div
+            class="inv-segment-option option-verified"
+            :class="{ active: form.is_inventoried }"
+            @click="form.is_inventoried = true"
+          >
+            <VIcon icon="ri-checkbox-circle-fill" size="16" class="me-1.5" />
+            <span>Inventariado</span>
+            <VTooltip v-if="form.inventoried_at" activator="parent" location="bottom">
+              Última verificación: {{ form.inventoried_at }}
+            </VTooltip>
+          </div>
+        </div>
       </div>
 
-      <!-- Barra de pestañas segmentada para móvil/desktop -->
-      <div class="px-4 pt-3 pb-1 bg-surface border-b">
+      <!-- Barra de pestañas segmentada para móvil/desktop (Solo si hay más de 1 pestaña disponible) -->
+      <div v-if="tabs.length > 1" class="px-4 pt-3 pb-1 bg-surface border-b">
         <div class="quick-edit-nav-pills">
-          <div
-            v-for="t in tabs"
-            :key="t.id"
-            class="nav-pill-item"
-            :class="{ active: activeTab === t.id }"
-            @click="activeTab = t.id"
-          >
-            <VIcon
-              :icon="t.icon"
-              size="16"
-              class="me-1"
-            />
+          <div v-for="t in tabs" :key="t.id" class="nav-pill-item" :class="{ active: activeTab === t.id }"
+            @click="activeTab = t.id">
+            <VIcon :icon="t.icon" size="16" class="me-1" />
             <span>{{ t.label }}</span>
           </div>
         </div>
@@ -412,203 +413,92 @@ const saveChanges = async () => {
       <!-- Contenido del diálogo con scroll suave -->
       <VCardText class="pa-4 bg-surface">
         <!-- Alerta de error si existe -->
-        <VAlert
-          v-if="errorMessage"
-          type="error"
-          variant="tonal"
-          closable
-          density="comfortable"
-          class="mb-3 rounded-lg"
-          @click:close="errorMessage = ''"
-        >
+        <VAlert v-if="errorMessage" type="error" variant="tonal" closable density="comfortable" class="mb-3 rounded-lg"
+          @click:close="errorMessage = ''">
           {{ errorMessage }}
         </VAlert>
 
         <!-- SECCIÓN: STOCK -->
-        <div
-          v-show="activeTab === 'all' || activeTab === 'stock'"
-          class="quick-edit-section"
-        >
+        <div v-show="activeTab === 'stock'" class="quick-edit-section">
           <div class="section-header">
             <div class="section-icon-wrap bg-primary-lighten-5 text-primary">
-              <VIcon
-                icon="ri-box-3-line"
-                size="18"
-              />
+              <VIcon icon="ri-box-3-line" size="18" />
             </div>
             <span class="section-title-text">Ajuste de Stock en Almacén</span>
             <VSpacer />
-            <span
-              v-if="stockDelta !== 0"
-              class="font-mono text-caption font-weight-bold px-2 py-0.5 rounded"
-              :class="stockDelta > 0 ? 'bg-success-lighten-5 text-success' : 'bg-error-lighten-5 text-error'"
-            >
+            <span v-if="stockDelta !== 0" class="font-mono text-caption font-weight-bold px-2 py-0.5 rounded"
+              :class="stockDelta > 0 ? 'bg-success-lighten-5 text-success' : 'bg-error-lighten-5 text-error'">
               {{ stockDelta > 0 ? `+${stockDelta}` : stockDelta }} unidades
             </span>
           </div>
 
-          <div
-            v-if="form.item_type == 2"
-            class="text-center pa-4 bg-surface border rounded-lg"
-          >
-            <VIcon
-              icon="ri-information-line"
-              color="medium-emphasis"
-              class="mb-1"
-            />
+          <div v-if="form.item_type == 2" class="text-center pa-4 bg-surface border rounded-lg">
+            <VIcon icon="ri-information-line" color="medium-emphasis" class="mb-1" />
             <div class="text-caption text-medium-emphasis">
               Este ítem está configurado como <strong>Servicio</strong>, no gestiona existencias físicas.
             </div>
           </div>
 
-          <div
-            v-else
-            class="quick-stock-stepper-box"
-          >
-            <div class="stock-current-display">
-              <div class="text-caption text-medium-emphasis font-weight-medium">
-                Existencia Actualizada
-              </div>
-              <div
-                class="stock-big-number"
-                :class="form.stock > 0 ? 'text-primary' : 'text-error'"
-              >
-                {{ form.stock }}
-              </div>
-              <div class="text-caption text-disabled font-mono">
-                Stock anterior: {{ form.initialStock }}
-              </div>
+          <div v-else class="quick-stock-stepper-box">
+            <!-- Contexto de Stock sin número duplicado -->
+            <div class="d-flex align-center justify-space-between mb-3 px-1">
+              <span class="text-caption font-weight-bold text-medium-emphasis">
+                Modificar Existencia
+              </span>
+              <span class="text-caption text-disabled font-mono">
+                Stock anterior: <strong class="text-medium-emphasis">{{ form.initialStock }}</strong>
+              </span>
             </div>
 
-            <!-- Stepper interactivo táctil -->
-            <div class="quick-stepper-row my-3">
-              <VBtn
-                color="secondary"
-                variant="tonal"
-                class="quick-stepper-btn"
-                :disabled="form.stock <= 0"
-                @click="adjustStock(-1)"
-              >
-                <VIcon
-                  icon="ri-subtract-line"
-                  size="20"
-                />
+            <!-- Stepper interactivo táctil compacto: única fuente de la cantidad -->
+            <div class="quick-stepper-row mb-3">
+              <VBtn color="secondary" variant="tonal" class="quick-stepper-btn" :disabled="form.stock <= 0"
+                @click="adjustStock(-1)">
+                <VIcon icon="ri-subtract-line" size="18" />
               </VBtn>
 
-              <VTextField
-                v-model.number="form.stock"
-                type="number"
-                min="0"
-                step="any"
-                density="comfortable"
-                variant="outlined"
-                hide-details
-                class="font-mono text-center font-weight-bold"
-                style="max-width: 140px;"
-              />
+              <VTextField v-model.number="form.stock" type="number" min="0" step="any" density="compact"
+                variant="outlined" hide-details class="font-mono text-center font-weight-bold stock-input-compact" />
 
-              <VBtn
-                color="primary"
-                variant="tonal"
-                class="quick-stepper-btn"
-                @click="adjustStock(1)"
-              >
-                <VIcon
-                  icon="ri-add-line"
-                  size="20"
-                />
+              <VBtn color="primary" variant="tonal" class="quick-stepper-btn" @click="adjustStock(1)">
+                <VIcon icon="ri-add-line" size="18" />
               </VBtn>
             </div>
 
             <!-- Chips de ajuste rápido para celulares -->
-            <div class="quick-adjustment-chips mt-2">
-              <span
-                class="adj-chip adj-minus"
-                @click="adjustStock(-10)"
-              >-10</span>
-              <span
-                class="adj-chip adj-minus"
-                @click="adjustStock(-5)"
-              >-5</span>
-              <span
-                class="adj-chip adj-minus"
-                @click="adjustStock(-1)"
-              >-1</span>
-              <span
-                class="adj-chip adj-plus"
-                @click="adjustStock(1)"
-              >+1</span>
-              <span
-                class="adj-chip adj-plus"
-                @click="adjustStock(5)"
-              >+5</span>
-              <span
-                class="adj-chip adj-plus"
-                @click="adjustStock(10)"
-              >+10</span>
+            <div class="quick-adjustment-chips">
+              <span class="adj-chip adj-minus" @click="adjustStock(-10)">-10</span>
+              <span class="adj-chip adj-minus" @click="adjustStock(-5)">-5</span>
+              <span class="adj-chip adj-minus" @click="adjustStock(-1)">-1</span>
+              <span class="adj-chip adj-plus" @click="adjustStock(1)">+1</span>
+              <span class="adj-chip adj-plus" @click="adjustStock(5)">+5</span>
+              <span class="adj-chip adj-plus" @click="adjustStock(10)">+10</span>
             </div>
           </div>
         </div>
 
         <!-- SECCIÓN: PRECIO VENTA FINAL (P.V.P CON IVA) -->
-        <div
-          v-show="activeTab === 'all' || activeTab === 'price'"
-          class="quick-edit-section"
-        >
+        <div v-show="activeTab === 'price'" class="quick-edit-section">
           <div class="section-header">
             <div class="section-icon-wrap bg-success-lighten-5 text-success">
-              <VIcon
-                icon="ri-money-dollar-circle-line"
-                size="18"
-              />
+              <VIcon icon="ri-money-dollar-circle-line" size="18" />
             </div>
             <span class="section-title-text">Precio de Venta Final (P.V.P)</span>
             <VSpacer />
             <span class="text-caption text-medium-emphasis font-weight-medium">IVA {{ form.tax_rate }}%</span>
           </div>
 
-          <VRow
-            dense
-            class="mb-2"
-          >
-            <VCol
-              cols="12"
-              sm="7"
-            >
-              <VTextField
-                v-model="form.final_price"
-                type="number"
-                step="0.01"
-                min="0"
-                label="Precio Venta Final (con IVA)"
-                prefix="$"
-                variant="outlined"
-                density="comfortable"
-                color="success"
-                class="font-mono font-weight-bold"
-                hide-details="auto"
-                @update:model-value="onFinalPriceInput"
-              />
+          <VRow dense class="mb-2">
+            <VCol cols="12" sm="7">
+              <VTextField v-model="form.final_price" type="number" step="0.01" min="0"
+                label="Precio Venta Final (con IVA)" prefix="$" variant="outlined" density="comfortable" color="success"
+                class="font-mono font-weight-bold" hide-details="auto" @update:model-value="onFinalPriceInput" />
             </VCol>
 
-            <VCol
-              cols="12"
-              sm="5"
-            >
-              <VTextField
-                v-model="form.price_sale"
-                type="number"
-                step="0.01"
-                min="0"
-                label="Base sin IVA"
-                prefix="$"
-                variant="outlined"
-                density="comfortable"
-                color="primary"
-                class="font-mono"
-                hide-details="auto"
-                @update:model-value="onBasePriceInput"
-              />
+            <VCol cols="12" sm="5">
+              <VTextField v-model="form.price_sale" type="number" step="0.01" min="0" label="Base sin IVA" prefix="$"
+                variant="outlined" density="comfortable" color="primary" class="font-mono" hide-details="auto"
+                @update:model-value="onBasePriceInput" />
             </VCol>
           </VRow>
 
@@ -630,61 +520,33 @@ const saveChanges = async () => {
         </div>
 
         <!-- SECCIÓN: CATEGORÍA & MARCA -->
-        <div
-          v-show="activeTab === 'all' || activeTab === 'category'"
-          class="quick-edit-section mb-0"
-        >
+        <div v-show="activeTab === 'category'" class="quick-edit-section mb-0">
           <div class="section-header">
             <div class="section-icon-wrap bg-warning-lighten-5 text-warning">
-              <VIcon
-                icon="ri-price-tag-3-line"
-                size="18"
-              />
+              <VIcon icon="ri-price-tag-3-line" size="18" />
             </div>
             <span class="section-title-text">Categoría & Marca Comercial</span>
           </div>
 
           <VRow dense>
             <VCol cols="12">
-              <VSelect
-                v-model="form.product_categorie_id"
-                :items="computedCategories"
-                item-title="title"
-                item-value="id"
-                label="Categoría del Producto"
-                placeholder="Seleccionar categoría"
-                prepend-inner-icon="ri-folder-line"
-                variant="outlined"
-                density="comfortable"
-                color="primary"
-                hide-details="auto"
-                class="mb-3"
-              >
+              <VSelect v-model="form.product_categorie_id" :items="computedCategories" item-title="title"
+                item-value="id" label="Categoría del Producto" placeholder="Seleccionar categoría"
+                prepend-inner-icon="ri-folder-line" variant="outlined" density="comfortable" color="primary"
+                hide-details="auto" class="mb-3">
                 <template #selection="{ item }">
                   <span>{{ item.raw?.title || item.title }}</span>
                 </template>
                 <template #item="{ props: itemProps, item }">
-                  <VListItem
-                    v-bind="itemProps"
-                    :title="item.raw?.title || item.title"
-                  />
+                  <VListItem v-bind="itemProps" :title="item.raw?.title || item.title" />
                 </template>
               </VSelect>
             </VCol>
 
             <VCol cols="12">
-              <VCombobox
-                v-model="form.brand"
-                :items="combinedBrands"
-                label="Marca"
-                placeholder="Escribe o selecciona la marca"
-                prepend-inner-icon="ri-award-line"
-                variant="outlined"
-                density="comfortable"
-                color="primary"
-                hide-details="auto"
-                clearable
-              >
+              <VCombobox v-model="form.brand" :items="combinedBrands" label="Marca"
+                placeholder="Escribe o selecciona la marca" prepend-inner-icon="ri-award-line" variant="outlined"
+                density="comfortable" color="primary" hide-details="auto" clearable>
                 <template #no-data>
                   <VListItem>
                     <VListItemTitle class="text-caption text-medium-emphasis">
@@ -700,25 +562,13 @@ const saveChanges = async () => {
 
       <!-- Botones de Acción -->
       <VCardActions class="pa-4 bg-surface border-t d-flex justify-end gap-2">
-        <VBtn
-          variant="outlined"
-          color="secondary"
-          prepend-icon="ri-close-line"
-          class="font-weight-medium"
-          :disabled="isSubmitting"
-          @click="closeDialog"
-        >
+        <VBtn variant="outlined" color="secondary" prepend-icon="ri-close-line" class="font-weight-medium"
+          :disabled="isSubmitting" @click="closeDialog">
           Cancelar
         </VBtn>
 
-        <VBtn
-          color="primary"
-          variant="flat"
-          prepend-icon="ri-save-line"
-          class="font-weight-bold px-5"
-          :loading="isSubmitting"
-          @click="saveChanges"
-        >
+        <VBtn color="primary" variant="flat" prepend-icon="ri-save-line" class="font-weight-bold px-5"
+          :loading="isSubmitting" @click="saveChanges">
           Guardar Cambios
         </VBtn>
       </VCardActions>

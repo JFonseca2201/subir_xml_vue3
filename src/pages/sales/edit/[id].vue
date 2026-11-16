@@ -2127,10 +2127,9 @@ onMounted(() => {
                       </div>
 
                       <!-- Indicador si no ha seleccionado método de pago -->
-                      <div v-if="!dist.payment_method && sale.status !== 'canceled'"
-                        class="text-caption text-error font-weight-medium d-flex align-center gap-1.5 py-1 px-2.5 rounded-lg bg-red-50 border border-red-100">
-                        <VIcon icon="ri-error-warning-line" size="14" color="error" />
-                        <span>Seleccione un método de pago para este cobro</span>
+                      <div v-if="!dist.payment_method && sale.status !== 'canceled'" class="payment-unselected-notice">
+                        <VIcon icon="ri-information-line" size="16" class="notice-icon" />
+                        <span class="notice-text">Selecciona una forma de pago para registrar el cobro</span>
                       </div>
 
                       <!-- Etiqueta si seleccionó tarjeta -->

@@ -2480,12 +2480,15 @@ onActivated(async () => {
                 <!-- Lista de Pagos cuando es al contado -->
                 <template v-else>
                   <!-- Anticipo OT previo compacto y sobrio -->
-                  <div v-if="importedWorkOrderTotalAdvances > 0" class="d-flex justify-space-between align-center py-2 px-3 mb-3 rounded-lg bg-slate-50 border">
+                  <div v-if="importedWorkOrderTotalAdvances > 0"
+                    class="d-flex justify-space-between align-center py-2 px-3 mb-3 rounded-lg bg-slate-50 border">
                     <span class="text-caption font-weight-medium text-slate-700">
-                      Anticipo en OT #{{ sale.work_order_number || '' }}: <strong class="text-success font-mono">${{ importedWorkOrderTotalAdvances.toFixed(2) }}</strong>
+                      Anticipo en OT #{{ sale.work_order_number || '' }}: <strong class="text-success font-mono">${{
+                        importedWorkOrderTotalAdvances.toFixed(2) }}</strong>
                     </span>
                     <span class="text-caption text-slate-600">
-                      Saldo a cobrar: <strong class="text-primary font-mono">${{ balanceToCollectToday.toFixed(2) }}</strong>
+                      Saldo a cobrar: <strong class="text-primary font-mono">${{ balanceToCollectToday.toFixed(2)
+                      }}</strong>
                     </span>
                   </div>
 
@@ -2541,10 +2544,9 @@ onActivated(async () => {
                     </div>
 
                     <!-- Indicador si no ha seleccionado método de pago -->
-                    <div v-if="!dist.payment_method"
-                      class="text-caption text-info font-weight-medium d-flex align-center gap-1.5 py-1 px-2.5 rounded-lg bg-red-50 border border-red-100">
-                      <VIcon icon="ri-error-warning-line" size="14" color="info" />
-                      <span>Seleccione un método de pago</span>
+                    <div v-if="!dist.payment_method" class="payment-unselected-notice">
+                      <VIcon icon="ri-information-line" size="16" class="notice-icon" />
+                      <span class="notice-text">Selecciona una forma de pago para registrar el cobro</span>
                     </div>
 
                     <!-- Etiqueta si seleccionó tarjeta -->
@@ -2650,24 +2652,29 @@ onActivated(async () => {
                     <VIcon icon="ri-hand-coin-line" size="15" color="success" />
                     Menos Anticipo OT:
                   </span>
-                  <span class="font-mono font-weight-bold text-success">- ${{ importedWorkOrderTotalAdvances.toFixed(2) }}</span>
+                  <span class="font-mono font-weight-bold text-success">- ${{ importedWorkOrderTotalAdvances.toFixed(2)
+                  }}</span>
                 </div>
 
                 <div v-if="importedWorkOrderTotalAdvances > 0"
                   class="d-flex justify-space-between align-center text-body-2 font-weight-bold text-slate-800">
                   <span>Saldo a Cobrar Hoy:</span>
-                  <span class="font-mono text-subtitle-2 text-primary font-weight-black">${{ balanceToCollectToday.toFixed(2) }}</span>
+                  <span class="font-mono text-subtitle-2 text-primary font-weight-black">${{
+                    balanceToCollectToday.toFixed(2)
+                  }}</span>
                 </div>
 
                 <div class="d-flex justify-space-between align-center pa-3 rounded-xl bg-slate-50 border mt-1">
                   <div>
                     <div class="text-caption font-weight-bold text-slate-500 text-uppercase">
-                      {{ sale.document_type === 'quote' ? 'Total Cotizado' : (sale.document_type === 'invoice' ? 'Total Factura (SRI)' : 'Total a Pagar') }}
+                      {{ sale.document_type === 'quote' ? 'Total Cotizado'
+                        : (sale.document_type === 'invoice' ? 'Total Factura(SRI)' : 'Total a Pagar') }}
                     </div>
                     <div class="text-h4 font-weight-black text-primary font-mono mt-0.5">
                       ${{ total.toFixed(2) }}
                     </div>
-                    <div v-if="importedWorkOrderTotalAdvances > 0" class="text-caption text-success font-weight-semibold" style="font-size: 0.72rem;">
+                    <div v-if="importedWorkOrderTotalAdvances > 0"
+                      class="text-caption text-success font-weight-semibold" style="font-size: 0.72rem;">
                       Cobro neto hoy: ${{ balanceToCollectToday.toFixed(2) }}
                     </div>
                   </div>

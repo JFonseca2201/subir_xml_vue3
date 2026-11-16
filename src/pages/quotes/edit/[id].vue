@@ -1038,10 +1038,11 @@ onMounted(async () => {
 
         <VCardActions class="pa-4 bg-grey-lighten-4 d-flex justify-end gap-2">
           <VBtn variant="outlined" color="secondary" class="rounded-lg px-4"
-            @click="isManualProductDialogVisible = false">
+            @click="isManualProductDialogVisible = false" prepend-icon="ri-close-line">
             Cancelar
           </VBtn>
-          <VBtn color="primary" variant="elevated" class="rounded-lg px-6 font-weight-bold" @click="addManualItem">
+          <VBtn color="primary" variant="elevated" class="rounded-lg px-6 font-weight-bold" @click="addManualItem"
+            prepend-icon="ri-save-line">
             Agregar Ítem
           </VBtn>
         </VCardActions>

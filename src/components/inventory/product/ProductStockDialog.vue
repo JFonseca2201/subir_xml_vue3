@@ -50,7 +50,7 @@ const resetToInitial = () => {
 
 const delta = computed(() => {
   const diff = (parseFloat(currentStock.value) || 0) - (parseFloat(initialStock.value) || 0)
-  
+
   return Math.round(diff * 100) / 100
 })
 
@@ -61,7 +61,7 @@ const closeDialog = () => {
 const saveStock = async () => {
   if (parseFloat(currentStock.value) < 0) {
     errorMessage.value = 'El stock no puede ser menor a 0'
-    
+
     return
   }
 
@@ -125,51 +125,22 @@ const saveStock = async () => {
 </script>
 
 <template>
-  <VDialog
-    :model-value="isDialogVisible"
-    max-width="440px"
-    :fullscreen="$vuetify.display.smAndDown"
-    persistent
-    class="v-dialog-quick-stock"
-    @update:model-value="val => !val && closeDialog()"
-  >
+  <VDialog :model-value="isDialogVisible" max-width="440px" :fullscreen="$vuetify.display.smAndDown" persistent
+    class="v-dialog-quick-stock" @update:model-value="val => !val && closeDialog()">
     <VCard class="product-quick-dialog-card">
       <!-- Header con degradado primario / teal -->
-      <div
-        class="product-quick-header"
-      >
-        <VBtn
-          icon="ri-close-line"
-          variant="text"
-          size="small"
-          class="custom-dialog-close-btn"
-          @click="closeDialog"
-        />
+      <div class="product-quick-header">
+        <VBtn icon="ri-close-line" variant="text" size="small" class="custom-dialog-close-btn" @click="closeDialog" />
 
         <div class="d-flex align-center gap-3">
-          <VAvatar
-            size="42"
-            rounded="lg"
-            color="white"
-            class="elevation-2 overflow-hidden flex-shrink-0"
-          >
-            <VIcon
-              icon="ri-archive-line"
-              color="info"
-              size="24"
-            />
+          <VAvatar size="42" rounded="lg" color="white" class="elevation-2 overflow-hidden flex-shrink-0">
+            <VIcon icon="ri-archive-line" color="info" size="24" />
           </VAvatar>
 
-          <div
-            class="overflow-hidden"
-            style="flex: 1;"
-          >
+          <div class="overflow-hidden" style="flex: 1;">
             <span class="product-mini-badge font-mono">SKU: {{ product?.sku || 'S/C' }}</span>
-            <h3
-              class="text-white font-weight-bold text-truncate mb-0 mt-0.5"
-              style="font-size: 1rem;"
-              :title="product?.description"
-            >
+            <h3 class="text-white font-weight-bold text-truncate mb-0 mt-0.5" style="font-size: 1rem;"
+              :title="product?.description">
               {{ product?.description || 'Ajuste de Stock' }}
             </h3>
           </div>
@@ -177,35 +148,22 @@ const saveStock = async () => {
       </div>
 
       <VCardText class="pa-4 bg-grey-lighten-5">
-        <VAlert
-          v-if="errorMessage"
-          type="error"
-          variant="tonal"
-          closable
-          density="comfortable"
-          class="mb-3 rounded-lg"
-          @click:close="errorMessage = ''"
-        >
+        <VAlert v-if="errorMessage" type="error" variant="tonal" closable density="comfortable" class="mb-3 rounded-lg"
+          @click:close="errorMessage = ''">
           {{ errorMessage }}
         </VAlert>
 
         <div class="quick-stock-stepper-box bg-white">
           <div class="d-flex justify-space-between align-center mb-1">
             <span class="text-caption text-medium-emphasis font-weight-bold text-uppercase">Stock Físico</span>
-            <span
-              v-if="delta !== 0"
-              class="font-mono text-caption font-weight-bold px-2 py-0.5 rounded"
-              :class="delta > 0 ? 'bg-success-lighten-5 text-success' : 'bg-error-lighten-5 text-error'"
-            >
+            <span v-if="delta !== 0" class="font-mono text-caption font-weight-bold px-2 py-0.5 rounded"
+              :class="delta > 0 ? 'bg-success-lighten-5 text-success' : 'bg-error-lighten-5 text-error'">
               {{ delta > 0 ? `+${delta}` : delta }} unidades
             </span>
           </div>
 
           <div class="stock-current-display py-2">
-            <div
-              class="stock-big-number"
-              :class="currentStock > 0 ? 'text-info' : 'text-error'"
-            >
+            <div class="stock-big-number" :class="currentStock > 0 ? 'text-info' : 'text-error'">
               {{ currentStock }}
             </div>
             <div class="text-caption text-disabled font-mono">
@@ -215,83 +173,33 @@ const saveStock = async () => {
 
           <!-- Botones táctiles grandes -->
           <div class="quick-stepper-row my-3">
-            <VBtn
-              color="secondary"
-              variant="tonal"
-              class="quick-stepper-btn"
-              :disabled="currentStock <= 0"
-              @click="adjust(-1)"
-            >
-              <VIcon
-                icon="ri-subtract-line"
-                size="22"
-              />
+            <VBtn color="secondary" variant="tonal" class="quick-stepper-btn" :disabled="currentStock <= 0"
+              @click="adjust(-1)">
+              <VIcon icon="ri-subtract-line" size="22" />
             </VBtn>
 
-            <VTextField
-              v-model.number="currentStock"
-              type="number"
-              min="0"
-              step="any"
-              density="comfortable"
-              variant="outlined"
-              hide-details
-              class="font-mono text-center font-weight-bold"
-              style="max-width: 130px;"
-            />
+            <VTextField v-model.number="currentStock" type="number" min="0" step="any" density="comfortable"
+              variant="outlined" hide-details class="font-mono text-center font-weight-bold"
+              style="max-width: 130px;" />
 
-            <VBtn
-              color="info"
-              variant="tonal"
-              class="quick-stepper-btn"
-              @click="adjust(1)"
-            >
-              <VIcon
-                icon="ri-add-line"
-                size="22"
-              />
+            <VBtn color="info" variant="tonal" class="quick-stepper-btn" @click="adjust(1)">
+              <VIcon icon="ri-add-line" size="22" />
             </VBtn>
           </div>
 
           <!-- Ajustes rápidos para móvil -->
           <div class="quick-adjustment-chips mt-3">
-            <span
-              class="adj-chip adj-minus"
-              @click="adjust(-10)"
-            >-10</span>
-            <span
-              class="adj-chip adj-minus"
-              @click="adjust(-5)"
-            >-5</span>
-            <span
-              class="adj-chip adj-minus"
-              @click="adjust(-1)"
-            >-1</span>
-            <span
-              class="adj-chip adj-plus"
-              @click="adjust(1)"
-            >+1</span>
-            <span
-              class="adj-chip adj-plus"
-              @click="adjust(5)"
-            >+5</span>
-            <span
-              class="adj-chip adj-plus"
-              @click="adjust(10)"
-            >+10</span>
+            <span class="adj-chip adj-minus" @click="adjust(-10)">-10</span>
+            <span class="adj-chip adj-minus" @click="adjust(-5)">-5</span>
+            <span class="adj-chip adj-minus" @click="adjust(-1)">-1</span>
+            <span class="adj-chip adj-plus" @click="adjust(1)">+1</span>
+            <span class="adj-chip adj-plus" @click="adjust(5)">+5</span>
+            <span class="adj-chip adj-plus" @click="adjust(10)">+10</span>
           </div>
 
-          <div
-            v-if="delta !== 0"
-            class="text-center mt-3"
-          >
-            <VBtn
-              variant="text"
-              color="secondary"
-              size="x-small"
-              prepend-icon="ri-refresh-line"
-              @click="resetToInitial"
-            >
+          <div v-if="delta !== 0" class="text-center mt-3">
+            <VBtn variant="text" color="secondary" size="x-small" prepend-icon="ri-refresh-line"
+              @click="resetToInitial">
               Restablecer a {{ initialStock }}
             </VBtn>
           </div>
@@ -299,25 +207,13 @@ const saveStock = async () => {
       </VCardText>
 
       <VCardActions class="pa-4 bg-surface border-t d-flex justify-end gap-2">
-        <VBtn
-          variant="outlined"
-          color="secondary"
-          prepend-icon="ri-close-line"
-          class="font-weight-medium"
-          :disabled="isSubmitting"
-          @click="closeDialog"
-        >
+        <VBtn variant="outlined" color="secondary" prepend-icon="ri-close-line" class="font-weight-medium"
+          :disabled="isSubmitting" @click="closeDialog">
           Cancelar
         </VBtn>
 
-        <VBtn
-          color="info"
-          variant="flat"
-          prepend-icon="ri-check-line"
-          class="font-weight-bold px-5"
-          :loading="isSubmitting"
-          @click="saveStock"
-        >
+        <VBtn color="primary" variant="flat" prepend-icon="ri-check-line" class="font-weight-bold px-5"
+          :loading="isSubmitting" @click="saveStock">
           Actualizar Stock
         </VBtn>
       </VCardActions>

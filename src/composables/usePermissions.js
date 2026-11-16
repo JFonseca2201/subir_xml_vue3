@@ -77,6 +77,13 @@ export function usePermissions() {
     return roleName === 'Super-Admin' || roleId === 1
   })
 
+  const isAdminOrSuperAdmin = computed(() => {
+    if (isSuperAdmin.value) return true
+    const role = (userRole.value || '').toLowerCase().trim()
+    
+    return ['admin', 'administrador', 'super-admin', 'superadmin'].includes(role)
+  })
+
   const userPermissions = computed(() => {
     const user = currentUser.value
     if (!user) return []
@@ -123,6 +130,7 @@ export function usePermissions() {
     currentUser,
     userRole,
     isSuperAdmin,
+    isAdminOrSuperAdmin,
     userPermissions,
     can,
     canAny,

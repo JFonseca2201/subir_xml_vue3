@@ -539,7 +539,7 @@ const onConfirm = () => {
               <!-- SALDO A CANCELAR HOY -->
               <div class="d-flex justify-space-between align-center py-3 px-4 rounded-lg summary-box-balance border">
                 <div>
-                  <div class="text-subtitle-1 font-weight-black text-uppercase d-flex align-center gap-1.5 card-value">
+                  <div class="text-subtitle-1 font-weight-black text-uppercase d-flex align-center gap-1.5 balance-title">
                     <VIcon icon="ri-hand-coin-line" size="18" color="primary" />
                     SALDO A CANCELAR HOY
                   </div>
@@ -547,7 +547,7 @@ const onConfirm = () => {
                     Dinero líquido que ingresa hoy a tu Caja / Banco
                   </div>
                 </div>
-                <span class="text-h4 font-weight-black card-value font-mono">
+                <span class="text-h4 font-weight-black balance-amount font-mono">
                   ${{ balanceToCollect.toFixed(2) }}
                 </span>
               </div>

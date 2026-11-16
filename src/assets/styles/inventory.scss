@@ -2321,30 +2321,95 @@
   transition: all 0.18s ease;
   user-select: none;
 
-  &:hover {
+  span {
+    color: inherit;
+    font-weight: inherit;
+  }
+
+  .v-icon,
+  i {
+    color: inherit;
+  }
+
+  &:hover:not(.active-cash):not(.active-transfer):not(.active-other) {
     border-color: #cbd5e1;
     background: #f8fafc;
+    color: #1e293b;
+
+    span {
+      color: #1e293b;
+    }
   }
 
   &.active-cash {
-    background: #10b981;
-    border-color: #10b981;
-    color: #ffffff;
-    box-shadow: 0 2px 8px rgba(16, 185, 129, 0.25);
+    background: #10b981 !important;
+    border-color: #10b981 !important;
+    color: #ffffff !important;
+    box-shadow: 0 2px 8px rgba(16, 185, 129, 0.35) !important;
+
+    &,
+    span,
+    .v-icon,
+    i {
+      color: #ffffff !important;
+      fill: #ffffff !important;
+      -webkit-text-fill-color: #ffffff !important;
+    }
   }
 
   &.active-transfer {
-    background: #0ea5e9;
-    border-color: #0ea5e9;
-    color: #ffffff;
-    box-shadow: 0 2px 8px rgba(14, 165, 233, 0.25);
+    background: #0ea5e9 !important;
+    border-color: #0ea5e9 !important;
+    color: #ffffff !important;
+    box-shadow: 0 2px 8px rgba(14, 165, 233, 0.35) !important;
+
+    &,
+    span,
+    .v-icon,
+    i {
+      color: #ffffff !important;
+      fill: #ffffff !important;
+      -webkit-text-fill-color: #ffffff !important;
+    }
   }
 
   &.active-other {
-    background: #5e50ee;
-    border-color: #5e50ee;
-    color: #ffffff;
-    box-shadow: 0 2px 8px rgba(94, 80, 238, 0.25);
+    background: #5e50ee !important;
+    border-color: #5e50ee !important;
+    color: #ffffff !important;
+    box-shadow: 0 2px 8px rgba(94, 80, 238, 0.35) !important;
+
+    &,
+    span,
+    .v-icon,
+    i {
+      color: #ffffff !important;
+      fill: #ffffff !important;
+      -webkit-text-fill-color: #ffffff !important;
+    }
+  }
+}
+
+.payment-unselected-notice {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  border-radius: 9px;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  background: rgba(var(--v-theme-primary), 0.05);
+  border: 1px dashed rgba(var(--v-theme-primary), 0.28);
+  color: rgb(var(--v-theme-primary));
+  transition: all 0.2s ease;
+
+  .notice-icon {
+    flex-shrink: 0;
+    color: rgb(var(--v-theme-primary));
+  }
+
+  .notice-text {
+    letter-spacing: -0.01em;
   }
 }
 
@@ -3369,6 +3434,77 @@
     font-weight: 600;
     letter-spacing: 0.02em;
   }
+
+  // Selector Segmentado de Auditoría / Inventariado en Cabecera
+  .header-inventory-segment {
+    display: flex !important;
+    align-items: stretch !important;
+    height: 38px !important;
+    background: rgba(0, 0, 0, 0.25) !important;
+    backdrop-filter: blur(12px) !important;
+    -webkit-backdrop-filter: blur(12px) !important;
+    border: 1px solid rgba(255, 255, 255, 0.20) !important;
+    border-radius: 10px !important;
+    padding: 3px !important;
+    gap: 4px !important;
+    user-select: none !important;
+
+    .inv-segment-option {
+      flex: 1 !important;
+      display: flex !important;
+      align-items: center !important;
+      justify-content: center !important;
+      height: 100% !important;
+      padding: 0 12px !important;
+      border-radius: 7px !important;
+      font-size: 0.8rem !important;
+      font-weight: 700 !important;
+      cursor: pointer !important;
+      white-space: nowrap !important;
+      transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1) !important;
+      border: 1px solid transparent !important;
+      opacity: 0.65;
+      background: transparent !important;
+
+      color: #ffffff !important;
+      -webkit-text-fill-color: #ffffff !important;
+
+      .v-icon {
+        color: #ffffff !important;
+      }
+
+      span {
+        color: #ffffff !important;
+        -webkit-text-fill-color: #ffffff !important;
+      }
+
+      &:hover:not(.active) {
+        opacity: 0.95;
+        background: rgba(255, 255, 255, 0.12) !important;
+      }
+
+      &:active {
+        transform: scale(0.98);
+      }
+
+      &.active {
+        opacity: 1 !important;
+        font-weight: 800 !important;
+      }
+
+      &.option-pending.active {
+        background: linear-gradient(135deg, #0ea5e9 0%, #0284c7 100%) !important;
+        border-color: rgba(56, 189, 248, 0.85) !important;
+        box-shadow: 0 2px 8px rgba(14, 165, 233, 0.4) !important;
+      }
+
+      &.option-verified.active {
+        background: linear-gradient(135deg, #10b981 0%, #059669 100%) !important;
+        border-color: rgba(110, 231, 183, 0.7) !important;
+        box-shadow: 0 2px 8px rgba(16, 185, 129, 0.4) !important;
+      }
+    }
+  }
 }
 
 // Dialog Segmented Nav Pills
@@ -3440,20 +3576,54 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    gap: 10px;
+    gap: 8px;
   }
 
   .quick-stepper-btn {
-    width: 44px;
-    height: 44px;
-    min-width: 44px;
-    border-radius: 12px;
+    width: 38px;
+    height: 38px;
+    min-width: 38px;
+    border-radius: 10px;
     font-weight: 800;
-    font-size: 1.1rem;
+    font-size: 1rem;
+    padding: 0 !important;
     transition: transform 0.1s ease, box-shadow 0.15s ease;
 
     &:active {
       transform: scale(0.92);
+    }
+  }
+
+  .stock-input-compact {
+    max-width: 84px !important;
+
+    .v-field {
+      border-radius: 10px !important;
+      background: #ffffff !important;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05) !important;
+    }
+
+    .v-field__input {
+      min-height: 38px !important;
+      height: 38px !important;
+      padding: 0 6px !important;
+    }
+
+    input {
+      text-align: center !important;
+      font-size: 1.05rem !important;
+      font-weight: 800 !important;
+    }
+
+    // Ocultar flechas nativas en campos numéricos para mantener el diseño limpio
+    input::-webkit-outer-spin-button,
+    input::-webkit-inner-spin-button {
+      -webkit-appearance: none;
+      margin: 0;
+    }
+
+    input[type='number'] {
+      -moz-appearance: textfield;
     }
   }
 }
@@ -7864,6 +8034,16 @@ body[data-theme="semi-dark-glass"],
     }
   }
 
+  .payment-unselected-notice {
+    background: rgba(var(--v-theme-primary), 0.12) !important;
+    border-color: rgba(var(--v-theme-primary), 0.35) !important;
+    color: rgb(var(--v-theme-primary)) !important;
+
+    .notice-icon {
+      color: rgb(var(--v-theme-primary)) !important;
+    }
+  }
+
   .payment-dist-card {
     background: rgba(255, 255, 255, 0.04) !important;
     border-color: rgba(255, 255, 255, 0.12) !important;
@@ -7886,10 +8066,26 @@ body[data-theme="semi-dark-glass"],
     border-color: rgba(255, 255, 255, 0.15) !important;
     color: rgba(234, 234, 255, 0.9) !important;
 
+    span {
+      color: inherit;
+    }
+
+    .v-icon,
+    i {
+      color: inherit;
+    }
+
     &:hover {
       background: rgba(255, 255, 255, 0.12) !important;
       border-color: rgba(255, 255, 255, 0.25) !important;
       color: #ffffff !important;
+
+      span,
+      .v-icon,
+      i {
+        color: #ffffff !important;
+        -webkit-text-fill-color: #ffffff !important;
+      }
     }
 
     &.active-cash {
@@ -7897,6 +8093,15 @@ body[data-theme="semi-dark-glass"],
       border-color: #10b981 !important;
       color: #ffffff !important;
       box-shadow: 0 2px 8px rgba(16, 185, 129, 0.35) !important;
+
+      &,
+      span,
+      .v-icon,
+      i {
+        color: #ffffff !important;
+        fill: #ffffff !important;
+        -webkit-text-fill-color: #ffffff !important;
+      }
     }
 
     &.active-transfer {
@@ -7904,6 +8109,15 @@ body[data-theme="semi-dark-glass"],
       border-color: #0ea5e9 !important;
       color: #ffffff !important;
       box-shadow: 0 2px 8px rgba(14, 165, 233, 0.35) !important;
+
+      &,
+      span,
+      .v-icon,
+      i {
+        color: #ffffff !important;
+        fill: #ffffff !important;
+        -webkit-text-fill-color: #ffffff !important;
+      }
     }
 
     &.active-other {
@@ -7911,6 +8125,15 @@ body[data-theme="semi-dark-glass"],
       border-color: #6366f1 !important;
       color: #ffffff !important;
       box-shadow: 0 2px 8px rgba(99, 102, 241, 0.35) !important;
+
+      &,
+      span,
+      .v-icon,
+      i {
+        color: #ffffff !important;
+        fill: #ffffff !important;
+        -webkit-text-fill-color: #ffffff !important;
+      }
     }
   }
 
@@ -12559,8 +12782,9 @@ td .d-flex .v-btn.v-btn--variant-tonal.v-btn--icon:not(.btn-attach-comprobante),
   box-shadow: 0 20px 45px rgba(15, 23, 42, 0.22) !important;
   border-radius: 20px !important;
   overflow: hidden !important;
-  background: var(--bg-dialog, #ffffff) !important;
-  color: var(--text-primary, #0f172a) !important;
+  background: rgb(var(--v-theme-surface)) !important;
+  color: rgb(var(--v-theme-on-surface)) !important;
+  border: 1px solid rgba(var(--v-theme-on-surface), 0.12) !important;
 }
 
 // Header Banner Ejecutivo
@@ -12571,8 +12795,8 @@ td .d-flex .v-btn.v-btn--variant-tonal.v-btn--icon:not(.btn-attach-comprobante),
   padding: 22px 28px 20px 28px !important;
   border-top-left-radius: 20px !important;
   border-top-right-radius: 20px !important;
-  border-bottom: 1px solid var(--border-dialog-header, rgba(255, 255, 255, 0.16)) !important;
-  box-shadow: 0 6px 24px rgba(0, 0, 0, 0.2) !important;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.16) !important;
+  box-shadow: 0 6px 24px rgba(0, 0, 0, 0.18) !important;
 
   .header-close-btn {
     position: absolute !important;
@@ -12611,8 +12835,8 @@ td .d-flex .v-btn.v-btn--variant-tonal.v-btn--icon:not(.btn-attach-comprobante),
     min-width: 44px !important;
     min-height: 44px !important;
     border-radius: 12px !important;
-    background: var(--dialog-avatar-bg, rgba(255, 255, 255, 0.16)) !important;
-    border: 1px solid var(--dialog-avatar-border, rgba(255, 255, 255, 0.28)) !important;
+    background: rgba(255, 255, 255, 0.18) !important;
+    border: 1px solid rgba(255, 255, 255, 0.30) !important;
     display: flex !important;
     align-items: center !important;
     justify-content: center !important;
@@ -12685,73 +12909,88 @@ td .d-flex .v-btn.v-btn--variant-tonal.v-btn--icon:not(.btn-attach-comprobante),
 
 // Cuerpo y Tarjetas Adaptables al Tema
 .invoice-confirm-body {
-  background: var(--bg-dialog, transparent);
+  background: transparent !important;
 }
 
 .info-surface-card {
-  background: var(--bg-surface, #ffffff);
-  border-color: var(--border-glass, #e2e8f0) !important;
-  color: var(--text-primary, #0f172a);
+  background: rgba(var(--v-theme-on-surface), 0.02) !important;
+  border: 1px solid rgba(var(--v-theme-on-surface), 0.09) !important;
+  color: rgb(var(--v-theme-on-surface)) !important;
 }
 
 .card-heading {
-  color: var(--text-primary, #0f172a);
+  color: rgb(var(--v-theme-on-surface)) !important;
+  font-weight: 700;
 }
 
 .card-label {
-  color: var(--text-muted, #64748b);
+  color: rgba(var(--v-theme-on-surface), 0.58) !important;
+  font-size: 0.72rem;
+  letter-spacing: 0.04em;
 }
 
 .card-value {
-  color: var(--text-primary, #0f172a);
+  color: rgb(var(--v-theme-on-surface)) !important;
+  font-weight: 700;
 }
 
 .card-value-secondary {
-  color: var(--text-secondary, #334155);
+  color: rgba(var(--v-theme-on-surface), 0.8) !important;
 }
 
 .card-subtext {
-  color: var(--text-muted, #64748b);
+  color: rgba(var(--v-theme-on-surface), 0.58) !important;
 }
 
 .ot-tag-badge {
   background: rgba(var(--v-theme-primary), 0.10);
   border-color: rgba(var(--v-theme-primary), 0.25) !important;
-  color: rgb(var(--v-theme-primary));
+  color: rgb(var(--v-theme-primary)) !important;
 }
 
 .card-plate-chip {
-  background: var(--table-header-bg, rgba(var(--v-theme-on-surface), 0.05));
-  border-color: var(--border-glass, rgba(var(--v-theme-on-surface), 0.12)) !important;
-  color: var(--text-primary, #0f172a);
+  background: rgba(var(--v-theme-on-surface), 0.06);
+  border-color: rgba(var(--v-theme-on-surface), 0.14) !important;
+  color: rgb(var(--v-theme-on-surface)) !important;
 }
 
 .summary-box-sri {
-  background: rgba(var(--v-theme-primary), 0.08);
+  background: rgba(var(--v-theme-primary), 0.07) !important;
   border-color: rgba(var(--v-theme-primary), 0.24) !important;
 }
 
 .summary-box-advance {
-  background: rgba(var(--v-theme-success), 0.08);
+  background: rgba(var(--v-theme-success), 0.07) !important;
   border-color: rgba(var(--v-theme-success), 0.24) !important;
 }
 
 .summary-box-balance {
-  background: rgba(var(--v-theme-on-surface), 0.04);
-  border-color: var(--border-glass, rgba(var(--v-theme-on-surface), 0.15)) !important;
+  background: rgba(var(--v-theme-primary), 0.06) !important;
+  border-color: rgba(var(--v-theme-primary), 0.28) !important;
+  box-shadow: 0 2px 8px rgba(var(--v-theme-primary), 0.06);
+
+  .balance-title {
+    color: rgb(var(--v-theme-primary)) !important;
+    font-weight: 800;
+  }
+
+  .balance-amount {
+    color: rgb(var(--v-theme-primary)) !important;
+    font-weight: 900;
+  }
 }
 
 .invoice-confirm-footer {
-  background: var(--bg-surface, #ffffff);
-  border-color: var(--border-glass, #e2e8f0) !important;
+  background: rgb(var(--v-theme-surface)) !important;
+  border-color: rgba(var(--v-theme-on-surface), 0.08) !important;
 }
 
 // Control segmentado para método de pago (Efectivo / Transferencia)
 .payment-segmented-control {
   display: inline-flex;
   align-items: center;
-  background: var(--table-header-bg, rgba(var(--v-theme-on-surface), 0.05));
-  border: 1px solid var(--border-glass, rgba(var(--v-theme-on-surface), 0.12)) !important;
+  background: rgba(var(--v-theme-on-surface), 0.04);
+  border: 1px solid rgba(var(--v-theme-on-surface), 0.10) !important;
   padding: 4px;
   border-radius: 12px;
   gap: 4px;
@@ -12763,9 +13002,9 @@ td .d-flex .v-btn.v-btn--variant-tonal.v-btn--icon:not(.btn-attach-comprobante),
   gap: 7px;
   padding: 8px 18px;
   border-radius: 9px;
-  border: none;
+  border: 1px solid transparent;
   background: transparent;
-  color: var(--text-muted, #64748b);
+  color: rgba(var(--v-theme-on-surface), 0.72);
   font-weight: 700;
   font-size: 0.86rem;
   cursor: pointer;
@@ -12779,7 +13018,8 @@ td .d-flex .v-btn.v-btn--variant-tonal.v-btn--icon:not(.btn-attach-comprobante),
 
   &:hover:not(.active) {
     background: rgba(var(--v-theme-on-surface), 0.06);
-    color: var(--text-primary, #0f172a);
+    color: rgb(var(--v-theme-on-surface));
+    border-color: rgba(var(--v-theme-on-surface), 0.12);
   }
 
   &.active {
@@ -12791,33 +13031,61 @@ td .d-flex .v-btn.v-btn--variant-tonal.v-btn--icon:not(.btn-attach-comprobante),
 
     &.active-cash {
       background: #10b981 !important;
+      border-color: #10b981 !important;
       color: #ffffff !important;
+
+      &,
+      span,
+      .v-icon,
+      i {
+        color: #ffffff !important;
+        fill: #ffffff !important;
+        -webkit-text-fill-color: #ffffff !important;
+      }
     }
 
     &.active-bank {
-      background: rgb(var(--v-theme-primary)) !important;
+      background: #0ea5e9 !important;
+      border-color: #0ea5e9 !important;
       color: #ffffff !important;
+
+      &,
+      span,
+      .v-icon,
+      i {
+        color: #ffffff !important;
+        fill: #ffffff !important;
+        -webkit-text-fill-color: #ffffff !important;
+      }
     }
   }
 }
 
 .payment-amount-wrapper {
-  width: 110px;
+  width: 120px;
 
   .payment-amount-field {
     .v-field {
       border-radius: 8px !important;
-      background: var(--bg-surface, #ffffff) !important;
+      background: rgb(var(--v-theme-surface)) !important;
+      color: rgb(var(--v-theme-on-surface)) !important;
       height: 38px !important;
       min-height: 38px !important;
       padding-inline: 10px !important;
+      border: 1px solid rgba(var(--v-theme-on-surface), 0.14) !important;
       transition: all 0.2s ease;
+
+      &--focused {
+        border-color: rgb(var(--v-theme-primary)) !important;
+        box-shadow: 0 0 0 2px rgba(var(--v-theme-primary), 0.15) !important;
+      }
     }
 
     .v-field__input {
       min-height: 38px !important;
       padding-top: 0 !important;
       padding-bottom: 0 !important;
+      color: rgb(var(--v-theme-on-surface)) !important;
     }
 
     input {
@@ -12825,6 +13093,7 @@ td .d-flex .v-btn.v-btn--variant-tonal.v-btn--icon:not(.btn-attach-comprobante),
       font-size: 0.95rem !important;
       font-weight: 800 !important;
       font-family: 'Consolas', 'Monaco', monospace !important;
+      color: rgb(var(--v-theme-on-surface)) !important;
       padding: 0 !important;
     }
 
@@ -12833,12 +13102,17 @@ td .d-flex .v-btn.v-btn--variant-tonal.v-btn--icon:not(.btn-attach-comprobante),
       font-size: 0.9rem !important;
       opacity: 0.85;
       padding-inline-end: 2px !important;
-      color: var(--text-primary, #0f172a);
+      color: rgb(var(--v-theme-on-surface)) !important;
     }
   }
 }
 
 .bank-select-card {
-  background: rgba(var(--v-theme-primary), 0.04);
+  background: rgba(var(--v-theme-primary), 0.04) !important;
   border-color: rgba(var(--v-theme-primary), 0.18) !important;
+
+  .v-field {
+    background: rgb(var(--v-theme-surface)) !important;
+    color: rgb(var(--v-theme-on-surface)) !important;
+  }
 }
