@@ -62,6 +62,84 @@ const topPurchasedProducts = ref([])
 const topSuppliers = ref([])
 const cashFlow = ref([])
 
+// Low Stock Modal Infinite Scroll State
+const lowStockProductsList = ref([])
+const totalLowStockCount = ref(0)
+const loadingLowStock = ref(false)
+const loadingMoreLowStock = ref(false)
+const lowStockPage = ref(1)
+const hasMoreLowStock = ref(false)
+const searchLowStockQuery = ref('')
+let searchLowStockTimeout = null
+
+const loadLowStockProducts = async (reset = true) => {
+  if (reset) {
+    lowStockPage.value = 1
+    loadingLowStock.value = true
+  } else {
+    loadingMoreLowStock.value = true
+  }
+
+  try {
+    const params = {
+      page: lowStockPage.value,
+      per_page: 20,
+    }
+    if (searchLowStockQuery.value && searchLowStockQuery.value.trim() !== '') {
+      params.search = searchLowStockQuery.value.trim()
+    }
+
+    const response = await $api('/dashboard/low-stock-products', { params })
+    if (response && (response.success || response.status === 200)) {
+      const items = response.data || []
+      if (reset) {
+        lowStockProductsList.value = items
+      } else {
+        const existingIds = new Set(lowStockProductsList.value.map(i => i.id))
+        const newItems = items.filter(i => !existingIds.has(i.id))
+        lowStockProductsList.value = [...lowStockProductsList.value, ...newItems]
+      }
+      totalLowStockCount.value = response.total ?? items.length
+      hasMoreLowStock.value = Boolean(response.has_more)
+    }
+  } catch (error) {
+    console.error('Error al cargar productos con bajo stock:', error)
+  } finally {
+    loadingLowStock.value = false
+    loadingMoreLowStock.value = false
+  }
+}
+
+const loadMoreLowStock = async () => {
+  if (loadingLowStock.value || loadingMoreLowStock.value || !hasMoreLowStock.value) {
+    return
+  }
+  lowStockPage.value++
+  await loadLowStockProducts(false)
+}
+
+const onLowStockScroll = event => {
+  const target = event?.target
+  if (!target) return
+  const isNearBottom = target.scrollTop + target.clientHeight >= target.scrollHeight - 120
+  if (isNearBottom) {
+    loadMoreLowStock()
+  }
+}
+
+watch(searchLowStockQuery, () => {
+  if (searchLowStockTimeout) clearTimeout(searchLowStockTimeout)
+  searchLowStockTimeout = setTimeout(() => {
+    loadLowStockProducts(true)
+  }, 300)
+})
+
+watch(isStockDialogVisible, newVal => {
+  if (newVal) {
+    loadLowStockProducts(true)
+  }
+})
+
 
 // Search Engine State & Watcher
 const searchQuery = ref('')
@@ -468,6 +546,7 @@ const fetchDashboardData = async () => {
     const response = await $api('/dashboard', { timeout: 10000 })
     if (response && response.status === 200) {
       kpis.value = response.data.kpis
+      totalLowStockCount.value = response.data.kpis?.low_stock_count || 0
       topProducts.value = response.data.top_products || []
       topPurchasedProducts.value = response.data.top_purchased_products || []
       topSuppliers.value = response.data.top_suppliers || []
@@ -1618,7 +1697,7 @@ const tecnicosOptions = computed(() => {
                           <span class="text-caption text-medium-emphasis" style="font-size: 0.65rem;">
                             {{ getBrandNameById(evt.vehicle?.brand) || evt.vehicle?.brand_name || evt.vehicle?.brand }}
                             {{
-                            evt.vehicle?.model }}
+                              evt.vehicle?.model }}
                           </span>
 
                           <!-- Badge de estado de notificación -->
@@ -1696,7 +1775,7 @@ const tecnicosOptions = computed(() => {
                         <span class="text-caption text-medium-emphasis" style="font-size: 0.65rem;">
                           {{ getBrandNameById(item.vehicle?.brand) || item.vehicle?.brand_name || item.vehicle?.brand }}
                           {{
-                          item.vehicle?.model }}
+                            item.vehicle?.model }}
                         </span>
                         <VChip v-if="item.status === 'notified'" size="x-small" color="success" variant="flat"
                           style="font-size: 0.62rem; height: 18px;">
@@ -1718,7 +1797,7 @@ const tecnicosOptions = computed(() => {
                         <span v-if="item.days_until !== null" class="text-caption ms-1"
                           :class="item.days_until <= 0 ? 'text-error font-weight-bold' : 'text-primary'">
                           ({{ item.days_until === 0 ? 'Hoy' : (item.days_until < 0 ? 'Hace ' + Math.abs(item.days_until)
-                            + ' d' : 'En ' + item.days_until + ' d' ) }}) </span>
+                            + ' d' : 'En ' + item.days_until + ' d') }}) </span>
                       </div>
                       <div class="text-caption text-medium-emphasis text-truncate" style="font-size: 0.64rem;">
                         {{ item.client?.full_name || 'Cliente' }} ({{ item.client?.email || 'Sin correo' }})
@@ -1759,8 +1838,9 @@ const tecnicosOptions = computed(() => {
                     </VChip>
                   </div>
                   <div class="pa-1 d-flex justify-center align-center my-auto">
-                    <VueApexCharts v-if="activeTab === 'workshop' && otTotalesHasData && otTotalesSeries.length > 0" :key="`otTotales-${chartThemes.themeKey}`" type="donut"
-                      height="200" width="100%" :options="otTotalesOptions" :series="otTotalesSeries" />
+                    <VueApexCharts v-if="activeTab === 'workshop' && otTotalesHasData && otTotalesSeries.length > 0"
+                      :key="`otTotales-${chartThemes.themeKey}`" type="donut" height="200" width="100%"
+                      :options="otTotalesOptions" :series="otTotalesSeries" />
                     <div v-else class="d-flex align-center justify-center text-caption text-medium-emphasis"
                       style="height: 200px;">
                       Sin órdenes de trabajo registradas
@@ -1780,8 +1860,9 @@ const tecnicosOptions = computed(() => {
                     </div>
                   </div>
                   <div class="pa-1 d-flex justify-center align-center my-auto">
-                    <VueApexCharts v-if="activeTab === 'workshop' && slaHasData && slaSeries.length > 0" :key="`sla-${chartThemes.themeKey}`" type="pie" height="200"
-                      width="100%" :options="slaOptions" :series="slaSeries" />
+                    <VueApexCharts v-if="activeTab === 'workshop' && slaHasData && slaSeries.length > 0"
+                      :key="`sla-${chartThemes.themeKey}`" type="pie" height="200" width="100%" :options="slaOptions"
+                      :series="slaSeries" />
                     <div v-else class="d-flex align-center justify-center text-caption text-medium-emphasis"
                       style="height: 200px;">
                       Sin registros de cierre de OTs
@@ -1806,8 +1887,9 @@ const tecnicosOptions = computed(() => {
                     </div>
                   </div>
                   <div class="pa-1">
-                    <VueApexCharts v-if="activeTab === 'workshop' && tecnicosHasData && tecnicosSeries.length > 0" :key="`tecnicos-${chartThemes.themeKey}`" type="bar"
-                      height="210" width="100%" :options="tecnicosOptions" :series="tecnicosSeries" />
+                    <VueApexCharts v-if="activeTab === 'workshop' && tecnicosHasData && tecnicosSeries.length > 0"
+                      :key="`tecnicos-${chartThemes.themeKey}`" type="bar" height="210" width="100%"
+                      :options="tecnicosOptions" :series="tecnicosSeries" />
                     <div v-else class="d-flex align-center justify-center text-caption text-medium-emphasis"
                       style="height: 210px;">
                       Sin servicios asignados por técnico
@@ -1917,7 +1999,9 @@ const tecnicosOptions = computed(() => {
                   </p>
                 </div>
 
-                <div v-else-if="activeTab === 'purchases' && purchasedProductsHasData && purchasedProductsSeries.length > 0" class="pa-2 d-flex justify-center align-center">
+                <div
+                  v-else-if="activeTab === 'purchases' && purchasedProductsHasData && purchasedProductsSeries.length > 0"
+                  class="pa-2 d-flex justify-center align-center">
                   <VueApexCharts :key="`purchased-${chartThemes.themeKey}`" type="donut" height="340" width="100%"
                     :options="purchasedProductsOptions" :series="purchasedProductsSeries" />
                 </div>
@@ -1929,10 +2013,10 @@ const tecnicosOptions = computed(() => {
     </div>
 
     <!-- Low Stock Alert Dialog -->
-    <VDialog v-model="isStockDialogVisible" max-width="700" scrollable>
+    <VDialog v-model="isStockDialogVisible" max-width="820" scrollable>
       <VCard class="custom-dialog-card elevation-24">
         <!-- Header Banner Primary -->
-        <div class="custom-dialog-header-primary">
+        <div class="custom-dialog-header-primary pb-4">
           <VBtn icon="ri-close-line" variant="text" size="small" class="custom-dialog-close-btn"
             @click="isStockDialogVisible = false" />
           <div class="custom-dialog-avatar">
@@ -1941,54 +2025,120 @@ const tecnicosOptions = computed(() => {
           <h3 class="custom-dialog-title">
             Productos Bajo Stock Mínimo
           </h3>
-          <p class="custom-dialog-subtitle">
+          <p class="custom-dialog-subtitle mb-3">
             Artículos del inventario que requieren reabastecimiento urgente
           </p>
+
+          <!-- Buscador Fijo en la Cabecera -->
+          <div class="mx-auto px-4 w-100" style="max-width: 540px;">
+            <VTextField v-model="searchLowStockQuery" placeholder="Buscar por descripción o código SKU..."
+              prepend-inner-icon="ri-search-line" variant="solo" density="compact" clearable hide-details
+              bg-color="white" class="elevation-1 rounded-lg text-body-2 text-grey-darken-4"
+              :loading="loadingLowStock" />
+          </div>
         </div>
 
-        <VCardText class="pa-6 pa-sm-8">
-          <template v-if="kpis.low_stock_products?.length === 0">
-            <div class="text-center py-6 text-medium-emphasis">
-              ¡Excelente! No hay productos con stock menor o igual al mínimo.
-            </div>
-          </template>
-          <template v-else>
-            <div v-for="item in kpis.low_stock_products" :key="item.id"
-              class="d-flex align-center justify-space-between mb-3 py-3 border-b"
-              style="border-color: rgba(var(--v-theme-on-surface), 0.08) !important;">
-              <div class="d-flex align-center gap-3">
-                <VAvatar color="error" variant="tonal" rounded="lg">
-                  <VIcon icon="ri-error-warning-line" />
-                </VAvatar>
-                <div>
-                  <div class="font-weight-bold text-high-emphasis">
-                    {{ item.description }}
-                  </div>
-                  <div class="text-caption text-medium-emphasis mt-1">
-                    <code class="text-primary bg-primary-lighten-5 px-1 rounded">{{ item.sku || 'N/A' }}</code>
-                  </div>
-                </div>
-              </div>
+        <VCardText class="pa-3 pa-sm-4 bg-grey-lighten-4" style="max-height: 520px; overflow-y: auto;"
+          @scroll="onLowStockScroll">
+          <!-- Spinner de carga inicial -->
+          <div v-if="loadingLowStock && lowStockProductsList.length === 0"
+            class="text-center py-10 bg-white rounded-lg border">
+            <VProgressCircular indeterminate size="36" color="primary" class="mb-2" /><br>
+            <span class="text-caption text-medium-emphasis">Cargando productos bajo stock...</span>
+          </div>
 
-              <div class="text-right">
-                <div class="text-caption text-medium-emphasis mb-1">
-                  Stock Actual / Mín
-                </div>
-                <div class="d-flex align-center justify-end gap-2">
-                  <VChip :color="Number(item.stock) <= 0 ? 'error' : 'warning'" size="small" class="font-weight-bold">
-                    {{ item.stock }}
-                  </VChip>
-                  <span class="text-medium-emphasis text-body-2 font-weight-bold">/ {{ item.min_stock }}</span>
-                </div>
-              </div>
+          <!-- Sin productos -->
+          <div v-else-if="!loadingLowStock && lowStockProductsList.length === 0"
+            class="text-center py-10 text-medium-emphasis bg-white rounded-lg border">
+            <VIcon icon="ri-checkbox-circle-line" size="48" color="success" class="mb-2" /><br>
+            <span class="text-body-1 font-weight-medium">
+              {{ searchLowStockQuery ? 'No se encontraron productos con ese criterio de búsqueda.'
+                : '¡Excelente! No hay productos con stock menor o igual al mínimo.' }}
+            </span>
+          </div>
+
+          <!-- Tabla estructurada por Columnas con Scroll Infinito -->
+          <template v-else>
+            <div class="border rounded-lg overflow-hidden bg-white">
+              <VTable class="w-100" density="comfortable" hover>
+                <thead class="bg-grey-lighten-5" style="position: sticky; top: 0; z-index: 2;">
+                  <tr>
+                    <th class="text-left font-weight-bold text-grey-darken-3" style="min-width: 250px;">
+                      Producto / Repuesto
+                    </th>
+                    <th class="text-center font-weight-bold text-grey-darken-3" style="width: 120px;">
+                      Stock Actual
+                    </th>
+                    <th class="text-center font-weight-bold text-grey-darken-3" style="width: 110px;">
+                      Stock Mín.
+                    </th>
+                    <th class="text-center font-weight-bold text-grey-darken-3" style="width: 110px;">
+                      Estado
+                    </th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr v-for="item in lowStockProductsList" :key="item.id">
+                    <td class="py-3">
+                      <div class="d-flex align-center gap-3">
+                        <VAvatar color="error" variant="tonal" size="14" rounded="lg" class="flex-shrink-0">
+                          <VIcon icon="ri-error-warning-line" size="10" />
+                        </VAvatar>
+                        <div style="min-width: 0;">
+                          <div class="font-weight-bold text-high-emphasis text-body-2 text-wrap"
+                            style="line-height: 1.35; word-break: break-word;">
+                            {{ item.description }}
+                          </div>
+                          <div class="text-caption text-medium-emphasis mt-1">
+                            <code
+                              class="text-primary bg-primary-lighten-5 px-1 rounded font-weight-medium">{{ item.sku || 'N/A' }}</code>
+                          </div>
+                        </div>
+                      </div>
+                    </td>
+                    <td class="text-center py-3">
+                      <VChip :color="Number(item.stock) <= 0 ? 'error' : 'warning'" size="small"
+                        class="font-weight-bold">
+                        {{ Number(item.stock).toFixed(2) }}
+                      </VChip>
+                    </td>
+                    <td class="text-center py-3">
+                      <span class="text-medium-emphasis text-body-2 font-weight-bold">
+                        {{ Number(item.min_stock).toFixed(2) }}
+                      </span>
+                    </td>
+                    <td class="text-center py-3">
+                      <VChip :color="Number(item.stock) <= 0 ? 'error' : 'warning'" variant="tonal" size="x-small"
+                        class="font-weight-bold">
+                        {{ Number(item.stock) <= 0 ? 'Agotado' : 'Crítico' }} </VChip>
+                    </td>
+                  </tr>
+                </tbody>
+              </VTable>
+            </div>
+
+            <!-- Loader de Scroll Infinito al final -->
+            <div v-if="loadingMoreLowStock" class="d-flex justify-center align-center py-4 gap-2">
+              <VProgressCircular indeterminate size="24" width="2" color="primary" />
+              <span class="text-caption text-medium-emphasis font-weight-medium">Cargando más productos...</span>
+            </div>
+
+            <!-- Fin de lista alcanzado -->
+            <div v-else-if="!hasMoreLowStock && lowStockProductsList.length > 0"
+              class="text-center py-3 text-caption text-disabled">
+              Has llegado al final de la lista ({{ lowStockProductsList.length }} productos)
             </div>
           </template>
         </VCardText>
 
         <VDivider />
 
-        <VCardActions class="pa-4 d-flex justify-end align-center gap-3 bg-white"
+        <VCardActions class="pa-4 d-flex justify-space-between align-center bg-white"
           style="position: sticky; bottom: 0; z-index: 2;">
+          <div class="text-caption text-medium-emphasis ps-2">
+            Mostrando <strong>{{ lowStockProductsList.length }}</strong> de <strong>{{ totalLowStockCount }}</strong>
+            productos
+          </div>
           <VBtn color="secondary" variant="outlined" prepend-icon="ri-close-line"
             class="rounded-lg px-6 font-weight-medium" height="40" @click="isStockDialogVisible = false">
             Cerrar
@@ -2247,5 +2397,3 @@ const tecnicosOptions = computed(() => {
     </VDialog>
   </div>
 </template>
-
-
