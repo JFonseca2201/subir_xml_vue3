@@ -61,7 +61,7 @@ function formatFileSize(bytes) {
   const k = 1024
   const sizes = ['B', 'KB', 'MB', 'GB']
   const i = Math.floor(Math.log(bytes) / Math.log(k))
-  
+
   return parseFloat((bytes / Math.pow(k, i)).toFixed(1)) + ' ' + sizes[i]
 }
 
@@ -235,303 +235,152 @@ const openPreview = item => {
 <template>
   <div class="receipt-uploader-wrapper">
     <!-- Input oculto para selección de archivos -->
-    <input
-      ref="fileInputRef"
-      type="file"
-      multiple
+    <input ref="fileInputRef" type="file" multiple
       :accept="allowPdf ? 'image/jpeg,image/png,image/jpg,image/webp,application/pdf' : 'image/jpeg,image/png,image/jpg,image/webp'"
-      class="d-none"
-      :disabled="disabled"
-      @change="onFilesChosen"
-    >
+      class="d-none" :disabled="disabled" @change="onFilesChosen">
 
     <!-- Input oculto para captura directa de cámara en smartphones -->
-    <input
-      ref="cameraInputRef"
-      type="file"
-      accept="image/*"
-      capture="environment"
-      class="d-none"
-      :disabled="disabled"
-      @change="onFilesChosen"
-    >
+    <input ref="cameraInputRef" type="file" accept="image/*" capture="environment" class="d-none" :disabled="disabled"
+      @change="onFilesChosen">
 
     <!-- Cabecera del componente -->
     <div class="d-flex align-center justify-space-between mb-2">
       <div class="d-flex align-center gap-1.5 flex-wrap">
-        <VIcon
-          icon="ri-attachment-2"
-          size="18"
-          color="primary"
-        />
+        <VIcon icon="ri-attachment-2" size="18" color="primary" />
         <span class="text-subtitle-2 font-weight-bold text-high-emphasis">
           {{ label }}
         </span>
-        <span
-          v-if="required"
-          class="text-error font-weight-bold text-caption"
-          style="font-size: 11px;"
-        >
+        <span v-if="required" class="text-error font-weight-bold text-caption" style="font-size: 11px;">
           * Obligatorio
         </span>
-        <VChip
-          v-if="modelValue.length > 0"
-          size="x-small"
-          color="primary"
-          variant="tonal"
-          class="font-weight-bold"
-        >
+        <VChip v-if="modelValue.length > 0" size="x-small" color="primary" variant="tonal" class="font-weight-bold">
           {{ modelValue.length }} / {{ maxFiles }}
         </VChip>
       </div>
 
       <!-- Botones de Acción Rápida -->
       <div class="d-flex gap-2">
-        <VBtn
-          size="x-small"
-          variant="tonal"
-          color="secondary"
-          prepend-icon="ri-camera-line"
-          class="camera-btn"
-          :disabled="disabled || isCompressing || modelValue.length >= maxFiles"
-          :loading="isCompressing"
-          @click="triggerCameraInput"
-        >
+        <VBtn size="x-small" variant="tonal" color="secondary" prepend-icon="ri-camera-line" class="camera-btn"
+          :disabled="disabled || isCompressing || modelValue.length >= maxFiles" :loading="isCompressing"
+          @click="triggerCameraInput">
           Cámara
         </VBtn>
-        <VBtn
-          size="x-small"
-          variant="tonal"
-          color="primary"
-          prepend-icon="ri-upload-cloud-2-line"
-          :disabled="disabled || isCompressing || modelValue.length >= maxFiles"
-          :loading="isCompressing"
-          @click="triggerFileInput"
-        >
+        <VBtn size="x-small" variant="flat" color="primary" prepend-icon="ri-upload-cloud-2-line"
+          :disabled="disabled || isCompressing || modelValue.length >= maxFiles" :loading="isCompressing"
+          @click="triggerFileInput">
           Adjuntar
         </VBtn>
       </div>
     </div>
 
     <!-- Banner de optimización en progreso -->
-    <VAlert
-      v-if="isCompressing"
-      type="info"
-      variant="tonal"
-      density="compact"
-      class="mb-2 text-caption font-weight-bold rounded-lg animate-pulse"
-      icon="ri-speed-up-line"
-    >
+    <VAlert v-if="isCompressing" type="info" variant="tonal" density="compact"
+      class="mb-2 text-caption font-weight-bold rounded-lg animate-pulse" icon="ri-speed-up-line">
       ⚡ Optimizando y comprimiendo fotos para carga instantánea...
     </VAlert>
 
     <!-- Zona Drag & Drop cuando NO hay archivos -->
-    <div
-      v-if="modelValue.length === 0"
-      class="drop-zone"
-      :class="{
-        'drop-zone-active': isDragging,
-        'drop-zone-disabled': disabled || isCompressing,
-        'drop-zone-compact': compact,
-      }"
-      @dragover.prevent="isDragging = true"
-      @dragleave.prevent="isDragging = false"
-      @drop.prevent="onDrop"
-      @click="triggerFileInput"
-    >
+    <div v-if="modelValue.length === 0" class="drop-zone" :class="{
+      'drop-zone-active': isDragging,
+      'drop-zone-disabled': disabled || isCompressing,
+      'drop-zone-compact': compact,
+    }" @dragover.prevent="isDragging = true" @dragleave.prevent="isDragging = false" @drop.prevent="onDrop"
+      @click="triggerFileInput">
       <div class="drop-zone-content py-2.5 px-3 text-center">
-        <VIcon
-          icon="ri-image-add-line"
-          size="26"
-          class="mb-0.5 drop-zone-icon text-primary"
-        />
+        <VIcon icon="ri-image-add-line" size="26" class="mb-0.5 drop-zone-icon text-primary" />
         <div class="text-caption font-weight-medium text-high-emphasis">
-          Arrastra comprobantes o <span class="text-primary font-weight-bold text-decoration-underline">examina tus archivos</span>
+          Arrastra comprobantes o <span class="text-primary font-weight-bold text-decoration-underline">examina tus
+            archivos</span>
         </div>
-        <div
-          class="text-caption text-medium-emphasis mt-0.5"
-          style="font-size: 11px;"
-        >
+        <div class="text-caption text-medium-emphasis mt-0.5" style="font-size: 11px;">
           {{ hint }}
         </div>
       </div>
     </div>
 
     <!-- Barra compacta cuando ya hay archivos cargados -->
-    <div
-      v-else-if="modelValue.length < maxFiles"
+    <div v-else-if="modelValue.length < maxFiles"
       class="drop-zone-mini pa-2 px-3 d-flex align-center justify-space-between mb-2 rounded-lg border border-dashed cursor-pointer"
       :class="{ 'drop-zone-active': isDragging }"
       style="border-color: rgba(var(--v-theme-primary), 0.4); background: rgba(var(--v-theme-primary), 0.03);"
-      @dragover.prevent="isDragging = true"
-      @dragleave.prevent="isDragging = false"
-      @drop.prevent="onDrop"
-      @click="triggerFileInput"
-    >
+      @dragover.prevent="isDragging = true" @dragleave.prevent="isDragging = false" @drop.prevent="onDrop"
+      @click="triggerFileInput">
       <div class="d-flex align-center gap-2">
-        <VIcon
-          icon="ri-add-circle-line"
-          size="16"
-          color="primary"
-        />
-        <span
-          class="text-caption font-weight-semibold text-primary"
-          style="font-size: 11px;"
-        >
+        <VIcon icon="ri-add-circle-line" size="16" color="primary" />
+        <span class="text-caption font-weight-semibold text-primary" style="font-size: 11px;">
           Haz clic o arrastra para adjuntar más fotos / documentos
         </span>
       </div>
-      <span
-        class="text-caption text-medium-emphasis font-weight-bold"
-        style="font-size: 10px;"
-      >
+      <span class="text-caption text-medium-emphasis font-weight-bold" style="font-size: 10px;">
         {{ modelValue.length }}/{{ maxFiles }}
       </span>
     </div>
 
     <!-- Grid de Miniaturas / Thumbnails -->
-    <div
-      v-if="previewList.length > 0"
-      class="thumbnails-grid mt-2"
-    >
-      <div
-        v-for="(item, idx) in previewList"
-        :key="item.id"
-        class="thumbnail-card elevation-1"
-      >
+    <div v-if="previewList.length > 0" class="thumbnails-grid mt-2">
+      <div v-for="(item, idx) in previewList" :key="item.id" class="thumbnail-card elevation-1">
         <!-- Imagen Preview -->
-        <div
-          v-if="item.isImage"
-          class="thumbnail-media"
-          @click="openPreview(item)"
-        >
-          <img
-            :src="item.url"
-            :alt="item.name"
-            loading="lazy"
-            decoding="async"
-            class="thumbnail-img"
-          >
+        <div v-if="item.isImage" class="thumbnail-media" @click="openPreview(item)">
+          <img :src="item.url" :alt="item.name" loading="lazy" decoding="async" class="thumbnail-img">
           <div class="thumbnail-overlay">
-            <VIcon
-              icon="ri-zoom-in-line"
-              color="white"
-              size="20"
-            />
+            <VIcon icon="ri-zoom-in-line" color="white" size="20" />
           </div>
         </div>
 
         <!-- PDF Preview -->
-        <div
-          v-else-if="item.isPdf"
-          class="thumbnail-media pdf-media"
-          @click="openPreview(item)"
-        >
-          <VIcon
-            icon="ri-file-pdf-2-fill"
-            size="38"
-            color="error"
-          />
+        <div v-else-if="item.isPdf" class="thumbnail-media pdf-media" @click="openPreview(item)">
+          <VIcon icon="ri-file-pdf-2-fill" size="38" color="error" />
           <span class="pdf-tag">PDF</span>
         </div>
 
         <!-- Otros archivos -->
-        <div
-          v-else
-          class="thumbnail-media generic-media"
-        >
-          <VIcon
-            icon="ri-file-3-line"
-            size="32"
-            color="primary"
-          />
+        <div v-else class="thumbnail-media generic-media">
+          <VIcon icon="ri-file-3-line" size="32" color="primary" />
         </div>
 
         <!-- Info del Archivo -->
         <div class="thumbnail-info px-2 py-1.5">
-          <div
-            class="text-caption font-weight-medium text-truncate text-high-emphasis"
-            :title="item.name"
-          >
+          <div class="text-caption font-weight-medium text-truncate text-high-emphasis" :title="item.name">
             {{ item.name }}
           </div>
           <div class="d-flex align-center justify-space-between text-caption text-disabled mt-0.5">
             <span>{{ item.size }}</span>
-            <VChip
-              size="x-small"
-              :color="item.isPdf ? 'error' : 'primary'"
-              variant="tonal"
-              class="font-weight-bold px-1"
-              style="height: 16px; font-size: 9px;"
-            >
+            <VChip size="x-small" :color="item.isPdf ? 'error' : 'primary'" variant="tonal"
+              class="font-weight-bold px-1" style="height: 16px; font-size: 9px;">
               {{ item.extension }}
             </VChip>
           </div>
         </div>
 
         <!-- Botón Eliminar -->
-        <VBtn
-          v-if="!disabled"
-          icon="ri-close-line"
-          size="x-small"
-          variant="flat"
-          color="error"
-          class="thumbnail-remove-btn"
-          @click.stop="removeFile(idx)"
-        />
+        <VBtn v-if="!disabled" icon="ri-close-line" size="x-small" variant="flat" color="error"
+          class="thumbnail-remove-btn" @click.stop="removeFile(idx)" />
       </div>
     </div>
 
     <!-- Modal Lightbox para Previsualización en Grande -->
-    <VDialog
-      v-model="isPreviewOpen"
-      max-width="750"
-      scrollable
-    >
-      <VCard
-        v-if="previewItem"
-        class="rounded-lg overflow-hidden"
-      >
+    <VDialog v-model="isPreviewOpen" max-width="750" scrollable>
+      <VCard v-if="previewItem" class="rounded-lg overflow-hidden">
         <VCardTitle class="d-flex align-center justify-space-between bg-primary text-white pa-4">
           <div class="d-flex align-center gap-2 text-truncate">
             <VIcon :icon="previewItem.isPdf ? 'ri-file-pdf-2-line' : 'ri-image-line'" />
             <span class="text-subtitle-1 font-weight-bold text-truncate">{{ previewItem.name }}</span>
           </div>
-          <VBtn
-            icon="ri-close-line"
-            variant="text"
-            size="small"
-            color="white"
-            @click="isPreviewOpen = false"
-          />
+          <VBtn icon="ri-close-line" variant="text" size="small" color="white" @click="isPreviewOpen = false" />
         </VCardTitle>
 
         <VCardText class="pa-4 text-center preview-lightbox-body">
-          <img
-            v-if="previewItem.isImage"
-            :src="previewItem.url"
-            :alt="previewItem.name"
-            class="lightbox-img rounded elevation-2"
-          >
-          <iframe
-            v-else-if="previewItem.isPdf"
-            :src="previewItem.url"
-            class="lightbox-iframe rounded elevation-2"
-          />
+          <img v-if="previewItem.isImage" :src="previewItem.url" :alt="previewItem.name"
+            class="lightbox-img rounded elevation-2">
+          <iframe v-else-if="previewItem.isPdf" :src="previewItem.url" class="lightbox-iframe rounded elevation-2" />
         </VCardText>
 
         <VCardActions class="pa-3 justify-space-between preview-lightbox-actions border-t">
           <span class="text-caption text-medium-emphasis">
             Tamaño: {{ previewItem.size }}
           </span>
-          <VBtn
-            color="primary"
-            variant="tonal"
-            prepend-icon="ri-download-2-line"
-            :href="previewItem.url"
-            :download="previewItem.name"
-            target="_blank"
-          >
+          <VBtn color="primary" variant="tonal" prepend-icon="ri-download-2-line" :href="previewItem.url"
+            :download="previewItem.name" target="_blank">
             Descargar
           </VBtn>
         </VCardActions>
@@ -703,7 +552,7 @@ const openPreview = item => {
   width: 20px !important;
   height: 20px !important;
   min-width: 20px !important;
-  box-shadow: 0 2px 4px rgba(0,0,0,0.3) !important;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3) !important;
 }
 
 .preview-lightbox-body {

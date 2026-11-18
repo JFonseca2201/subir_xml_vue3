@@ -79,7 +79,7 @@ const paymentIdMap = ref(new Map())
 const generateAutoCode = dateStr => {
   const cleanDate = dateStr.replace(/-/g, '')
   const randomSuffix = Math.floor(1000 + Math.random() * 9000)
-  
+
   return `ING-${cleanDate}-${randomSuffix}`
 }
 
@@ -137,8 +137,8 @@ const formatDateForInput = dateVal => {
     if (!isNaN(d.getTime())) {
       return d.toISOString().split('T')[0]
     }
-  } catch (e) {}
-  
+  } catch (e) { }
+
   return String(dateVal).substring(0, 10)
 }
 
@@ -151,7 +151,7 @@ watch(() => props.editingMovement, newVal => {
     if (newVal.payment_distributions && newVal.payment_distributions.length > 0) {
       payments = newVal.payment_distributions.map((dist, index) => {
         paymentIdMap.value.set(index, dist.id)
-        
+
         return {
           account_id: dist.account_id,
           amount: dist.amount.toString(),
@@ -202,13 +202,13 @@ const closeDialog = () => {
 // Computed properties
 const totalToRegister = computed(() => {
   if (!form.value.payments || form.value.payments.length === 0) return 0
-  
+
   return form.value.payments.reduce((total, payment) => total + parseFloat(payment.amount || 0), 0)
 })
 
 const canAddMorePayments = computed(() => {
   if (!form.value.payments || form.value.payments.length === 0) return false
-  
+
   return form.value.payments[form.value.payments.length - 1].amount > 0
 })
 
@@ -216,24 +216,24 @@ const saveIncome = async () => {
   try {
     if (totalToRegister.value <= 0) {
       showNotification('El total a registrar debe ser mayor a 0', 'error')
-      
+
       return
     }
 
     const hasInvalidPayments = form.value.payments.some(p => !p.account_id)
     if (hasInvalidPayments) {
       showNotification('Debe seleccionar una cuenta para cada método de pago', 'warning')
-      
+
       return
     }
 
     if (!props.editingMovement && (!receiptFiles.value || receiptFiles.value.length === 0)) {
       showNotification('Es obligatorio adjuntar la foto o comprobante de respaldo del ingreso', 'warning')
-      
+
       return
     }
 
-    const payload = { 
+    const payload = {
       ...form.value,
       receipts: receiptFiles.value,
     }
@@ -259,7 +259,7 @@ const addPayment = () => {
 const removePayment = async index => {
   if (form.value.payments.length <= 1) {
     showNotification('Debe haber al menos un método de pago', 'error')
-    
+
     return
   }
 
@@ -274,7 +274,7 @@ const removePayment = async index => {
     } catch (error) {
       console.error('Error al eliminar método de pago:', error)
       showNotification('Error al eliminar método de pago', 'error')
-      
+
       return
     }
   }
@@ -302,23 +302,12 @@ const formatCurrency = value => {
 </script>
 
 <template>
-  <VDialog
-    scrollable
-    :model-value="props.modelValue"
-    max-width="580"
-    persistent
-    @update:model-value="$emit('update:modelValue', $event)"
-  >
+  <VDialog scrollable :model-value="props.modelValue" max-width="580" persistent
+    @update:model-value="$emit('update:modelValue', $event)">
     <VCard class="custom-dialog-card">
       <!-- Header Banner Primary -->
       <div class="custom-dialog-header-primary bg-primary text-white">
-        <VBtn
-          icon="ri-close-line"
-          variant="text"
-          size="small"
-          class="custom-dialog-close-btn"
-          @click="closeDialog"
-        />
+        <VBtn icon="ri-close-line" variant="text" size="small" class="custom-dialog-close-btn" @click="closeDialog" />
         <div class="custom-dialog-avatar">
           <VIcon icon="ri-add-circle-line" />
         </div>
@@ -331,98 +320,44 @@ const formatCurrency = value => {
       </div>
 
       <!-- Cuerpo del Formulario con Scroll Interno -->
-      <VCardText
-        class="pa-4"
-        style="overflow-x: hidden;"
-      >
+      <VCardText class="pa-4" style="overflow-x: hidden;">
         <!-- Skeleton Loader mientras cargan datos -->
-        <div
-          v-if="isLoadingData"
-          class="py-2"
-        >
+        <div v-if="isLoadingData" class="py-2">
           <VRow>
             <VCol cols="6">
-              <VSkeletonLoader
-                type="text"
-                height="52"
-                class="rounded-lg mb-2"
-              />
+              <VSkeletonLoader type="text" height="52" class="rounded-lg mb-2" />
             </VCol>
             <VCol cols="6">
-              <VSkeletonLoader
-                type="text"
-                height="52"
-                class="rounded-lg mb-2"
-              />
+              <VSkeletonLoader type="text" height="52" class="rounded-lg mb-2" />
             </VCol>
             <VCol cols="6">
-              <VSkeletonLoader
-                type="text"
-                height="52"
-                class="rounded-lg mb-2"
-              />
+              <VSkeletonLoader type="text" height="52" class="rounded-lg mb-2" />
             </VCol>
             <VCol cols="6">
-              <VSkeletonLoader
-                type="text"
-                height="52"
-                class="rounded-lg mb-2"
-              />
+              <VSkeletonLoader type="text" height="52" class="rounded-lg mb-2" />
             </VCol>
             <VCol cols="12">
-              <VSkeletonLoader
-                type="article"
-                class="rounded-lg"
-              />
+              <VSkeletonLoader type="article" class="rounded-lg" />
             </VCol>
           </VRow>
         </div>
 
-        <VForm
-          v-else
-          ref="formRef"
-          @submit.prevent="saveIncome"
-        >
+        <VForm v-else ref="formRef" @submit.prevent="saveIncome">
           <VRow dense>
-            <VCol
-              cols="12"
-              md="6"
-            >
-              <VTextField
-                v-model="form.work_order_number"
-                label="Código / Orden de Trabajo"
-                placeholder="ING-001"
-                variant="outlined"
-                density="comfortable"
-                prepend-inner-icon="ri-hashtag"
-              />
+            <VCol cols="12" md="6">
+              <VTextField v-model="form.work_order_number" label="Código / Orden de Trabajo" placeholder="ING-001"
+                variant="outlined" density="comfortable" prepend-inner-icon="ri-hashtag" />
             </VCol>
 
-            <VCol
-              cols="12"
-              md="6"
-            >
-              <VTextField
-                v-model="form.entry_date"
-                label="Fecha *"
-                type="date"
-                required
-                variant="outlined"
-                density="comfortable"
-                prepend-inner-icon="ri-calendar-line"
-              />
+            <VCol cols="12" md="6">
+              <VTextField v-model="form.entry_date" label="Fecha *" type="date" required variant="outlined"
+                density="comfortable" prepend-inner-icon="ri-calendar-line" />
             </VCol>
 
             <VCol cols="12">
-              <VTextField
-                v-model="form.description"
-                label="Descripción *"
-                placeholder="Describe el motivo del ingreso..."
-                required
-                variant="outlined"
-                density="comfortable"
-                prepend-inner-icon="ri-file-text-line"
-              />
+              <VTextField v-model="form.description" label="Descripción *"
+                placeholder="Describe el motivo del ingreso..." required variant="outlined" density="comfortable"
+                prepend-inner-icon="ri-file-text-line" />
             </VCol>
           </VRow>
 
@@ -430,85 +365,31 @@ const formatCurrency = value => {
           <div class="mt-4">
             <div class="d-flex justify-space-between align-center mb-2">
               <span class="text-subtitle-2 font-weight-bold text-high-emphasis d-flex align-center gap-1">
-                <VIcon
-                  icon="ri-bank-card-line"
-                  size="18"
-                  color="success"
-                />
+                <VIcon icon="ri-bank-card-line" size="18" color="success" />
                 Métodos de Pago / Cuentas Destino
               </span>
-              <VBtn
-                size="x-small"
-                variant="tonal"
-                color="success"
-                prepend-icon="ri-add-line"
-                :disabled="!canAddMorePayments"
-                @click="addPayment"
-              >
+              <VBtn size="x-small" variant="flat" color="primary" prepend-icon="ri-add-line"
+                :disabled="!canAddMorePayments" @click="addPayment">
                 Agregar Cuenta
               </VBtn>
             </div>
 
             <!-- Lista de Métodos de Pago -->
-            <div
-              v-for="(payment, index) in (form.payments || [])"
-              :key="index"
-              class="mb-2"
-            >
-              <VCard
-                variant="outlined"
-                class="pa-3 rounded-lg bg-grey-lighten-5 border"
-              >
-                <VRow
-                  dense
-                  class="align-center"
-                >
-                  <VCol
-                    cols="12"
-                    sm="6"
-                  >
-                    <VSelect
-                      v-model="payment.account_id"
-                      :items="accountOptions"
-                      item-title="title"
-                      item-value="value"
-                      label="Cuenta Destino *"
-                      placeholder="Seleccionar cuenta..."
-                      variant="outlined"
-                      density="compact"
-                      hide-details
-                      required
-                    />
+            <div v-for="(payment, index) in (form.payments || [])" :key="index" class="mb-2">
+              <VCard variant="outlined" class="pa-3 rounded-lg bg-grey-lighten-5 border">
+                <VRow dense class="align-center">
+                  <VCol cols="12" sm="6">
+                    <VSelect v-model="payment.account_id" :items="accountOptions" item-title="title" item-value="value"
+                      label="Cuenta Destino *" placeholder="Seleccionar cuenta..." variant="outlined" density="compact"
+                      hide-details required />
                   </VCol>
-                  <VCol
-                    cols="10"
-                    sm="5"
-                  >
-                    <VTextField
-                      v-model="payment.amount"
-                      label="Monto *"
-                      type="number"
-                      prefix="$"
-                      placeholder="0.00"
-                      variant="outlined"
-                      density="compact"
-                      hide-details
-                      required
-                    />
+                  <VCol cols="10" sm="5">
+                    <VTextField v-model="payment.amount" label="Monto *" type="number" prefix="$" placeholder="0.00"
+                      variant="outlined" density="compact" hide-details required />
                   </VCol>
-                  <VCol
-                    cols="2"
-                    sm="1"
-                    class="text-center"
-                  >
-                    <VBtn
-                      icon="ri-delete-bin-line"
-                      size="x-small"
-                      variant="text"
-                      color="error"
-                      :disabled="form.payments.length <= 1"
-                      @click="removePayment(index)"
-                    />
+                  <VCol cols="2" sm="1" class="text-center">
+                    <VBtn icon="ri-delete-bin-line" size="x-small" variant="text" color="error"
+                      :disabled="form.payments.length <= 1" @click="removePayment(index)" />
                   </VCol>
                 </VRow>
               </VCard>
@@ -516,17 +397,10 @@ const formatCurrency = value => {
           </div>
 
           <!-- Total a Registrar Alert -->
-          <VAlert
-            type="info"
-            variant="tonal"
-            class="mt-3 py-2 px-3 rounded-lg"
-          >
+          <VAlert type="info" variant="tonal" class="mt-3 py-2 px-3 rounded-lg">
             <div class="d-flex align-center justify-space-between">
               <span class="d-flex align-center gap-1 font-weight-medium">
-                <VIcon
-                  icon="ri-calculator-line"
-                  size="18"
-                />
+                <VIcon icon="ri-calculator-line" size="18" />
                 Total a Registrar:
               </span>
               <span class="text-h6 font-weight-extrabold text-primary">
@@ -537,14 +411,9 @@ const formatCurrency = value => {
 
           <!-- Foto / Comprobante de Respaldo -->
           <div class="mt-4">
-            <ReceiptUploader
-              v-model="receiptFiles"
-              label="Foto / Comprobante de Respaldo del Ingreso"
-              hint="Adjunta foto del efectivo, comprobante de depósito o transferencia (Obligatorio)"
-              required
-              :max-files="5"
-              @error="msg => showNotification(msg, 'error')"
-            />
+            <ReceiptUploader v-model="receiptFiles" label="Foto / Comprobante de Respaldo del Ingreso"
+              hint="Adjunta foto del efectivo, comprobante de depósito o transferencia (Obligatorio)" required
+              :max-files="5" @error="msg => showNotification(msg, 'error')" />
           </div>
         </VForm>
       </VCardText>
@@ -552,31 +421,17 @@ const formatCurrency = value => {
       <VDivider />
 
       <!-- Footer Fijo de Acciones -->
-      <VCardActions
-        class="pa-4 d-flex justify-end align-center gap-3 bg-white"
-        style="position: sticky; bottom: 0; z-index: 2;"
-      >
-        <VBtn
-          variant="outlined"
-          color="secondary"
-          prepend-icon="ri-close-line"
-          class="rounded-lg px-6 font-weight-medium"
-          height="40"
-          :disabled="props.isSaving"
-          @click="closeDialog"
-        >
+      <VCardActions class="pa-4 d-flex justify-end align-center gap-3 bg-white"
+        style="position: sticky; bottom: 0; z-index: 2;">
+        <VBtn variant="outlined" color="secondary" prepend-icon="ri-close-line"
+          class="rounded-lg px-6 font-weight-medium" height="40" :disabled="props.isSaving" @click="closeDialog">
           Cancelar
         </VBtn>
-        <VBtn
-          color="primary"
-          variant="elevated"
+        <VBtn color="primary" variant="elevated"
           :prepend-icon="props.editingMovement ? 'ri-refresh-line' : 'ri-save-line'"
-          class="rounded-lg px-6 font-weight-bold"
-          height="40"
-          :loading="props.isSaving"
+          class="rounded-lg px-6 font-weight-bold" height="40" :loading="props.isSaving"
           :disabled="props.isSaving || totalToRegister <= 0 || (!props.editingMovement && receiptFiles.length === 0)"
-          @click="saveIncome"
-        >
+          @click="saveIncome">
           {{ props.editingMovement ? 'Actualizar Ingreso' : 'Guardar Ingreso' }}
         </VBtn>
       </VCardActions>
