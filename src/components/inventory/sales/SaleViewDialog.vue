@@ -48,6 +48,12 @@ const statusOptions = [
 
 const isInvoice = computed(() => props.saleData?.document_type === 'invoice')
 
+const isQuote = computed(() => {
+  return props.saleData?.document_type === 'quote' ||
+    !props.saleData?.document_type ||
+    'converted_sale_id' in (props.saleData || {})
+})
+
 const formattedSequential = computed(() => {
   const docNum = props.saleData?.document_number || ''
   const cleanNum = docNum.replace(/\D/g, '')
@@ -88,20 +94,27 @@ const sriStatusIcon = computed(() => {
 })
 
 const getDocumentTypeLabel = computed(() => {
+  if (isQuote.value) return 'Cotización'
+  if (isInvoice.value) return 'Factura'
   const option = documentTypeOptions.find(opt => opt.value === props.saleData?.document_type)
 
-  return option?.title || 'No especificado'
+  return option?.title || 'Cotización'
 })
 
 const getPaymentStatusLabel = computed(() => {
   const option = paymentStatusOptions.find(opt => opt.value === props.saleData?.payment_status)
 
-  return option?.title || 'No especificado'
+  return option?.title || (isQuote.value ? 'Pendiente' : 'No especificado')
 })
 
 const getStatusLabel = computed(() => {
   if (props.saleData?.status === 'canceled') return 'Anulada'
-  if (props.saleData?.document_type === 'quote') return 'Cotización'
+  if (isQuote.value) {
+    if (props.saleData?.status === 'completed') return 'Aprobada'
+    if (props.saleData?.converted_work_order_id) return 'Convertida a OT'
+    if (props.saleData?.converted_sale_id) return 'Facturada'
+    return 'Pendiente'
+  }
 
   return getPaymentStatusLabel.value
 })
@@ -174,12 +187,6 @@ const getPaymentDistributions = computed(() =>
 const hasPaymentDistributions = computed(() => getPaymentDistributions.value.length > 0)
 
 const itemsCount = computed(() => props.saleData?.details?.length || 0)
-
-const isQuote = computed(() => {
-  return props.saleData?.document_type === 'quote' ||
-    !props.saleData?.document_type ||
-    'converted_sale_id' in (props.saleData || {})
-})
 
 const displayTotal = computed(() => {
   if (isQuote.value) {
@@ -566,70 +573,84 @@ const convertToSale = () => {
 </script>
 
 <template>
-  <VDialog :model-value="props.isDialogVisible" min-width="800" width="920" max-width="1000"
-    :fullscreen="$vuetify.display.smAndDown" scrollable transition="dialog-bottom-transition"
-    @update:model-value="closeDialog">
+  <VDialog :model-value="props.isDialogVisible" max-width="840" :fullscreen="$vuetify.display.smAndDown" scrollable
+    transition="dialog-bottom-transition" @update:model-value="closeDialog">
     <VCard class="sale-view-dialog-card rounded-xl overflow-hidden elevation-12">
-      <!-- Modern Sleek Horizontal Header Banner -->
+      <!-- Modern Sleek Header Banner -->
       <div class="sale-dialog-header-banner">
-        <!-- Close Button (Pinned to Top Right) -->
-        <VBtn icon="ri-close-line" variant="text" size="small" class="header-close-button" @click="closeDialog" />
-
-        <div class="header-left-group">
-          <div class="header-avatar-badge">
-            <VIcon :icon="documentTypeIcon" size="24" color="white" />
-          </div>
-
-          <div>
-            <div class="d-flex align-center gap-2 flex-wrap mb-1">
-              <span class="header-tag-label">
-                Comprobante de {{ getDocumentTypeLabel }}
-              </span>
-              <div class="glass-header-pill" style="font-size: 0.70rem; padding: 2px 8px;">
-                <VIcon icon="ri-calendar-event-line" size="13" class="me-1 text-white-70" />
-                <span>{{ formatDate(saleData.service_date) }}</span>
-              </div>
-              <span v-if="sriEnvironment" class="status-pill-clean"
-                :class="sriEnvironment === 'PRODUCCIÓN' ? 'status-paid' : 'status-partial'"
-                style="font-size: 0.68rem; padding: 2px 8px;">
-                <span class="status-dot" />
-                <span>{{ sriEnvironment }}</span>
-              </span>
+        <VRow no-gutters class="w-100 align-stretch header-columns-row">
+          <!-- Columna Izquierda: Información del Comprobante y Badges de Estado -->
+          <VCol cols="12" md="7" class="header-col-left d-flex align-center gap-3 pe-md-2">
+            <div class="header-avatar-badge">
+              <VIcon :icon="documentTypeIcon" size="24" color="white" />
             </div>
 
-            <h2 class="header-title-text d-flex align-center gap-2 flex-wrap">
-              <span>{{ isInvoice ? 'Factura' : (isQuote ? 'Cotización' : 'Nota de Venta') }} #{{ formattedSequential
-                }}</span>
-            </h2>
-          </div>
-        </div>
+            <div class="min-w-0">
+              <div class="d-flex align-center gap-2 flex-wrap mb-1">
+                <span class="header-tag-label text-truncate">
+                  Comprobante de {{ getDocumentTypeLabel }}
+                </span>
+                <div class="glass-header-pill">
+                  <VIcon icon="ri-calendar-event-line" size="13" class="me-1 text-white-70" />
+                  <span>{{ formatDate(saleData.service_date) }}</span>
+                </div>
 
-        <!-- Header Badges -->
-        <div class="header-meta-group">
-          <div
-            v-if="saleData.work_order_id || saleData.work_order_number || saleData.work_order?.number || saleData.workOrder?.number"
-            class="glass-header-pill">
-            <VIcon icon="ri-tools-line" size="14" class="me-1 text-amber-lighten-2" />
-            <span>OT #{{ saleData.work_order_number || saleData.work_order?.number || saleData.workOrder?.number
-              }}</span>
-          </div>
+                <span v-if="sriEnvironment" class="status-pill-clean"
+                  :class="sriEnvironment === 'PRODUCCIÓN' ? 'status-paid' : 'status-partial'"
+                  style="font-size: 0.68rem; padding: 2px 8px;">
+                  <span class="status-dot" />
+                  <span>{{ sriEnvironment }}</span>
+                </span>
 
-          <div v-if="workOrderDate && isWorkOrderDateDifferent" class="glass-header-pill"
-            title="Fecha en que se creó la Orden de Trabajo">
-            <VIcon icon="ri-calendar-todo-line" size="14" class="me-1 text-amber-lighten-2" />
-            <span>Fecha OT: {{ formatDate(workOrderDate) }}</span>
-          </div>
+                <div
+                  v-if="saleData.work_order_id || saleData.work_order_number || saleData.work_order?.number || saleData.workOrder?.number"
+                  class="glass-header-pill">
+                  <VIcon icon="ri-tools-line" size="14" class="me-1 text-amber-lighten-2" />
+                  <span>OT #{{ saleData.work_order_number || saleData.work_order?.number || saleData.workOrder?.number
+                  }}</span>
+                </div>
 
-          <div class="status-pill-clean"
-            :class="isInvoice && sriStatus ? (['AUTORIZADA', 'AUTORIZADO'].includes(sriStatus.toUpperCase()) ? 'status-paid' : (['DEVUELTA', 'RECHAZADA'].includes(sriStatus.toUpperCase()) ? 'status-pending' : 'status-transfer')) : (saleData.status === 'canceled' ? 'status-canceled' : (saleData.payment_status === 'paid' ? 'status-paid' : (saleData.payment_status === 'partial' ? 'status-partial' : 'status-pending')))"
-            style="font-size: 0.74rem; padding: 4px 10px;">
-            <span class="status-dot" />
-            <span>{{ isInvoice && sriStatus ? sriStatus : getStatusLabel }}</span>
-          </div>
-        </div>
+                <div v-if="workOrderDate && isWorkOrderDateDifferent" class="glass-header-pill"
+                  title="Fecha en que se creó la Orden de Trabajo">
+                  <VIcon icon="ri-calendar-todo-line" size="14" class="me-1 text-amber-lighten-2" />
+                  <span>Fecha OT: {{ formatDate(workOrderDate) }}</span>
+                </div>
+
+                <div class="status-pill-clean"
+                  :class="isInvoice && sriStatus ? (['AUTORIZADA', 'AUTORIZADO'].includes(sriStatus.toUpperCase()) ? 'status-paid' : (['DEVUELTA', 'RECHAZADA'].includes(sriStatus.toUpperCase()) ? 'status-pending' : 'status-transfer')) : (saleData.status === 'canceled' ? 'status-canceled' : (isQuote ? 'status-pending' : (saleData.payment_status === 'paid' ? 'status-paid' : (saleData.payment_status === 'partial' ? 'status-partial' : 'status-pending'))))"
+                  style="font-size: 0.74rem; padding: 4px 10px;">
+                  <span class="status-dot" />
+                  <span>{{ isInvoice && sriStatus ? sriStatus : getStatusLabel }}</span>
+                </div>
+              </div>
+
+              <h2 class="header-title-text text-truncate ma-0">
+                {{ isInvoice ? 'Factura' : (isQuote ? 'Cotización' : 'Nota de Venta') }} #{{ formattedSequential }}
+              </h2>
+            </div>
+          </VCol>
+
+          <!-- Columna Derecha: Botón Close arriba a la derecha y Botón Convertir abajo a la derecha -->
+          <VCol cols="12" md="5"
+            class="header-col-right d-flex flex-column align-end justify-space-between mt-2 mt-md-0">
+            <!-- Parte Superior Derecha: Botón Cerrar -->
+            <div class="d-flex justify-end w-100">
+              <VBtn icon="ri-close-line" variant="text" size="small" class="header-close-btn-clean"
+                title="Cerrar ventana" @click="closeDialog" />
+            </div>
+
+            <!-- Parte Inferior Derecha: Botón de Conversión -->
+            <div v-if="canConvertQuote" class="d-flex justify-end w-100 mt-2">
+              <VBtn color="info" variant="elevated" prepend-icon="ri-tools-line" height="34"
+                @click="convertToWorkOrder">
+                Convertir a Orden de Trabajo
+              </VBtn>
+            </div>
+          </VCol>
+        </VRow>
       </div>
 
-      <VCardText class="pa-6 dialog-body-content bg-slate-50">
+      <VCardText class="pa-5 dialog-body-content">
         <div v-if="loading" class="d-flex flex-column align-center justify-center py-16">
           <VProgressCircular indeterminate color="primary" size="54" width="4" />
           <p class="text-body-2 text-medium-emphasis mt-4 font-weight-medium">
@@ -638,81 +659,78 @@ const convertToSale = () => {
         </div>
 
         <template v-else>
-          <!-- 4 Stat Cards Modernas (Layout Superior) -->
-          <VRow class="mb-5 g-3">
+          <!-- 4 Stat Cards Modernas (Layout Superior Compacto) -->
+          <VRow class="mb-4 g-2.5">
             <!-- 1. Total -->
-            <VCol cols="12" sm="6" md="3">
-              <div class="stat-glass-card stat-card--total h-100 pa-4 d-flex flex-column justify-space-between">
-                <div class="d-flex align-center gap-2 mb-2">
-                  <div class="stat-icon-wrapper stat-icon--total">
-                    <VIcon icon="ri-money-dollar-circle-line" size="20" />
+            <VCol cols="6" sm="6" md="3">
+              <div class="stat-glass-card h-100 pa-3 d-flex align-center justify-space-between gap-2.5">
+                <div class="d-flex align-center gap-2.5 min-w-0">
+                  <div class="stat-icon-wrapper stat-icon--total flex-shrink-0">
+                    <VIcon icon="ri-money-dollar-circle-line" size="18" />
                   </div>
-                  <div class="stat-label">
-                    Total
+                  <div class="min-w-0">
+                    <div class="stat-label text-truncate">Total</div>
+                    <div class="stat-value text-primary font-weight-black text-truncate">
+                      {{ formatCurrency(saleData.total) }}
+                    </div>
                   </div>
-                </div>
-                <div class="stat-value text-primary font-weight-black">
-                  {{ formatCurrency(saleData.total) }}
                 </div>
               </div>
             </VCol>
 
             <!-- 2. Estado de pago / SRI -->
-            <VCol cols="12" sm="6" md="3">
-              <div class="stat-glass-card stat-card--status h-100 pa-4 d-flex flex-column justify-space-between">
-                <div class="d-flex align-center gap-2 mb-2">
-                  <div class="stat-icon-wrapper stat-icon--status">
-                    <VIcon :icon="isInvoice ? 'ri-shield-check-line' : 'ri-wallet-3-line'" size="20" />
+            <VCol cols="6" sm="6" md="3">
+              <div class="stat-glass-card h-100 pa-3 d-flex align-center justify-space-between gap-2.5">
+                <div class="d-flex align-center gap-2.5 min-w-0">
+                  <div class="stat-icon-wrapper stat-icon--status flex-shrink-0">
+                    <VIcon :icon="isInvoice ? 'ri-shield-check-line' : 'ri-wallet-3-line'" size="18" />
                   </div>
-                  <div class="stat-label">
-                    {{ isInvoice ? 'Estado SRI' : 'Estado Pago' }}
-                  </div>
-                </div>
-                <div class="d-flex align-center">
-                  <div class="status-pill-clean font-weight-bold"
-                    :class="`status-${isInvoice && sriStatus ? (['AUTORIZADA', 'AUTORIZADO'].includes(sriStatus.toUpperCase()) ? 'paid' : (['DEVUELTA', 'RECHAZADA'].includes(sriStatus.toUpperCase()) ? 'pending' : 'transfer')) : (saleData.status === 'canceled' ? 'canceled' : (saleData.payment_status || 'pending'))}`">
-                    <span class="status-dot" />
-                    <span>{{ isInvoice && sriStatus ? sriStatus : getPaymentStatusLabel }}</span>
+                  <div class="min-w-0">
+                    <div class="stat-label text-truncate">{{ isInvoice ? 'Estado SRI' : 'Estado Pago' }}</div>
+                    <div class="d-flex align-center mt-0.5">
+                      <div class="status-pill-clean font-weight-bold"
+                        :class="`status-${isInvoice && sriStatus ? (['AUTORIZADA', 'AUTORIZADO'].includes(sriStatus.toUpperCase()) ? 'paid' : (['DEVUELTA', 'RECHAZADA'].includes(sriStatus.toUpperCase()) ? 'pending' : 'transfer')) : (saleData.status === 'canceled' ? 'canceled' : (saleData.payment_status || 'pending'))}`"
+                        style="font-size: 0.68rem; padding: 2px 7px;">
+                        <span class="status-dot" />
+                        <span class="text-truncate" style="max-width: 90px;">{{ isInvoice && sriStatus ? sriStatus :
+                          getPaymentStatusLabel }}</span>
+                      </div>
+                    </div>
                   </div>
                 </div>
               </div>
             </VCol>
 
             <!-- 3. Ítems -->
-            <VCol cols="12" sm="6" md="3">
-              <div class="stat-glass-card stat-card--items h-100 pa-4">
-                <div class="d-flex align-center justify-space-between gap-2">
-                  <div class="d-flex align-center gap-2">
-                    <div class="stat-icon-wrapper stat-icon--items">
-                      <VIcon icon="ri-shopping-bag-3-line" size="20" />
-                    </div>
-                    <div class="stat-label">
-                      Ítems
-                    </div>
+            <VCol cols="6" sm="6" md="3">
+              <div class="stat-glass-card h-100 pa-3 d-flex align-center justify-space-between gap-2.5">
+                <div class="d-flex align-center gap-2.5 min-w-0">
+                  <div class="stat-icon-wrapper stat-icon--items flex-shrink-0">
+                    <VIcon icon="ri-shopping-bag-3-line" size="18" />
                   </div>
-                  <div class="stat-value text-slate-800 font-weight-black text-right">
-                    {{ itemsCount }} <span class="text-caption font-weight-medium text-medium-emphasis">{{ itemsCount
-                      === 1 ? 'ítem' : 'ítems' }}</span>
+                  <div class="min-w-0">
+                    <div class="stat-label text-truncate">Ítems</div>
+                    <div class="stat-value font-weight-black text-truncate">
+                      {{ itemsCount }} <span class="text-caption font-weight-medium text-medium-emphasis">{{ itemsCount
+                        === 1 ? 'ítem' : 'ítems' }}</span>
+                    </div>
                   </div>
                 </div>
               </div>
             </VCol>
 
             <!-- 4. Método de pago -->
-            <VCol cols="12" sm="6" md="3">
-              <div class="stat-glass-card stat-card--payment h-100 pa-4">
-                <div class="d-flex align-center justify-space-between gap-2">
-                  <div class="d-flex align-center gap-2 overflow-hidden">
-                    <div class="stat-icon-wrapper stat-icon--payment flex-shrink-0">
-                      <VIcon icon="ri-bank-card-line" size="20" />
-                    </div>
-                    <div class="stat-label text-truncate">
-                      Pago
-                    </div>
+            <VCol cols="6" sm="6" md="3">
+              <div class="stat-glass-card h-100 pa-3 d-flex align-center justify-space-between gap-2.5">
+                <div class="d-flex align-center gap-2.5 min-w-0">
+                  <div class="stat-icon-wrapper stat-icon--payment flex-shrink-0">
+                    <VIcon icon="ri-bank-card-line" size="18" />
                   </div>
-                  <div class="text-body-2 font-weight-bold text-slate-800 text-right text-truncate"
-                    :title="displayPaymentMethod">
-                    {{ displayPaymentMethod }}
+                  <div class="min-w-0">
+                    <div class="stat-label text-truncate">Forma Pago</div>
+                    <div class="text-caption font-weight-bold text-truncate" :title="displayPaymentMethod">
+                      {{ displayPaymentMethod }}
+                    </div>
                   </div>
                 </div>
               </div>
@@ -720,20 +738,20 @@ const convertToSale = () => {
           </VRow>
 
           <!-- Clave de Acceso SRI (49 dígitos) - Cyber Ribbon Card -->
-          <div v-if="saleData.sri_access_key" class="sri-security-ribbon mb-5">
+          <div v-if="saleData.sri_access_key" class="sri-security-ribbon mb-4">
             <div class="d-flex align-center gap-3 flex-grow-1 min-w-0">
               <div class="sri-shield-avatar">
-                <VIcon icon="ri-shield-keyhole-line" size="22" color="indigo-darken-2" />
+                <VIcon icon="ri-shield-keyhole-line" size="20" color="primary" />
               </div>
               <div class="overflow-hidden">
                 <div class="d-flex align-center gap-2 flex-wrap">
-                  <span class="text-caption font-weight-black text-indigo-darken-3 text-uppercase tracking-wider">
+                  <span class="text-caption font-weight-black text-primary text-uppercase tracking-wider">
                     Clave de Acceso SRI (49 Dígitos)
                   </span>
                   <span class="text-caption text-medium-emphasis">· Comprobante Oficial</span>
                 </div>
                 <div
-                  class="font-monospace text-body-2 font-weight-bold text-indigo-darken-4 text-break user-select-all mt-0.5 tracking-wide cursor-pointer"
+                  class="font-monospace text-caption font-weight-bold text-break user-select-all mt-0.5 tracking-wide cursor-pointer"
                   title="Clic para copiar la clave de acceso" @click="copyAccessKey">
                   {{ saleData.sri_access_key }}
                 </div>
@@ -759,61 +777,60 @@ const convertToSale = () => {
             </VBtn>
           </div>
 
-
           <!-- Cliente y Vehículo -->
-          <VRow class="mb-5">
+          <VRow class="mb-4">
             <!-- Cliente -->
             <VCol cols="12" :md="hasVehicle ? 6 : 12">
               <div class="modern-section-panel h-100">
-                <div class="panel-header mb-4">
+                <div class="panel-header mb-3">
                   <div class="panel-icon-circle bg-emerald-50 text-emerald-600">
-                    <VIcon icon="ri-user-smile-line" size="20" />
+                    <VIcon icon="ri-user-smile-line" size="18" />
                   </div>
                   <div>
-                    <h4 class="text-subtitle-1 font-weight-bold text-slate-800">
+                    <h4 class="text-subtitle-2 font-weight-bold">
                       Datos del Cliente
                     </h4>
                     <span class="text-caption text-medium-emphasis">Información de facturación</span>
                   </div>
                 </div>
 
-                <div class="detail-rows">
+                <div class="detail-rows" :class="{ 'grid-2-cols': !hasVehicle }">
                   <div class="detail-row">
                     <span class="detail-label">
-                      <VIcon icon="ri-user-line" size="15" /> Razón Social
+                      <VIcon icon="ri-user-line" size="14" /> Razón Social
                     </span>
-                    <span class="detail-value font-weight-bold text-slate-900">{{ getClientName }}</span>
+                    <span class="detail-value font-weight-bold">{{ getClientName }}</span>
                   </div>
                   <div class="detail-row">
                     <span class="detail-label">
-                      <VIcon icon="ri-id-card-line" size="15" /> RUC / Cédula
+                      <VIcon icon="ri-id-card-line" size="14" /> RUC / Cédula
                     </span>
                     <span class="detail-value font-monospace font-weight-semibold">{{ getClientDocument }}</span>
                   </div>
                   <div class="detail-row">
                     <span class="detail-label">
-                      <VIcon icon="ri-phone-line" size="15" /> Teléfono
+                      <VIcon icon="ri-phone-line" size="14" /> Teléfono
                     </span>
                     <span class="detail-value">{{ getClientPhone }}</span>
                   </div>
                   <div class="detail-row">
                     <span class="detail-label">
-                      <VIcon icon="ri-mail-line" size="15" /> Email
+                      <VIcon icon="ri-mail-line" size="14" /> Email
                     </span>
                     <span class="detail-value text-lowercase">{{ getClientEmail }}</span>
                   </div>
-                  <div v-if="!hasVehicle && technicians.length" class="detail-row flex-column align-start gap-1 mt-2">
+                  <div v-if="!hasVehicle && technicians.length"
+                    class="detail-row flex-column align-start gap-1 mt-1 full-width-col">
                     <span class="detail-label">
-                      <VIcon icon="ri-user-settings-line" size="15" /> Técnicos
+                      <VIcon icon="ri-user-settings-line" size="14" /> Técnicos Asignados
                     </span>
-                    <div class="d-flex flex-wrap gap-1.5 w-100 mt-1">
+                    <div class="d-flex flex-wrap gap-1.5 w-100 mt-0.5">
                       <div v-for="tech in technicians" :key="tech.id"
                         class="status-pill-clean status-transfer font-weight-medium d-inline-flex align-center"
-                        style="font-size: 0.72rem; padding: 3px 10px; text-transform: uppercase; max-width: 100%;"
+                        style="font-size: 0.72rem; padding: 2px 8px; text-transform: uppercase; max-width: 100%;"
                         :title="`${tech.first_name || ''} ${tech.last_name || ''}`.trim()">
                         <span class="status-dot flex-shrink-0" />
-                        <span class="text-truncate" style="max-width: calc(100% - 14px);">{{ tech.first_name }} {{
-                          tech.last_name }}</span>
+                        <span class="text-truncate">{{ tech.first_name }} {{ tech.last_name }}</span>
                       </div>
                     </div>
                   </div>
@@ -824,12 +841,12 @@ const convertToSale = () => {
             <!-- Vehículo -->
             <VCol v-if="hasVehicle" cols="12" md="6">
               <div class="modern-section-panel h-100">
-                <div class="panel-header mb-4">
+                <div class="panel-header mb-3">
                   <div class="panel-icon-circle bg-blue-50 text-blue-600">
-                    <VIcon icon="ri-car-line" size="20" />
+                    <VIcon icon="ri-car-line" size="18" />
                   </div>
                   <div>
-                    <h4 class="text-subtitle-1 font-weight-bold text-slate-800">
+                    <h4 class="text-subtitle-2 font-weight-bold">
                       Vehículo Asociado
                     </h4>
                     <span class="text-caption text-medium-emphasis">Detalle del servicio</span>
@@ -839,7 +856,7 @@ const convertToSale = () => {
                 <div class="detail-rows">
                   <div class="detail-row">
                     <span class="detail-label">
-                      <VIcon icon="ri-qr-code-line" size="15" /> Placa
+                      <VIcon icon="ri-qr-code-line" size="14" /> Placa
                     </span>
                     <span class="detail-value">
                       <span v-if="getVehicleLicensePlate" class="kardex-plate-badge">
@@ -850,30 +867,29 @@ const convertToSale = () => {
                   </div>
                   <div v-if="saleData.vehicle" class="detail-row">
                     <span class="detail-label">
-                      <VIcon icon="ri-roadster-line" size="15" /> Modelo
+                      <VIcon icon="ri-roadster-line" size="14" /> Modelo
                     </span>
                     <span class="detail-value font-weight-semibold">{{ getVehicleInfo }}</span>
                   </div>
                   <div class="detail-row">
                     <span class="detail-label">
-                      <VIcon icon="ri-dashboard-3-line" size="15" /> Kilometraje
+                      <VIcon icon="ri-dashboard-3-line" size="14" /> Kilometraje
                     </span>
                     <span class="detail-value font-weight-semibold">
                       {{ saleData.mileage ? `${saleData.mileage} km` : '—' }}
                     </span>
                   </div>
-                  <div v-if="technicians.length" class="detail-row flex-column align-start gap-1 mt-2">
+                  <div v-if="technicians.length" class="detail-row flex-column align-start gap-1 mt-1">
                     <span class="detail-label">
-                      <VIcon icon="ri-user-settings-line" size="15" /> Técnicos
+                      <VIcon icon="ri-user-settings-line" size="14" /> Técnicos Asignados
                     </span>
-                    <div class="d-flex flex-wrap gap-1.5 w-100 mt-1">
+                    <div class="d-flex flex-wrap gap-1.5 w-100 mt-0.5">
                       <div v-for="tech in technicians" :key="tech.id"
                         class="status-pill-clean status-transfer font-weight-medium d-inline-flex align-center"
-                        style="font-size: 0.72rem; padding: 3px 10px; text-transform: uppercase; max-width: 100%;"
+                        style="font-size: 0.72rem; padding: 2px 8px; text-transform: uppercase; max-width: 100%;"
                         :title="`${tech.first_name || ''} ${tech.last_name || ''}`.trim()">
                         <span class="status-dot flex-shrink-0" />
-                        <span class="text-truncate" style="max-width: calc(100% - 14px);">{{ tech.first_name }} {{
-                          tech.last_name }}</span>
+                        <span class="text-truncate">{{ tech.first_name }} {{ tech.last_name }}</span>
                       </div>
                     </div>
                   </div>
@@ -882,34 +898,30 @@ const convertToSale = () => {
             </VCol>
           </VRow>
 
-          <!-- Historial de Pagos / Transacciones -->
-          <VRow class="mb-5">
+          <!-- Historial de Pagos / Transacciones (solo cuando hay pagos reales distribuidos o crédito) -->
+          <VRow v-if="!isQuote && (hasPaymentDistributions || saleData.is_credited)" class="mb-4">
             <VCol cols="12">
               <div class="modern-section-panel">
                 <div class="panel-header mb-3">
                   <div class="panel-icon-circle bg-amber-50 text-amber-600">
-                    <VIcon icon="ri-wallet-3-line" size="20" />
+                    <VIcon icon="ri-wallet-3-line" size="18" />
                   </div>
                   <div>
-                    <h4 class="text-subtitle-1 font-weight-bold text-slate-800">
+                    <h4 class="text-subtitle-2 font-weight-bold">
                       Transacciones y Pagos
                     </h4>
-                    <span class="text-caption text-medium-emphasis">Distribución financiera</span>
+                    <span class="text-caption text-medium-emphasis">Distribución financiera del comprobante</span>
                   </div>
                 </div>
 
-                <div v-if="hasPaymentDistributions" class="rounded-lg overflow-hidden border border-slate-200">
+                <div v-if="hasPaymentDistributions" class="rounded-lg overflow-hidden border">
                   <VTable density="compact" class="app-data-table">
                     <thead>
                       <tr>
-                        <th style="width: 50px;">
-                          #
-                        </th>
+                        <th style="width: 44px;">#</th>
                         <th>Método de Pago</th>
                         <th>Cuenta Destino</th>
-                        <th class="text-right" style="width: 160px;">
-                          Monto Recibido
-                        </th>
+                        <th class="text-right" style="width: 150px;">Monto Recibido</th>
                       </tr>
                     </thead>
                     <tbody>
@@ -924,15 +936,16 @@ const convertToSale = () => {
                               <span class="status-dot" />
                               {{ dist.payment_method }}
                             </span>
-                            <VChip v-if="dist.is_advance" size="x-small" color="success" variant="tonal" class="font-weight-bold">
+                            <VChip v-if="dist.is_advance" size="x-small" color="success" variant="tonal"
+                              class="font-weight-bold">
                               Anticipo OT
                             </VChip>
                           </div>
                         </td>
-                        <td class="text-slate-700 font-weight-medium">
+                        <td class="font-weight-medium">
                           {{ dist.account?.name || `Cuenta ${dist.account_id}` }}
                         </td>
-                        <td class="text-right font-weight-black text-success text-subtitle-2">
+                        <td class="text-right font-weight-black text-success">
                           {{ formatCurrency(dist.amount) }}
                         </td>
                       </tr>
@@ -940,31 +953,26 @@ const convertToSale = () => {
                   </VTable>
                 </div>
 
-                <div v-else class="empty-panel-hint pa-6 text-center rounded-lg border border-dashed">
-                  <VIcon
-                    :icon="isQuote ? 'ri-file-list-3-line' : (saleData.is_credited ? 'ri-file-shield-2-line' : 'ri-checkbox-circle-line')"
-                    size="34" :color="isQuote ? 'info' : (saleData.is_credited ? 'warning' : 'success')" class="mb-2" />
-                  <div class="text-body-2 font-weight-bold text-slate-800">
-                    {{ isQuote ? 'Documento de Cotización' : (saleData.is_credited ? 'Venta a Crédito' :
-                      'Venta de Contado') }}
+                <div v-else-if="saleData.is_credited"
+                  class="d-flex align-center gap-3 pa-3 rounded-lg border bg-amber-50-theme">
+                  <VIcon icon="ri-time-line" size="22" color="warning" />
+                  <div>
+                    <div class="text-body-2 font-weight-bold">Venta a Crédito</div>
+                    <div class="text-caption text-medium-emphasis">Registrado en cartera de cuentas por cobrar.</div>
                   </div>
-                  <p class="text-caption text-medium-emphasis mb-0 mt-1">
-                    {{ isQuote ? 'No genera salidas ni ingresos de caja hasta su conversión.' : (saleData.is_credited ?
-                      'Registrado en cartera de cuentas por cobrar.' : 'Pago registrado en su totalidad.') }}
-                  </p>
                 </div>
               </div>
             </VCol>
           </VRow>
 
           <!-- Detalle de Ítems (Productos y Servicios) -->
-          <div class="modern-section-panel mb-5">
-            <div class="panel-header mb-4">
+          <div class="modern-section-panel mb-4">
+            <div class="panel-header mb-3">
               <div class="panel-icon-circle bg-indigo-50 text-indigo-600">
-                <VIcon icon="ri-shopping-cart-2-line" size="20" />
+                <VIcon icon="ri-shopping-cart-2-line" size="18" />
               </div>
               <div>
-                <h4 class="text-subtitle-1 font-weight-bold text-slate-800">
+                <h4 class="text-subtitle-2 font-weight-bold">
                   Productos y Servicios
                 </h4>
                 <span class="text-caption text-medium-emphasis">{{ itemsCount }} {{ itemsCount === 1 ? 'ítem registrado'
@@ -972,47 +980,37 @@ const convertToSale = () => {
               </div>
             </div>
 
-            <div v-if="saleData.details?.length" class="rounded-lg overflow-hidden border border-slate-200">
-              <VTable density="comfortable" class="app-data-table">
+            <div v-if="saleData.details?.length" class="rounded-lg overflow-hidden border">
+              <VTable density="compact" class="app-data-table">
                 <thead>
                   <tr>
-                    <th style="width: 48%;">
-                      Descripción
-                    </th>
-                    <th class="text-center" style="width: 10%;">
-                      Cant.
-                    </th>
-                    <th class="text-right" style="width: 14%;">
-                      P.V.P.
-                    </th>
-                    <th class="text-right" style="width: 12%;">
-                      Desc.
-                    </th>
-                    <th class="text-right" style="width: 16%;">
-                      Total
-                    </th>
+                    <th>Descripción</th>
+                    <th class="text-center" style="width: 75px;">Cant.</th>
+                    <th class="text-right" style="width: 110px;">P.V.P.</th>
+                    <th class="text-right" style="width: 95px;">Desc.</th>
+                    <th class="text-right" style="width: 120px;">Total</th>
                   </tr>
                 </thead>
                 <tbody>
                   <tr v-for="(item, index) in saleData.details" :key="item.id || index">
-                    <td>
-                      <div class="font-weight-semibold text-slate-900 text-body-2">
+                    <td class="py-2">
+                      <div class="font-weight-semibold text-body-2">
                         {{ item.description }}
                       </div>
-                      <div v-if="item.product?.sku" class="mt-1">
+                      <div v-if="item.product?.sku" class="mt-0.5">
                         <span class="sku-badge">SKU: {{ item.product.sku }}</span>
                       </div>
                     </td>
-                    <td class="text-center">
+                    <td class="text-center py-2">
                       <span class="quantity-circle">{{ item.quantity }}</span>
                     </td>
-                    <td class="text-right font-weight-medium text-slate-700">
+                    <td class="text-right font-weight-medium py-2">
                       {{ formatCurrency(item.price) }}
                     </td>
-                    <td class="text-right text-medium-emphasis">
+                    <td class="text-right text-medium-emphasis py-2">
                       {{ formatCurrency(item.discount || 0) }}
                     </td>
-                    <td class="text-right font-weight-black text-slate-900 text-body-2">
+                    <td class="text-right font-weight-black text-body-2 py-2">
                       {{ formatCurrency(item.total) }}
                     </td>
                   </tr>
@@ -1020,8 +1018,8 @@ const convertToSale = () => {
               </VTable>
             </div>
 
-            <div v-else class="empty-panel-hint pa-8 text-center rounded-lg border border-dashed">
-              <VIcon icon="ri-shopping-bag-3-line" size="42" color="grey-lighten-1" class="mb-2" />
+            <div v-else class="empty-panel-hint pa-6 text-center rounded-lg border border-dashed">
+              <VIcon icon="ri-shopping-bag-3-line" size="32" color="grey-lighten-1" class="mb-1" />
               <p class="text-body-2 text-medium-emphasis mb-0">
                 No hay productos registrados en este comprobante
               </p>
@@ -1029,42 +1027,40 @@ const convertToSale = () => {
           </div>
 
           <!-- Totales y Observaciones -->
-          <VRow>
-            <VCol cols="12" md="7">
-              <div v-if="saleData.observations" class="modern-section-panel h-100">
-                <div class="d-flex align-center gap-2 mb-2 text-indigo-darken-2">
-                  <VIcon icon="ri-chat-1-line" size="18" />
+          <VRow class="g-3">
+            <VCol v-if="saleData.observations" cols="12" md="7">
+              <div class="modern-section-panel h-100 pa-4">
+                <div class="d-flex align-center gap-2 mb-2">
+                  <VIcon icon="ri-chat-1-line" size="18" color="primary" />
                   <span class="text-subtitle-2 font-weight-bold">Observaciones</span>
                 </div>
-                <p class="text-body-2 mb-0 text-slate-700 bg-slate-50 pa-3 rounded-lg border border-slate-200">
+                <p class="text-body-2 mb-0 pa-3 rounded-lg border observations-box">
                   {{ saleData.observations }}
                 </p>
               </div>
             </VCol>
 
-            <VCol cols="12" md="5">
-              <div class="totals-summary-card pa-5 rounded-xl shadow-sm">
-                <div class="d-flex justify-space-between align-center mb-2">
+            <VCol cols="12" :md="saleData.observations ? 5 : 6" :class="{ 'ms-auto': !saleData.observations }">
+              <div class="totals-summary-card pa-4 rounded-xl border">
+                <div class="d-flex justify-space-between align-center mb-1.5">
                   <span class="text-body-2 text-medium-emphasis font-weight-medium">Subtotal</span>
-                  <span class="text-body-1 font-weight-semibold text-slate-800">{{ formatCurrency(displaySubtotal)
-                    }}</span>
+                  <span class="text-body-1 font-weight-semibold">{{ formatCurrency(displaySubtotal) }}</span>
                 </div>
 
-                <div v-if="displayTaxAmount > 0" class="d-flex justify-space-between align-center mb-2">
+                <div v-if="displayTaxAmount > 0" class="d-flex justify-space-between align-center mb-1.5">
                   <span class="text-body-2 text-medium-emphasis font-weight-medium">IVA (15%)</span>
-                  <span class="text-body-1 font-weight-semibold text-slate-800">{{ formatCurrency(displayTaxAmount)
-                    }}</span>
+                  <span class="text-body-1 font-weight-semibold">{{ formatCurrency(displayTaxAmount) }}</span>
                 </div>
 
-                <div v-if="totalDiscount > 0" class="d-flex justify-space-between align-center mb-2 text-error">
+                <div v-if="totalDiscount > 0" class="d-flex justify-space-between align-center mb-1.5 text-error">
                   <span class="text-body-2 font-weight-medium">Descuento</span>
                   <span class="text-body-1 font-weight-bold">-{{ formatCurrency(totalDiscount) }}</span>
                 </div>
 
-                <VDivider class="my-3 border-slate-300" />
+                <VDivider class="my-2.5" />
 
                 <div class="d-flex justify-space-between align-center">
-                  <span class="text-subtitle-1 font-weight-black text-slate-900">Total a Pagar</span>
+                  <span class="text-subtitle-2 font-weight-black">Total</span>
                   <span class="text-h5 font-weight-black text-primary">{{ formatCurrency(displayTotal) }}</span>
                 </div>
               </div>
@@ -1077,36 +1073,30 @@ const convertToSale = () => {
 
       <!-- Footer Actions Flotante y Moderno -->
       <VCardActions
-        class="py-3 px-6 d-flex align-center justify-space-between flex-wrap gap-3 bg-surface sticky-dialog-footer border-t">
+        class="py-3 px-5 d-flex align-center justify-space-between flex-wrap gap-2.5 bg-surface sticky-dialog-footer border-t">
         <!-- Izquierda: Acciones Operativas -->
-        <div class="d-flex align-center flex-wrap gap-2.5">
-          <!-- Conversión Directa de Cotizaciones Activas -->
-          <VBtn v-if="canConvertQuote" color="primary" variant="elevated" prepend-icon="ri-tools-line"
-            class="rounded-lg px-3.5 font-weight-bold elevation-1" height="40" @click="convertToWorkOrder">
-            Convertir a Orden de Trabajo
-          </VBtn>
-
+        <div class="d-flex align-center flex-wrap gap-2">
           <VBtn v-if="canConvertQuote" color="success" variant="elevated" prepend-icon="ri-shopping-cart-2-line"
-            class="rounded-lg px-3.5 font-weight-bold elevation-1" height="40" @click="convertToSale">
+            class="rounded-lg px-3.5 font-weight-bold elevation-1" height="38" @click="convertToSale">
             Facturar Venta
           </VBtn>
 
           <!-- Imprimir -->
           <VBtn color="secondary" variant="elevated" prepend-icon="ri-printer-line"
-            class="rounded-lg px-3.5 font-weight-semibold" height="40" @click="printSale(props.saleData.id)">
+            class="rounded-lg px-3.5 font-weight-semibold" height="38" @click="printSale(props.saleData.id)">
             Imprimir
           </VBtn>
 
           <!-- Enviar por Email (si tiene email) -->
           <VBtn v-if="(isInvoice || saleData.sri_access_key) && saleData.client?.email" color="success"
             variant="elevated" prepend-icon="ri-mail-send-line" :loading="isSendingEmail"
-            class="rounded-lg px-3.5 font-weight-semibold" height="40" @click="sendEmail">
+            class="rounded-lg px-3.5 font-weight-semibold" height="38" @click="sendEmail">
             Enviar Email
           </VBtn>
 
           <!-- Botón Desplegable de Descarga -->
           <VBtn color="primary" variant="elevated" prepend-icon="ri-download-2-line" append-icon="ri-arrow-down-s-line"
-            class="rounded-lg px-4 font-weight-bold elevation-2" height="40">
+            class="rounded-lg px-3.5 font-weight-bold elevation-2" height="38">
             Descargar
             <VMenu activator="parent" transition="slide-y-transition" location="top end">
               <VList density="compact" class="py-1 rounded-lg elevation-4 border" min-width="210">
@@ -1127,7 +1117,7 @@ const convertToSale = () => {
         <!-- Derecha: Cerrar -->
         <div class="d-flex align-center ms-auto">
           <VBtn color="secondary" variant="outlined" prepend-icon="ri-close-line"
-            class="rounded-lg px-4 font-weight-medium" height="40" @click="closeDialog">
+            class="rounded-lg px-4 font-weight-medium" height="38" @click="closeDialog">
             Cerrar
           </VBtn>
         </div>
