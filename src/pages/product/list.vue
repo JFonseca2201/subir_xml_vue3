@@ -591,37 +591,36 @@ watch([
           </VBtn>
         </div>
 
-        <VRow dense class="gap-y-3">
-          <VCol cols="12" :md="isAdminOrSuperAdmin ? 4 : 6">
+        <VRow dense class="gap-y-3 align-center">
+          <!-- 6 columnas fijas para Buscar producto -->
+          <VCol cols="12" md="6">
             <VTextField v-model="searchForm.search" label="Buscar producto"
               placeholder="Descripción, SKU, código auxiliar..." prepend-inner-icon="ri-search-2-line"
               variant="outlined" density="comfortable" hide-details="auto" clearable color="primary"
               :loading="loading" />
           </VCol>
 
-          <VCol cols="12" sm="4" md="2">
-            <VSelect v-model="searchForm.categorie_id" :items="categories" item-title="title" item-value="id"
-              label="Categoría" placeholder="Todas" prepend-inner-icon="ri-folder-line" variant="outlined"
-              density="comfortable" hide-details="auto" clearable color="primary" />
-          </VCol>
+          <!-- 6 columnas restantes repartidas entre los filtros visibles -->
+          <VCol cols="12" md="6">
+            <div class="d-flex ga-2 filtros-derechos">
+              <VSelect v-model="searchForm.categorie_id" :items="categories" item-title="title" item-value="id"
+                label="Categoría" placeholder="Todas" prepend-inner-icon="ri-folder-line" variant="outlined"
+                density="comfortable" hide-details="auto" clearable color="primary" class="filtro-flex" />
 
-          <VCol cols="12" sm="4" md="2">
-            <VSelect v-model="searchForm.warehouse_id" :items="warehouses" item-title="name" item-value="id"
-              label="Almacén" placeholder="Todos" prepend-inner-icon="ri-store-2-line" variant="outlined"
-              density="comfortable" hide-details="auto" clearable color="primary" />
-          </VCol>
+              <VSelect v-model="searchForm.warehouse_id" :items="warehouses" item-title="name" item-value="id"
+                label="Almacén" placeholder="Todos" prepend-inner-icon="ri-store-2-line" variant="outlined"
+                density="comfortable" hide-details="auto" clearable color="primary" class="filtro-flex" />
 
-          <VCol cols="12" sm="4" md="2">
-            <VSelect v-model="searchForm.unit_id" :items="units" item-title="name" item-value="id" label="Unidad"
-              placeholder="Todas" prepend-inner-icon="ri-ruler-line" variant="outlined" density="comfortable"
-              hide-details="auto" clearable color="primary" />
-          </VCol>
+              <VSelect v-model="searchForm.unit_id" :items="units" item-title="name" item-value="id" label="Unidad"
+                placeholder="Todas" prepend-inner-icon="ri-ruler-line" variant="outlined" density="comfortable"
+                hide-details="auto" clearable color="primary" class="filtro-flex" />
 
-          <!-- Filtro de Estado de Inventariado (Solo Superadmin y Administrador) -->
-          <VCol v-if="isAdminOrSuperAdmin" cols="12" sm="6" md="2">
-            <VSelect v-model="searchForm.inventory_status" :items="inventoryStatusOptions" item-title="title"
-              item-value="value" label="Inventario" prepend-inner-icon="ri-survey-line" variant="outlined"
-              density="comfortable" hide-details="auto" color="primary" />
+              <!-- Filtro de Estado de Inventariado (Solo Superadmin y Administrador) -->
+              <VSelect v-if="isAdminOrSuperAdmin" v-model="searchForm.inventory_status" :items="inventoryStatusOptions"
+                item-title="title" item-value="value" label="Inventario" prepend-inner-icon="ri-survey-line"
+                variant="outlined" density="comfortable" hide-details="auto" color="primary"
+                class="filtro-flex filtro-flex--compacto" />
+            </div>
           </VCol>
         </VRow>
       </VCardText>
@@ -993,7 +992,8 @@ watch([
                         <VList density="compact" class="py-1 rounded-lg elevation-4 border" min-width="190">
                           <!-- Edición Rápida (Stock, Precio, Categoría, Marca) -->
                           <VListItem v-if="can('edit_product')" prepend-icon="ri-flashlight-line" title="Edición Rápida"
-                            class="text-primary text-body-2 font-weight-medium" @click="openQuickEdit(item, item.item_type == 2 ? 'price' : 'stock')" />
+                            class="text-primary text-body-2 font-weight-medium"
+                            @click="openQuickEdit(item, item.item_type == 2 ? 'price' : 'stock')" />
 
                           <!-- Ajuste Rápido de Stock -->
                           <VListItem v-if="can('edit_product') && item.item_type == 1" prepend-icon="ri-box-3-line"
