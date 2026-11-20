@@ -504,15 +504,24 @@ const getRelativeDaysText = (item) => {
           </div>
 
           <!-- Campos de Destinatario y Asunto -->
-          <div class="mb-4 mt-2">
-            <VTextField v-model="emailForm.email" label="Correo Electrónico Destinatario *"
-              placeholder="ejemplo@correo.com" type="email" variant="outlined" density="comfortable"
-              prepend-inner-icon="ri-mail-line" class="mb-3.5"
-              hint="Si el cliente no tenía correo registrado, se actualizará automáticamente." persistent-hint />
+          <div class="mb-4">
+            <!-- Correo Destinatario -->
+            <div class="mb-4">
+              <VTextField v-model="emailForm.email" label="Correo Electrónico Destinatario *"
+                placeholder="ejemplo@correo.com" type="email" variant="outlined" density="comfortable"
+                prepend-inner-icon="ri-mail-line" hide-details="auto" />
+              <div class="d-flex align-center gap-1.5 mt-1.5 px-1 text-caption text-medium-emphasis">
+                <VIcon icon="ri-information-line" size="14" color="info" />
+                <span>Si el cliente no tenía correo registrado, se actualizará automáticamente.</span>
+              </div>
+            </div>
 
-            <VTextField v-model="emailForm.subject" label="Asunto del Correo *"
-              placeholder="Asunto descriptivo del recordatorio..." variant="outlined" density="comfortable"
-              prepend-inner-icon="ri-file-text-line" />
+            <!-- Asunto del Correo -->
+            <div class="mb-4">
+              <VTextField v-model="emailForm.subject" label="Asunto del Correo *"
+                placeholder="Asunto descriptivo del recordatorio..." variant="outlined" density="comfortable"
+                prepend-inner-icon="ri-file-text-line" hide-details="auto" />
+            </div>
           </div>
 
           <!-- Cuerpo del Correo a Enviar (Editable) -->
@@ -531,8 +540,11 @@ const getRelativeDaysText = (item) => {
             <VTextarea v-model="emailForm.message"
               placeholder="Escribe el cuerpo del mensaje que recibirá el cliente..." variant="outlined"
               density="comfortable" rows="6" auto-grow prepend-inner-icon="ri-edit-2-line"
-              hint="Este texto se insertará en el cuerpo principal de la plantilla institucional enviada al cliente."
-              persistent-hint />
+              hide-details="auto" />
+            <div class="d-flex align-center gap-1.5 mt-1.5 px-1 text-caption text-medium-emphasis">
+              <VIcon icon="ri-file-info-line" size="14" />
+              <span>Este texto se insertará en el cuerpo principal de la plantilla institucional enviada al cliente.</span>
+            </div>
           </div>
 
           <!-- Acordeón / Vista previa en vivo -->
