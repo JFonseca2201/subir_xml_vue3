@@ -429,41 +429,44 @@ const getRelativeDaysText = (item) => {
 
     <!-- DIÁLOGO MODAL PARA CONFIRMACIÓN Y ENVÍO DE CORREO -->
     <VDialog v-model="isEmailDialogVisible" max-width="660" scrollable>
-      <VCard class="rounded-xl overflow-hidden elevation-24">
-        <!-- Header con degradado primario e íconos -->
-        <div class="custom-dialog-header-primary">
-          <div class="d-flex align-center gap-3">
-            <VAvatar color="primary" variant="tonal" size="38" rounded="lg">
-              <VIcon icon="ri-mail-send-fill" size="22" color="primary" />
-            </VAvatar>
-            <div>
-              <h3 class="text-subtitle-1 font-weight-bold text-high-emphasis mb-0 d-flex align-center gap-1.5">
+      <VCard class="rounded-xl overflow-hidden elevation-24 email-confirm-card">
+        <!-- Header con degradado primario estilizado y sobrio -->
+        <div class="custom-dialog-header-primary email-dialog-header">
+          <!-- Botón de Cerrar (X) anclado en la esquina superior derecha -->
+          <VBtn icon="ri-close-line" size="small" variant="text" class="custom-dialog-close-btn"
+            title="Cerrar ventana" @click="isEmailDialogVisible = false" />
+
+          <!-- Contenedor alineado a la izquierda con avatar notorio -->
+          <div class="d-flex align-center gap-3.5 pe-10 text-start w-100">
+            <div class="email-dialog-avatar flex-shrink-0">
+              <VIcon icon="ri-mail-send-fill" size="24" color="white" />
+            </div>
+            <div class="min-w-0">
+              <h3 class="text-subtitle-1 font-weight-bold text-white mb-0.5 text-truncate" style="color: #ffffff !important;">
                 Confirmación de Envío por Email
               </h3>
-              <span class="text-caption text-medium-emphasis">
+              <p class="text-caption mb-0 text-truncate" style="color: rgba(255, 255, 255, 0.88) !important;">
                 Revisa los detalles técnicos y el cuerpo del mensaje antes del envío
-              </span>
+              </p>
             </div>
           </div>
-
-          <VBtn icon="ri-close-line" size="small" variant="text" color="medium-emphasis"
-            @click="isEmailDialogVisible = false" />
         </div>
 
         <VCardText class="pa-5 overflow-y-auto" style="max-height: calc(85vh - 120px);">
           <!-- Ficha Resumen con Íconos (Vehículo, Placa, Cliente, Servicio) -->
-          <div class="p-3 pa-3 rounded-lg border mb-4 bg-surface"
-            style="background: rgba(var(--v-theme-on-surface), 0.02) !important;">
-            <div class="d-flex align-center justify-space-between flex-wrap gap-2 mb-2">
+          <div class="email-vehicle-card pa-3.5 rounded-xl border mb-4">
+            <div class="d-flex align-center justify-space-between flex-wrap gap-2 mb-2.5">
               <!-- Vehículo y Placa -->
               <div class="d-flex align-center gap-2">
-                <VIcon icon="ri-car-fill" size="18" color="primary" />
+                <div class="vehicle-icon-circle">
+                  <VIcon icon="ri-car-fill" size="16" color="primary" />
+                </div>
                 <span class="font-weight-bold text-body-2 text-high-emphasis">
                   {{ emailTargetReminder?.vehicle?.brand_name || '' }} {{ emailTargetReminder?.vehicle?.model ||
                     'Vehículo'
                   }}
                 </span>
-                <span class="kardex-plate-badge" style="font-size: 0.72rem; padding: 1px 6px;">
+                <span class="kardex-plate-badge" style="font-size: 0.72rem; padding: 1px 7px;">
                   {{ emailTargetReminder?.vehicle?.license_plate || 'S/P' }}
                 </span>
               </div>
@@ -476,22 +479,25 @@ const getRelativeDaysText = (item) => {
               </VChip>
             </div>
 
+            <VDivider class="my-2 border-dashed opacity-50" />
+
             <VRow dense class="text-caption">
               <!-- Cliente -->
-              <VCol cols="12" sm="6" class="d-flex align-center gap-1.5 text-medium-emphasis">
-                <VIcon icon="ri-user-3-line" size="14" />
+              <VCol cols="12" sm="7" class="d-flex align-center gap-1.5 text-medium-emphasis">
+                <VIcon icon="ri-user-3-line" size="14" class="text-primary" />
                 <span>Cliente:</span>
-                <strong class="text-high-emphasis">{{ emailTargetReminder?.client?.full_name || 'No registrado'
-                }}</strong>
+                <strong class="text-high-emphasis font-weight-semibold">
+                  {{ emailTargetReminder?.client?.full_name || 'No registrado' }}
+                </strong>
               </VCol>
 
               <!-- Kilometraje Meta -->
-              <VCol cols="12" sm="6" class="d-flex align-center gap-1.5 text-medium-emphasis justify-sm-end">
-                <VIcon icon="ri-dashboard-3-line" size="14" />
+              <VCol cols="12" sm="5" class="d-flex align-center gap-1.5 text-medium-emphasis justify-sm-end">
+                <VIcon icon="ri-dashboard-3-line" size="14" class="text-primary" />
                 <span>Kilometraje:</span>
-                <strong class="text-primary font-mono">{{ Number(emailTargetReminder?.target_mileage ||
-                  0).toLocaleString()
-                }} KM</strong>
+                <strong class="text-primary font-mono font-weight-bold">
+                  {{ Number(emailTargetReminder?.target_mileage || 0).toLocaleString() }} KM
+                </strong>
               </VCol>
             </VRow>
           </div>
@@ -500,7 +506,7 @@ const getRelativeDaysText = (item) => {
           <div class="mb-4">
             <VTextField v-model="emailForm.email" label="Correo Electrónico Destinatario *"
               placeholder="ejemplo@correo.com" type="email" variant="outlined" density="comfortable"
-              prepend-inner-icon="ri-mail-line" class="mb-3"
+              prepend-inner-icon="ri-mail-line" class="mb-3.5"
               hint="Si el cliente no tenía correo registrado, se actualizará automáticamente." persistent-hint />
 
             <VTextField v-model="emailForm.subject" label="Asunto del Correo *"
@@ -509,11 +515,11 @@ const getRelativeDaysText = (item) => {
           </div>
 
           <!-- Cuerpo del Correo a Enviar (Editable) -->
-          <div class="mb-3">
-            <div class="d-flex align-center justify-space-between mb-1.5 mt-1.5">
+          <div class="mb-4">
+            <div class="d-flex align-center justify-space-between mb-2">
               <span class="text-caption font-weight-bold text-high-emphasis d-flex align-center gap-1.5">
                 <VIcon icon="ri-message-2-line" size="16" color="primary" />
-                Cuerpo del Mensaje a Enviar *
+                Cuerpo del Mensaje a Enviar <span class="text-error font-weight-bold">*</span>
               </span>
               <VChip size="x-small" color="primary" variant="tonal" class="font-weight-semibold">
                 <VIcon start icon="ri-edit-line" size="11" />
@@ -521,7 +527,7 @@ const getRelativeDaysText = (item) => {
               </VChip>
             </div>
 
-            <VTextarea v-model="emailForm.message" label="Mensaje para el Cliente"
+            <VTextarea v-model="emailForm.message"
               placeholder="Escribe el cuerpo del mensaje que recibirá el cliente..." variant="outlined"
               density="comfortable" rows="6" auto-grow prepend-inner-icon="ri-edit-2-line"
               hint="Este texto se insertará en el cuerpo principal de la plantilla institucional enviada al cliente."
@@ -621,3 +627,80 @@ const getRelativeDaysText = (item) => {
     </VDialog>
   </template>
 </template>
+
+<style scoped lang="scss">
+.email-confirm-card {
+  .email-dialog-header {
+    position: relative !important;
+    padding: 1.25rem 1.5rem !important;
+    text-align: left !important;
+    background: linear-gradient(135deg, #666cff 0%, #5b61eb 50%, #4f54e5 100%) !important;
+    color: #ffffff !important;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.18) !important;
+    box-shadow: 0 4px 18px rgba(15, 23, 42, 0.08) !important;
+
+    .email-dialog-avatar {
+      width: 44px;
+      height: 44px;
+      border-radius: 12px;
+      background: rgba(255, 255, 255, 0.22);
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+      border: 1px solid rgba(255, 255, 255, 0.38);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
+
+      .v-icon {
+        color: #ffffff !important;
+      }
+    }
+
+    .custom-dialog-close-btn {
+      position: absolute !important;
+      top: 14px !important;
+      right: 14px !important;
+      width: 32px !important;
+      height: 32px !important;
+      min-width: 32px !important;
+      border-radius: 8px !important;
+      background: rgba(255, 255, 255, 0.18) !important;
+      border: 1px solid rgba(255, 255, 255, 0.28) !important;
+      color: #ffffff !important;
+      padding: 0 !important;
+      display: inline-flex !important;
+      align-items: center !important;
+      justify-content: center !important;
+      transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1) !important;
+      z-index: 10 !important;
+
+      &:hover {
+        background: rgba(255, 255, 255, 0.32) !important;
+        border-color: rgba(255, 255, 255, 0.5) !important;
+        transform: scale(1.06) !important;
+      }
+
+      .v-icon {
+        color: #ffffff !important;
+      }
+    }
+  }
+
+  .email-vehicle-card {
+    background: rgba(var(--v-theme-on-surface), 0.02) !important;
+    border: 1px solid rgba(var(--v-theme-on-surface), 0.08) !important;
+    transition: all 0.2s ease;
+
+    .vehicle-icon-circle {
+      width: 28px;
+      height: 28px;
+      border-radius: 8px;
+      background: rgba(var(--v-theme-primary), 0.12);
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+    }
+  }
+}
+</style>
