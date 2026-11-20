@@ -112,9 +112,9 @@ const filteredServices = computed(() => {
 const allUnifiedList = computed(() => {
   const prod = (data.value.products || []).map(p => ({ ...p, type_label: 'Producto', type_color: 'primary' }))
   const serv = (data.value.services || []).map(s => ({ ...s, type_label: 'Servicio', type_color: 'info' }))
-  
+
   const merged = [...prod, ...serv]
-  
+
   if (sortBy.value === 'quantity') {
     merged.sort((a, b) => b.quantity - a.quantity)
   } else {
@@ -134,7 +134,7 @@ const getRankColor = index => {
   if (index === 0) return '#FFD700' // Oro
   if (index === 1) return '#C0C0C0' // Plata
   if (index === 2) return '#CD7F32' // Bronce
-  
+
   return 'secondary'
 }
 
@@ -142,28 +142,18 @@ const getRankIcon = index => {
   if (index === 0) return 'ri-medal-fill text-amber'
   if (index === 1) return 'ri-medal-fill text-blue-grey'
   if (index === 2) return 'ri-medal-fill text-orange-darken-2'
-  
+
   return 'ri-hashtag'
 }
 </script>
 
 <template>
-  <VDialog
-    v-model="isVisible"
-    max-width="1200"
-    scrollable
-    transition="dialog-bottom-transition"
-  >
+  <VDialog v-model="isVisible" max-width="1200" scrollable transition="dialog-bottom-transition">
     <VCard class="custom-dialog-card elevation-24">
       <!-- Header Banner Primary -->
       <div class="custom-dialog-header-primary">
-        <VBtn
-          icon="ri-close-line"
-          variant="text"
-          size="small"
-          class="custom-dialog-close-btn"
-          @click="isVisible = false"
-        />
+        <VBtn icon="ri-close-line" variant="text" size="small" class="custom-dialog-close-btn"
+          @click="isVisible = false" />
         <div class="custom-dialog-avatar">
           <VIcon icon="ri-bar-chart-grouped-fill" />
         </div>
@@ -177,96 +167,37 @@ const getRankIcon = index => {
 
       <!-- Barra de Filtros Rápidos Estructurada -->
       <div class="custom-dialog-filters pa-4 bg-white border-b">
-        <VRow
-          dense
-          align="center"
-          class="ma-0"
-        >
+        <VRow dense align="center" class="ma-0">
           <!-- Selector de Mes -->
-          <VCol
-            cols="12"
-            sm="4"
-            md="4"
-            class="px-2 py-1"
-          >
-            <VSelect
-              v-model="selectedMonth"
-              :items="data.available_months"
-              item-title="label"
-              item-value="key"
-              density="compact"
-              variant="outlined"
-              hide-details
-              bg-color="grey-lighten-5"
-              prepend-inner-icon="ri-calendar-event-line"
-              label="Mes de Consulta"
-              class="filter-select"
-            />
+          <VCol cols="12" sm="4" md="4" class="px-2 py-1">
+            <VSelect v-model="selectedMonth" :items="data.available_months" item-title="label" item-value="key"
+              density="compact" variant="outlined" hide-details bg-color="grey-lighten-5"
+              prepend-inner-icon="ri-calendar-event-line" label="Mes de Consulta" class="filter-select" />
           </VCol>
 
           <!-- Criterio de Ordenamiento -->
-          <VCol
-            cols="12"
-            sm="4"
-            md="4"
-            class="px-2 py-1"
-          >
-            <VSelect
-              v-model="sortBy"
-              :items="[
-                { title: 'Mayor Monto ($)', value: 'revenue' },
-                { title: 'Mayor Cantidad (U.)', value: 'quantity' },
-              ]"
-              item-title="title"
-              item-value="value"
-              density="compact"
-              variant="outlined"
-              hide-details
-              bg-color="grey-lighten-5"
-              prepend-inner-icon="ri-sort-desc"
-              label="Criterio de Orden"
-              class="filter-select"
-            />
+          <VCol cols="12" sm="4" md="4" class="px-2 py-1">
+            <VSelect v-model="sortBy" :items="[
+              { title: 'Mayor Monto ($)', value: 'revenue' },
+              { title: 'Mayor Cantidad (U.)', value: 'quantity' },
+            ]" item-title="title" item-value="value" density="compact" variant="outlined" hide-details
+              bg-color="grey-lighten-5" prepend-inner-icon="ri-sort-desc" label="Criterio de Orden"
+              class="filter-select" />
           </VCol>
 
           <!-- Buscador Rápido -->
-          <VCol
-            cols="12"
-            sm="4"
-            md="4"
-            class="px-2 py-1"
-          >
-            <VTextField
-              v-model="filterSearch"
-              density="compact"
-              placeholder="Buscar por nombre o SKU..."
-              prepend-inner-icon="ri-search-line"
-              variant="outlined"
-              hide-details
-              bg-color="grey-lighten-5"
-              clearable
-              :loading="loading"
-              class="filter-input"
-            />
+          <VCol cols="12" sm="4" md="4" class="px-2 py-1">
+            <VTextField v-model="filterSearch" density="compact" placeholder="Buscar por nombre o SKU..."
+              prepend-inner-icon="ri-search-line" variant="outlined" hide-details bg-color="grey-lighten-5" clearable
+              :loading="loading" class="filter-input" />
           </VCol>
         </VRow>
       </div>
 
-      <VCardText
-        class="pa-5"
-        style="max-height: 70vh;"
-      >
+      <VCardText class="pa-5" style="max-height: 70vh;">
         <!-- Indicador de Carga -->
-        <div
-          v-if="loading"
-          class="py-12 text-center"
-        >
-          <VProgressCircular
-            indeterminate
-            color="primary"
-            size="54"
-            width="4"
-          />
+        <div v-if="loading" class="py-12 text-center">
+          <VProgressCircular indeterminate color="primary" size="54" width="4" />
           <div class="text-subtitle-1 font-weight-bold mt-4 text-medium-emphasis">
             Analizando y ordenando ventas del mes...
           </div>
@@ -274,19 +205,10 @@ const getRankIcon = index => {
 
         <div v-else>
           <!-- Tarjetas KPI Resumen del Mes -->
-          <VRow
-            class="mb-5"
-            dense
-          >
+          <VRow class="mb-5" dense>
             <!-- Gran Total -->
-            <VCol
-              cols="12"
-              md="4"
-            >
-              <VCard
-                elevation="0"
-                class="pa-4 rounded-xl border bg-purple-lighten-5 border-purple-lighten-4"
-              >
+            <VCol cols="12" md="4">
+              <VCard elevation="0" class="pa-4 rounded-xl border bg-purple-lighten-5 border-purple-lighten-4">
                 <div class="d-flex align-center justify-space-between">
                   <div>
                     <div class="text-caption font-weight-bold text-uppercase text-purple-darken-2">
@@ -299,30 +221,16 @@ const getRankIcon = index => {
                       {{ Number(data.summary.grand_total_quantity).toLocaleString() }} unidades/servicios vendidos
                     </div>
                   </div>
-                  <VAvatar
-                    color="primary"
-                    variant="tonal"
-                    size="48"
-                  >
-                    <VIcon
-                      icon="ri-money-dollar-box-line"
-                      size="26"
-                    />
+                  <VAvatar color="primary" variant="tonal" size="48">
+                    <VIcon icon="ri-money-dollar-box-line" size="26" />
                   </VAvatar>
                 </div>
               </VCard>
             </VCol>
 
             <!-- Total Productos -->
-            <VCol
-              cols="12"
-              sm="6"
-              md="4"
-            >
-              <VCard
-                elevation="0"
-                class="pa-4 rounded-xl border bg-indigo-lighten-5 border-indigo-lighten-4"
-              >
+            <VCol cols="12" sm="6" md="4">
+              <VCard elevation="0" class="pa-4 rounded-xl border bg-indigo-lighten-5 border-indigo-lighten-4">
                 <div class="d-flex align-center justify-space-between">
                   <div>
                     <div class="text-caption font-weight-bold text-uppercase text-indigo-darken-2">
@@ -332,33 +240,20 @@ const getRankIcon = index => {
                       {{ formatCurrency(data.summary.products_revenue) }}
                     </div>
                     <div class="text-caption text-indigo-darken-1 font-weight-medium">
-                      {{ Number(data.summary.products_quantity).toLocaleString() }} unidades ({{ data.summary.products_unique_count }} ítems)
+                      {{ Number(data.summary.products_quantity).toLocaleString() }} unidades ({{
+                        data.summary.products_unique_count }} ítems)
                     </div>
                   </div>
-                  <VAvatar
-                    color="indigo"
-                    variant="tonal"
-                    size="48"
-                  >
-                    <VIcon
-                      icon="ri-box-3-line"
-                      size="26"
-                    />
+                  <VAvatar color="indigo" variant="tonal" size="48">
+                    <VIcon icon="ri-box-3-line" size="26" />
                   </VAvatar>
                 </div>
               </VCard>
             </VCol>
 
             <!-- Total Servicios -->
-            <VCol
-              cols="12"
-              sm="6"
-              md="4"
-            >
-              <VCard
-                elevation="0"
-                class="pa-4 rounded-xl border bg-teal-lighten-5 border-teal-lighten-4"
-              >
+            <VCol cols="12" sm="6" md="4">
+              <VCard elevation="0" class="pa-4 rounded-xl border bg-teal-lighten-5 border-teal-lighten-4">
                 <div class="d-flex align-center justify-space-between">
                   <div>
                     <div class="text-caption font-weight-bold text-uppercase text-teal-darken-2">
@@ -368,18 +263,12 @@ const getRankIcon = index => {
                       {{ formatCurrency(data.summary.services_revenue) }}
                     </div>
                     <div class="text-caption text-teal-darken-1 font-weight-medium">
-                      {{ Number(data.summary.services_quantity).toLocaleString() }} servicios realizados ({{ data.summary.services_unique_count }} tipos)
+                      {{ Number(data.summary.services_quantity).toLocaleString() }} servicios realizados ({{
+                        data.summary.services_unique_count }} tipos)
                     </div>
                   </div>
-                  <VAvatar
-                    color="teal"
-                    variant="tonal"
-                    size="48"
-                  >
-                    <VIcon
-                      icon="ri-tools-line"
-                      size="26"
-                    />
+                  <VAvatar color="teal" variant="tonal" size="48">
+                    <VIcon icon="ri-tools-line" size="26" />
                   </VAvatar>
                 </div>
               </VCard>
@@ -387,128 +276,64 @@ const getRankIcon = index => {
           </VRow>
 
           <!-- Pestañas de Navegación de Venta -->
-          <VTabs
-            v-model="activeTab"
-            color="primary"
-            align-tabs="start"
-            class="mb-4 border-b"
-          >
-            <VTab
-              value="products"
-              class="font-weight-bold text-capitalize"
-            >
-              <VIcon
-                start
-                icon="ri-box-3-line"
-              />
+          <VTabs v-model="activeTab" color="primary" align-tabs="start" class="mb-4 border-b">
+            <VTab value="products" class="font-weight-bold text-capitalize">
+              <VIcon start icon="ri-box-3-line" />
               Productos Físicos ({{ filteredProducts.length }})
             </VTab>
-            <VTab
-              value="services"
-              class="font-weight-bold text-capitalize"
-            >
-              <VIcon
-                start
-                icon="ri-tools-line"
-              />
+            <VTab value="services" class="font-weight-bold text-capitalize">
+              <VIcon start icon="ri-tools-line" />
               Servicios de Taller ({{ filteredServices.length }})
             </VTab>
-            <VTab
-              value="all"
-              class="font-weight-bold text-capitalize"
-            >
-              <VIcon
-                start
-                icon="ri-list-check-2"
-              />
+            <VTab value="all" class="font-weight-bold text-capitalize">
+              <VIcon start icon="ri-list-check-2" />
               Ranking General Unificado ({{ allUnifiedList.length }})
             </VTab>
           </VTabs>
 
           <!-- TAB 1: PRODUCTOS -->
           <div v-if="activeTab === 'products'">
-            <div
-              v-if="filteredProducts.length === 0"
-              class="pa-10 text-center text-medium-emphasis d-flex flex-column align-center justify-center"
-            >
-              <VAvatar
-                color="primary"
-                variant="tonal"
-                size="64"
-                class="mb-3"
-              >
-                <VIcon
-                  icon="ri-dropbox-line"
-                  size="36"
-                />
+            <div v-if="filteredProducts.length === 0"
+              class="pa-10 text-center text-medium-emphasis d-flex flex-column align-center justify-center">
+              <VAvatar color="primary" variant="tonal" size="64" class="mb-3">
+                <VIcon icon="ri-dropbox-line" size="36" />
               </VAvatar>
               <div class="text-body-1 font-weight-medium">
                 No se registraron ventas de productos físicos en el período seleccionado.
               </div>
             </div>
 
-            <VTable
-              v-else
-              hover
-              density="comfortable"
-              class="border rounded-lg overflow-hidden sales-ranking-table"
-            >
+            <VTable v-else hover density="comfortable" class="border rounded-lg overflow-hidden sales-ranking-table">
               <thead>
                 <tr class="bg-grey-lighten-4">
-                  <th
-                    class="text-center font-weight-bold py-3"
-                    style="width: 70px;"
-                  >
+                  <th class="text-center font-weight-bold py-3" style="width: 70px;">
                     RANK
                   </th>
                   <th class="text-left font-weight-bold py-3">
                     PRODUCTO / REPUESTO
                   </th>
-                  <th
-                    class="text-center font-weight-bold py-3"
-                    style="width: 130px;"
-                  >
+                  <th class="text-center font-weight-bold py-3" style="width: 130px;">
                     CANTIDAD
                   </th>
-                  <th
-                    class="text-right font-weight-bold py-3"
-                    style="width: 140px;"
-                  >
+                  <th class="text-right font-weight-bold py-3" style="width: 140px;">
                     PRECIO PROM.
                   </th>
-                  <th
-                    class="text-right font-weight-bold py-3"
-                    style="width: 160px;"
-                  >
+                  <th class="text-right font-weight-bold py-3" style="width: 160px;">
                     TOTAL FACTURADO
                   </th>
-                  <th
-                    class="text-center font-weight-bold py-3"
-                    style="width: 140px;"
-                  >
+                  <th class="text-center font-weight-bold py-3" style="width: 140px;">
                     % DE PRODUCTOS
                   </th>
                 </tr>
               </thead>
               <tbody>
-                <tr
-                  v-for="(item, idx) in filteredProducts"
-                  :key="`prod-${idx}`"
-                >
+                <tr v-for="(item, idx) in filteredProducts" :key="`prod-${idx}`">
                   <td class="text-center">
-                    <VChip
-                      v-if="idx < 3"
-                      size="small"
-                      :color="getRankColor(idx)"
-                      variant="flat"
-                      class="font-weight-black text-white"
-                    >
+                    <VChip v-if="idx < 3" size="small" :color="getRankColor(idx)" variant="flat"
+                      class="font-weight-black text-white">
                       #{{ item.rank || (idx + 1) }}
                     </VChip>
-                    <span
-                      v-else
-                      class="font-weight-bold text-medium-emphasis text-caption"
-                    >
+                    <span v-else class="font-weight-bold text-medium-emphasis text-caption">
                       #{{ item.rank || (idx + 1) }}
                     </span>
                   </td>
@@ -521,12 +346,7 @@ const getRankIcon = index => {
                     </div>
                   </td>
                   <td class="text-center">
-                    <VChip
-                      color="primary"
-                      variant="tonal"
-                      size="small"
-                      class="font-weight-bold font-mono"
-                    >
+                    <VChip color="primary" variant="tonal" size="small" class="font-weight-bold font-mono">
                       {{ Number(item.quantity).toLocaleString() }} u.
                     </VChip>
                   </td>
@@ -542,16 +362,10 @@ const getRankIcon = index => {
                     <div class="d-flex align-center gap-2 justify-center">
                       <VProgressLinear
                         :model-value="data.summary.products_revenue > 0 ? (item.revenue / data.summary.products_revenue) * 100 : 0"
-                        color="primary"
-                        height="6"
-                        rounded
-                        style="width: 60px;"
-                      />
-                      <span
-                        class="text-caption font-weight-bold text-medium-emphasis"
-                        style="min-width: 35px;"
-                      >
-                        {{ data.summary.products_revenue > 0 ? Math.round((item.revenue / data.summary.products_revenue) * 100) : 0 }}%
+                        color="primary" height="6" rounded style="width: 60px;" />
+                      <span class="text-caption font-weight-bold text-medium-emphasis" style="min-width: 35px;">
+                        {{ data.summary.products_revenue > 0 ? Math.round((item.revenue / data.summary.products_revenue)
+                          * 100) : 0 }}%
                       </span>
                     </div>
                   </td>
@@ -562,80 +376,42 @@ const getRankIcon = index => {
 
           <!-- TAB 2: SERVICIOS -->
           <div v-if="activeTab === 'services'">
-            <div
-              v-if="filteredServices.length === 0"
-              class="pa-8 text-center text-medium-emphasis"
-            >
-              <VIcon
-                icon="ri-inbox-line"
-                size="48"
-                class="mb-2 opacity-50"
-              />
+            <div v-if="filteredServices.length === 0" class="pa-8 text-center text-medium-emphasis">
+              <VIcon icon="ri-inbox-line" size="48" class="mb-2 opacity-50" />
               <div>No se registraron ventas de servicios en el período seleccionado.</div>
             </div>
 
-            <VTable
-              v-else
-              hover
-              density="comfortable"
-              class="border rounded-lg overflow-hidden sales-ranking-table"
-            >
+            <VTable v-else hover density="comfortable" class="border rounded-lg overflow-hidden sales-ranking-table">
               <thead>
                 <tr class="bg-grey-lighten-4">
-                  <th
-                    class="text-center font-weight-bold py-3"
-                    style="width: 70px;"
-                  >
+                  <th class="text-center font-weight-bold py-3" style="width: 70px;">
                     RANK
                   </th>
                   <th class="text-left font-weight-bold py-3">
                     SERVICIO / MANO DE OBRA
                   </th>
-                  <th
-                    class="text-center font-weight-bold py-3"
-                    style="width: 130px;"
-                  >
+                  <th class="text-center font-weight-bold py-3" style="width: 130px;">
                     VECES REALIZADO
                   </th>
-                  <th
-                    class="text-right font-weight-bold py-3"
-                    style="width: 140px;"
-                  >
+                  <th class="text-right font-weight-bold py-3" style="width: 140px;">
                     PRECIO PROM.
                   </th>
-                  <th
-                    class="text-right font-weight-bold py-3"
-                    style="width: 160px;"
-                  >
+                  <th class="text-right font-weight-bold py-3" style="width: 160px;">
                     TOTAL FACTURADO
                   </th>
-                  <th
-                    class="text-center font-weight-bold py-3"
-                    style="width: 140px;"
-                  >
+                  <th class="text-center font-weight-bold py-3" style="width: 140px;">
                     % DE SERVICIOS
                   </th>
                 </tr>
               </thead>
               <tbody>
-                <tr
-                  v-for="(item, idx) in filteredServices"
-                  :key="`serv-${idx}`"
-                >
+                <tr v-for="(item, idx) in filteredServices" :key="`serv-${idx}`">
                   <td class="text-center">
-                    <VChip
-                      v-if="idx < 3"
-                      size="small"
-                      :color="getRankColor(idx)"
-                      variant="flat"
-                      class="font-weight-black text-white"
-                    >
+                    <VChip v-if="idx < 3" size="small" :color="getRankColor(idx)" variant="flat"
+                      class="font-weight-black text-white">
                       #{{ item.rank || (idx + 1) }}
                     </VChip>
-                    <span
-                      v-else
-                      class="font-weight-bold text-medium-emphasis text-caption"
-                    >
+                    <span v-else class="font-weight-bold text-medium-emphasis text-caption">
                       #{{ item.rank || (idx + 1) }}
                     </span>
                   </td>
@@ -644,16 +420,12 @@ const getRankIcon = index => {
                       {{ item.name }}
                     </div>
                     <div class="text-caption text-medium-emphasis">
-                      {{ item.sku !== 'S/N' ? `Código: ${item.sku} • ` : '' }}en {{ item.sales_count }} factura(s) / orden(es)
+                      {{ item.sku !== 'S/N' ? `Código: ${item.sku} • ` : '' }}en {{ item.sales_count }} factura(s) /
+                      orden(es)
                     </div>
                   </td>
                   <td class="text-center">
-                    <VChip
-                      color="teal"
-                      variant="tonal"
-                      size="small"
-                      class="font-weight-bold font-mono"
-                    >
+                    <VChip color="teal" variant="tonal" size="small" class="font-weight-bold font-mono">
                       {{ Number(item.quantity).toLocaleString() }} servicios
                     </VChip>
                   </td>
@@ -669,16 +441,10 @@ const getRankIcon = index => {
                     <div class="d-flex align-center gap-2 justify-center">
                       <VProgressLinear
                         :model-value="data.summary.services_revenue > 0 ? (item.revenue / data.summary.services_revenue) * 100 : 0"
-                        color="teal"
-                        height="6"
-                        rounded
-                        style="width: 60px;"
-                      />
-                      <span
-                        class="text-caption font-weight-bold text-medium-emphasis"
-                        style="min-width: 35px;"
-                      >
-                        {{ data.summary.services_revenue > 0 ? Math.round((item.revenue / data.summary.services_revenue) * 100) : 0 }}%
+                        color="teal" height="6" rounded style="width: 60px;" />
+                      <span class="text-caption font-weight-bold text-medium-emphasis" style="min-width: 35px;">
+                        {{ data.summary.services_revenue > 0 ? Math.round((item.revenue / data.summary.services_revenue)
+                          * 100) : 0 }}%
                       </span>
                     </div>
                   </td>
@@ -689,66 +455,36 @@ const getRankIcon = index => {
 
           <!-- TAB 3: UNIFICADO (PRODUCTOS + SERVICIOS) -->
           <div v-if="activeTab === 'all'">
-            <div
-              v-if="allUnifiedList.length === 0"
-              class="pa-8 text-center text-medium-emphasis"
-            >
-              <VIcon
-                icon="ri-inbox-line"
-                size="48"
-                class="mb-2 opacity-50"
-              />
+            <div v-if="allUnifiedList.length === 0" class="pa-8 text-center text-medium-emphasis">
+              <VIcon icon="ri-inbox-line" size="48" class="mb-2 opacity-50" />
               <div>No se registraron ventas en el período seleccionado.</div>
             </div>
 
-            <VTable
-              v-else
-              hover
-              density="comfortable"
-              class="border rounded-lg overflow-hidden sales-ranking-table"
-            >
+            <VTable v-else hover density="comfortable" class="border rounded-lg overflow-hidden sales-ranking-table">
               <thead>
                 <tr class="bg-grey-lighten-4">
-                  <th
-                    class="text-center font-weight-bold py-3"
-                    style="width: 70px;"
-                  >
+                  <th class="text-center font-weight-bold py-3" style="width: 70px;">
                     POS.
                   </th>
                   <th class="text-left font-weight-bold py-3">
                     ÍTEM / DESCRIPCIÓN
                   </th>
-                  <th
-                    class="text-center font-weight-bold py-3"
-                    style="width: 120px;"
-                  >
+                  <th class="text-center font-weight-bold py-3" style="width: 120px;">
                     TIPO
                   </th>
-                  <th
-                    class="text-center font-weight-bold py-3"
-                    style="width: 120px;"
-                  >
+                  <th class="text-center font-weight-bold py-3" style="width: 120px;">
                     CANTIDAD
                   </th>
-                  <th
-                    class="text-right font-weight-bold py-3"
-                    style="width: 140px;"
-                  >
+                  <th class="text-right font-weight-bold py-3" style="width: 140px;">
                     PRECIO PROM.
                   </th>
-                  <th
-                    class="text-right font-weight-bold py-3"
-                    style="width: 160px;"
-                  >
+                  <th class="text-right font-weight-bold py-3" style="width: 160px;">
                     TOTAL FACTURADO
                   </th>
                 </tr>
               </thead>
               <tbody>
-                <tr
-                  v-for="(item, idx) in allUnifiedList"
-                  :key="`all-${idx}`"
-                >
+                <tr v-for="(item, idx) in allUnifiedList" :key="`all-${idx}`">
                   <td class="text-center">
                     <span class="font-weight-black text-caption">
                       #{{ idx + 1 }}
@@ -763,12 +499,7 @@ const getRankIcon = index => {
                     </div>
                   </td>
                   <td class="text-center">
-                    <VChip
-                      :color="item.type_color"
-                      variant="tonal"
-                      size="x-small"
-                      class="font-weight-bold"
-                    >
+                    <VChip :color="item.type_color" variant="tonal" size="x-small" class="font-weight-bold">
                       {{ item.type_label }}
                     </VChip>
                   </td>
@@ -792,18 +523,10 @@ const getRankIcon = index => {
 
       <VDivider />
 
-      <VCardActions
-        class="pa-4 bg-grey-lighten-5 d-flex justify-end align-center gap-3"
-        style="position: sticky; bottom: 0; z-index: 2;"
-      >
-        <VBtn
-          color="secondary"
-          variant="outlined"
-          prepend-icon="ri-close-line"
-          class="rounded-lg px-6 font-weight-medium"
-          height="40"
-          @click="isVisible = false"
-        >
+      <VCardActions class="pa-4 bg-grey-lighten-5 d-flex justify-end align-center gap-3"
+        style="position: sticky; bottom: 0; z-index: 2;">
+        <VBtn color="secondary" variant="outlined" prepend-icon="ri-close-line"
+          class="rounded-lg px-6 font-weight-medium" height="40" @click="isVisible = false">
           Cerrar
         </VBtn>
         <span class="text-caption text-medium-emphasis ms-auto">

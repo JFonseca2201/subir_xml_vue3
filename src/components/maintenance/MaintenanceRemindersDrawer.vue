@@ -431,7 +431,7 @@ const getRelativeDaysText = (item) => {
     <VDialog v-model="isEmailDialogVisible" max-width="660" scrollable>
       <VCard class="rounded-xl overflow-hidden elevation-24">
         <!-- Header con degradado primario e íconos -->
-        <div class="px-5 py-4 d-flex align-center justify-space-between border-b bg-surface">
+        <div class="custom-dialog-header-primary">
           <div class="d-flex align-center gap-3">
             <VAvatar color="primary" variant="tonal" size="38" rounded="lg">
               <VIcon icon="ri-mail-send-fill" size="22" color="primary" />
@@ -510,7 +510,7 @@ const getRelativeDaysText = (item) => {
 
           <!-- Cuerpo del Correo a Enviar (Editable) -->
           <div class="mb-3">
-            <div class="d-flex align-center justify-space-between mb-1.5">
+            <div class="d-flex align-center justify-space-between mb-1.5 mt-1.5">
               <span class="text-caption font-weight-bold text-high-emphasis d-flex align-center gap-1.5">
                 <VIcon icon="ri-message-2-line" size="16" color="primary" />
                 Cuerpo del Mensaje a Enviar *
