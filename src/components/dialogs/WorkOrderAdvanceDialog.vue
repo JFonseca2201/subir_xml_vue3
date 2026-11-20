@@ -308,7 +308,7 @@ const formatDate = dateStr => {
 </script>
 
 <template>
-  <VDialog :model-value="props.isDialogVisible" max-width="720" width="800" :fullscreen="$vuetify.display.smAndDown"
+  <VDialog :model-value="props.isDialogVisible" max-width="920" width="920" :fullscreen="$vuetify.display.smAndDown"
     persistent @update:model-value="val => emit('update:isDialogVisible', val)">
     <VCard class="rounded-xl overflow-hidden border advance-dialog-card elevation-10">
       <!-- Modern Gradient Header Banner -->
@@ -465,14 +465,14 @@ const formatDate = dateStr => {
           <VCardText class="pa-4">
             <VRow dense class="gy-3">
               <!-- Fila 1 - Col 1: Monto a Abonar + Chips Rapidos -->
-              <VCol cols="12" md="6">
+              <VCol cols="12" md="5">
                 <VTextField v-model="form.amount" type="number" step="0.01" min="0.01" label="Monto a Abonar *"
                   placeholder="0.00" variant="outlined" density="comfortable" color="primary" prefix="$" hide-details
                   class="bg-white font-mono-input rounded-lg" @keydown.enter.prevent="submitAdvance" />
 
                 <!-- Chips de montos sugeridos -->
                 <div class="d-flex align-center gap-1.5 mt-2 flex-wrap">
-                  <span class="text-caption text-slate-400 font-weight-medium me-0.5">Rapido:</span>
+                  <span class="text-caption text-slate-400 font-weight-medium me-0.5">Rápido:</span>
                   <button v-for="amt in suggestedAmounts" :key="amt" type="button" class="quick-amt-chip"
                     :class="{ active: Number(form.amount) === amt }" @click="setQuickAmount(amt)">
                     ${{ amt }}
@@ -486,7 +486,7 @@ const formatDate = dateStr => {
               </VCol>
 
               <!-- Fila 1 - Col 2: Cuenta de Destino (Banco / Caja) 100% Dinamico -->
-              <VCol cols="12" md="6">
+              <VCol cols="12" md="7">
                 <VSelect v-model="form.account_id" :items="formattedAccounts" item-value="id"
                   item-title="accountDisplay" label="Cuenta de Destino *" placeholder="Seleccionar cuenta de ingreso"
                   variant="outlined" density="comfortable" color="primary" :loading="isLoadingAccounts" hide-details
@@ -503,7 +503,7 @@ const formatDate = dateStr => {
                       <span class="font-weight-semibold text-slate-800 text-truncate">
                         {{ item.raw.name }}
                       </span>
-                      <span class="method-pill-badge ms-2" :class="item.raw.isBank ? 'pill-transfer' : 'pill-cash'">
+                      <span class="method-pill-badge ms-2 shrink-0" :class="item.raw.isBank ? 'pill-transfer' : 'pill-cash'">
                         {{ item.raw.methodLabel }}
                       </span>
                     </div>
@@ -536,21 +536,21 @@ const formatDate = dateStr => {
                 <div v-if="selectedAccount" class="d-flex align-center gap-1 mt-2 text-caption font-weight-medium"
                   :class="selectedAccount.isBank ? 'text-primary' : 'text-emerald'">
                   <VIcon :icon="selectedAccount.isBank ? 'ri-bank-line' : 'ri-wallet-3-line'" size="13" />
-                  <span>
+                  <span class="text-truncate">
                     Ingresa a <strong>{{ selectedAccount.name }}</strong> &middot; Registra como <strong>{{ selectedAccount.methodLabel }}</strong>
                   </span>
                 </div>
               </VCol>
 
               <!-- Fila 2 - Col 1: Fecha de Recepcion -->
-              <VCol cols="12" sm="4">
+              <VCol cols="12" sm="4" md="3">
                 <VTextField v-model="form.advance_date" type="date" label="Fecha de Recepción *" variant="outlined"
                   density="comfortable" color="primary" prepend-inner-icon="ri-calendar-line" hide-details
                   class="bg-white rounded-lg" />
               </VCol>
 
               <!-- Fila 2 - Col 2: Detalle / Referencia -->
-              <VCol cols="12" sm="5">
+              <VCol cols="12" sm="5" md="6">
                 <VTextField v-model="form.notes"
                   :label="selectedAccount?.isBank ? 'N° Comprobante / Referencia' : 'Detalle u Observación (Opcional)'"
                   :placeholder="selectedAccount?.isBank ? 'Ej: Transf. #00984521' : 'Ej: Abono en efectivo...'"
@@ -560,7 +560,7 @@ const formatDate = dateStr => {
               </VCol>
 
               <!-- Fila 2 - Col 3: Boton de Registrar Abono -->
-              <VCol cols="12" sm="3" class="d-flex align-center">
+              <VCol cols="12" sm="3" md="3" class="d-flex align-center">
                 <VBtn color="primary" variant="elevated" block height="44" :loading="isSubmitting"
                   :disabled="!form.amount || Number(form.amount) <= 0"
                   class="font-weight-bold rounded-lg elevation-2 text-none" @click="submitAdvance">
@@ -588,32 +588,35 @@ const formatDate = dateStr => {
           <VTable v-if="advances.length > 0" hover density="comfortable" class="advances-table text-caption">
             <thead>
               <tr class="bg-slate-50 text-uppercase font-weight-bold">
-                <th class="py-2.5 ps-4">
+                <th class="py-2.5 ps-4" style="width: 21%;">
                   N° Recibo
                 </th>
-                <th class="py-2.5">
+                <th class="py-2.5" style="width: 13%;">
                   Fecha
                 </th>
-                <th class="py-2.5">
+                <th class="py-2.5" style="width: 25%;">
                   Método & Cuenta
                 </th>
-                <th class="py-2.5">
+                <th class="py-2.5" style="width: 22%;">
                   Detalle / Referencia
                 </th>
-                <th class="py-2.5 text-right">
+                <th class="py-2.5 text-right" style="width: 11%;">
                   Monto
                 </th>
-                <th class="py-2.5 text-center pe-4" style="width: 95px;">
+                <th class="py-2.5 text-center pe-4" style="width: 8%;">
                   Acciones
                 </th>
               </tr>
             </thead>
             <tbody>
               <tr v-for="adv in advances" :key="adv.id" class="advance-row">
-                <td class="font-mono font-weight-bold text-primary py-2.5 ps-4">
-                  {{ adv.receipt_number || `REC-${adv.id}` }}
+                <td class="py-2.5 ps-4 text-no-wrap">
+                  <span class="font-mono font-weight-bold text-primary text-truncate d-inline-block" style="max-width: 175px;"
+                    :title="adv.receipt_number || `REC-${adv.id}`">
+                    {{ adv.receipt_number || `REC-${adv.id}` }}
+                  </span>
                 </td>
-                <td class="py-2.5 text-slate-600">
+                <td class="py-2.5 text-slate-600 text-no-wrap">
                   <div class="d-flex align-center gap-1">
                     <VIcon icon="ri-calendar-line" size="13" class="text-slate-400" />
                     <span>{{ formatDate(adv.advance_date) }}</span>
@@ -621,31 +624,31 @@ const formatDate = dateStr => {
                 </td>
                 <td class="py-2.5">
                   <div class="d-flex align-center gap-1.5 flex-wrap">
-                    <span class="method-pill"
+                    <span class="method-pill shrink-0"
                       :class="adv.payment_method?.toLowerCase().includes('trans') ? 'method-transfer' : 'method-cash'">
                       <VIcon
                         :icon="adv.payment_method?.toLowerCase().includes('trans') ? 'ri-bank-line' : 'ri-money-dollar-box-line'"
                         size="12" class="me-1" />
                       <span>{{ adv.payment_method }}</span>
                     </span>
-                    <span v-if="adv.account?.name" class="account-name-label text-slate-500">
+                    <span v-if="adv.account?.name" class="account-name-label text-slate-600 text-truncate font-weight-medium"
+                      :title="adv.account.name">
                       {{ adv.account.name }}
                     </span>
                   </div>
                 </td>
                 <td class="py-2.5 text-slate-600">
-                  <span v-if="adv.notes" class="text-truncate d-inline-block" style="max-width: 220px;"
-                    :title="adv.notes">
+                  <div v-if="adv.notes" class="text-truncate" :title="adv.notes">
                     {{ adv.notes }}
-                  </span>
-                  <span v-else class="text-slate-400 font-italic">
+                  </div>
+                  <div v-else class="text-slate-400 font-italic text-truncate">
                     Abono general a cuenta
-                  </span>
+                  </div>
                 </td>
-                <td class="py-2.5 text-right font-weight-black font-mono text-emerald" style="font-size: 0.95rem;">
+                <td class="py-2.5 text-right font-weight-black font-mono text-emerald text-no-wrap" style="font-size: 0.95rem;">
                   +{{ formatCurrency(adv.amount) }}
                 </td>
-                <td class="py-2.5 text-center pe-4">
+                <td class="py-2.5 text-center pe-4 text-no-wrap">
                   <div class="d-flex justify-center gap-1">
                     <VBtn size="x-small" color="primary" variant="tonal" icon="ri-printer-line"
                       title="Imprimir Comprobante de Abono" class="rounded-lg" @click="printReceipt(adv.id)" />
@@ -1069,6 +1072,48 @@ const formatDate = dateStr => {
     background: #eff6ff;
     color: #1d4ed8;
     border: 1px solid #bfdbfe;
+  }
+}
+
+// Advances Table Clean & Fixed Layout
+.advances-table {
+  table {
+    table-layout: fixed !important;
+    width: 100% !important;
+  }
+
+  :deep(.v-table__wrapper) {
+    overflow-x: hidden !important; // Total elimination of horizontal scrollbar
+  }
+
+  th {
+    font-size: 0.71rem !important;
+    font-weight: 700 !important;
+    letter-spacing: 0.4px;
+    color: #475569 !important;
+    white-space: nowrap !important;
+    background-color: #f8fafc !important;
+    border-bottom: 1px solid #e2e8f0 !important;
+  }
+
+  td {
+    vertical-align: middle !important;
+    border-bottom: 1px solid #f1f5f9 !important;
+    padding-top: 9px !important;
+    padding-bottom: 9px !important;
+  }
+
+  .advance-row {
+    transition: background-color 0.15s ease;
+
+    &:hover {
+      background-color: #f8fafc !important;
+    }
+  }
+
+  .account-name-label {
+    max-width: 140px;
+    font-size: 0.72rem;
   }
 }
 
