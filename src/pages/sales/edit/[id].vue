@@ -512,8 +512,11 @@ const getProductPriceWithTax = product => {
 
 const onProductSelected = product => {
   if (product && typeof product === 'object') {
-    // Caché local para validaciones posteriores
-    if (!products.value.find(p => p.id === product.id)) {
+    // Sincronizar / actualizar caché local con los datos frescos del servidor
+    const existingIdx = products.value.findIndex(p => p.id === product.id)
+    if (existingIdx >= 0) {
+      products.value[existingIdx] = { ...products.value[existingIdx], ...product }
+    } else {
       products.value.push(product)
     }
 
@@ -530,6 +533,7 @@ const onProductSelected = product => {
     const existingItem = sale.value.items.find(i => i.product_id === product.id)
     if (existingItem) {
       existingItem.quantity++
+      existingItem.stock = Number(product.stock !== undefined ? product.stock : existingItem.stock)
     } else {
       sale.value.items.push({
         product_id: product.id,
@@ -538,9 +542,12 @@ const onProductSelected = product => {
         price: calculatedPrice,
         discount: 0,
         type: isService ? 'service' : 'product',
+        item_type: isService ? 2 : 1,
         sku: product.sku || product.code || '',
         unit_id: product.unit_id || null,
         unit: product.unit || null,
+        stock: Number(product.stock !== undefined ? product.stock : 0),
+        product: product,
       })
     }
     initializePaymentDistribution()

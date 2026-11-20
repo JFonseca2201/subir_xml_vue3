@@ -61,6 +61,7 @@ const timerInterval = ref(null)
 const autoRedirectTimer = ref(null)
 const countdownSeconds = ref(3)
 const copiedKey = ref(false)
+const createdSaleId = ref(props.saleId || null)
 
 const copyAccessKey = async () => {
   const key = responseData.value?.sri_access_key ||
@@ -232,6 +233,18 @@ const executeSriEmission = async () => {
 
     if (response?.success || response?.status === 201 || response?.status === 200) {
       responseData.value = response.data || response.sale || response
+      if (responseData.value?.id) {
+        createdSaleId.value = responseData.value.id
+      }
+
+      const sriStatus = responseData.value?.sri_status
+      if (sriStatus === 'RECHAZADA' || sriStatus === 'DEVUELTA') {
+        processStatus.value = 'error'
+        errorMessage.value = responseData.value?.sri_error || 'El SRI rechazó el comprobante. Puedes reintentar la emisión.'
+        emit('error', errorMessage.value)
+        return
+      }
+
       progressPercent.value = 100
       currentStepIndex.value = 4
       processStatus.value = 'success'
@@ -355,16 +368,49 @@ const closeDialog = () => {
   cancelAutoRedirect()
   if (timerInterval.value) clearInterval(timerInterval.value)
   emit('update:isDialogVisible', false)
+  if (createdSaleId.value) {
+    showNotification('La factura quedó registrada en el sistema. Puedes gestionarla o reenviarla al SRI desde el Listado de Ventas.', 'info')
+    router.push('/sales/list')
+  }
 }
 
-const retryEmission = () => {
-  executeSriEmission()
+const retryEmission = async () => {
+  if (createdSaleId.value) {
+    startProgressAnimation()
+    try {
+      const response = await $api(`sales/${createdSaleId.value}/sri/reenviar`, { method: 'POST' })
+      if (timerInterval.value) clearInterval(timerInterval.value)
+
+      if (response?.success) {
+        responseData.value = response.data || response.sale || response
+        progressPercent.value = 100
+        currentStepIndex.value = 4
+        processStatus.value = 'success'
+        statusMessage.value = '¡Factura electrónica retransmitida y autorizada exitosamente!'
+        emit('completed', responseData.value)
+        startAutoRedirect()
+      } else {
+        processStatus.value = 'error'
+        errorMessage.value = response?.message || response?.error || 'El SRI no pudo autorizar el comprobante en este momento.'
+        emit('error', errorMessage.value)
+      }
+    } catch (err) {
+      if (timerInterval.value) clearInterval(timerInterval.value)
+      processStatus.value = 'error'
+      const backendMsg = err.data?.message || err.message || 'Error al reenviar al SRI'
+      errorMessage.value = backendMsg
+      emit('error', backendMsg)
+    }
+  } else {
+    executeSriEmission()
+  }
 }
 
 watch(
   () => props.isDialogVisible,
   newVal => {
     if (newVal) {
+      createdSaleId.value = props.saleId || null
       executeSriEmission()
     } else {
       cancelAutoRedirect()

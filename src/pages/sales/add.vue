@@ -566,9 +566,22 @@ const applyWorkOrderToSale = async workOrder => {
   // Importar items de la orden de trabajo
   if (workOrder.items && workOrder.items.length > 0) {
     sale.value.items = workOrder.items.map(item => {
-      if (item.product && !products.value.find(p => p.id === item.product.id)) {
-        products.value.push(item.product)
+      let matchedProduct = item.product || null
+      if (!matchedProduct && item.product_id) {
+        matchedProduct = products.value.find(p => p.id === item.product_id)
       }
+      if (matchedProduct) {
+        const existingIdx = products.value.findIndex(p => p.id === matchedProduct.id)
+        if (existingIdx >= 0) {
+          products.value[existingIdx] = { ...products.value[existingIdx], ...matchedProduct }
+        } else {
+          products.value.push(matchedProduct)
+        }
+      }
+
+      const isService = item.type === 'service' ||
+        matchedProduct?.item_type === 2 ||
+        (matchedProduct?.categorie && matchedProduct.categorie.title && matchedProduct.categorie.title.includes('SERVICIO'))
 
       return {
         product_id: item.product_id,
@@ -577,8 +590,11 @@ const applyWorkOrderToSale = async workOrder => {
         price: item.unit_price || item.price || 0,
         discount: item.discount || 0,
         subtotal: item.subtotal,
-        type: item.type || (item.product_id ? 'product' : 'service'),
+        type: isService ? 'service' : 'product',
+        item_type: isService ? 2 : 1,
         sku: item.product?.sku || item.product?.code || item.sku || '',
+        stock: Number(matchedProduct?.stock !== undefined ? matchedProduct.stock : (item.stock ?? 0)),
+        product: matchedProduct,
       }
     })
   }
@@ -724,6 +740,39 @@ const loadInitialData = async () => {
   } catch (error) {
     console.error('Error al cargar datos:', error)
     showNotification('Error al cargar datos iniciales', 'error')
+  }
+}
+
+// Refrescar inventario de productos en memoria
+const refreshProducts = async () => {
+  try {
+    const productsRes = await $api('products', { params: { per_page: 1000 } })
+    const extractArray = (res, key) => {
+      if (Array.isArray(res)) return res
+      if (res?.[key] && Array.isArray(res[key])) return res[key]
+      if (res?.[key]?.data && Array.isArray(res[key].data)) return res[key].data
+      if (res?.data && Array.isArray(res.data)) return res.data
+      if (res?.data?.data && Array.isArray(res.data.data)) return res.data.data
+      return []
+    }
+    const rawProducts = extractArray(productsRes, 'products')
+    products.value = rawProducts.map(p => ({
+      ...p,
+      searchText: `${p.sku || ''} ${p.code || ''} ${p.name || ''} ${p.description || ''}`.toLowerCase(),
+      displayTitle: p.description || p.name || '',
+    }))
+
+    // Sincronizar el stock en los items ya agregados al detalle
+    sale.value.items.forEach(item => {
+      if (item.product_id) {
+        const prod = products.value.find(p => p.id === item.product_id)
+        if (prod && prod.stock !== undefined) {
+          item.stock = Number(prod.stock)
+        }
+      }
+    })
+  } catch (error) {
+    console.error('Error al refrescar productos:', error)
   }
 }
 
@@ -902,8 +951,11 @@ const getProductPriceWithTax = product => {
 const onProductSelected = product => {
   // Solo procesar si es un objeto (producto seleccionado)
   if (product && typeof product === 'object') {
-    // Caché local para validaciones posteriores (stock, margen, etc)
-    if (!products.value.find(p => p.id === product.id)) {
+    // Sincronizar / actualizar caché local con los datos frescos del servidor
+    const existingIdx = products.value.findIndex(p => p.id === product.id)
+    if (existingIdx >= 0) {
+      products.value[existingIdx] = { ...products.value[existingIdx], ...product }
+    } else {
       products.value.push(product)
     }
 
@@ -921,6 +973,7 @@ const onProductSelected = product => {
     const existingItem = sale.value.items.find(i => i.product_id === product.id)
     if (existingItem) {
       existingItem.quantity++
+      existingItem.stock = Number(product.stock !== undefined ? product.stock : existingItem.stock)
     } else {
       sale.value.items.push({
         product_id: product.id,
@@ -929,9 +982,12 @@ const onProductSelected = product => {
         price: calculatedPrice,
         discount: 0,
         type: isService ? 'service' : 'product',
+        item_type: isService ? 2 : 1,
         sku: product.sku || product.code || '',
         unit_id: product.unit_id || null,
         unit: product.unit || null,
+        stock: Number(product.stock !== undefined ? product.stock : 0),
+        product: product,
       })
     }
 
@@ -1319,8 +1375,9 @@ const triggerInvoiceEmission = (paymentData = null) => {
   showNotification('Procesando comprobante electrónico ante el SRI...', 'info')
 }
 
-const handleSriCompleted = saleData => {
+const handleSriCompleted = async saleData => {
   clearDraft()
+  await refreshProducts()
   showNotification('¡Factura autorizada exitosamente por el SRI!', 'success')
 }
 
@@ -1385,6 +1442,7 @@ const executeSaleSubmission = async () => {
     if (response.success || response.status === 201 || response.status === 200) {
       clearDraft()
       resetSaleForm()
+      await refreshProducts()
       showValidationError.value = false
       isConfirmInvoiceDialogVisible.value = false
       showNotification(
@@ -1455,6 +1513,7 @@ const saveDraft = async () => {
     if (response.success || response.status === 201 || response.status === 200) {
       clearDraft()
       resetSaleForm()
+      await refreshProducts()
       showValidationError.value = false
       showNotification('Borrador guardado exitosamente', 'success')
       router.push('/sales/list')
@@ -1584,6 +1643,7 @@ const dispatchSale = async () => {
     if (response.success || response.status === 201 || response.status === 200) {
       clearDraft()
       resetSaleForm()
+      await refreshProducts()
       showValidationError.value = false
       showNotification('Venta despachada correctamente con pago pendiente', 'success')
       router.push('/sales/list')
@@ -1776,6 +1836,9 @@ onMounted(async () => {
 onActivated(async () => {
   getUserId()
   sale.value.user_id = userId.value
+
+  // Refrescar inventario de productos en memoria para mostrar siempre stock actualizado
+  await refreshProducts()
 
   const workOrderId = route.query.work_order_id
   const quoteId = route.query.quote_id
