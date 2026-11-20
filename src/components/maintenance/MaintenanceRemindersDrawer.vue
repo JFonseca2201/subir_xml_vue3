@@ -433,8 +433,8 @@ const getRelativeDaysText = (item) => {
         <!-- Header con degradado primario estilizado y sobrio -->
         <div class="custom-dialog-header-primary email-dialog-header">
           <!-- Botón de Cerrar (X) anclado en la esquina superior derecha -->
-          <VBtn icon="ri-close-line" size="small" variant="text" class="custom-dialog-close-btn"
-            title="Cerrar ventana" @click="isEmailDialogVisible = false" />
+          <VBtn icon="ri-close-line" size="small" variant="text" class="custom-dialog-close-btn" title="Cerrar ventana"
+            @click="isEmailDialogVisible = false" />
 
           <!-- Contenedor alineado a la izquierda con avatar notorio -->
           <div class="d-flex align-center gap-3.5 pe-10 text-start w-100">
@@ -442,7 +442,8 @@ const getRelativeDaysText = (item) => {
               <VIcon icon="ri-mail-send-fill" size="24" color="white" />
             </div>
             <div class="min-w-0">
-              <h3 class="text-subtitle-1 font-weight-bold text-white mb-0.5 text-truncate" style="color: #ffffff !important;">
+              <h3 class="text-subtitle-1 font-weight-bold text-white mb-0.5 text-truncate"
+                style="color: #ffffff !important;">
                 Confirmación de Envío por Email
               </h3>
               <p class="text-caption mb-0 text-truncate" style="color: rgba(255, 255, 255, 0.88) !important;">
@@ -503,7 +504,7 @@ const getRelativeDaysText = (item) => {
           </div>
 
           <!-- Campos de Destinatario y Asunto -->
-          <div class="mb-4">
+          <div class="mb-4 mt-2">
             <VTextField v-model="emailForm.email" label="Correo Electrónico Destinatario *"
               placeholder="ejemplo@correo.com" type="email" variant="outlined" density="comfortable"
               prepend-inner-icon="ri-mail-line" class="mb-3.5"
