@@ -1327,7 +1327,7 @@
 .sale-dialog-header-banner {
   position: relative !important;
   display: flex !important;
-  align-items: center !important;
+  align-items: stretch !important;
   padding: 14px 20px !important;
   background: var(--bg-header, var(--bg-dialog-header, linear-gradient(135deg, #4338ca 0%, #4f46e5 45%, #6366f1 80%, #7c3aed 100%))) !important;
   color: #ffffff !important;
@@ -1365,11 +1365,16 @@
 
   .header-col-right {
     min-height: 100%;
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: flex-end !important;
+    justify-content: space-between !important;
   }
 
   .header-columns-row {
     position: relative;
     z-index: 1;
+    min-height: 56px;
   }
 
   .header-avatar-badge {

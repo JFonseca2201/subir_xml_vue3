@@ -580,7 +580,7 @@ const convertToSale = () => {
       <div class="sale-dialog-header-banner">
         <VRow no-gutters class="w-100 align-stretch header-columns-row">
           <!-- Columna Izquierda: Información del Comprobante y Badges de Estado -->
-          <VCol cols="12" md="7" class="header-col-left d-flex align-center gap-3 pe-md-2">
+          <VCol cols="12" sm="7" class="header-col-left d-flex align-center gap-3 pe-sm-2">
             <div class="header-avatar-badge">
               <VIcon :icon="documentTypeIcon" size="24" color="white" />
             </div>
@@ -631,17 +631,17 @@ const convertToSale = () => {
           </VCol>
 
           <!-- Columna Derecha: Botón Close arriba a la derecha y Botón Convertir abajo a la derecha -->
-          <VCol cols="12" md="5"
-            class="header-col-right d-flex flex-column align-end justify-space-between mt-2 mt-md-0">
+          <VCol cols="12" sm="5"
+            class="header-col-right d-flex flex-column align-end justify-space-between mt-2 mt-sm-0">
             <!-- Parte Superior Derecha: Botón Cerrar -->
             <div class="d-flex justify-end w-100">
               <VBtn icon="ri-close-line" variant="text" size="small" class="header-close-btn-clean"
                 title="Cerrar ventana" @click="closeDialog" />
             </div>
 
-            <!-- Parte Inferior Derecha: Botón de Conversión -->
-            <div v-if="canConvertQuote" class="d-flex justify-end w-100 mt-2">
-              <VBtn color="info" variant="elevated" prepend-icon="ri-tools-line" height="34"
+            <!-- Parte Inferior Derecha: Botón de Conversión Anaranjado -->
+            <div v-if="canConvertQuote" class="d-flex justify-end w-100 mt-auto pt-2">
+              <VBtn class="header-convert-btn text-capitalize" variant="elevated" prepend-icon="ri-tools-line" height="34"
                 @click="convertToWorkOrder">
                 Convertir a Orden de Trabajo
               </VBtn>

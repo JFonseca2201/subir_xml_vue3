@@ -237,6 +237,93 @@ const stockDelta = computed(() => {
   return Math.round((current - initial) * 100) / 100
 })
 
+// --- Helpers y Computadas de Estado de Inventario y Existencia en Taller ---
+
+// Stock numérico normalizado
+const currentStockNum = computed(() => {
+  return parseFloat(form.value.stock) || 0
+})
+
+// Clave de estado actual para el control segmentado ('pending' | 'inventoried' | 'out_of_stock')
+const currentInventoryStatus = computed(() => {
+  if (!form.value.is_inventoried) {
+    return 'pending'
+  }
+  
+  return currentStockNum.value === 0 ? 'out_of_stock' : 'inventoried'
+})
+
+// Indicador descriptivo de existencia en taller (Fila superior)
+const workshopStockBadge = computed(() => {
+  if (form.value.item_type == 2) {
+    return {
+      label: 'Servicio (Sin stock)',
+      icon: 'ri-customer-service-2-line',
+      chipClass: 'stock-badge--service',
+      tooltip: 'Este ítem es un servicio y no maneja existencia física.',
+    }
+  }
+
+  const stock = currentStockNum.value
+  const isInv = Boolean(form.value.is_inventoried)
+
+  // Regla 1: No inventariado + stock = 0
+  if (!isInv && stock === 0) {
+    return {
+      label: 'Stock: 0 · Sin verificar',
+      icon: 'ri-time-line',
+      chipClass: 'stock-badge--unverified',
+      tooltip: 'Stock en cero pendiente de verificación física en el taller.',
+    }
+  }
+
+  // No inventariado + stock > 0
+  if (!isInv && stock > 0) {
+    return {
+      label: `Stock: ${stock} und. · Por verificar`,
+      icon: 'ri-survey-line',
+      chipClass: 'stock-badge--unverified',
+      tooltip: 'Existencia registrada en sistema, aún no confirmada físicamente.',
+    }
+  }
+
+  // Regla 3: Inventariado + stock = 0 (Agotado confirmado)
+  if (isInv && stock === 0) {
+    return {
+      label: 'Agotado (0 und.)',
+      icon: 'ri-close-circle-line',
+      chipClass: 'stock-badge--out-of-stock',
+      tooltip: 'Producto inventariado y verificado físicamente: sin existencias.',
+    }
+  }
+
+  // Regla 2: Inventariado + stock > 0 (Disponible en taller)
+  return {
+    label: `En taller: ${stock} und.`,
+    icon: 'ri-checkbox-circle-line',
+    chipClass: 'stock-badge--available',
+    tooltip: 'Producto verificado en conteo físico con existencias disponibles en taller.',
+  }
+})
+
+// Regla 4: Sincronización bidireccional limpia al cambiar estado desde el selector
+const setInventoryStatus = statusKey => {
+  if (statusKey === 'pending') {
+    form.value.is_inventoried = false
+  } else if (statusKey === 'out_of_stock') {
+    // Si se marca como agotado, el stock objetivo queda en 0 y se confirma como inventariado/revisado
+    form.value.stock = 0
+    form.value.is_inventoried = true
+  } else if (statusKey === 'inventoried') {
+    form.value.is_inventoried = true
+
+    // Si estaba en 0 (agotado) pero tenía stock inicial antes de agotar, restaurar la existencia inicial
+    if (form.value.stock === 0 && form.value.initialStock > 0) {
+      form.value.stock = form.value.initialStock
+    }
+  }
+}
+
 // Opciones combinadas de marcas (props + marcas únicas)
 const combinedBrands = computed(() => {
   const list = [...(props.brands || [])]
@@ -351,50 +438,96 @@ const saveChanges = async () => {
   <VDialog :model-value="isDialogVisible" max-width="580px" :fullscreen="$vuetify.display.smAndDown" persistent
     scrollable class="v-dialog-quick-edit" @update:model-value="val => !val && closeDialog()">
     <VCard class="product-quick-dialog-card">
-      <!-- Encabezado con degradado moderno -->
+      <!-- Encabezado Limpio, Sobrio y Profesional -->
       <div class="product-quick-header">
-        <VBtn icon="ri-close-line" variant="text" size="small" class="custom-dialog-close-btn" @click="closeDialog" />
+        <!-- Fila Superior: SKU + Badge de Existencia en Taller + Botón Cerrar (X) -->
+        <div class="header-top-row d-flex align-center justify-space-between gap-2 mb-2">
+          <div class="d-flex align-center gap-2 flex-wrap min-w-0">
+            <!-- Chip de SKU -->
+            <span class="product-sku-chip font-mono">
+              SKU: {{ form.sku || 'S/C' }}
+            </span>
 
-        <div class="d-flex align-center gap-3" :class="{ 'mb-3': isAdminOrSuperAdmin }">
-          <VAvatar size="44" rounded="lg" color="white" class="elevation-2 overflow-hidden flex-shrink-0">
-            <img v-if="form.imagen" :src="form.imagen" :alt="form.description"
-              style="width: 100%; height: 100%; object-fit: cover;">
+            <!-- Chip de Servicio si corresponde -->
+            <span v-if="form.item_type == 2" class="product-service-chip">
+              Servicio
+            </span>
+
+            <!-- Badge / Indicador de Existencia en Taller -->
+            <div class="stock-status-chip" :class="workshopStockBadge.chipClass">
+              <VIcon :icon="workshopStockBadge.icon" size="14" class="me-1" />
+              <span>{{ workshopStockBadge.label }}</span>
+              <VTooltip activator="parent" location="bottom">
+                {{ workshopStockBadge.tooltip }}
+              </VTooltip>
+            </div>
+          </div>
+
+          <!-- Botón de Cerrar (X) -->
+          <VBtn
+            icon="ri-close-line"
+            variant="text"
+            size="small"
+            class="custom-dialog-close-btn"
+            title="Cerrar ventana"
+            @click="closeDialog"
+          />
+        </div>
+
+        <!-- Fila Central: Avatar y Título del Producto (Hasta 2 líneas) -->
+        <div class="header-main-row d-flex align-center gap-3">
+          <VAvatar size="44" rounded="lg" color="white" class="elevation-1 overflow-hidden flex-shrink-0">
+            <img
+              v-if="form.imagen"
+              :src="form.imagen"
+              :alt="form.description"
+              style="width: 100%; height: 100%; object-fit: cover;"
+            >
             <VIcon v-else icon="ri-box-3-line" color="primary" size="24" />
           </VAvatar>
 
-          <div class="overflow-hidden" style="flex: 1; padding-right: 28px;">
-            <div class="d-flex align-center gap-2 mb-0.5 flex-wrap">
-              <span class="product-mini-badge font-mono">SKU: {{ form.sku || 'S/C' }}</span>
-              <span v-if="form.item_type == 2" class="product-mini-badge bg-white text-primary">Servicio</span>
-            </div>
-            <h3 class="text-white font-weight-bold text-truncate mb-0" style="font-size: 1.05rem;"
-              :title="form.description">
-              {{ form.description || 'Edición Rápida' }}
+          <div class="product-title-wrap min-w-0 flex-grow-1">
+            <h3 class="product-dialog-title ma-0" :title="form.description">
+              {{ form.description || 'Edición Rápida de Producto' }}
             </h3>
           </div>
         </div>
 
-        <!-- Selector Segmentado Sencillo y Simétrico (Solo Superadmin y Administrador) -->
-        <div v-if="isAdminOrSuperAdmin" class="header-inventory-segment mt-3">
-          <div
-            class="inv-segment-option option-pending"
-            :class="{ active: !form.is_inventoried }"
-            @click="form.is_inventoried = false"
-          >
-            <VIcon icon="ri-time-line" size="16" class="me-1.5" />
-            <span>Pendiente</span>
-          </div>
+        <!-- Fila Inferior: Control de Estado Compacto (Solo Superadmin y Administrador) -->
+        <div v-if="isAdminOrSuperAdmin && form.item_type != 2" class="header-status-control mt-2.5">
+          <div class="status-toggle-group">
+            <button
+              type="button"
+              class="status-toggle-btn btn-pending"
+              :class="{ active: currentInventoryStatus === 'pending' }"
+              @click="setInventoryStatus('pending')"
+            >
+              <VIcon icon="ri-time-line" size="14" class="me-1" />
+              <span>Pendiente</span>
+            </button>
 
-          <div
-            class="inv-segment-option option-verified"
-            :class="{ active: form.is_inventoried }"
-            @click="form.is_inventoried = true"
-          >
-            <VIcon icon="ri-checkbox-circle-fill" size="16" class="me-1.5" />
-            <span>Inventariado</span>
-            <VTooltip v-if="form.inventoried_at" activator="parent" location="bottom">
-              Última verificación: {{ form.inventoried_at }}
-            </VTooltip>
+            <button
+              type="button"
+              class="status-toggle-btn btn-inventoried"
+              :class="{ active: currentInventoryStatus === 'inventoried' }"
+              @click="setInventoryStatus('inventoried')"
+            >
+              <VIcon icon="ri-checkbox-circle-line" size="14" class="me-1" />
+              <span>Inventariado</span>
+              <VTooltip v-if="form.inventoried_at" activator="parent" location="bottom">
+                Última verificación: {{ form.inventoried_at }}
+              </VTooltip>
+            </button>
+
+            <button
+              type="button"
+              class="status-toggle-btn btn-out-of-stock"
+              :class="{ active: currentInventoryStatus === 'out_of_stock' }"
+              @click="setInventoryStatus('out_of_stock')"
+            >
+              <VIcon icon="ri-close-circle-line" size="14" class="me-1" />
+              <span>Agotado (0)</span>
+            </button>
           </div>
         </div>
       </div>
@@ -575,3 +708,210 @@ const saveChanges = async () => {
     </VCard>
   </VDialog>
 </template>
+
+<style scoped lang="scss">
+.product-quick-header {
+  position: relative;
+  padding: 1.1rem 1.25rem 1rem 1.25rem;
+  color: #ffffff;
+}
+
+.header-top-row {
+  position: relative;
+  z-index: 2;
+}
+
+.product-sku-chip {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 8px;
+  border-radius: 6px;
+  font-size: 0.72rem;
+  font-weight: 700;
+  background: rgba(255, 255, 255, 0.16);
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  color: #ffffff;
+  letter-spacing: 0.03em;
+  backdrop-filter: blur(4px);
+}
+
+.product-service-chip {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 8px;
+  border-radius: 6px;
+  font-size: 0.72rem;
+  font-weight: 700;
+  background: rgba(255, 255, 255, 0.95);
+  color: #4f46e5;
+}
+
+.stock-status-chip {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 9px;
+  border-radius: 9999px;
+  font-size: 0.73rem;
+  font-weight: 600;
+  line-height: 1.3;
+  backdrop-filter: blur(6px);
+  cursor: default;
+  transition: all 0.2s ease;
+
+  // Estados visuales sobrios y legibles
+  &.stock-badge--available {
+    background: rgba(16, 185, 129, 0.22);
+    border: 1px solid rgba(52, 211, 153, 0.5);
+    color: #ecfdf5;
+    font-weight: 700;
+
+    .v-icon {
+      color: #34d399 !important;
+    }
+  }
+
+  &.stock-badge--out-of-stock {
+    background: rgba(239, 68, 68, 0.22);
+    border: 1px solid rgba(248, 113, 113, 0.45);
+    color: #fef2f2;
+    font-weight: 700;
+
+    .v-icon {
+      color: #f87171 !important;
+    }
+  }
+
+  &.stock-badge--unverified {
+    background: rgba(255, 255, 255, 0.14);
+    border: 1px solid rgba(255, 255, 255, 0.24);
+    color: rgba(255, 255, 255, 0.92);
+
+    .v-icon {
+      color: rgba(255, 255, 255, 0.8) !important;
+    }
+  }
+
+  &.stock-badge--service {
+    background: rgba(14, 165, 233, 0.22);
+    border: 1px solid rgba(56, 189, 248, 0.45);
+    color: #f0f9ff;
+
+    .v-icon {
+      color: #38bdf8 !important;
+    }
+  }
+}
+
+.custom-dialog-close-btn {
+  position: static !important;
+  width: 30px !important;
+  height: 30px !important;
+  min-width: 30px !important;
+  border-radius: 8px !important;
+  background: rgba(255, 255, 255, 0.16) !important;
+  border: 1px solid rgba(255, 255, 255, 0.25) !important;
+  color: #ffffff !important;
+  padding: 0 !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1) !important;
+  flex-shrink: 0;
+
+  &:hover {
+    background: rgba(255, 255, 255, 0.3) !important;
+    border-color: rgba(255, 255, 255, 0.5) !important;
+    transform: scale(1.05) !important;
+  }
+}
+
+.product-dialog-title {
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  line-height: 1.35;
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: #ffffff;
+  word-break: break-word;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.15);
+}
+
+.header-status-control {
+  position: relative;
+  z-index: 2;
+}
+
+.status-toggle-group {
+  display: flex;
+  align-items: stretch;
+  background: rgba(0, 0, 0, 0.22);
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  border-radius: 9px;
+  padding: 2px;
+  gap: 3px;
+  backdrop-filter: blur(8px);
+}
+
+.status-toggle-btn {
+  flex: 1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  height: 32px;
+  padding: 0 10px;
+  border-radius: 7px;
+  font-size: 0.77rem;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.75);
+  background: transparent;
+  border: 1px solid transparent;
+  cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  white-space: nowrap;
+  user-select: none;
+
+  .v-icon {
+    color: inherit;
+    transition: transform 0.2s ease;
+  }
+
+  &:hover:not(.active) {
+    color: #ffffff;
+    background: rgba(255, 255, 255, 0.08);
+  }
+
+  &.active {
+    font-weight: 700;
+    color: #ffffff;
+
+    &.btn-pending {
+      background: rgba(255, 255, 255, 0.2);
+      border-color: rgba(255, 255, 255, 0.35);
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
+    }
+
+    &.btn-inventoried {
+      background: rgba(16, 185, 129, 0.32);
+      border-color: rgba(52, 211, 153, 0.6);
+      box-shadow: 0 2px 8px rgba(16, 185, 129, 0.25);
+
+      .v-icon {
+        color: #34d399;
+      }
+    }
+
+    &.btn-out-of-stock {
+      background: rgba(239, 68, 68, 0.32);
+      border-color: rgba(248, 113, 113, 0.6);
+      box-shadow: 0 2px 8px rgba(239, 68, 68, 0.25);
+
+      .v-icon {
+        color: #f87171;
+      }
+    }
+  }
+}
+</style>
