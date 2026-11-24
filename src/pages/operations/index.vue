@@ -140,8 +140,18 @@ const extractWorkOrderAndVehicle = m => {
 
   // Desde movable (Sale, PaymentDistribution, WorkOrder, etc.)
   if (m.movable) {
-    if (m.movable.work_order_number) workOrderNumber = m.movable.work_order_number
-    if (m.movable.work_order_id) workOrderId = m.movable.work_order_id
+    if (m.movable_type?.includes('WorkOrder')) {
+      workOrderNumber = workOrderNumber || m.movable.number || m.movable.work_order_number
+      workOrderId = workOrderId || m.movable.id || m.movable.work_order_id
+      if (m.movable.vehicle?.license_plate) {
+        licensePlate = licensePlate || m.movable.vehicle.license_plate
+      }
+      if (m.movable.client) {
+        clientName = clientName || m.movable.client.full_name || `${m.movable.client.name || ''} ${m.movable.client.surname || ''}`.trim()
+      }
+    }
+    if (m.movable.work_order_number) workOrderNumber = workOrderNumber || m.movable.work_order_number
+    if (m.movable.work_order_id) workOrderId = workOrderId || m.movable.work_order_id
     if (m.movable.workOrder) {
       workOrderNumber = workOrderNumber || m.movable.workOrder.number
       workOrderId = workOrderId || m.movable.workOrder.id
@@ -266,6 +276,8 @@ const groupMovementsByDate = movements => {
         'FinanceRecord': 'Registro Financiero',
         'Sale': 'Venta',
         'Purchase': 'Compra',
+        'WorkOrder': 'Anticipo OT',
+        'WorkOrderAdvance': 'Anticipo OT',
       }
 
       moduleName = typeMap[type] || type.replace(/([A-Z])/g, ' $1').trim()
@@ -282,25 +294,46 @@ const groupMovementsByDate = movements => {
     // Limpieza y formateo del título principal y subtítulo
     let displayTitle = finalDesc
 
-    // Regex para detectar ventas, facturas, notas de venta, cotizaciones
-    const saleMatch = finalDesc.match(/(?:Venta:\s*)?(invoice|factura|nota_venta|sale_note|nota\s*de\s*venta|sale|quote|cotizacion|cotización)\s*[-–#:\s]*(\d+)/i)
-    if (saleMatch) {
-      const docType = (saleMatch[1] || '').toLowerCase().replace(/[\s_]/g, '')
-      const docNum = saleMatch[2]
-      let label = 'Venta'
-      if (docType === 'invoice' || docType === 'factura') {
-        label = 'Factura'
-      } else if (docType === 'quote' || docType.includes('cotiz')) {
-        label = 'Cotización'
-      } else if (docType.includes('note') || docType.includes('notadeventa') || docType === 'notaventa') {
-        label = 'Nota de Venta'
-      }
+    // Detección de Abono / Anticipo OT
+    const isAdvanceMov = m.movable_type?.includes('WorkOrder') || m.metadata?.type === 'work_order_advance' || /(?:abono|anticipo)\s*ot/i.test(finalDesc)
 
-      displayTitle = `${label} #${docNum}`
-    } else if (finalDesc.toLowerCase().startsWith('venta:')) {
-      displayTitle = finalDesc.replace(/Venta:\s*/i, '').replace(/-\s*(Transferencia|Efectivo|Transfer|Cash)/gi, '').trim()
-    } else if (finalDesc.toLowerCase().startsWith('pago por compra a proveedor')) {
-      displayTitle = finalDesc.replace(/Pago por Compra a Proveedor/i, 'Compra:').trim()
+    if (isAdvanceMov) {
+      moduleName = 'Anticipo OT'
+      const otNum = m.metadata?.work_order_number || m.movable?.number || workOrderNumber || ''
+      const cleanOtNum = otNum ? String(otNum).replace(/^OT-?/i, '') : ''
+      displayTitle = cleanOtNum ? `Anticipo OT #${cleanOtNum}` : (m.metadata?.receipt_number || 'Anticipo de Orden')
+    } else {
+      // Regex para detectar ventas, facturas, notas de venta, cotizaciones
+      const saleMatch = finalDesc.match(/(?:Venta:\s*)?(invoice|factura|nota_venta|sale_note|nota\s*de\s*venta|sale|quote|cotizacion|cotización)\s*[-–#:\s]*(\d+)/i)
+      if (saleMatch) {
+        const docType = (saleMatch[1] || '').toLowerCase().replace(/[\s_]/g, '')
+        const docNum = saleMatch[2]
+        let label = 'Venta'
+        if (docType === 'invoice' || docType === 'factura') {
+          label = 'Factura'
+        } else if (docType === 'quote' || docType.includes('cotiz')) {
+          label = 'Cotización'
+        } else if (docType.includes('note') || docType.includes('notadeventa') || docType === 'notaventa') {
+          label = 'Nota de Venta'
+        }
+
+        displayTitle = `${label} #${docNum}`
+      } else if (finalDesc.toLowerCase().startsWith('venta:')) {
+        displayTitle = finalDesc.replace(/Venta:\s*/i, '').replace(/-\s*(Transferencia|Efectivo|Transfer|Cash)/gi, '').trim()
+      } else if (finalDesc.toLowerCase().startsWith('pago por compra a proveedor')) {
+        displayTitle = finalDesc.replace(/Pago por Compra a Proveedor/i, 'Compra:').trim()
+      }
+    }
+
+    // Detección de cobro de saldo restante de una venta con anticipo previo
+    let isAdvanceBalance = false
+    let totalAdvancesAmount = 0
+    let totalSaleAmount = 0
+
+    if (m.metadata?.is_balance || /saldo\s*tras\s*anticipo/i.test(finalDesc)) {
+      isAdvanceBalance = true
+      totalAdvancesAmount = Number(m.metadata?.total_advances) || parseFloat(finalDesc.match(/anticipo\s*(?:previo\s*de\s*)?\$?([0-9.]+)/i)?.[1] || 0)
+      totalSaleAmount = Number(m.metadata?.total_sale) || (amountVal + totalAdvancesAmount)
     }
 
     if (m.type === 'income') {
@@ -324,6 +357,9 @@ const groupMovementsByDate = movements => {
       description: finalDesc,
       displayTitle: displayTitle,
       module: moduleName,
+      isAdvanceBalance: isAdvanceBalance,
+      totalAdvancesAmount: totalAdvancesAmount,
+      totalSaleAmount: totalSaleAmount,
       methodInfo: methodInfo,
       workOrderNumber: workOrderNumber,
       workOrderId: workOrderId,
@@ -1117,6 +1153,19 @@ onUnmounted(() => {
                                       :icon="movement.type === 'transfer' ? 'ri-arrow-left-right-line' : (movement.type === 'income' ? 'ri-arrow-down-line' : 'ri-arrow-up-line')"
                                       size="12" class="me-1" />
                                     {{ movement.module }}
+                                  </VChip>
+
+                                  <!-- Indicador de Saldo tras Anticipo -->
+                                  <VChip
+                                    v-if="movement.isAdvanceBalance"
+                                    size="x-small"
+                                    color="info"
+                                    variant="tonal"
+                                    class="font-weight-semibold"
+                                    :title="`Total Factura: $${movement.totalSaleAmount.toFixed(2)} | Anticipo previo: $${movement.totalAdvancesAmount.toFixed(2)} | Saldo cobrado: $${movement.amount.toFixed(2)}`"
+                                  >
+                                    <VIcon icon="ri-hand-coin-line" size="11" class="me-1" />
+                                    Saldo (Anticipo: ${{ movement.totalAdvancesAmount.toFixed(2) }} | Total: ${{ movement.totalSaleAmount.toFixed(2) }})
                                   </VChip>
 
                                   <!-- Badge de Orden de Trabajo si existe -->
