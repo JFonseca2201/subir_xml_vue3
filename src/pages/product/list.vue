@@ -8,6 +8,7 @@ import DeleteProduct from '@/components/inventory/product/DeleteProdcut.vue'
 import ImportProductsDialog from '@/components/inventory/product/ImportProductsDialog.vue'
 import ProductQuickEditDialog from '@/components/inventory/product/ProductQuickEditDialog.vue'
 import ProductStockDialog from '@/components/inventory/product/ProductStockDialog.vue'
+import WorkshopConsumptionsDialog from '@/components/inventory/workshop/WorkshopConsumptionsDialog.vue'
 
 // Router
 const router = useRouter()
@@ -33,6 +34,7 @@ const selectedProduct = ref(null)
 const deleteDialog = ref(false)
 const productToDelete = ref(null)
 const importDialog = ref(false)
+const workshopConsumptionsDialog = ref(false)
 
 // Estados para diálogos de edición rápida
 const quickEditDialog = ref(false)
@@ -471,6 +473,11 @@ watch([
       </div>
 
       <div class="d-flex align-center justify-end gap-2 flex-wrap ms-auto crud-header-actions">
+        <VBtn color="warning" variant="tonal" prepend-icon="ri-archive-line" class="font-weight-medium"
+          @click="workshopConsumptionsDialog = true">
+          Insumos de Taller
+        </VBtn>
+
         <VBtn v-if="can('import_xml') || can('register_product')" color="info" variant="flat"
           prepend-icon="ri-upload-2-line" class="font-weight-medium" @click="importProducts">
           Importar Excel
@@ -1048,5 +1055,8 @@ watch([
     <!-- Diálogo de Ajuste Rápido de Stock -->
     <ProductStockDialog v-if="selectedStockProduct" v-model:isDialogVisible="stockDialog"
       :product="selectedStockProduct" @updated="handleProductUpdated" />
+
+    <!-- Diálogo de Gestión y Consumo de Insumos de Taller -->
+    <WorkshopConsumptionsDialog v-model="workshopConsumptionsDialog" />
   </div>
 </template>

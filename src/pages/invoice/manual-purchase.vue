@@ -1,5 +1,5 @@
 <script setup>
-import { ref, onMounted, computed, watch } from 'vue'
+import { ref, onMounted, computed, watch, nextTick } from 'vue'
 import { useRouter } from 'vue-router'
 import { useGlobalToast } from '@/composables/useGlobalToast'
 import { $api } from '@/utils/api'
@@ -7,7 +7,6 @@ import { useLoaderStore } from '@/stores/loader'
 import { XMLParser } from "fast-xml-parser"
 import { useFormDraft } from '@/composables/useFormDraft'
 import { useTaxConfig } from '@/composables/useTaxConfig'
-import WorkshopConsumptionsDialog from '@/components/inventory/workshop/WorkshopConsumptionsDialog.vue'
 
 const router = useRouter()
 const { showNotification } = useGlobalToast()
@@ -17,7 +16,6 @@ const { taxPercent, calculateTax } = useTaxConfig()
 const isSubmitting = ref(false)
 const isLoadingConfig = ref(false)
 const isLoadingProducts = ref(false)
-const isWorkshopConsumptionsDialogOpen = ref(false)
 
 // Config data
 const suppliers = ref([])
@@ -90,6 +88,7 @@ const isExpense = computed({
 const purchaseTypeOptions = [
   {
     value: 'products',
+    btnLabel: 'Productos (Stock)',
     title: 'Productos para Venta (Stock Comercial)',
     subtitle: 'Mercadería física para venta al cliente. Se registrarán en el catálogo y aumentará su stock comercial.',
     icon: 'ri-box-3-line',
@@ -98,17 +97,19 @@ const purchaseTypeOptions = [
   },
   {
     value: 'supplies',
+    btnLabel: 'Insumos Taller',
     title: 'Insumos de Taller (Por Envase/Caja)',
-    subtitle: 'Entra a inventario interno de taller por envase/caja cerrada (pesas, aflojatodo, grasa) con salida por consumo en 1 clic. NO se vende en POS.',
+    subtitle: 'Entra a inventario interno de taller.',
     icon: 'ri-archive-line',
     color: 'warning',
     badge: 'Stock Interno Taller',
   },
   {
     value: 'expenses',
-    title: 'Gasto Directo / Operativo Taller',
-    subtitle: 'Consumibles directos o gastos operativos que no llevan inventario. Se registran directo al gasto del taller.',
-    icon: 'ri-tools-line',
+    btnLabel: 'Gasto General',
+    title: 'Gasto Directo',
+    subtitle: 'Consumibles directos o gastos operativos que no llevan inventario.',
+    icon: 'ri-receipt-line',
     color: 'info',
     badge: 'Gasto Taller Directo',
   },
@@ -188,8 +189,59 @@ const createEmptyItemRow = (type = null) => {
   }
 }
 
+// Computed para verificar si existe alguna fila rápida o manual vacía / incompleta
+const hasEmptyQuickRow = computed(() => {
+  return items.value.some(item => {
+    if (item.is_from_xml) return false
+    const noDesc = !item.description || !item.description.toString().trim()
+    const noPrice = item.unit_price === null || item.unit_price === undefined || item.unit_price === ''
+    return noDesc || noPrice
+  })
+})
+
 const addQuickItemRow = () => {
+  const emptyRowIndex = items.value.findIndex(item => {
+    if (item.is_from_xml) return false
+    const noDesc = !item.description || !item.description.toString().trim()
+    const noPrice = item.unit_price === null || item.unit_price === undefined || item.unit_price === ''
+    return noDesc || noPrice
+  })
+
+  if (emptyRowIndex !== -1) {
+    const emptyItem = items.value[emptyRowIndex]
+    const hasNoDesc = !emptyItem.description || !emptyItem.description.toString().trim()
+
+    if (hasNoDesc) {
+      showNotification(`La fila #${emptyRowIndex + 1} está vacía. Ingresa la descripción antes de agregar otra fila.`, 'warning')
+    } else {
+      showNotification(`La fila #${emptyRowIndex + 1} ("${emptyItem.description}") requiere precio unitario antes de agregar otra fila.`, 'warning')
+    }
+
+    nextTick(() => {
+      const rowElements = document.querySelectorAll('.purchase-item-row')
+      if (rowElements && rowElements[emptyRowIndex]) {
+        const inputToFocus = hasNoDesc
+          ? rowElements[emptyRowIndex].querySelector('input[type="text"]')
+          : rowElements[emptyRowIndex].querySelector('.price-box input')
+        inputToFocus?.focus()
+        inputToFocus?.select?.()
+        inputToFocus?.scrollIntoView({ behavior: 'smooth', block: 'nearest' })
+      }
+    })
+    return
+  }
+
   items.value.push(createEmptyItemRow())
+
+  nextTick(() => {
+    const rowElements = document.querySelectorAll('.purchase-item-row')
+    if (rowElements && rowElements.length > 0) {
+      const lastRow = rowElements[rowElements.length - 1]
+      const input = lastRow?.querySelector('input[type="text"]')
+      input?.focus()
+      input?.scrollIntoView({ behavior: 'smooth', block: 'nearest' })
+    }
+  })
 }
 
 // Bulk Category Assignment State
@@ -432,9 +484,11 @@ const manualItem = ref({
   is_taxable: true,
 })
 
-// Estado para Diálogo de Edición de Marca del Producto / Amortiguador
+// Estado para Diálogo de Configuración y Clasificación del Ítem (Producto / Insumo / Gasto)
 const isBrandDialogOpen = ref(false)
 const selectedBrandItem = ref(null)
+const itemEditType = ref(1)
+const itemEditCategory = ref(null)
 const brandEditValue = ref('')
 const applyToSimilarBrand = ref(false)
 
@@ -452,9 +506,10 @@ const popularShockBrands = [
 
 const openBrandDialog = item => {
   if (isDuplicateInvoice.value) return
-  if (Number(item.item_type) !== 1 && Number(item.item_type) !== 3) return
 
   selectedBrandItem.value = item
+  itemEditType.value = Number(item.item_type) || 1
+  itemEditCategory.value = item.product_categorie_id || null
   brandEditValue.value = (item.brand && item.brand !== 'N/A') ? item.brand : 'SM'
   applyToSimilarBrand.value = false
   isBrandDialogOpen.value = true
@@ -463,21 +518,37 @@ const openBrandDialog = item => {
 const saveBrandEdit = () => {
   if (!selectedBrandItem.value) return
 
+  const it = selectedBrandItem.value
+  const targetType = Number(itemEditType.value) || 1
   const trimmed = (brandEditValue.value || 'SM').toString().trim()
-  const finalBrand = trimmed || 'SM'
+  const finalBrand = targetType === 2 ? 'N/A' : (trimmed || 'SM')
 
-  selectedBrandItem.value.brand = finalBrand
+  // Actualizar clasificación y uso
+  it.item_type = targetType
+  it.usage_type = targetType === 1
+    ? 'commercial_product'
+    : (targetType === 3 ? 'workshop_stock_unit' : 'workshop_consumable')
 
-  if (finalBrand && !brands.value.includes(finalBrand)) {
+  it.brand = finalBrand
+
+  if (finalBrand && finalBrand !== 'N/A' && !brands.value.includes(finalBrand)) {
     brands.value.push(finalBrand)
   }
 
-  if (applyToSimilarBrand.value) {
-    const curDesc = (selectedBrandItem.value.description || '').toLowerCase()
+  // Actualizar categoría según el tipo
+  if (targetType === 1) {
+    it.product_categorie_id = itemEditCategory.value || it.product_categorie_id || null
+  } else {
+    it.product_categorie_id = null
+  }
+
+  // Si marcó aplicar a similares y es producto
+  if (applyToSimilarBrand.value && targetType === 1) {
+    const curDesc = (it.description || '').toLowerCase()
     let count = 0
-    items.value.forEach(it => {
-      if (Number(it.item_type) === 1 && it.id !== selectedBrandItem.value.id) {
-        const desc = (it.description || '').toLowerCase()
+    items.value.forEach(otherIt => {
+      if (Number(otherIt.item_type) === 1 && otherIt.id !== it.id) {
+        const desc = (otherIt.description || '').toLowerCase()
         if (
           (curDesc.includes('amortiguador') && desc.includes('amortiguador')) ||
           (curDesc.includes('pastilla') && desc.includes('pastilla')) ||
@@ -485,18 +556,21 @@ const saveBrandEdit = () => {
           (curDesc.includes('filtro') && desc.includes('filtro')) ||
           (curDesc.includes('aceite') && desc.includes('aceite'))
         ) {
-          it.brand = finalBrand
+          otherIt.brand = finalBrand
+          if (itemEditCategory.value && !otherIt.product_categorie_id) {
+            otherIt.product_categorie_id = itemEditCategory.value
+          }
           count++
         }
       }
     })
     if (count > 0) {
-      showNotification(`Marca "${finalBrand}" asignada a este y ${count} producto(s) similar(es)`, 'success')
+      showNotification(`Configuración aplicada a este y ${count} ítem(s) similar(es)`, 'success')
     } else {
-      showNotification(`Marca actualizada a "${finalBrand}"`, 'success')
+      showNotification(`Ítem actualizado como ${targetType === 1 ? 'Producto' : (targetType === 3 ? 'Insumo Taller' : 'Gasto Directo')}`, 'success')
     }
   } else {
-    showNotification(`Marca actualizada a "${finalBrand}"`, 'success')
+    showNotification(`Ítem actualizado como ${targetType === 1 ? 'Producto' : (targetType === 3 ? 'Insumo Taller' : 'Gasto Directo')}`, 'success')
   }
 
   isBrandDialogOpen.value = false
@@ -1485,12 +1559,6 @@ onMounted(() => {
 
                   <!-- Lado Derecho: Botones de Acción -->
                   <div class="d-flex align-center gap-2 flex-wrap">
-                    <VBtn color="secondary" variant="tonal" prepend-icon="ri-archive-line"
-                      class="rounded-lg px-3 font-weight-bold" height="40"
-                      @click="isWorkshopConsumptionsDialogOpen = true">
-                      Insumos de Taller
-                    </VBtn>
-
                     <!-- Si no hay XML cargado -->
                     <VBtn v-if="!xmlLoadedInfo" color="primary" variant="elevated" prepend-icon="ri-upload-cloud-2-line"
                       class="rounded-lg px-4 font-weight-bold" height="40" :loading="isParsingXml"
@@ -1519,68 +1587,61 @@ onMounted(() => {
 
             <VCardText class="pa-4 pa-sm-5">
               <!-- Selector de Clasificación de Compra: Productos vs Insumos vs Gasto General -->
-              <div class="mb-5 pa-3 px-4 rounded-xl bg-grey-lighten-5 border">
-                <div class="d-flex flex-column flex-md-row align-start align-md-center justify-space-between gap-3 mb-3">
-                  <div class="d-flex align-center gap-3">
-                    <VAvatar size="42" :color="purchaseType === 'products' ? 'primary' : (purchaseType === 'supplies' ? 'info' : 'warning')" variant="tonal" class="rounded-lg flex-shrink-0">
-                      <VIcon :icon="purchaseType === 'products' ? 'ri-box-3-line' : (purchaseType === 'supplies' ? 'ri-tools-line' : 'ri-receipt-line')" size="22" />
+              <div class="mb-5 pa-4 rounded-xl bg-grey-lighten-5 border">
+                <div
+                  class="d-flex flex-column flex-md-row align-start align-md-center justify-space-between gap-3 mb-2">
+                  <!-- Lado Izquierdo: Icono + Título + Badge -->
+                  <div class="d-flex align-center gap-3 min-w-0">
+                    <VAvatar size="40"
+                      :color="purchaseTypeOptions.find(o => o.value === purchaseType)?.color || 'primary'"
+                      variant="tonal" class="rounded-lg shrink-0">
+                      <VIcon :icon="purchaseTypeOptions.find(o => o.value === purchaseType)?.icon || 'ri-box-3-line'"
+                        size="22" />
                     </VAvatar>
-                    <div>
-                      <div class="text-subtitle-1 font-weight-bold text-high-emphasis">
-                        {{ purchaseTypeOptions.find(o => o.value === purchaseType)?.title || 'Tipo de Compra' }}
+                    <div class="min-w-0">
+                      <div class="d-flex align-center gap-2 flex-wrap">
+                        <span class="text-subtitle-1 font-weight-bold text-high-emphasis">
+                          {{purchaseTypeOptions.find(o => o.value === purchaseType)?.title || 'Tipo de Compra'}}
+                        </span>
+                        <VChip size="x-small"
+                          :color="purchaseTypeOptions.find(o => o.value === purchaseType)?.color || 'primary'"
+                          variant="tonal" class="font-weight-bold">
+                          {{purchaseTypeOptions.find(o => o.value === purchaseType)?.badge}}
+                        </VChip>
                       </div>
-                      <p class="text-caption text-medium-emphasis mb-0">
-                        {{ purchaseTypeOptions.find(o => o.value === purchaseType)?.subtitle }}
-                      </p>
                     </div>
                   </div>
 
-                  <!-- 3 Opciones de Compra -->
-                  <div class="d-flex align-center gap-2 flex-wrap">
-                    <VBtnToggle
-                      v-model="purchaseType"
-                      mandatory
-                      color="primary"
-                      density="comfortable"
-                      variant="outlined"
-                      rounded="lg"
-                      :disabled="isDuplicateInvoice"
-                      @update:model-value="setPurchaseType"
-                    >
-                      <VBtn value="products" class="text-none font-weight-bold px-3">
-                        <VIcon icon="ri-box-3-line" start size="17" color="primary" />
-                        Productos (Stock)
-                      </VBtn>
-                      <VBtn value="supplies" class="text-none font-weight-bold px-3">
-                        <VIcon icon="ri-tools-line" start size="17" color="info" />
-                        Insumos
-                      </VBtn>
-                      <VBtn value="expenses" class="text-none font-weight-bold px-3">
-                        <VIcon icon="ri-receipt-line" start size="17" color="warning" />
-                        Gasto en General
-                      </VBtn>
-                    </VBtnToggle>
+                  <!-- Lado Derecho: Radio Pills Pixel-Perfect y Super Estables (Inmunes a recortes) -->
+                  <div class="d-flex align-center gap-2 flex-nowrap shrink-0 purchase-type-radio-container"
+                    role="radiogroup">
+                    <div v-for="opt in purchaseTypeOptions" :key="opt.value" role="radio"
+                      :aria-checked="purchaseType === opt.value" class="custom-radio-pill" :class="{
+                        'is-active': purchaseType === opt.value,
+                        [`type-${opt.value}`]: true,
+                        'is-disabled': isDuplicateInvoice
+                      }" @click="setPurchaseType(opt.value)">
+                      <!-- Círculo de Radio Button personalizado (nunca se corta) -->
+                      <span class="custom-radio-circle">
+                        <span class="custom-radio-dot" />
+                      </span>
+
+                      <!-- Icono -->
+                      <VIcon :icon="opt.icon" size="16" class="pill-icon" />
+
+                      <!-- Label -->
+                      <span class="pill-label">{{ opt.btnLabel }}</span>
+                    </div>
                   </div>
                 </div>
 
-                <!-- Info Banner contextual -->
-                <VAlert
-                  :color="purchaseType === 'products' ? 'primary' : (purchaseType === 'supplies' ? 'info' : 'warning')"
-                  variant="tonal"
-                  density="compact"
-                  class="rounded-lg text-caption mb-0"
-                  :icon="purchaseType === 'products' ? 'ri-information-line' : (purchaseType === 'supplies' ? 'ri-tools-line' : 'ri-receipt-line')"
-                >
-                  <span v-if="purchaseType === 'products'">
-                    <strong>Modalidad Productos (Inventario):</strong> Los ítems de tipo producto crearán o actualizarán el catálogo del taller e incrementarán el stock disponible para ventas.
-                  </span>
-                  <span v-else-if="purchaseType === 'supplies'">
-                    <strong>Modalidad Insumos de Taller:</strong> Los ítems se registrarán como insumos y consumibles de uso interno para control de costos. <strong>NO</strong> se añadirán al catálogo de venta ni afectarán stock comercial.
-                  </span>
-                  <span v-else>
-                    <strong>Modalidad Gasto en General:</strong> Los ítems se registrarán como egreso financiero o servicio operativo. <strong>NO</strong> se añadirán al catálogo de venta ni afectarán stock comercial.
-                  </span>
-                </VAlert>
+                <!-- Subtítulo descriptivo en una línea limpia inferior para que no desplace los botones -->
+                <div
+                  class="text-caption text-medium-emphasis d-flex align-center gap-1.5 pt-2 border-t border-slate-200 border-opacity-50">
+                  <VIcon icon="ri-information-line" size="14"
+                    :color="purchaseTypeOptions.find(o => o.value === purchaseType)?.color || 'primary'" />
+                  <span>{{purchaseTypeOptions.find(o => o.value === purchaseType)?.subtitle}}</span>
+                </div>
               </div>
 
               <VRow>
@@ -1623,8 +1684,7 @@ onMounted(() => {
         <!-- 2. COLUMNA IZQUIERDA (8 COLUMNAS) -->
         <VCol cols="12" md="8">
           <!-- BANNER DE FACTURA COMPARTIDA (SOLO SI SE IMPORTA UN XML, 8 COLUMNAS) -->
-          <VCard v-if="xmlLoadedInfo && !isDuplicateInvoice"
-            class="rounded-xl border elevation-0 pa-2 bg-surface mb-2">
+          <VCard v-if="xmlLoadedInfo && !isDuplicateInvoice" class="rounded-xl border elevation-0 pa-2 bg-surface mb-2">
             <div class="d-flex flex-column flex-md-row align-start align-md-center justify-space-between gap-4">
               <div class="d-flex align-center gap-3">
                 <div class="bg-primary-lighten-5 rounded-circle pa-2 d-flex align-center justify-center text-primary">
@@ -1669,15 +1729,22 @@ onMounted(() => {
               <template #title>
                 <div class="d-flex align-center justify-space-between flex-wrap gap-2">
                   <div class="d-flex align-center gap-3">
-                    <VAvatar size="36" :color="purchaseType === 'products' ? 'primary' : (purchaseType === 'supplies' ? 'info' : 'warning')" variant="tonal" class="rounded-lg">
-                      <VIcon :icon="purchaseType === 'products' ? 'ri-box-3-line' : (purchaseType === 'supplies' ? 'ri-tools-line' : 'ri-receipt-line')" size="20" />
+                    <VAvatar size="36"
+                      :color="purchaseType === 'products' ? 'primary' : (purchaseType === 'supplies' ? 'info' : 'warning')"
+                      variant="tonal" class="rounded-lg">
+                      <VIcon
+                        :icon="purchaseType === 'products' ? 'ri-box-3-line' : (purchaseType === 'supplies' ? 'ri-tools-line' : 'ri-receipt-line')"
+                        size="20" />
                     </VAvatar>
                     <div>
                       <div class="d-flex align-center gap-2 flex-wrap">
                         <h3 class="text-subtitle-1 font-weight-bold text-high-emphasis mb-0">
-                          {{ purchaseType === 'products' ? 'Detalle de Productos' : (purchaseType === 'supplies' ? 'Detalle de Insumos' : 'Detalle de Gastos Generales') }}
+                          {{ purchaseType === 'products' ? 'Detalle de Productos' : (purchaseType === 'supplies' ?
+                            'Detalle de Insumos' : 'Detalle de Gastos Generales') }}
                         </h3>
-                        <VChip size="x-small" :color="purchaseType === 'products' ? 'primary' : (purchaseType === 'supplies' ? 'info' : 'warning')" variant="tonal" class="font-weight-bold">
+                        <VChip size="x-small"
+                          :color="purchaseType === 'products' ? 'primary' : (purchaseType === 'supplies' ? 'info' : 'warning')"
+                          variant="tonal" class="font-weight-bold">
                           {{ items.length }}
                         </VChip>
                         <VChip v-if="isDuplicateInvoice" size="x-small" color="error" variant="tonal"
@@ -1688,20 +1755,22 @@ onMounted(() => {
                       <p class="text-caption text-medium-emphasis mb-0">
                         {{ purchaseType === 'products'
                           ? 'Artículos que ingresan al catálogo y aumentan stock'
-                          : (purchaseType === 'supplies' ? 'Consumibles y materiales de taller con desglose de precios, IVA y descuentos' : 'Servicios y gastos generales con desglose de precios, IVA y descuentos')
+                          : (purchaseType === 'supplies'
+                            ? 'Consumibles y materiales de taller con desglose de precios, IVA y descuentos'
+                            : 'Servicios y gastos generales con desglose de precios, IVA y descuentos')
                         }}
                       </p>
                     </div>
                   </div>
                   <div v-if="!xmlLoadedInfo && !isDuplicateInvoice" class="d-flex align-center gap-2 flex-wrap">
-                    <VBtn color="secondary" variant="outlined" size="small"
-                      prepend-icon="ri-add-line" class="rounded-lg font-weight-bold text-none"
+                    <VBtn color="secondary" variant="outlined" size="small" prepend-icon="ri-add-line"
+                      class="rounded-lg font-weight-bold text-none" :disabled="hasEmptyQuickRow"
+                      :title="hasEmptyQuickRow ? 'Completa la fila vacía antes de agregar otra' : 'Agregar fila rápida'"
                       @click="addQuickItemRow">
-                      + Fila Rápida
+                      Fila Rápida
                     </VBtn>
-                    <VBtn color="primary" variant="flat" size="small"
-                      prepend-icon="ri-file-add-line" class="rounded-lg font-weight-bold text-none"
-                      @click="openManualProductDialog('')">
+                    <VBtn color="primary" variant="flat" size="small" prepend-icon="ri-file-add-line"
+                      class="rounded-lg font-weight-bold text-none" @click="openManualProductDialog('')">
                       Ingreso Detallado
                     </VBtn>
                   </div>
@@ -1710,13 +1779,12 @@ onMounted(() => {
             </VCardItem>
             <VCardText class="pa-4 pa-sm-5">
               <!-- Búsqueda en catálogo si está en modo Productos -->
-              <VAutocomplete v-if="!xmlLoadedInfo && !isDuplicateInvoice && purchaseType === 'products'" v-model="searchProduct" :items="products"
-                item-title="description" item-value="id" :custom-filter="customProductFilter"
-                label="Buscar Producto en catálogo por Nombre o SKU para añadir..."
+              <VAutocomplete v-if="!xmlLoadedInfo && !isDuplicateInvoice && purchaseType === 'products'"
+                v-model="searchProduct" :items="products" item-title="description" item-value="id"
+                :custom-filter="customProductFilter" label="Buscar Producto en catálogo por Nombre o SKU para añadir..."
                 placeholder="Escribe el nombre o SKU (ej: 03-005...)" variant="outlined"
                 prepend-inner-icon="ri-search-line" return-object clearable class="mb-4" :menu-props="{ maxWidth: 0 }"
-                :loading="isLoadingProducts" :disabled="!formData.supplier_id"
-                @update:model-value="addProductToItems">
+                :loading="isLoadingProducts" :disabled="!formData.supplier_id" @update:model-value="addProductToItems">
                 <template #no-data>
                   <div class="pa-4 text-center">
                     <p class="text-medium-emphasis mb-2">
@@ -1727,9 +1795,10 @@ onMounted(() => {
                     </p>
                     <div class="d-flex justify-center gap-2 flex-wrap">
                       <VBtn v-if="formData.supplier_id" color="secondary" variant="outlined" size="small"
-                        prepend-icon="ri-add-line" class="mt-1"
+                        prepend-icon="ri-add-line" class="mt-1" :disabled="hasEmptyQuickRow"
+                        :title="hasEmptyQuickRow ? 'Completa la fila vacía antes de agregar otra' : 'Agregar fila rápida'"
                         @click="addQuickItemRow">
-                        + Agregar Fila Rápida
+                        Agregar Fila Rápida
                       </VBtn>
                       <VBtn v-if="formData.supplier_id" color="primary" variant="outlined" size="small"
                         prepend-icon="ri-edit-box-line" class="mt-1"
@@ -1759,18 +1828,17 @@ onMounted(() => {
                 <div class="d-flex align-center gap-2">
                   <VIcon :icon="purchaseType === 'supplies' ? 'ri-tools-line' : 'ri-receipt-line'"
                     :color="purchaseType === 'supplies' ? 'info' : 'warning'" size="20" />
-                  <span class="text-caption text-high-emphasis">
-                    {{ purchaseType === 'supplies'
-                      ? 'Puedes añadir consumibles de taller directamente en la tabla o mediante el formulario detallado.'
-                      : 'Puedes añadir gastos y servicios operativos directamente en la tabla o mediante el formulario detallado.'
-                    }}
-                  </span>
+
                 </div>
                 <div class="d-flex align-center gap-2">
-                  <VBtn color="secondary" variant="tonal" size="x-small" prepend-icon="ri-add-line" class="text-none font-weight-bold" @click="addQuickItemRow">
-                    + Fila Rápida
+                  <VBtn color="secondary" variant="tonal" size="x-small" prepend-icon="ri-add-line"
+                    class="text-none font-weight-bold" :disabled="hasEmptyQuickRow"
+                    :title="hasEmptyQuickRow ? 'Completa la fila vacía antes de agregar otra' : 'Agregar fila rápida'"
+                    @click="addQuickItemRow">
+                    Fila Rápida
                   </VBtn>
-                  <VBtn color="primary" variant="flat" size="x-small" prepend-icon="ri-file-add-line" class="text-none font-weight-bold" @click="openManualProductDialog('')">
+                  <VBtn color="primary" variant="flat" size="x-small" prepend-icon="ri-file-add-line"
+                    class="text-none font-weight-bold" @click="openManualProductDialog('')">
                     Ingreso Detallado
                   </VBtn>
                 </div>
@@ -1793,8 +1861,8 @@ onMounted(() => {
                     <VSelect v-model="bulkCategory" :items="categories" item-title="title" item-value="id"
                       placeholder="Seleccionar Categoría *" variant="outlined" density="compact" hide-details
                       style="min-width: 210px;" />
-                    <VBtn color="primary" variant="elevated" size="small"
-                      class="font-weight-bold text-none rounded-lg" @click="applyBulkCategory">
+                    <VBtn color="primary" variant="elevated" size="small" class="font-weight-bold text-none rounded-lg"
+                      @click="applyBulkCategory">
                       Aplicar
                     </VBtn>
                   </div>
@@ -1814,10 +1882,7 @@ onMounted(() => {
                         density="compact" hide-details @click.stop="toggleSelectAll" />
                     </th>
                     <th class="text-left font-weight-bold py-3 px-2">
-                      ÍTEM / DESCRIPCIÓN
-                    </th>
-                    <th class="text-center font-weight-bold py-3 px-1" style="width: 105px;">
-                      TIPO
+                      PRODUCTO / DETALLES
                     </th>
                     <th class="text-left font-weight-bold py-3 px-2" style="width: 145px;">
                       CATEGORÍA
@@ -1826,15 +1891,12 @@ onMounted(() => {
                       CANT.
                     </th>
                     <th class="text-center font-weight-bold py-3 px-1" style="width: 80px;">
-                      PRECIO U.
-                    </th>
-                    <th class="text-center font-weight-bold py-3 px-1" style="width: 76px;">
-                      DCTO. ($)
+                      PRECIO
                     </th>
                     <th class="text-center font-weight-bold py-3 px-1" style="width: 52px;">
                       IVA
                     </th>
-                    <th class="text-right font-weight-bold py-3 pr-3 pl-1" style="width: 84px;">
+                    <th class="text-right font-weight-bold py-3 pr-3 pl-1" style="width: 78px;">
                       SUBTOTAL
                     </th>
                     <th v-if="!xmlLoadedInfo && !isDuplicateInvoice" class="text-center font-weight-bold py-3 px-1"
@@ -1845,9 +1907,11 @@ onMounted(() => {
                 </thead>
                 <tbody>
                   <tr v-if="items.length === 0">
-                    <td :colspan="xmlLoadedInfo || isDuplicateInvoice ? 9 : 10"
+                    <td :colspan="xmlLoadedInfo || isDuplicateInvoice ? 7 : 8"
                       class="text-center py-10 text-medium-emphasis">
-                      <VIcon :icon="purchaseType === 'products' ? 'ri-shopping-bag-3-line' : (purchaseType === 'supplies' ? 'ri-tools-line' : 'ri-receipt-line')" size="40" class="mb-2 text-grey-lighten-1" />
+                      <VIcon
+                        :icon="purchaseType === 'products' ? 'ri-shopping-bag-3-line' : (purchaseType === 'supplies' ? 'ri-tools-line' : 'ri-receipt-line')"
+                        size="40" class="mb-2 text-grey-lighten-1" />
                       <div class="text-body-1 font-weight-medium">
                         No hay ítems agregados a la compra
                       </div>
@@ -1855,10 +1919,14 @@ onMounted(() => {
                         Carga un XML del SRI arriba o añade ítems usando los botones
                       </p>
                       <div v-if="!xmlLoadedInfo && !isDuplicateInvoice" class="d-flex justify-center gap-2">
-                        <VBtn size="small" variant="outlined" color="primary" prepend-icon="ri-add-line" class="text-none font-weight-bold" @click="addQuickItemRow">
-                          + Fila Rápida
+                        <VBtn size="small" variant="outlined" color="primary" prepend-icon="ri-add-line"
+                          class="text-none font-weight-bold" :disabled="hasEmptyQuickRow"
+                          :title="hasEmptyQuickRow ? 'Completa la fila vacía antes de agregar otra' : 'Agregar fila rápida'"
+                          @click="addQuickItemRow">
+                          Fila Rápida
                         </VBtn>
-                        <VBtn size="small" variant="flat" color="primary" prepend-icon="ri-file-add-line" class="text-none font-weight-bold" @click="openManualProductDialog('')">
+                        <VBtn size="small" variant="flat" color="primary" prepend-icon="ri-file-add-line"
+                          class="text-none font-weight-bold" @click="openManualProductDialog('')">
                           Ingreso Detallado
                         </VBtn>
                       </div>
@@ -1881,11 +1949,9 @@ onMounted(() => {
                     <td class="py-2.5 px-2">
                       <div v-if="item.is_from_xml || isDuplicateInvoice || (!item.is_manual && item.description)"
                         class="font-weight-bold text-high-emphasis text-body-2 d-flex align-center gap-1 flex-wrap">
-                        <span
-                          :class="{ 'cursor-pointer hover-product-title': (Number(item.item_type) === 1 || Number(item.item_type) === 3) && !isDuplicateInvoice }"
-                          :title="(Number(item.item_type) === 1 || Number(item.item_type) === 3) && !isDuplicateInvoice ? 'Clic para editar la marca' : ''"
-                          @click="(Number(item.item_type) === 1 || Number(item.item_type) === 3) && !isDuplicateInvoice ? openBrandDialog(item) : null"
-                        >
+                        <span :class="{ 'cursor-pointer hover-product-title': !isDuplicateInvoice }"
+                          :title="!isDuplicateInvoice ? 'Clic para configurar ítem (Producto, Insumo o Gasto) y su marca' : ''"
+                          @click="!isDuplicateInvoice ? openBrandDialog(item) : null">
                           {{ item.description }}
                         </span>
                         <VChip v-if="item.is_from_xml" size="x-small" color="success" variant="tonal"
@@ -1896,83 +1962,52 @@ onMounted(() => {
                       <div v-else class="mb-1">
                         <input v-model="item.description" type="text"
                           class="table-cell-input text-left font-weight-bold px-2 py-1 rounded border w-100"
-                          placeholder="Descripción del ítem *" style="font-size: 0.85rem;" />
+                          placeholder="Descripción del ítem *" style="font-size: 0.85rem;"
+                          @keydown.enter.prevent="addQuickItemRow" />
                       </div>
 
                       <div class="text-caption text-medium-emphasis mt-1 d-flex align-center gap-1.5 flex-wrap">
                         <span v-if="item.code">SKU: <strong class="text-high-emphasis">{{ item.code }}</strong></span>
                         <span v-if="item.code" class="text-disabled">•</span>
 
+                        <VChip v-if="!isDuplicateInvoice && item._selected !== false" size="x-small"
+                          :color="Number(item.item_type) === 1 ? 'primary' : (Number(item.item_type) === 3 ? 'warning' : 'info')"
+                          variant="tonal" class="font-weight-bold px-1.5 cursor-pointer hover-brand-chip"
+                          style="height: 19px; font-size: 0.7rem;"
+                          :title="'Clic para cambiar clasificación (Producto / Insumo / Gasto)'"
+                          @click.stop="openBrandDialog(item)">
+                          <VIcon
+                            :icon="Number(item.item_type) === 1 ? 'ri-box-3-line' : (Number(item.item_type) === 3 ? 'ri-archive-line' : 'ri-tools-line')"
+                            size="12" class="me-0.5" />
+                          {{ Number(item.item_type) === 1 ? 'Producto' : (Number(item.item_type) === 3 ? 'Insumo Taller'
+                            :
+                            'Gasto Directo') }}
+                        </VChip>
+
                         <!-- Chip interactivo de Marca para abrir el VDialog si es producto o insumo por envase -->
                         <VChip
                           v-if="(Number(item.item_type) === 1 || Number(item.item_type) === 3) && !isDuplicateInvoice"
-                          size="x-small"
-                          color="secondary"
-                          variant="outlined"
+                          size="x-small" color="secondary" variant="outlined"
                           class="font-weight-bold cursor-pointer hover-brand-chip px-1.5"
-                          style="height: 20px; font-size: 0.7rem;"
-                          title="Clic para editar la marca"
-                          @click.stop="openBrandDialog(item)"
-                        >
+                          style="height: 20px; font-size: 0.7rem;" title="Clic para editar la marca o clasificación"
+                          @click.stop="openBrandDialog(item)">
                           <VIcon icon="ri-price-tag-3-line" size="11" class="me-1 text-primary" />
                           <span>Marca: <strong class="text-primary">{{ item.brand || 'SM' }}</strong></span>
                           <VIcon icon="ri-pencil-line" size="10" class="ms-1 opacity-70" />
                         </VChip>
-                        <span v-else-if="(Number(item.item_type) === 1 || Number(item.item_type) === 3) && item.brand && item.brand !== 'N/A'"
+                        <span
+                          v-else-if="(Number(item.item_type) === 1 || Number(item.item_type) === 3) && item.brand && item.brand !== 'N/A'"
                           class="text-caption text-medium-emphasis">
                           • {{ item.brand }}
                         </span>
                       </div>
                     </td>
 
-                    <!-- Selector de Tipo por Fila -->
-                    <td class="text-center py-2 px-1" style="width: 135px;">
-                      <VSelect
-                        v-if="!isDuplicateInvoice"
-                        v-model="item.item_type"
-                        :items="itemTypeOptions"
-                        item-title="title"
-                        item-value="value"
-                        variant="outlined"
-                        density="compact"
-                        hide-details
-                        class="custom-table-select text-caption"
-                        @update:model-value="onItemTypeChange(item)"
-                      >
-                        <template #selection="{ item: selectedItem }">
-                          <VChip size="x-small"
-                            :color="selectedItem.raw.color"
-                            variant="tonal"
-                            class="font-weight-bold px-1.5 text-no-wrap"
-                            style="height: 20px; font-size: 0.68rem;">
-                            <VIcon :icon="selectedItem.raw.icon" start size="12" class="me-0.5" />
-                            {{ selectedItem.raw.shortTitle || selectedItem.raw.title }}
-                          </VChip>
-                        </template>
-                        <template #item="{ props, item: optItem }">
-                          <VListItem v-bind="props" density="compact">
-                            <template #prepend>
-                              <VIcon :icon="optItem.raw.icon"
-                                size="14" :color="optItem.raw.color" class="me-1" />
-                            </template>
-                            <VListItemTitle style="font-size: 0.78rem;">{{ optItem.raw.title }}</VListItemTitle>
-                            <VListItemSubtitle style="font-size: 0.68rem;">{{ optItem.raw.desc }}</VListItemSubtitle>
-                          </VListItem>
-                        </template>
-                      </VSelect>
-                      <VChip v-else size="x-small"
-                        :color="Number(item.item_type) === 1 ? 'primary' : (Number(item.item_type) === 3 ? 'warning' : 'info')"
-                        variant="tonal" class="font-weight-medium px-1.5" style="height: 20px; font-size: 0.7rem;">
-                        {{ itemTypeOptions.find(t => t.value === Number(item.item_type))?.shortTitle || 'Producto' }}
-                      </VChip>
-                    </td>
-
                     <!-- Selector Editable de Categoría (Solo si es Producto) -->
                     <td class="py-2 px-2" style="width: 145px;">
                       <div v-if="isDuplicateInvoice" class="text-caption text-medium-emphasis text-truncate"
                         :title="getCategoryName(item.product_categorie_id)">
-                        <span v-if="getCategoryName(item.product_categorie_id)"
-                          class="text-primary font-weight-medium">
+                        <span v-if="getCategoryName(item.product_categorie_id)" class="text-primary font-weight-medium">
                           {{ getCategoryName(item.product_categorie_id) }}
                         </span>
                         <span v-else class="text-disabled">—</span>
@@ -1983,7 +2018,8 @@ onMounted(() => {
                         class="custom-table-select" />
                       <div v-else
                         class="text-caption text-medium-emphasis text-center py-1 px-1 bg-grey-lighten-4 rounded border border-dashed">
-                        <span style="font-size: 0.72rem;">No aplica</span>
+                        <span style="font-size: 0.72rem;">{{ Number(item.item_type) === 3 ? 'Insumo Taller'
+                          : 'Gasto (No aplica) ' }}</span>
                       </div>
                     </td>
 
@@ -2003,22 +2039,11 @@ onMounted(() => {
                       <div v-if="!isDuplicateInvoice" class="table-cell-input-box price-box">
                         <span class="table-cell-prefix">$</span>
                         <input v-model.number="item.unit_price" type="number" min="0" step="0.0001"
-                          class="table-cell-input text-right" placeholder="0.00" @input="updateItemTotals(item)">
+                          class="table-cell-input text-right" placeholder="0.00" @input="updateItemTotals(item)"
+                          @keydown.enter.prevent="addQuickItemRow">
                       </div>
                       <span v-else class="text-body-2 font-weight-medium text-grey-darken-3">${{
                         Number(item.unit_price || 0).toFixed(2)
-                      }}</span>
-                    </td>
-
-                    <!-- Descuento en Dólares ($) - Editable -->
-                    <td class="text-center py-2 px-1" style="width: 76px;">
-                      <div v-if="!isDuplicateInvoice" class="table-cell-input-box price-box">
-                        <span class="table-cell-prefix">$</span>
-                        <input v-model.number="item.discount" type="number" min="0" step="0.01"
-                          class="table-cell-input text-right" placeholder="0.00" @input="updateItemTotals(item)">
-                      </div>
-                      <span v-else class="text-body-2 font-weight-medium text-grey-darken-3">${{
-                        Number(item.discount || 0).toFixed(2)
                       }}</span>
                     </td>
 
@@ -2038,7 +2063,7 @@ onMounted(() => {
                     </td>
 
                     <!-- Subtotal (Columna Individual) -->
-                    <td class="text-right py-2 pr-3 pl-1" style="width: 84px;">
+                    <td class="text-right py-2 pr-3 pl-1" style="width: 78px;">
                       <div class="font-weight-bold text-body-2 text-primary">
                         ${{ Number(item.subtotal || 0).toFixed(2) }}
                       </div>
@@ -2053,8 +2078,7 @@ onMounted(() => {
                     </td>
 
                     <!-- Acción Eliminar (Oculta si es importado de XML) -->
-                    <td v-if="!xmlLoadedInfo && !isDuplicateInvoice" class="text-center py-2 px-1"
-                      style="width: 34px;">
+                    <td v-if="!xmlLoadedInfo && !isDuplicateInvoice" class="text-center py-2 px-1" style="width: 34px;">
                       <VBtn v-if="!item.is_from_xml" icon="ri-delete-bin-line" color="error" variant="text"
                         size="x-small" class="rounded-lg" title="Eliminar ítem" @click="removeItem(index)" />
                     </td>
@@ -2066,16 +2090,22 @@ onMounted(() => {
               <div v-if="items.length > 0 && !xmlLoadedInfo && !isDuplicateInvoice"
                 class="d-flex align-center justify-space-between flex-wrap gap-2 mt-4 pt-2">
                 <div class="d-flex align-center gap-2">
-                  <VBtn variant="outlined" color="primary" size="small" prepend-icon="ri-add-line" class="rounded-lg font-weight-bold text-none" @click="addQuickItemRow">
-                    + Fila Rápida
+                  <VBtn variant="outlined" color="primary" size="small" prepend-icon="ri-add-line"
+                    class="rounded-lg font-weight-bold text-none" :disabled="hasEmptyQuickRow"
+                    :title="hasEmptyQuickRow ? 'Completa la fila vacía antes de agregar otra' : 'Agregar fila rápida'"
+                    @click="addQuickItemRow">
+                    Fila Rápida
                   </VBtn>
-                  <VBtn variant="tonal" color="primary" size="small" prepend-icon="ri-file-add-line" class="rounded-lg font-weight-bold text-none" @click="openManualProductDialog('')">
+                  <VBtn variant="tonal" color="primary" size="small" prepend-icon="ri-file-add-line"
+                    class="rounded-lg font-weight-bold text-none" @click="openManualProductDialog('')">
                     Ingreso Detallado
                   </VBtn>
                 </div>
-                <div class="ms-auto d-flex align-center gap-3 flex-wrap text-caption font-weight-bold text-medium-emphasis">
+                <div
+                  class="ms-auto d-flex align-center gap-3 flex-wrap text-caption font-weight-bold text-medium-emphasis">
                   <span>Subtotal: <strong class="text-high-emphasis">${{ subtotal.toFixed(2) }}</strong></span>
-                  <span v-if="totalDiscount > 0" class="text-error">Dcto: <strong>-${{ totalDiscount.toFixed(2) }}</strong></span>
+                  <span v-if="totalDiscount > 0" class="text-error">Dcto: <strong>-${{ totalDiscount.toFixed(2)
+                      }}</strong></span>
                   <span>IVA: <strong class="text-high-emphasis">${{ totalTax.toFixed(2) }}</strong></span>
                   <span>Total: <strong class="text-primary text-body-2">${{ grandTotal.toFixed(2) }}</strong></span>
                 </div>
@@ -2146,13 +2176,19 @@ onMounted(() => {
               <VAlert v-if="formData.payment_type === 'credito'" color="primary" variant="tonal"
                 icon="ri-information-line" class="mt-2 text-caption">
                 <span v-if="purchaseType === 'products'">
-                  Se registrará la compra en el inventario e incrementará el stock, y se creará una Cuenta por Pagar asociada al proveedor. No se descontará dinero de las cuentas todavía.
+                  Se registrará la compra en el inventario e incrementará el stock, y se creará una Cuenta por Pagar
+                  asociada al
+                  proveedor. No se descontará dinero de las cuentas todavía.
                 </span>
                 <span v-else-if="purchaseType === 'supplies'">
-                  Se registrarán los insumos de taller como gasto operativo sin alterar catálogo de venta, y se creará una Cuenta por Pagar asociada al proveedor.
+                  Se registrarán los insumos de taller como gasto operativo sin alterar catálogo de venta, y se creará
+                  una
+                  Cuenta por Pagar asociada al proveedor.
                 </span>
                 <span v-else>
-                  Se registrará el gasto general y se creará una Cuenta por Pagar asociada al proveedor. No se descontará dinero de las cuentas todavía.
+                  Se registrará el gasto general y se creará una Cuenta por Pagar asociada al proveedor. No se
+                  descontará dinero
+                  de las cuentas todavía.
                 </span>
               </VAlert>
             </VCardText>
@@ -2185,7 +2221,7 @@ onMounted(() => {
                 <VChip size="x-small"
                   :color="purchaseType === 'products' ? 'primary' : (purchaseType === 'supplies' ? 'info' : 'warning')"
                   variant="tonal" class="font-weight-bold">
-                  {{ purchaseTypeOptions.find(o => o.value === purchaseType)?.title || 'Compra' }}
+                  {{purchaseTypeOptions.find(o => o.value === purchaseType)?.title || 'Compra'}}
                 </VChip>
               </div>
 
@@ -2211,7 +2247,8 @@ onMounted(() => {
 
               <!-- Desglose Mercadería vs Insumos Taller -->
               <div v-if="items.length > 0" class="mb-4 pa-3 rounded-lg bg-grey-lighten-5 border">
-                <div class="text-caption font-weight-bold text-uppercase text-medium-emphasis mb-2 d-flex align-center justify-space-between">
+                <div
+                  class="text-caption font-weight-bold text-uppercase text-medium-emphasis mb-2 d-flex align-center justify-space-between">
                   <span>Destino Contable</span>
                   <VIcon icon="ri-pie-chart-2-line" size="14" />
                 </div>
@@ -2219,7 +2256,8 @@ onMounted(() => {
                 <!-- Mercadería Comercial -->
                 <div class="d-flex justify-space-between align-center mb-1.5">
                   <div class="d-flex align-center gap-1.5 text-caption">
-                    <span class="rounded-circle bg-primary" style="width: 8px; height: 8px; display: inline-block;"></span>
+                    <span class="rounded-circle bg-primary"
+                      style="width: 8px; height: 8px; display: inline-block;"></span>
                     <span>Mercadería (Stock Venta):</span>
                   </div>
                   <span class="font-mono font-weight-bold text-caption text-primary">
@@ -2237,8 +2275,10 @@ onMounted(() => {
                     ${{ purchaseBreakdown.workshopTotal.toFixed(2) }}
                   </span>
                 </div>
-                <div v-if="purchaseBreakdown.workshopStockTotal > 0 && purchaseBreakdown.workshopConsumableTotal > 0" class="text-caption text-disabled mt-1 ps-3" style="font-size: 0.68rem;">
-                  (Envases: ${{ purchaseBreakdown.workshopStockTotal.toFixed(2) }} | Directos: ${{ purchaseBreakdown.workshopConsumableTotal.toFixed(2) }})
+                <div v-if="purchaseBreakdown.workshopStockTotal > 0 && purchaseBreakdown.workshopConsumableTotal > 0"
+                  class="text-caption text-disabled mt-1 ps-3" style="font-size: 0.68rem;">
+                  (Envases: ${{ purchaseBreakdown.workshopStockTotal.toFixed(2) }} | Directos: ${{
+                    purchaseBreakdown.workshopConsumableTotal.toFixed(2) }})
                 </div>
               </div>
 
@@ -2306,10 +2346,15 @@ onMounted(() => {
             <VIcon icon="ri-add-box-line" />
           </div>
           <h3 class="custom-dialog-title">
-            {{ Number(manualItem.item_type) === 1 ? 'Ingresar Producto al Inventario' : (Number(manualItem.item_type) === 3 ? 'Ingresar Insumo por Envase / Caja' : 'Ingresar Gasto Directo de Taller') }}
+            {{ Number(manualItem.item_type) === 1 ? 'Ingresar Producto al Inventario' : (Number(manualItem.item_type)
+              === 3
+              ? 'Ingresar Insumo por Envase / Caja' : 'Ingresar Gasto Directo de Taller') }}
           </h3>
           <p class="custom-dialog-subtitle">
-            {{ Number(manualItem.item_type) === 1 ? 'Agrega un producto comercial al catálogo con stock para venta' : (Number(manualItem.item_type) === 3 ? 'Agrega un insumo por caja/envase cerrado para inventario interno y salidas de taller' : 'Agrega un gasto operativo o consumible directo sin inventario') }}
+            {{ Number(manualItem.item_type) === 1 ? 'Agrega un producto comercial al catálogo con stock para venta' :
+              (Number(manualItem.item_type) === 3
+                ? 'Agrega un insumo por caja/envase cerrado para inventario interno y salidas de taller'
+                : 'Agrega un gasto operativo o consumible directo sin inventario') }}
           </p>
         </div>
 
@@ -2332,8 +2377,10 @@ onMounted(() => {
                 variant="outlined" density="comfortable" prepend-inner-icon="ri-barcode-line" />
             </VCol>
 
-            <VCol v-if="Number(manualItem.item_type) === 1 || Number(manualItem.item_type) === 3" cols="12" sm="6" class="mb-2">
-              <VCombobox v-model="manualItem.brand" :items="brands" :label="Number(manualItem.item_type) === 1 ? 'Marca del Producto' : 'Marca del Insumo'"
+            <VCol v-if="Number(manualItem.item_type) === 1 || Number(manualItem.item_type) === 3" cols="12" sm="6"
+              class="mb-2">
+              <VCombobox v-model="manualItem.brand" :items="brands"
+                :label="Number(manualItem.item_type) === 1 ? 'Marca del Producto' : 'Marca del Insumo'"
                 placeholder="Seleccionar o escribir marca nueva..." variant="outlined" density="comfortable"
                 prepend-inner-icon="ri-price-tag-3-line" clearable :return-object="false" />
             </VCol>
@@ -2381,94 +2428,154 @@ onMounted(() => {
       </VCard>
     </VDialog>
 
-    <!-- Modal Dialog para Editar Marca del Amortiguador / Producto -->
-    <VDialog v-model="isBrandDialogOpen" scrollable max-width="520">
+    <!-- Modal Dialog para Clasificación y Marca del Ítem -->
+    <VDialog v-model="isBrandDialogOpen" scrollable max-width="560">
       <VCard class="custom-dialog-card elevation-16">
         <!-- Header Banner Primary -->
         <div class="custom-dialog-header-primary">
           <VBtn icon="ri-close-line" variant="text" size="small" class="custom-dialog-close-btn"
             @click="isBrandDialogOpen = false" />
           <div class="custom-dialog-avatar">
-            <VIcon icon="ri-price-tag-3-line" />
+            <VIcon icon="ri-settings-4-line" />
           </div>
           <h3 class="custom-dialog-title">
-            Editar Marca del Producto
+            Configuración y Clasificación del Ítem
           </h3>
           <p class="custom-dialog-subtitle">
-            Asigna o modifica la marca del amortiguador o repuesto
+            Define si este ítem es Producto para venta, Insumo de taller o Gasto directo (logística/flete)
           </p>
         </div>
 
         <VCardText class="pa-4">
-          <!-- Detalle del Producto / Amortiguador -->
+          <!-- Detalle del Ítem / Repuesto -->
           <div class="pa-3 rounded-xl bg-slate-50 border border-slate-200 mb-4">
             <div class="d-flex align-center justify-space-between mb-1">
               <span class="text-caption font-weight-bold text-slate-500 text-uppercase tracking-wider">
-                Amortiguador / Repuesto
+                Ítem en la Factura
               </span>
-              <VChip size="x-small" color="primary" variant="tonal" class="font-weight-bold">
-                SKU: {{ selectedBrandItem?.code || 'S/N' }}
-              </VChip>
+              <div class="d-flex align-center gap-1.5">
+                <VChip v-if="selectedBrandItem?.code" size="x-small" color="primary" variant="tonal"
+                  class="font-weight-bold">
+                  SKU: {{ selectedBrandItem.code }}
+                </VChip>
+                <VChip v-if="selectedBrandItem?.subtotal" size="x-small" color="success" variant="tonal"
+                  class="font-weight-bold font-mono">
+                  ${{ Number(selectedBrandItem.subtotal).toFixed(2) }}
+                </VChip>
+              </div>
             </div>
             <div class="text-body-2 font-weight-bold text-slate-900">
               {{ selectedBrandItem?.description || 'Sin descripción' }}
             </div>
           </div>
 
-          <!-- Combobox de Marca -->
-          <div class="mb-3">
-            <label class="text-caption font-weight-bold text-slate-700 mb-1 d-block">
-              Marca del Amortiguador / Producto:
-            </label>
-            <VCombobox
-              v-model="brandEditValue"
-              :items="brands"
-              placeholder="Seleccionar o escribir marca (ej: TOKICO, KYB, MONROE)..."
-              variant="outlined"
-              density="comfortable"
-              prepend-inner-icon="ri-price-tag-3-line"
-              clearable
-              autofocus
-              :return-object="false"
-              @keydown.enter="saveBrandEdit"
-            />
-          </div>
-
-          <!-- Marcas Sugeridas Rápidas para Amortiguadores -->
+          <!-- Selector de Tipo de Ítem (Producto vs Insumo vs Gasto) -->
           <div class="mb-4">
-            <div class="text-caption font-weight-medium text-slate-500 mb-1.5">
-              Marcas frecuentes (clic rápido):
-            </div>
-            <div class="d-flex flex-wrap gap-1.5">
-              <VChip
-                v-for="b in popularShockBrands"
-                :key="b"
-                size="small"
-                variant="outlined"
-                :color="brandEditValue?.toUpperCase() === b ? 'primary' : 'default'"
-                class="cursor-pointer font-weight-medium"
-                :class="{ 'bg-primary-tonal font-weight-bold border-primary': brandEditValue?.toUpperCase() === b }"
-                @click="brandEditValue = b"
-              >
-                {{ b }}
-              </VChip>
+            <label class="text-caption font-weight-bold text-slate-700 mb-1.5 d-block">
+              ¿Cómo debe registrarse este ítem en el sistema?
+            </label>
+            <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px;">
+              <button type="button" class="item-type-select-btn"
+                :class="{ 'active primary-active': itemEditType === 1 }" @click="itemEditType = 1">
+                <VIcon icon="ri-box-3-line" size="22" class="mb-1" />
+                <div class="btn-main-title">Producto</div>
+                <div class="btn-sub-title">Stock Venta</div>
+              </button>
+
+              <button type="button" class="item-type-select-btn"
+                :class="{ 'active warning-active': itemEditType === 3 }" @click="itemEditType = 3">
+                <VIcon icon="ri-archive-line" size="22" class="mb-1" />
+                <div class="btn-main-title">Insumo</div>
+                <div class="btn-sub-title">Uso Taller</div>
+              </button>
+
+              <button type="button" class="item-type-select-btn" :class="{ 'active info-active': itemEditType === 2 }"
+                @click="itemEditType = 2">
+                <VIcon icon="ri-tools-line" size="22" class="mb-1" />
+                <div class="btn-main-title">Gasto / Flete</div>
+                <div class="btn-sub-title">Logística</div>
+              </button>
             </div>
           </div>
 
-          <!-- Opción: Aplicar a amortiguadores similares en esta compra -->
-          <div class="pa-2.5 rounded-lg bg-grey-lighten-4 border border-dashed">
-            <VCheckbox
-              v-model="applyToSimilarBrand"
-              color="primary"
-              density="compact"
-              hide-details
-            >
-              <template #label>
-                <span class="text-caption font-weight-medium text-slate-800">
-                  Aplicar también esta marca a otros productos similares en esta compra
-                </span>
-              </template>
-            </VCheckbox>
+          <!-- Si es Producto (Tipo 1) -->
+          <div v-if="itemEditType === 1">
+            <!-- Categoría del Producto -->
+            <div class="mb-3">
+              <label class="text-caption font-weight-bold text-slate-700 mb-1 d-block">
+                Categoría del Producto *:
+              </label>
+              <VSelect v-model="itemEditCategory" :items="categories" item-title="title" item-value="id"
+                placeholder="Seleccione la categoría..." variant="outlined" density="comfortable"
+                prepend-inner-icon="ri-folders-line" clearable />
+            </div>
+
+            <!-- Marca del Producto -->
+            <div class="mb-3">
+              <label class="text-caption font-weight-bold text-slate-700 mb-1 d-block">
+                Marca del Amortiguador / Producto:
+              </label>
+              <VCombobox v-model="brandEditValue" :items="brands"
+                placeholder="Seleccionar o escribir marca (ej: TOKICO, KYB, MONROE)..." variant="outlined"
+                density="comfortable" prepend-inner-icon="ri-price-tag-3-line" clearable :return-object="false"
+                @keydown.enter="saveBrandEdit" />
+            </div>
+
+            <!-- Marcas Sugeridas Rápidas -->
+            <div class="mb-3">
+              <div class="text-caption font-weight-medium text-slate-500 mb-1">
+                Marcas frecuentes (clic rápido):
+              </div>
+              <div class="d-flex flex-wrap gap-1.5">
+                <VChip v-for="b in popularShockBrands" :key="b" size="small" variant="outlined"
+                  :color="brandEditValue?.toUpperCase() === b ? 'primary' : 'default'"
+                  class="cursor-pointer font-weight-medium"
+                  :class="{ 'bg-primary-tonal font-weight-bold border-primary': brandEditValue?.toUpperCase() === b }"
+                  @click="brandEditValue = b">
+                  {{ b }}
+                </VChip>
+              </div>
+            </div>
+
+            <!-- Opción: Aplicar a similares -->
+            <div class="pa-2.5 rounded-lg bg-grey-lighten-4 border border-dashed mb-2">
+              <VCheckbox v-model="applyToSimilarBrand" color="primary" density="compact" hide-details>
+                <template #label>
+                  <span class="text-caption font-weight-medium text-slate-800">
+                    Aplicar también esta marca y categoría a otros productos similares en esta compra
+                  </span>
+                </template>
+              </VCheckbox>
+            </div>
+          </div>
+
+          <!-- Si es Insumo de Taller (Tipo 3) -->
+          <div v-else-if="itemEditType === 3">
+            <VAlert type="warning" variant="tonal" density="compact" class="rounded-lg mb-3 text-caption"
+              icon="ri-archive-line">
+              Este ítem ingresará al inventario interno de taller por caja/envase cerrado (salida por consumo en 1
+              clic). NO
+              se venderá en el punto de venta.
+            </VAlert>
+
+            <div class="mb-3">
+              <label class="text-caption font-weight-bold text-slate-700 mb-1 d-block">
+                Marca del Insumo (Opcional):
+              </label>
+              <VCombobox v-model="brandEditValue" :items="brands"
+                placeholder="Seleccionar o escribir marca (ej: SM, WURTH, ABRO)..." variant="outlined"
+                density="comfortable" prepend-inner-icon="ri-price-tag-3-line" clearable :return-object="false" />
+            </div>
+          </div>
+
+          <!-- Si es Gasto Directo / Logística (Tipo 2) -->
+          <div v-else-if="itemEditType === 2">
+            <VAlert type="info" variant="tonal" density="compact" class="rounded-lg mb-2 text-caption"
+              icon="ri-tools-line">
+              <strong>Gasto Directo / Operativo:</strong> Este ítem (ej. flete, transporte, logística, servicios o
+              consumibles) se registrará como egreso contable directo sin crear un producto en el catálogo comercial ni
+              alterar stock.
+            </VAlert>
           </div>
         </VCardText>
 
@@ -2480,16 +2587,13 @@ onMounted(() => {
             class="rounded-lg px-5 font-weight-medium" height="40" @click="isBrandDialogOpen = false">
             Cancelar
           </VBtn>
-          <VBtn color="primary" variant="elevated" prepend-icon="ri-check-line"
-            class="rounded-lg px-6 font-weight-bold" height="40" @click="saveBrandEdit">
-            Guardar Marca
+          <VBtn color="primary" variant="elevated" prepend-icon="ri-check-line" class="rounded-lg px-6 font-weight-bold"
+            height="40" @click="saveBrandEdit">
+            Guardar Configuración
           </VBtn>
         </VCardActions>
       </VCard>
     </VDialog>
-
-    <!-- Modal: Insumos y Consumo Interno de Taller -->
-    <WorkshopConsumptionsDialog v-model="isWorkshopConsumptionsDialogOpen" />
 
   </div>
 </template>
@@ -2498,16 +2602,245 @@ onMounted(() => {
 .hover-product-title {
   transition: color 0.15s ease;
 }
+
 .hover-product-title:hover {
   color: rgb(var(--v-theme-primary)) !important;
   text-decoration: underline;
 }
+
 .hover-brand-chip {
   transition: all 0.15s ease;
 }
+
 .hover-brand-chip:hover {
   background-color: rgba(var(--v-theme-primary), 0.08) !important;
   border-color: rgb(var(--v-theme-primary)) !important;
   transform: translateY(-1px);
+}
+
+.item-type-select-btn {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 10px 6px;
+  border-radius: 12px;
+  border: 1px solid #e2e8f0;
+  background: #f8fafc;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  text-align: center;
+  user-select: none;
+}
+
+.item-type-select-btn .btn-main-title {
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: #1e293b;
+  line-height: 1.2;
+}
+
+.item-type-select-btn .btn-sub-title {
+  font-size: 0.67rem;
+  color: #64748b;
+  margin-top: 2px;
+}
+
+.item-type-select-btn:hover {
+  border-color: #cbd5e1;
+  background: #f1f5f9;
+}
+
+.item-type-select-btn.active {
+  border-width: 2px;
+}
+
+.item-type-select-btn.active.primary-active {
+  border-color: #4f46e5;
+  background: #eef2ff;
+}
+
+.item-type-select-btn.active.primary-active :deep(.v-icon),
+.item-type-select-btn.active.primary-active .btn-main-title {
+  color: #4338ca !important;
+}
+
+.item-type-select-btn.active.warning-active {
+  border-color: #d97706;
+  background: #fffbeb;
+}
+
+.item-type-select-btn.active.warning-active :deep(.v-icon),
+.item-type-select-btn.active.warning-active .btn-main-title {
+  color: #b45309 !important;
+}
+
+.item-type-select-btn.active.info-active {
+  border-color: #0284c7;
+  background: #f0f9ff;
+}
+
+.item-type-select-btn.active.info-active :deep(.v-icon),
+.item-type-select-btn.active.info-active .btn-main-title {
+  color: #0369a1 !important;
+}
+
+/* Radio Buttons Súper Chéveres estilo Píldora (Pixel-Perfect, sin recortes) */
+.purchase-type-radio-container {
+  min-width: max-content;
+}
+
+.custom-radio-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  height: 34px;
+  padding: 0 13px 0 9px;
+  border-radius: 9999px;
+  background: #ffffff;
+  border: 1.5px solid #e2e8f0;
+  cursor: pointer;
+  user-select: none;
+  white-space: nowrap !important;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.03);
+}
+
+.custom-radio-pill .custom-radio-circle {
+  width: 17px;
+  height: 17px;
+  min-width: 17px;
+  min-height: 17px;
+  border-radius: 50%;
+  border: 2px solid #cbd5e1;
+  background: #ffffff;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  box-sizing: border-box;
+}
+
+.custom-radio-pill .custom-radio-circle .custom-radio-dot {
+  width: 7px;
+  height: 7px;
+  min-width: 7px;
+  min-height: 7px;
+  border-radius: 50%;
+  background: transparent;
+  transform: scale(0);
+  transition: all 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
+  box-sizing: border-box;
+}
+
+.custom-radio-pill .pill-icon {
+  color: #64748b;
+  transition: all 0.2s ease;
+}
+
+.custom-radio-pill .pill-label {
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: #475569;
+  letter-spacing: 0.1px;
+  transition: color 0.2s ease;
+}
+
+.custom-radio-pill:hover:not(.is-disabled) {
+  border-color: #cbd5e1;
+  background: #f8fafc;
+  transform: translateY(-1px);
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+}
+
+.custom-radio-pill:hover:not(.is-disabled) .custom-radio-circle {
+  border-color: #94a3b8;
+}
+
+/* Activo: Productos (Stock) */
+.custom-radio-pill.is-active.type-products {
+  border-color: #4f46e5;
+  background: #eef2ff;
+  box-shadow: 0 2px 8px rgba(79, 70, 229, 0.16);
+}
+
+.custom-radio-pill.is-active.type-products .custom-radio-circle {
+  border-color: #4f46e5;
+  background: #ffffff;
+}
+
+.custom-radio-pill.is-active.type-products .custom-radio-circle .custom-radio-dot {
+  background: #4f46e5;
+  transform: scale(1);
+}
+
+.custom-radio-pill.is-active.type-products .pill-icon {
+  color: #4f46e5;
+  transform: scale(1.08);
+}
+
+.custom-radio-pill.is-active.type-products .pill-label {
+  color: #3730a3;
+  font-weight: 700;
+}
+
+/* Activo: Insumos Taller */
+.custom-radio-pill.is-active.type-supplies {
+  border-color: #d97706;
+  background: #fffbeb;
+  box-shadow: 0 2px 8px rgba(217, 119, 6, 0.16);
+}
+
+.custom-radio-pill.is-active.type-supplies .custom-radio-circle {
+  border-color: #d97706;
+  background: #ffffff;
+}
+
+.custom-radio-pill.is-active.type-supplies .custom-radio-circle .custom-radio-dot {
+  background: #d97706;
+  transform: scale(1);
+}
+
+.custom-radio-pill.is-active.type-supplies .pill-icon {
+  color: #d97706;
+  transform: scale(1.08);
+}
+
+.custom-radio-pill.is-active.type-supplies .pill-label {
+  color: #92400e;
+  font-weight: 700;
+}
+
+/* Activo: Gasto General */
+.custom-radio-pill.is-active.type-expenses {
+  border-color: #0284c7;
+  background: #f0f9ff;
+  box-shadow: 0 2px 8px rgba(2, 132, 199, 0.16);
+}
+
+.custom-radio-pill.is-active.type-expenses .custom-radio-circle {
+  border-color: #0284c7;
+  background: #ffffff;
+}
+
+.custom-radio-pill.is-active.type-expenses .custom-radio-circle .custom-radio-dot {
+  background: #0284c7;
+  transform: scale(1);
+}
+
+.custom-radio-pill.is-active.type-expenses .pill-icon {
+  color: #0284c7;
+  transform: scale(1.08);
+}
+
+.custom-radio-pill.is-active.type-expenses .pill-label {
+  color: #075985;
+  font-weight: 700;
+}
+
+.custom-radio-pill.is-disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+  pointer-events: none;
 }
 </style>
