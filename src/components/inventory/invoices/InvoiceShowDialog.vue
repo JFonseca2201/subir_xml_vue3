@@ -271,12 +271,12 @@ onMounted(() => {
   <VDialog
     v-model="dialogVisible"
     scrollable
-    max-width="1400"
+    max-width="1020"
+    :fullscreen="$vuetify.display.smAndDown"
     transition="dialog-bottom-transition"
   >
     <VCard
-      class="custom-dialog-card rounded-xl"
-      style="text-transform: uppercase;"
+      class="invoice-show-dialog-card rounded-xl"
     >
       <!-- 🔄 Overlay global -->
       <VOverlay
@@ -288,180 +288,176 @@ onMounted(() => {
         <VProgressCircular
           color="primary"
           indeterminate
-          size="64"
+          size="56"
         />
       </VOverlay>
 
-      <!-- Header Banner Primary -->
-      <div class="custom-dialog-header-primary">
-        <VBtn
-          icon="ri-close-line"
-          variant="text"
-          size="small"
-          class="custom-dialog-close-btn"
-          @click="onFormReset"
-        />
-        <div class="custom-dialog-avatar">
-          <VIcon
-            icon="ri-file-text-line"
-            size="32"
-            class="text-white"
+      <!-- Header Banner Elegante, Compacto y Proporcionado -->
+      <div class="invoice-dialog-header">
+        <div class="d-flex align-start justify-space-between w-100 gap-3">
+          <!-- Izquierda: Avatar Icono + Título + Subtítulo -->
+          <div class="d-flex align-center gap-3 min-w-0">
+            <div class="header-avatar-badge">
+              <VIcon
+                icon="ri-file-text-line"
+                size="24"
+                color="white"
+              />
+            </div>
+            <div class="min-w-0">
+              <div class="d-flex align-center gap-2 flex-wrap">
+                <h3 class="text-h6 font-weight-bold text-white mb-0 leading-tight">
+                  Detalle de Factura
+                </h3>
+                <VChip
+                  v-if="invoice?.is_expense"
+                  size="x-small"
+                  color="warning"
+                  variant="flat"
+                  class="font-weight-bold px-2 text-white"
+                >
+                  <VIcon
+                    icon="ri-receipt-line"
+                    size="12"
+                    class="me-1"
+                  />
+                  Gasto General
+                </VChip>
+              </div>
+              <p class="text-caption text-white-70 mb-0 mt-0.5">
+                Comprobante registrado y desglose de rubros
+              </p>
+            </div>
+          </div>
+
+          <!-- Botón de Cerrar (X) -->
+          <VBtn
+            icon="ri-close-line"
+            variant="text"
+            size="small"
+            class="header-close-btn"
+            @click="onFormReset"
           />
         </div>
-        <h3 class="custom-dialog-title">
-          Detalle de Factura
-        </h3>
-        <p class="custom-dialog-subtitle mb-2">
-          Vista completa de la factura registrada
-        </p>
 
-        <!-- Metadata Pills en la Cabecera -->
-        <div class="d-flex flex-wrap justify-center gap-3 mt-2 mb-3">
-          <div
-            class="d-inline-flex align-center px-3 py-1 rounded-pill text-caption font-weight-medium"
-            style="background: rgba(255, 255, 255, 0.18); color: #ffffff;"
-          >
+        <!-- Metadata Pills (Proveedor, N° Factura, Fecha) -->
+        <div class="d-flex flex-wrap align-center gap-2 mt-3">
+          <div class="glass-header-pill">
             <VIcon
               icon="ri-store-2-line"
               size="14"
-              class="me-1"
+              class="text-white-70 me-1"
             />
-            <span><strong>Proveedor:</strong> {{ invoice?.supplier?.name || invoice?.supplier?.trade_name || '-' }}</span>
+            <span><strong class="text-white font-weight-medium">Proveedor:</strong> {{ invoice?.supplier?.name || invoice?.supplier?.trade_name || '-' }}</span>
           </div>
 
-          <div
-            class="d-inline-flex align-center px-3 py-1 rounded-pill text-caption font-weight-medium"
-            style="background: rgba(255, 255, 255, 0.18); color: #ffffff;"
-          >
+          <div class="glass-header-pill">
             <VIcon
-              icon="ri-file-text-line"
+              icon="ri-hashtag"
               size="14"
-              class="me-1"
+              class="text-white-70 me-1"
             />
-            <span><strong>N° Factura:</strong> {{ invoice?.invoice_number || '-' }}</span>
+            <span><strong class="text-white font-weight-medium">N° Factura:</strong> {{ invoice?.invoice_number || '-' }}</span>
           </div>
 
-          <div
-            class="d-inline-flex align-center px-3 py-1 rounded-pill text-caption font-weight-medium"
-            style="background: rgba(255, 255, 255, 0.18); color: #ffffff;"
-          >
+          <div class="glass-header-pill">
             <VIcon
               icon="ri-calendar-line"
               size="14"
-              class="me-1"
+              class="text-white-70 me-1"
             />
-            <span><strong>Fecha:</strong> {{ formatDate(invoice?.issue_date) }}</span>
-          </div>
-
-          <div
-            v-if="invoice?.is_expense"
-            class="d-inline-flex align-center px-3 py-1 rounded-pill text-caption font-weight-bold"
-            style="background: #ff9f43; color: #ffffff;"
-          >
-            <VIcon
-              icon="ri-receipt-line"
-              size="14"
-              class="me-1"
-            />
-            <span>Gasto General</span>
-          </div>
-        </div>
-
-        <!-- Buscador y Acciones Fijos en Cabecera (Tarjeta Blanca de Alto Contraste) -->
-        <div class="px-md-4 px-2 pt-2">
-          <div
-            class="rounded-xl pa-3 shadow-md border"
-
-          >
-            <VRow
-              align="center"
-              dense
-            >
-              <!-- Campo de búsqueda -->
-              <VCol
-                cols="12"
-                :md="selectedItems.length > 0 ? 5 : 12"
-              >
-                <VTextField
-                  v-model="searchProduct"
-                  placeholder="Buscar por código, SKU o descripción..."
-                  variant="outlined"
-                  density="compact"
-                  clearable
-                  hide-details
-                  prepend-inner-icon="ri-search-line"
-                  color="primary"
-                  :loading="isLoading"
-
-                  class="rounded-lg text-body-2"
-                />
-              </VCol>
-
-              <!-- Acciones en lote cuando hay ítems seleccionados -->
-              <VCol
-                v-if="selectedItems.length > 0"
-                cols="12"
-                md="7"
-                class="d-flex align-center gap-2"
-              >
-                <VChip
-                  size="small"
-                  color="primary"
-                  variant="flat"
-                  class="font-weight-bold px-3 text-no-wrap"
-                >
-                  <VIcon
-                    icon="ri-checkbox-multiple-line"
-                    size="14"
-                    class="me-1"
-                  />
-                  {{ selectedItems.length }} SELECCIONADOS
-                </VChip>
-
-                <VSelect
-                  v-model="bulkCategory"
-                  :items="categories"
-                  item-title="title"
-                  item-value="id"
-                  label="Categoría en lote"
-                  placeholder="Seleccionar..."
-                  density="compact"
-                  variant="outlined"
-                  hide-details
-                  color="primary"
-                  class="flex-grow-1"
-                  style="background-color: var(--input-bg, transparent); min-width: 160px;"
-                />
-
-                <VBtn
-                  color="primary"
-                  size="small"
-                  variant="elevated"
-                  class="font-weight-bold"
-                  :disabled="!bulkCategory"
-                  :loading="isBulkUpdating"
-                  @click="applyBulkCategory"
-                >
-                  Aplicar
-                </VBtn>
-
-                <VBtn
-                  variant="tonal"
-                  color="secondary"
-                  size="small"
-                  class="font-weight-bold"
-                  @click="selectedItems = []"
-                >
-                  Limpiar
-                </VBtn>
-              </VCol>
-            </VRow>
+            <span><strong class="text-white font-weight-medium">Fecha:</strong> {{ formatDate(invoice?.issue_date) }}</span>
           </div>
         </div>
       </div>
 
-      <!-- 📦 CONTENIDO DEL MODAL (TABLA Y FOOTER) -->
-      <VCardText class="pa-6">
+      <!-- 📦 CONTENIDO DEL MODAL -->
+      <VCardText class="pa-4 pa-sm-5">
+        <!-- Barra de Búsqueda y Acciones en Lote -->
+        <div class="mb-3">
+          <VRow
+            align="center"
+            dense
+          >
+            <!-- Campo de búsqueda -->
+            <VCol
+              cols="12"
+              :md="selectedItems.length > 0 ? 5 : 12"
+            >
+              <VTextField
+                v-model="searchProduct"
+                placeholder="Buscar por código, SKU o descripción..."
+                variant="outlined"
+                density="compact"
+                clearable
+                hide-details
+                prepend-inner-icon="ri-search-line"
+                color="primary"
+                :loading="isLoading"
+                class="rounded-lg bg-surface text-body-2"
+              />
+            </VCol>
+
+            <!-- Acciones en lote cuando hay ítems seleccionados -->
+            <VCol
+              v-if="selectedItems.length > 0"
+              cols="12"
+              md="7"
+              class="d-flex align-center gap-2 flex-wrap"
+            >
+              <VChip
+                size="small"
+                color="primary"
+                variant="flat"
+                class="font-weight-bold px-3 text-no-wrap"
+              >
+                <VIcon
+                  icon="ri-checkbox-multiple-line"
+                  size="14"
+                  class="me-1"
+                />
+                {{ selectedItems.length }} seleccionados
+              </VChip>
+
+              <VSelect
+                v-model="bulkCategory"
+                :items="categories"
+                item-title="title"
+                item-value="id"
+                label="Categoría en lote"
+                placeholder="Seleccionar..."
+                density="compact"
+                variant="outlined"
+                hide-details
+                color="primary"
+                class="flex-grow-1"
+                style="min-width: 150px;"
+              />
+
+              <VBtn
+                color="primary"
+                size="small"
+                variant="elevated"
+                class="font-weight-bold text-none"
+                :disabled="!bulkCategory"
+                :loading="isBulkUpdating"
+                @click="applyBulkCategory"
+              >
+                Aplicar
+              </VBtn>
+
+              <VBtn
+                variant="tonal"
+                color="secondary"
+                size="small"
+                class="font-weight-bold text-none"
+                @click="selectedItems = []"
+              >
+                Limpiar
+              </VBtn>
+            </VCol>
+          </VRow>
+        </div>
         <div v-if="invoice?.is_expense" class="invoice-table-wrap">
           <VTable
             hover
@@ -469,16 +465,16 @@ onMounted(() => {
           >
             <thead class="bg-grey-lighten-4">
               <tr>
-                <th class="text-uppercase text-caption font-weight-bold" style="width: 50px">
+                <th class="text-caption font-weight-bold text-center px-1" style="width: 44px">
                   #
                 </th>
-                <th class="text-uppercase text-caption font-weight-bold">
+                <th class="text-caption font-weight-bold px-3" style="width: 100%; min-width: 280px;">
                   Descripción del Gasto
                 </th>
-                <th class="text-uppercase text-caption font-weight-bold" style="width: 240px">
+                <th class="text-caption font-weight-bold px-2" style="width: 180px">
                   Categoría
                 </th>
-                <th class="text-uppercase text-caption font-weight-bold text-end" style="width: 140px">
+                <th class="text-caption font-weight-bold text-end pe-3 text-no-wrap" style="width: 110px">
                   Total
                 </th>
               </tr>
@@ -489,13 +485,13 @@ onMounted(() => {
                 :key="expense.id"
                 class="align-middle"
               >
-                <td class="text-caption text-medium-emphasis">
+                <td class="text-caption text-medium-emphasis text-center px-1">
                   {{ index + 1 }}
                 </td>
-                <td class="py-3 text-body-2 font-weight-medium text-high-emphasis">
+                <td class="py-2.5 px-3 text-body-2 font-weight-medium text-high-emphasis">
                   {{ expense.description }}
                 </td>
-                <td class="py-3">
+                <td class="py-2.5 px-2">
                   <VChip
                     size="small"
                     color="warning"
@@ -505,7 +501,7 @@ onMounted(() => {
                     {{ expense.category }}
                   </VChip>
                 </td>
-                <td class="text-end text-body-2 font-weight-bold text-primary">
+                <td class="text-end pe-3 text-body-2 font-weight-bold text-primary">
                   ${{ Number(expense.total || 0).toFixed(2) }}
                 </td>
               </tr>
@@ -532,8 +528,8 @@ onMounted(() => {
               <tr>
                 <th
                   v-if="props.invoiceSelected.invoice_process != 1"
-                  style="width: 50px"
-                  class="px-4"
+                  style="width: 44px"
+                  class="px-2 text-center"
                 >
                   <VCheckbox
                     :model-value="isAllSelected"
@@ -545,54 +541,57 @@ onMounted(() => {
                   />
                 </th>
                 <th
-                  class="text-uppercase text-caption font-weight-bold"
-                  style="width: 50px"
+                  class="text-caption font-weight-bold text-center px-1"
+                  style="width: 44px"
                 >
                   #
                 </th>
-                <th class="text-uppercase text-caption font-weight-bold">
+                <th
+                  class="text-caption font-weight-bold px-3"
+                  style="width: 100%; min-width: 280px;"
+                >
                   Producto / Código
                 </th>
                 <th
-                  class="text-uppercase text-caption font-weight-bold"
-                  style="width: 220px"
+                  class="text-caption font-weight-bold px-2"
+                  style="width: 160px"
                 >
                   Categoría
                 </th>
                 <th
-                  class="text-uppercase text-caption font-weight-bold text-center"
-                  style="width: 90px"
+                  class="text-caption font-weight-bold text-center px-1 text-no-wrap"
+                  style="width: 65px"
                 >
                   Cant.
                 </th>
                 <th
-                  class="text-uppercase text-caption font-weight-bold text-end"
-                  style="width: 110px"
+                  class="text-caption font-weight-bold text-end px-2 text-no-wrap"
+                  style="width: 90px"
                 >
                   Precio U.
                 </th>
                 <th
-                  class="text-uppercase text-caption font-weight-bold text-end"
-                  style="width: 110px"
+                  class="text-caption font-weight-bold text-end px-2 text-no-wrap"
+                  style="width: 90px"
                 >
                   Subtotal
                 </th>
                 <th
-                  class="text-uppercase text-caption font-weight-bold text-end"
-                  style="width: 90px"
+                  class="text-caption font-weight-bold text-end px-2 text-no-wrap"
+                  style="width: 75px"
                 >
                   Dcto.
                 </th>
                 <th
-                  class="text-uppercase text-caption font-weight-bold text-end"
-                  style="width: 110px"
+                  class="text-caption font-weight-bold text-end pe-3 text-no-wrap"
+                  style="width: 90px"
                 >
                   Total
                 </th>
                 <th
                   v-if="props.invoiceSelected.invoice_process != 1"
-                  class="text-uppercase text-caption font-weight-bold text-center"
-                  style="width: 80px"
+                  class="text-caption font-weight-bold text-center px-1"
+                  style="width: 50px"
                 >
                   Editar
                 </th>
@@ -608,7 +607,7 @@ onMounted(() => {
               >
                 <td
                   v-if="props.invoiceSelected.invoice_process != 1"
-                  class="px-4"
+                  class="px-2 text-center"
                 >
                   <VCheckbox
                     v-if="item.item_type === 1"
@@ -620,21 +619,21 @@ onMounted(() => {
                     @click.stop
                   />
                 </td>
-                <td class="text-caption text-medium-emphasis">
+                <td class="text-caption text-medium-emphasis text-center px-1">
                   {{ index + 1 }}
                 </td>
                 
-                <td class="py-2">
+                <td class="py-2.5 px-3">
                   <div class="d-flex flex-column">
                     <span
                       class="text-body-2 font-weight-medium text-high-emphasis text-wrap"
-                      style="max-width: 350px;"
+                      style="line-height: 1.35; word-break: break-word;"
                     >
                       {{ item.description || 'Sin descripción' }}
                     </span>
                     <div class="d-flex align-center gap-1.5 mt-1 flex-wrap">
                       <span class="text-caption text-medium-emphasis">
-                        SKU: {{ item.code || 'S/N' }}
+                        SKU: <strong class="text-high-emphasis">{{ item.code || 'S/N' }}</strong>
                       </span>
                       <VChip
                         size="x-small"
@@ -649,7 +648,7 @@ onMounted(() => {
                   </div>
                 </td>
 
-                <td class="py-2">
+                <td class="py-2 px-2">
                   <VSelect
                     v-if="props.invoiceSelected.invoice_process != 1 && item.item_type === 1"
                     v-model="item.product_categorie_id"
@@ -674,29 +673,29 @@ onMounted(() => {
                   </VChip>
                 </td>
 
-                <td class="text-center text-body-2">
+                <td class="text-center text-body-2 px-1 font-weight-medium text-no-wrap">
                   {{ item.quantity }}
                 </td>
 
-                <td class="text-end text-body-2">
+                <td class="text-end text-body-2 px-2 text-no-wrap">
                   ${{ Number(item.unit_price).toFixed(2) }}
                 </td>
 
-                <td class="text-end text-body-2 font-weight-medium">
+                <td class="text-end text-body-2 font-weight-medium px-2 text-no-wrap">
                   ${{ Number(item.quantity * item.unit_price).toFixed(2) }}
                 </td>
 
-                <td class="text-end text-body-2 text-error">
+                <td class="text-end text-body-2 text-error px-2 text-no-wrap">
                   ${{ Number(item.discount).toFixed(2) }}
                 </td>
 
-                <td class="text-end text-body-2 font-weight-bold text-primary">
+                <td class="text-end pe-3 text-body-2 font-weight-bold text-primary text-no-wrap">
                   ${{ Number((item.quantity * item.unit_price) - Number(item.discount)).toFixed(2) }}
                 </td>
 
                 <td
                   v-if="props.invoiceSelected.invoice_process != 1"
-                  class="text-center"
+                  class="text-center px-1"
                 >
                   <IconBtn
                     color="primary"
@@ -727,240 +726,220 @@ onMounted(() => {
             </tbody>
           </VTable>
         </div>
-      </VCardText>
 
-      <VDivider />
+        <!-- 🔢 INFORMACIÓN DE PAGO Y RESUMEN FINANCIERO -->
+        <VRow class="mt-2" dense>
+          <!-- 💳 INFORMACIÓN DE PAGO -->
+          <VCol
+            v-if="invoice?.invoice_process === 1"
+            cols="12"
+            md="7"
+          >
+            <VCard variant="flat" class="pa-4 rounded-xl border bg-surface h-100">
+              <div class="text-subtitle-2 font-weight-bold text-high-emphasis mb-3 d-flex align-center gap-2">
+                <VAvatar size="26" color="primary" variant="tonal" class="rounded-md">
+                  <VIcon size="15" icon="ri-bank-card-line" />
+                </VAvatar>
+                <span>Información de Pago</span>
+              </div>
 
-      <!-- 🔢 TOTALES -->
-      <VCardText class="pt-6">
-        <!-- 💳 PANEL DE RESUMEN Y PAGO -->
-        <VCard
-          variant="flat"
-          class="bg-grey-lighten-5 border rounded-xl pa-5 mt-6"
-        >
-          <VRow>
-            <!-- 💳 INFORMACIÓN DE PAGO -->
-            <VCol
-              v-if="invoice?.invoice_process === 1"
-              cols="12"
-              md="7"
-            >
-              <div class="pe-md-4">
-                <h4 class="text-subtitle-1 font-weight-bold mb-3 d-flex align-center gap-2 text-primary">
-                  <VIcon
-                    size="20"
-                    icon="ri-bank-card-line"
-                  />
-                  Información de Pago
-                </h4>
-
-                <!-- Caso Crédito / Cuenta por Pagar -->
-                <div
-                  v-if="invoice.account_payable"
-                  class="pa-4 rounded-lg border bg-white shadow-sm mb-3"
-                >
-                  <div class="d-flex align-center justify-space-between mb-2">
-                    <span class="text-body-2 font-weight-bold text-grey-darken-2">Tipo de Pago:</span>
-                    <VChip
-                      color="primary"
-                      size="small"
-                      variant="tonal"
-                      class="font-weight-bold"
-                    >
-                      Crédito (Cuenta por Pagar)
-                    </VChip>
-                  </div>
-                  <div class="d-flex align-center justify-space-between mb-2">
-                    <span class="text-body-2 text-medium-emphasis">Monto Total:</span>
-                    <span class="text-body-2 font-weight-bold">${{ Number(invoice.account_payable.total_amount).toFixed(2) }}</span>
-                  </div>
-                  <div class="d-flex align-center justify-space-between mb-2">
-                    <span class="text-body-2 text-medium-emphasis">Fecha de Vencimiento:</span>
-                    <span class="text-body-2 font-weight-bold">
-                      {{ invoice.account_payable.due_date ? new Date(invoice.account_payable.due_date).toISOString().slice(0, 10) : '-' }}
-                    </span>
-                  </div>
-                  <div class="d-flex align-center justify-space-between">
-                    <span class="text-body-2 text-medium-emphasis">Estado:</span>
-                    <VChip
-                      :color="invoice.account_payable.status === 'paid' ? 'success' : 'warning'"
-                      size="small"
-                      class="font-weight-bold"
-                    >
-                      {{ invoice.account_payable.status === 'paid' ? 'Pagado' : 'Pendiente' }}
-                    </VChip>
-                  </div>
-                </div>
-
-                <!-- Caso Contado / Aporte / Distribución de Pagos -->
-                <div v-else-if="invoice.finance_records && invoice.finance_records.length > 0">
-                  <div
-                    v-for="record in invoice.finance_records"
-                    :key="record.id"
-                    class="mb-3 pa-4 rounded-lg border bg-white shadow-sm"
+              <!-- Caso Crédito / Cuenta por Pagar -->
+              <div
+                v-if="invoice.account_payable"
+                class="pa-3 rounded-lg border bg-slate-50 mb-2"
+              >
+                <div class="d-flex align-center justify-space-between mb-2">
+                  <span class="text-caption font-weight-medium text-medium-emphasis">Tipo de Pago:</span>
+                  <VChip
+                    color="primary"
+                    size="x-small"
+                    variant="tonal"
+                    class="font-weight-bold"
                   >
-                    <div class="text-caption text-medium-emphasis font-weight-bold mb-2">
-                      Registro de Egreso #{{ record.id }} ({{ formatDate(record.entry_date) }})
-                    </div>
+                    Crédito (Cuenta por Pagar)
+                  </VChip>
+                </div>
+                <div class="d-flex align-center justify-space-between mb-1.5 text-body-2">
+                  <span class="text-medium-emphasis">Monto Total:</span>
+                  <span class="font-weight-bold text-high-emphasis">${{ Number(invoice.account_payable.total_amount).toFixed(2) }}</span>
+                </div>
+                <div class="d-flex align-center justify-space-between mb-1.5 text-body-2">
+                  <span class="text-medium-emphasis">Fecha de Vencimiento:</span>
+                  <span class="font-weight-bold text-high-emphasis">
+                    {{ invoice.account_payable.due_date ? new Date(invoice.account_payable.due_date).toISOString().slice(0, 10) : '-' }}
+                  </span>
+                </div>
+                <div class="d-flex align-center justify-space-between">
+                  <span class="text-medium-emphasis text-body-2">Estado:</span>
+                  <VChip
+                    :color="invoice.account_payable.status === 'paid' ? 'success' : 'warning'"
+                    size="x-small"
+                    class="font-weight-bold"
+                  >
+                    {{ invoice.account_payable.status === 'paid' ? 'Pagado' : 'Pendiente' }}
+                  </VChip>
+                </div>
+              </div>
 
-                    <div v-if="record.payment_distributions && record.payment_distributions.length > 0">
-                      <div
-                        v-for="dist in record.payment_distributions"
-                        :key="dist.id"
-                        class="d-flex align-center justify-space-between border-bottom py-2 text-none"
-                      >
-                        <div class="d-flex align-center gap-2">
-                          <VIcon
-                            size="18"
-                            :color="(dist.payment_method === 'cash' || dist.account?.type === 'cash') ? 'success' : 'primary'"
-                          >
-                            {{ (dist.payment_method === 'cash' || dist.account?.type === 'cash') ? 'ri-money-dollar-circle-line' : 'ri-bank-card-line' }}
-                          </VIcon>
-                          <div>
-                            <div
-                              class="text-body-2 font-weight-bold text-none"
-                              style="text-transform: none;"
-                            >
-                              {{ dist.account?.name || 'Cuenta del sistema' }}
-                            </div>
-                            <div
-                              class="text-caption text-grey text-none"
-                              style="text-transform: none;"
-                            >
-                              {{ (dist.payment_method === 'cash' || dist.account?.type === 'cash') ? 'Efectivo' : 'Transferencia' }}
-                            </div>
-                          </div>
-                        </div>
-                        <span class="text-body-1 font-weight-bold text-success">
-                          ${{ Number(dist.amount).toFixed(2) }}
-                        </span>
-                      </div>
-                    </div>
+              <!-- Caso Contado / Aporte / Distribución de Pagos -->
+              <div v-else-if="invoice.finance_records && invoice.finance_records.length > 0">
+                <div
+                  v-for="record in invoice.finance_records"
+                  :key="record.id"
+                  class="mb-2 pa-3 rounded-lg border bg-slate-50"
+                >
+                  <div class="text-caption text-medium-emphasis font-weight-bold mb-1.5">
+                    Registro de Egreso #{{ record.id }} ({{ formatDate(record.entry_date) }})
+                  </div>
+
+                  <div v-if="record.payment_distributions && record.payment_distributions.length > 0">
                     <div
-                      v-else
-                      class="d-flex align-center justify-space-between py-2 text-none"
+                      v-for="dist in record.payment_distributions"
+                      :key="dist.id"
+                      class="d-flex align-center justify-space-between py-1.5 border-b text-none"
                     >
                       <div class="d-flex align-center gap-2">
                         <VIcon
                           size="18"
-                          color="success"
+                          :color="(dist.payment_method === 'cash' || dist.account?.type === 'cash') ? 'success' : 'primary'"
                         >
-                          ri-money-dollar-circle-line
+                          {{ (dist.payment_method === 'cash' || dist.account?.type === 'cash') ? 'ri-money-dollar-circle-line' : 'ri-bank-card-line' }}
                         </VIcon>
                         <div>
-                          <div
-                            class="text-body-2 font-weight-bold text-none"
-                            style="text-transform: none;"
-                          >
-                            {{ record.account_label || 'Caja Chica' }}
+                          <div class="text-body-2 font-weight-bold text-high-emphasis">
+                            {{ dist.account?.name || 'Cuenta del sistema' }}
                           </div>
-                          <div
-                            class="text-caption text-grey text-none"
-                            style="text-transform: none;"
-                          >
-                            {{ record.payment_method_label || 'Efectivo' }}
+                          <div class="text-caption text-medium-emphasis">
+                            {{ (dist.payment_method === 'cash' || dist.account?.type === 'cash') ? 'Efectivo' : 'Transferencia' }}
                           </div>
                         </div>
                       </div>
-                      <span class="text-body-1 font-weight-bold text-success">
-                        ${{ Number(record.amount).toFixed(2) }}
+                      <span class="text-body-2 font-weight-bold text-success">
+                        ${{ Number(dist.amount).toFixed(2) }}
                       </span>
                     </div>
                   </div>
-                </div>
-
-                <div
-                  v-else
-                  class="text-caption text-medium-emphasis pa-4 text-center border rounded-lg bg-surface"
-                >
-                  No hay registros de pago asociados a esta factura.
-                </div>
-              </div>
-            </VCol>
-
-            <!-- Caso Pendiente de Procesar -->
-            <VCol
-              v-else
-              cols="12"
-              md="7"
-            >
-              <div class="pe-md-4 h-100 d-flex align-center justify-center bg-surface rounded-lg border pa-6 text-center">
-                <div>
-                  <VIcon
-                    size="36"
-                    color="warning"
-                    class="mb-2"
+                  <div
+                    v-else
+                    class="d-flex align-center justify-space-between py-1.5 text-none"
                   >
-                    ri-error-warning-line
-                  </VIcon>
-                  <div class="text-subtitle-1 font-weight-bold text-grey-darken-3">
-                    Factura Pendiente de Procesar
-                  </div>
-                  <div class="text-caption text-medium-emphasis">
-                    Esta factura aún no ha sido procesada en inventario ni caja chica.
+                    <div class="d-flex align-center gap-2">
+                      <VIcon
+                        size="18"
+                        color="success"
+                      >
+                        ri-money-dollar-circle-line
+                      </VIcon>
+                      <div>
+                        <div class="text-body-2 font-weight-bold text-high-emphasis">
+                          {{ record.account_label || 'Caja Chica' }}
+                        </div>
+                        <div class="text-caption text-medium-emphasis">
+                          {{ record.payment_method_label || 'Efectivo' }}
+                        </div>
+                      </div>
+                    </div>
+                    <span class="text-body-2 font-weight-bold text-success">
+                      ${{ Number(record.amount).toFixed(2) }}
+                    </span>
                   </div>
                 </div>
               </div>
-            </VCol>
 
-            <!-- 🔢 TOTALES DE LA FACTURA -->
-            <VCol
-              cols="12"
-              md="5"
-            >
-              <VCard
-                variant="flat"
-                color="purple-lighten-5"
-                class="pa-4 rounded-lg border border-purple-lighten-4"
+              <div
+                v-else
+                class="text-caption text-medium-emphasis pa-4 text-center border rounded-lg bg-slate-50"
               >
-                <div class="text-subtitle-2 font-weight-bold text-grey-darken-3 mb-3 d-flex align-center gap-2">
-                  <VIcon
-                    icon="ri-calculator-line"
-                    size="18"
-                    color="primary"
-                  />
+                No hay registros de pago asociados a esta factura.
+              </div>
+            </VCard>
+          </VCol>
+
+          <!-- Caso Pendiente de Procesar -->
+          <VCol
+            v-else
+            cols="12"
+            md="7"
+          >
+            <div class="h-100 d-flex align-center justify-center bg-surface rounded-xl border pa-6 text-center">
+              <div>
+                <VIcon
+                  size="36"
+                  color="warning"
+                  class="mb-2"
+                >
+                  ri-error-warning-line
+                </VIcon>
+                <div class="text-subtitle-2 font-weight-bold text-high-emphasis">
+                  Factura Pendiente de Procesar
+                </div>
+                <div class="text-caption text-medium-emphasis mt-1">
+                  Esta factura aún no ha sido procesada en inventario ni caja chica.
+                </div>
+              </div>
+            </div>
+          </VCol>
+
+          <!-- 🔢 TOTALES DE LA FACTURA -->
+          <VCol
+            cols="12"
+            md="5"
+          >
+            <VCard
+              variant="flat"
+              class="pa-4 rounded-xl border bg-slate-50 h-100 d-flex flex-column justify-space-between"
+            >
+              <div>
+                <div class="text-subtitle-2 font-weight-bold text-high-emphasis mb-3 d-flex align-center gap-2">
+                  <VAvatar size="26" color="primary" variant="tonal" class="rounded-md">
+                    <VIcon
+                      icon="ri-calculator-line"
+                      size="15"
+                    />
+                  </VAvatar>
                   <span>Resumen Financiero</span>
                 </div>
 
-                <div class="d-flex justify-space-between mb-2 text-body-2">
+                <div class="d-flex justify-space-between mb-1.5 text-body-2">
                   <span class="text-medium-emphasis">Total Bruto:</span>
-                  <span class="font-weight-medium text-grey-darken-3">
+                  <span class="font-weight-medium text-high-emphasis">
                     ${{ Number(Number(invoice.subtotal) + Number(invoice.discount)).toFixed(2) }}
                   </span>
                 </div>
-                <div class="d-flex justify-space-between mb-2 text-body-2">
+                <div class="d-flex justify-space-between mb-1.5 text-body-2">
                   <span class="text-medium-emphasis">Descuento:</span>
                   <span class="font-weight-medium text-error">
                     -${{ Number(invoice.discount).toFixed(2) }}
                   </span>
                 </div>
-                <div class="d-flex justify-space-between mb-2 text-body-2">
+                <div class="d-flex justify-space-between mb-1.5 text-body-2">
                   <span class="text-medium-emphasis">Subtotal Neto:</span>
-                  <span class="font-weight-medium text-grey-darken-3">
+                  <span class="font-weight-medium text-high-emphasis">
                     ${{ Number(invoice.subtotal).toFixed(2) }}
                   </span>
                 </div>
-                <div class="d-flex justify-space-between mb-2 text-body-2">
+                <div class="d-flex justify-space-between mb-1.5 text-body-2">
                   <span class="text-medium-emphasis">IVA (15%):</span>
-                  <span class="font-weight-medium text-grey-darken-3">
+                  <span class="font-weight-medium text-high-emphasis">
                     ${{ Number(invoice.tax).toFixed(2) }}
                   </span>
                 </div>
+              </div>
 
-                <VDivider class="my-3 border-purple-lighten-3" />
-
+              <div>
+                <VDivider class="my-2.5" />
                 <div class="d-flex justify-space-between align-center">
-                  <span class="text-subtitle-1 font-weight-bold text-grey-darken-4">
+                  <span class="text-subtitle-2 font-weight-bold text-high-emphasis">
                     TOTAL FINAL:
                   </span>
-                  <span class="text-h5 font-weight-black text-primary">
+                  <span class="text-h6 font-weight-black text-primary">
                     ${{ Number(invoice.total).toFixed(2) }}
                   </span>
                 </div>
-              </VCard>
-            </VCol>
-          </VRow>
-        </VCard>
+              </div>
+            </VCard>
+          </VCol>
+        </VRow>
       </VCardText>
 
       <VDivider />
@@ -974,8 +953,8 @@ onMounted(() => {
           color="secondary"
           variant="outlined"
           prepend-icon="ri-close-line"
-          class="rounded-lg px-6 font-weight-medium"
-          height="40"
+          class="rounded-lg px-6 font-weight-medium text-none"
+          height="38"
           @click="onFormReset"
         >
           Cerrar
@@ -991,5 +970,87 @@ onMounted(() => {
   </VDialog>
 </template>
 
+<style lang="scss" scoped>
+.invoice-show-dialog-card {
+  overflow: hidden;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+}
 
-<!-- @editInvoiceItem="addEditInvoiceItem" -->
+.invoice-dialog-header {
+  background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%);
+  color: #ffffff;
+  padding: 1.25rem 1.5rem;
+  position: relative;
+  box-shadow: 0 4px 15px rgba(79, 70, 229, 0.2);
+
+  .header-avatar-badge {
+    width: 44px;
+    height: 44px;
+    min-width: 44px;
+    border-radius: 12px;
+    background: rgba(255, 255, 255, 0.18);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    border: 1.5px solid rgba(255, 255, 255, 0.3);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .header-close-btn {
+    color: #ffffff !important;
+    background: rgba(255, 255, 255, 0.18) !important;
+    border: 1px solid rgba(255, 255, 255, 0.3) !important;
+    border-radius: 8px !important;
+    transition: all 0.2s ease !important;
+
+    &:hover {
+      background: rgba(255, 255, 255, 0.3) !important;
+      transform: scale(1.05);
+    }
+  }
+
+  .glass-header-pill {
+    display: inline-flex;
+    align-items: center;
+    background: rgba(255, 255, 255, 0.15);
+    backdrop-filter: blur(4px);
+    -webkit-backdrop-filter: blur(4px);
+    border: 1px solid rgba(255, 255, 255, 0.25);
+    border-radius: 9999px;
+    padding: 3px 10px;
+    font-size: 0.75rem;
+    color: #ffffff;
+  }
+
+  .text-white-70 {
+    color: rgba(255, 255, 255, 0.78) !important;
+  }
+}
+
+.bg-slate-50 {
+  background-color: #f8fafc !important;
+}
+
+.invoice-table-wrap {
+  border: 1px solid #e2e8f0;
+  border-radius: 10px;
+  overflow: hidden;
+}
+
+.invoice-table {
+  thead th {
+    background-color: #f8fafc !important;
+    color: #475569 !important;
+    font-size: 0.75rem !important;
+    font-weight: 700 !important;
+    letter-spacing: 0.3px !important;
+    height: 38px !important;
+    white-space: nowrap !important;
+  }
+
+  tbody td {
+    font-size: 0.82rem !important;
+  }
+}
+</style>
