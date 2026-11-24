@@ -162,5 +162,6 @@ declare module 'vue' {
     WorkOrderImportDialog: typeof import('./src/components/inventory/sales/WorkOrderImportDialog.vue')['default']
     WorkOrderTimelineDialog: typeof import('./src/components/dialogs/WorkOrderTimelineDialog.vue')['default']
     WorkOrderViewDialog: typeof import('./src/components/dialogs/WorkOrderViewDialog.vue')['default']
+    WorkshopConsumptionsDialog: typeof import('./src/components/inventory/workshop/WorkshopConsumptionsDialog.vue')['default']
   }
 }

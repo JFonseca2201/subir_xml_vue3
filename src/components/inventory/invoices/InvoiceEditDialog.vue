@@ -74,12 +74,18 @@ const editItemInvoice = async () => {
   loader.start()
   item_type.value = radioGroup.value
   try {
+    const usageTypeMap = {
+      1: 'commercial_product',
+      2: 'workshop_consumable',
+      3: 'workshop_stock_unit',
+    }
 
     let data = {
       item_type: item_type.value,
+      usage_type: usageTypeMap[item_type.value] || 'commercial_product',
     }
 
-    // Agregar categoría y marca si es un producto
+    // Agregar categoría y marca si es producto o insumo por envase
     if (item_type.value === 1) {
       if (selectedCategory.value) {
         data.product_categorie_id = selectedCategory.value
@@ -87,6 +93,15 @@ const editItemInvoice = async () => {
       if (selectedBrand.value) {
         data.brand = (selectedBrand.value || 'SM').toString().trim()
       }
+    } else if (item_type.value === 3) {
+      if (selectedBrand.value) {
+        data.brand = (selectedBrand.value || 'SM').toString().trim()
+      }
+      if (selectedCategory.value) {
+        data.product_categorie_id = selectedCategory.value
+      }
+    } else {
+      data.product_categorie_id = null
     }
 
     console.log('🔍 Datos a enviar:', data)
@@ -198,40 +213,32 @@ onMounted(() => {
         </div>
 
         <VRow v-else>
-          <VCol cols="6">
+          <VCol cols="12" sm="6">
             <!-- Grupo de radio botones -->
+            <div class="text-caption font-weight-bold text-medium-emphasis mb-1">
+              Clasificación del Ítem *
+            </div>
             <VRadioGroup
               v-model="radioGroup"
-              row
-              class="justify-center"
+              class="d-flex flex-column gap-1"
             >
-              <!-- Opción Producto -->
+              <!-- Opción Producto Comercial -->
               <VRadio
                 :key="1"
-                label="Producto"
+                label="📦 Producto para Venta (Stock Comercial)"
                 :value="1"
-                class="mr-4"
               />
-              <!-- Opción Gasto Común -->
+              <!-- Opción Insumo Directo / Gasto -->
               <VRadio
                 :key="2"
-                label="Gasto Común"
+                label="🧰 Gasto Directo Taller (Sin Stock)"
                 :value="2"
-                class="mr-4"
               />
-              <!-- Opción Mantenimiento o Servicio -->
+              <!-- Opción Insumo por Envase / Caja -->
               <VRadio
                 :key="3"
-                label="Mantenimiento o Servicio"
+                label="🛢️ Insumo por Envase / Caja (Inventario Taller)"
                 :value="3"
-                class="mr-4"
-              />
-              <!-- Opción Herramienta -->
-              <VRadio
-                :key="4"
-                label="Herramienta"
-                :value="4"
-                class="mr-4"
               />
             </VRadioGroup>
           </VCol>
@@ -255,13 +262,13 @@ onMounted(() => {
             />
           </VCol>
 
-          <VCol cols="12" sm="6" v-if="radioGroup === 1">
+          <VCol cols="12" sm="6" v-if="radioGroup === 1 || radioGroup === 3">
             <!-- Selector / Combobox de Marca -->
             <VCombobox
               v-model="selectedBrand"
               :items="brands"
-              label="Marca del Producto / Amortiguador"
-              placeholder="Seleccionar o escribir marca (ej: TOKICO, KYB)..."
+              :label="radioGroup === 1 ? 'Marca del Producto / Amortiguador' : 'Marca del Insumo'"
+              placeholder="Seleccionar o escribir marca (ej: TOKICO, KYB, WURTH)..."
               variant="outlined"
               density="comfortable"
               prepend-inner-icon="ri-price-tag-3-line"

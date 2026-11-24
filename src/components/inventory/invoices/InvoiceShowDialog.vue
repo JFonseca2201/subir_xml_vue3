@@ -179,9 +179,15 @@ const filteredExpenseDetails = computed(() => {
 
 // Función para obtener el nombre de la categoría
 const getCategoryName = (categoryId, itemType) => {
-  // Si no es producto, mostrar mensaje específico
-  if (itemType !== 1) {
-    return 'No tiene categoría de producto'
+  // Si no es producto comercial
+  if (Number(itemType) === 2) {
+    return 'Gasto Taller (Sin Stock)'
+  }
+  if (Number(itemType) === 3) {
+    return 'Insumo Taller (Por Envase)'
+  }
+  if (Number(itemType) !== 1) {
+    return 'No aplica'
   }
 
   // Si es producto pero no tiene categoría
@@ -626,9 +632,20 @@ onMounted(() => {
                     >
                       {{ item.description || 'Sin descripción' }}
                     </span>
-                    <span class="text-caption text-medium-emphasis mt-1">
-                      SKU: {{ item.code }}
-                    </span>
+                    <div class="d-flex align-center gap-1.5 mt-1 flex-wrap">
+                      <span class="text-caption text-medium-emphasis">
+                        SKU: {{ item.code || 'S/N' }}
+                      </span>
+                      <VChip
+                        size="x-small"
+                        :color="Number(item.item_type) === 1 ? 'primary' : (Number(item.item_type) === 3 ? 'warning' : 'info')"
+                        variant="tonal"
+                        class="font-weight-bold px-1.5"
+                        style="height: 18px; font-size: 0.68rem;"
+                      >
+                        {{ Number(item.item_type) === 1 ? 'Producto Venta' : (Number(item.item_type) === 3 ? 'Insumo Envase' : 'Gasto Taller') }}
+                      </VChip>
+                    </div>
                   </div>
                 </td>
 
