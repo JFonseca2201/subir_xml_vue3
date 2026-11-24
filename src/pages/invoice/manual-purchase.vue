@@ -1918,7 +1918,7 @@ onMounted(() => {
                       <p class="text-caption text-medium-emphasis mb-3">
                         Carga un XML del SRI arriba o añade ítems usando los botones
                       </p>
-                      <div v-if="!xmlLoadedInfo && !isDuplicateInvoice" class="d-flex justify-center gap-2">
+                      <!-- <div v-if="!xmlLoadedInfo && !isDuplicateInvoice" class="d-flex justify-center gap-2">
                         <VBtn size="small" variant="outlined" color="primary" prepend-icon="ri-add-line"
                           class="text-none font-weight-bold" :disabled="hasEmptyQuickRow"
                           :title="hasEmptyQuickRow ? 'Completa la fila vacía antes de agregar otra' : 'Agregar fila rápida'"
@@ -1929,7 +1929,7 @@ onMounted(() => {
                           class="text-none font-weight-bold" @click="openManualProductDialog('')">
                           Ingreso Detallado
                         </VBtn>
-                      </div>
+                      </div> -->
                     </td>
                   </tr>
                   <tr v-for="(item, index) in items" :key="item.id" class="purchase-item-row"
@@ -2089,7 +2089,7 @@ onMounted(() => {
               <!-- Footer de la tabla con acciones rápidas y totales en vivo -->
               <div v-if="items.length > 0 && !xmlLoadedInfo && !isDuplicateInvoice"
                 class="d-flex align-center justify-space-between flex-wrap gap-2 mt-4 pt-2">
-                <div class="d-flex align-center gap-2">
+                <!-- <div class="d-flex align-center gap-2">
                   <VBtn variant="outlined" color="primary" size="small" prepend-icon="ri-add-line"
                     class="rounded-lg font-weight-bold text-none" :disabled="hasEmptyQuickRow"
                     :title="hasEmptyQuickRow ? 'Completa la fila vacía antes de agregar otra' : 'Agregar fila rápida'"
@@ -2100,12 +2100,12 @@ onMounted(() => {
                     class="rounded-lg font-weight-bold text-none" @click="openManualProductDialog('')">
                     Ingreso Detallado
                   </VBtn>
-                </div>
+                </div> -->
                 <div
                   class="ms-auto d-flex align-center gap-3 flex-wrap text-caption font-weight-bold text-medium-emphasis">
                   <span>Subtotal: <strong class="text-high-emphasis">${{ subtotal.toFixed(2) }}</strong></span>
                   <span v-if="totalDiscount > 0" class="text-error">Dcto: <strong>-${{ totalDiscount.toFixed(2)
-                      }}</strong></span>
+                  }}</strong></span>
                   <span>IVA: <strong class="text-high-emphasis">${{ totalTax.toFixed(2) }}</strong></span>
                   <span>Total: <strong class="text-primary text-body-2">${{ grandTotal.toFixed(2) }}</strong></span>
                 </div>
