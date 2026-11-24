@@ -938,6 +938,9 @@ const getPaymentIcon = method => {
 
 const getProductPriceWithTax = product => {
   if (!product) return 0
+  if (product.final_price !== undefined && product.final_price !== null && !isNaN(parseFloat(product.final_price))) {
+    return parseFloat(Number(product.final_price).toFixed(2))
+  }
   const rawPrice = parseFloat(product.price_sale) || parseFloat(product.price) || 0
   const taxRate = parseFloat(product.tax_rate) || 0
 

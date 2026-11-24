@@ -63,6 +63,38 @@ export const useTaxConfig = () => {
     return Number((num * (1 + taxRate.value)).toFixed(2))
   }
 
+  /**
+   * Desglosa un valor final (con IVA incluido) obteniendo el valor base sin IVA
+   * Ej: $10.00 con IVA al 15% -> 10.00 / 1.15 = 8.70
+   * @param {number|string} totalAmount - Monto final con IVA
+   * @param {boolean|number} isTaxable - Si grava IVA
+   * @returns {number}
+   */
+  const calculateBaseFromTotal = (totalAmount, isTaxable = true) => {
+    const num = Number(totalAmount) || 0
+    const taxable = isTaxable === true || isTaxable === 1 || isTaxable === '1'
+    if (!taxable || taxRate.value <= 0) return num
+
+    return Number((num / (1 + taxRate.value)).toFixed(2))
+  }
+
+  /**
+   * Obtiene el valor del impuesto IVA a partir de un valor final con IVA
+   * Ej: $10.00 con IVA al 15% -> 10.00 - 8.70 = 1.30
+   * @param {number|string} totalAmount - Monto final con IVA
+   * @param {boolean|number} isTaxable - Si grava IVA
+   * @returns {number}
+   */
+  const calculateTaxFromTotal = (totalAmount, isTaxable = true) => {
+    const num = Number(totalAmount) || 0
+    const taxable = isTaxable === true || isTaxable === 1 || isTaxable === '1'
+    if (!taxable || taxRate.value <= 0) return 0
+
+    const base = calculateBaseFromTotal(totalAmount, isTaxable)
+
+    return Number((num - base).toFixed(2))
+  }
+
   return {
     DEFAULT_TAX_PERCENT,
     DEFAULT_TAX_RATE,
@@ -70,5 +102,7 @@ export const useTaxConfig = () => {
     taxRate,
     calculateTax,
     calculateTotalWithTax,
+    calculateBaseFromTotal,
+    calculateTaxFromTotal,
   }
 }

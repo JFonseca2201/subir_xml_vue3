@@ -1,9 +1,7 @@
 <script setup>
-import { ref, onMounted } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import { $api } from '@/utils/api'
 import { useTaxConfig } from '@/composables/useTaxConfig'
-
-const { taxPercent, calculateTax, calculateTotalWithTax } = useTaxConfig()
 
 const props = defineProps({
   isDialogVisible: {
@@ -12,7 +10,13 @@ const props = defineProps({
   },
 })
 
-const emit = defineEmits(['update:isDialogVisible', 'serviceAdded'])
+const emit = defineEmits([
+  'update:isDialogVisible',
+  'serviceAdded',
+  'addService',
+])
+
+const { taxPercent, calculateBaseFromTotal, calculateTaxFromTotal } = useTaxConfig()
 
 // --- ESTADO ---
 const loading = ref(false)
@@ -37,6 +41,28 @@ const serviceForm = ref({
   description: '',
   price_sale: '',
   is_taxable: true,
+})
+
+// --- CÁLCULOS DE PRECIO FINAL Y BASE SIN IVA ---
+const inputFinalPrice = computed(() => {
+  return parseFloat(serviceForm.value.price_sale) || 0
+})
+
+// Base sin IVA calculada a partir del precio final ingresado
+// Ej. Si ingresa $10.00 con IVA 15% -> Base sin IVA = $8.70
+const calculatedBasePrice = computed(() => {
+  return calculateBaseFromTotal(inputFinalPrice.value, serviceForm.value.is_taxable)
+})
+
+// Impuesto IVA calculado = Precio Final - Base sin IVA
+// Ej. $10.00 - $8.70 = $1.30
+const calculatedTaxAmount = computed(() => {
+  return calculateTaxFromTotal(inputFinalPrice.value, serviceForm.value.is_taxable)
+})
+
+// Total final asegurado con IVA
+const calculatedFinalPrice = computed(() => {
+  return Number(inputFinalPrice.value.toFixed(2))
 })
 
 // --- REGLAS ---
@@ -112,19 +138,22 @@ const saveService = async () => {
   const randomSuffix = Math.floor(1000 + Math.random() * 9000)
   const autoSku = `SRV-${Date.now().toString().slice(-6)}-${randomSuffix}`
 
-  // Construir el payload completo para el backend respetando item_type = 2
-  const inputPrice = parseFloat(serviceForm.value.price_sale) || 0
-  const finalPrice = inputPrice
+  // El usuario ingresa el precio final con IVA (ej. $10.00).
+  // Se almacena en base de datos la base imponible sin IVA (ej. $8.70)
+  // para que al calcular impuestos no se duplique ni se altere el IVA.
+  const basePrice = calculatedBasePrice.value
+  const finalPrice = calculatedFinalPrice.value
+  const taxRateVal = serviceForm.value.is_taxable ? (Number(taxPercent.value) || 15) : 0
 
   const payload = {
     description: serviceForm.value.description.toUpperCase().trim(),
     sku: autoSku,
     product_categorie_id: defaultCategorieId.value || null,
     unit_id: defaultUnitId.value || null,
-    price: finalPrice,
-    price_sale: finalPrice,
+    price: basePrice,
+    price_sale: basePrice,
     purchase_price: 0.00,
-    tax_rate: taxPercent.value,
+    tax_rate: taxRateVal,
     max_discount: 0.00,
     discount_percentage: 0.00,
     stock: 0.00,
@@ -145,16 +174,30 @@ const saveService = async () => {
     })
 
     // Soportar respuestas con estructura diferente
-    const newProduct = resp.product || resp.data || resp
+    const rawProduct = resp.product || resp.data || resp
+
+    // Enriquecer el producto para que los componentes receptores
+    // dispongan de inmediato tanto del precio base como del precio final exacto
+    const newProduct = {
+      ...rawProduct,
+      price: basePrice,
+      price_sale: basePrice,
+      tax_rate: taxRateVal,
+      is_taxable: serviceForm.value.is_taxable ? 1 : 2,
+      final_price: finalPrice,
+      pvp: finalPrice,
+      price_with_tax: finalPrice,
+    }
 
     showNotification('Servicio express creado exitosamente', 'success')
     resetForm()
 
-    // Esperar un instante corto para que se muestre la notificación y luego cerrar
+    // Esperar un instante corto para que se muestre la notificación y luego cerrar y emitir
     setTimeout(() => {
       emit('update:isDialogVisible', false)
       emit('serviceAdded', newProduct)
-    }, 500)
+      emit('addService', newProduct)
+    }, 400)
 
   } catch (err) {
     error.value = err.response?._data?.message || 'Error al guardar el servicio'
@@ -224,7 +267,7 @@ onMounted(() => {
             >
               <VTextField
                 v-model="serviceForm.price_sale"
-                label="Precio de Venta *"
+                label="Precio Final (con IVA) *"
                 placeholder="0.00"
                 prefix="$"
                 prepend-inner-icon="ri-money-dollar-circle-line"
@@ -234,6 +277,8 @@ onMounted(() => {
                 type="number"
                 step="0.01"
                 min="0"
+                hint="Monto total a cobrar al cliente"
+                persistent-hint
                 required
               />
             </VCol>
@@ -244,7 +289,7 @@ onMounted(() => {
               class="d-flex align-center justify-space-between pl-sm-6"
             >
               <div class="d-flex flex-column">
-                <span class="text-subtitle-2 font-weight-bold">Grava IVA (15%)</span>
+                <span class="text-subtitle-2 font-weight-bold">Grava IVA ({{ taxPercent }}%)</span>
                 <span class="text-caption text-medium-emphasis">¿Aplica impuestos al servicio?</span>
               </div>
               <VSwitch
@@ -254,9 +299,9 @@ onMounted(() => {
               />
             </VCol>
 
-            <!-- Desglose Informativo -->
+            <!-- Desglose Informativo en tiempo real -->
             <VCol
-              v-if="parseFloat(serviceForm.price_sale) > 0"
+              v-if="inputFinalPrice > 0"
               cols="12"
             >
               <div
@@ -264,21 +309,21 @@ onMounted(() => {
                 style="background-color: rgba(var(--v-theme-on-surface), 0.04); border: 1px solid rgba(var(--v-theme-on-surface), 0.08);"
               >
                 <div class="d-flex flex-column">
-                  <span class="text-caption text-medium-emphasis">Precio Unitario:</span>
-                  <span class="text-body-2 font-weight-bold">
-                    ${{ parseFloat(serviceForm.price_sale).toFixed(2) }}
+                  <span class="text-caption text-medium-emphasis">Precio sin IVA (Subtotal):</span>
+                  <span class="text-body-2 font-weight-bold text-slate-800">
+                    ${{ calculatedBasePrice.toFixed(2) }}
                   </span>
                 </div>
                 <div class="d-flex flex-column text-center">
                   <span class="text-caption text-medium-emphasis">IVA ({{ serviceForm.is_taxable ? `${taxPercent}%` : '0%' }}):</span>
                   <span class="text-body-2 font-weight-bold text-primary">
-                    ${{ calculateTax(serviceForm.price_sale, serviceForm.is_taxable).toFixed(2) }}
+                    ${{ calculatedTaxAmount.toFixed(2) }}
                   </span>
                 </div>
                 <div class="d-flex flex-column text-right">
-                  <span class="text-caption text-medium-emphasis">Total con IVA:</span>
+                  <span class="text-caption text-medium-emphasis">Total a Cobrar:</span>
                   <span class="text-body-2 font-weight-bold text-success">
-                    ${{ calculateTotalWithTax(serviceForm.price_sale, serviceForm.is_taxable).toFixed(2) }}
+                    ${{ calculatedFinalPrice.toFixed(2) }}
                   </span>
                 </div>
               </div>

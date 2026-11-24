@@ -276,6 +276,9 @@ const addTemporaryProduct = () => {
 
 const getProductPriceWithTax = product => {
   if (!product) return 0
+  if (product.final_price !== undefined && product.final_price !== null && !isNaN(parseFloat(product.final_price))) {
+    return parseFloat(Number(product.final_price).toFixed(2))
+  }
   const rawPrice = parseFloat(product.price_sale) || parseFloat(product.price) || 0
   const taxRate = parseFloat(product.tax_rate) || 0
 
@@ -326,17 +329,32 @@ const addItem = prod => {
 }
 
 const addCustomService = serviceData => {
+  if (!serviceData) return
+  const finalPrice = (serviceData.final_price !== undefined && serviceData.final_price !== null && !isNaN(parseFloat(serviceData.final_price)))
+    ? parseFloat(Number(serviceData.final_price).toFixed(2))
+    : (getProductPriceWithTax(serviceData) || parseFloat(serviceData.price_sale) || parseFloat(serviceData.price) || 0)
+
+  const isService = serviceData.item_type === 2 || serviceData.type === 'service' || (serviceData.categorie && serviceData.categorie.title && serviceData.categorie.title.includes('SERVICIO'))
+
+  if (serviceData.id && !products.value.find(p => p.id === serviceData.id)) {
+    products.value.push(serviceData)
+  }
+
   quote.value.items.push({
-    product_id: null,
-    description: serviceData.description,
+    product_id: serviceData.id || null,
+    description: serviceData.description || serviceData.name || '',
     quantity: 1,
-    price: parseFloat(serviceData.price) || 0,
+    price: finalPrice,
     discount: 0,
-    type: 'service',
-    sku: 'EXPRESS',
-    is_manual: true,
+    type: isService ? 'service' : 'product',
+    sku: serviceData.sku || 'EXPRESS',
+    is_manual: !serviceData.id,
   })
-  showNotification('Servicio personalizado agregado', 'success')
+  showNotification('Servicio express agregado a la cotización', 'success')
+}
+
+const handleServiceAdded = newService => {
+  addCustomService(newService)
 }
 
 const removeItem = index => {
@@ -1073,7 +1091,7 @@ onActivated(async () => {
     <DistributorCatalogSearchDialog v-if="isDistributorCatalogDialogVisible"
       v-model:isDialogVisible="isDistributorCatalogDialogVisible" @add-item="addDistributorCatalogItem" />
     <AddServiceDialog v-if="isAddServiceDialogVisible" v-model:isDialogVisible="isAddServiceDialogVisible"
-      @add-service="addCustomService" />
+      @service-added="handleServiceAdded" @add-service="handleServiceAdded" />
 
     <!-- Modal de Producto / Ítem Manual -->
     <VDialog v-model="isManualProductDialogVisible" max-width="540" persistent>
