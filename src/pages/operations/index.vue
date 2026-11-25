@@ -7,6 +7,9 @@ import { useRouter } from 'vue-router'
 import TransferDialog from '@/components/inventory/finances-records/TransferDialog.vue'
 import AporteCreateDialog from '@/components/inventory/aportes/AporteCreateDialog.vue'
 import MovementReceiptNoteDialog from '@/components/inventory/finances-records/MovementReceiptNoteDialog.vue'
+import SaleViewDialog from '@/components/inventory/sales/SaleViewDialog.vue'
+import InvoiceShowDialog from '@/components/inventory/invoices/InvoiceShowDialog.vue'
+import WorkOrderViewDialog from '@/components/dialogs/WorkOrderViewDialog.vue'
 import { usePermissions } from '@/composables/usePermissions'
 
 // --- Router y Seguridad ---
@@ -18,6 +21,39 @@ const { can } = usePermissions()
 const canAccessOperations = computed(() => {
   return can('list_transaction')
 })
+
+// --- Estado de Diálogos Especializados ---
+const isSaleViewDialogVisible = ref(false)
+const selectedSaleData = ref(null)
+
+const isInvoiceShowDialogVisible = ref(false)
+const selectedInvoice = ref(null)
+
+const isWorkOrderDialogVisible = ref(false)
+const selectedWorkOrderId = ref(null)
+
+const openSaleView = async saleOrId => {
+  try {
+    const saleId = typeof saleOrId === 'object' && saleOrId !== null ? saleOrId.id : saleOrId
+    const res = await $api(`sales/${saleId}`)
+    selectedSaleData.value = res.data || res
+    isSaleViewDialogVisible.value = true
+  } catch (e) {
+    console.error('Error al abrir detalle de venta:', e)
+    showNotification('No se pudo cargar la venta completa', 'error')
+  }
+}
+
+const openInvoiceView = invoiceOrId => {
+  const inv = typeof invoiceOrId === 'object' && invoiceOrId !== null ? invoiceOrId : { id: invoiceOrId }
+  selectedInvoice.value = inv
+  isInvoiceShowDialogVisible.value = true
+}
+
+const openWorkOrderView = woOrId => {
+  selectedWorkOrderId.value = typeof woOrId === 'object' && woOrId !== null ? woOrId.id : woOrId
+  isWorkOrderDialogVisible.value = true
+}
 
 // --- Estado del Componente ---
 const recentMovements = ref([]) // Datos agrupados para el template
@@ -1264,8 +1300,35 @@ onUnmounted(() => {
       <!-- Diálogos Globales -->
       <TransferDialog v-model="isTransferDialogVisible" @transferred="dashboardOptions" />
       <AporteCreateDialog v-model="isAporteDialogVisible" @created="dashboardOptions" />
-      <MovementReceiptNoteDialog v-if="selectedMovementForReceipt" v-model="isReceiptNoteDialogVisible"
-        :movement="selectedMovementForReceipt" :accounts="accounts" @updated="dashboardOptions" />
+      <MovementReceiptNoteDialog
+        v-if="selectedMovementForReceipt"
+        v-model="isReceiptNoteDialogVisible"
+        :movement="selectedMovementForReceipt"
+        :accounts="accounts"
+        @updated="dashboardOptions"
+        @view-sale="openSaleView"
+        @view-invoice="openInvoiceView"
+        @view-work-order="openWorkOrderView"
+      />
+
+      <!-- Diálogos Especializados de Detalle Completo -->
+      <SaleViewDialog
+        v-if="isSaleViewDialogVisible"
+        v-model:is-dialog-visible="isSaleViewDialogVisible"
+        :sale-data="selectedSaleData"
+      />
+
+      <InvoiceShowDialog
+        v-if="isInvoiceShowDialogVisible"
+        v-model:is-dialog-visible="isInvoiceShowDialogVisible"
+        :invoice-selected="selectedInvoice"
+      />
+
+      <WorkOrderViewDialog
+        v-if="isWorkOrderDialogVisible"
+        v-model:is-dialog-visible="isWorkOrderDialogVisible"
+        :work-order-id="selectedWorkOrderId"
+      />
     </div>
   </div>
 </template>

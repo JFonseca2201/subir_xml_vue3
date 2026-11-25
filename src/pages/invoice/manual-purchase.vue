@@ -64,6 +64,7 @@ const formData = ref({
   supplier_ruc: '',
   supplier_name: '',
   supplier_address: '',
+  document_type: 'invoice',
   invoice_number: '',
   issue_date: getLocalDateString(),
   access_key: '',
@@ -71,6 +72,14 @@ const formData = ref({
   account_id: null,
   partner_id: null,
 })
+
+const documentTypeOptions = [
+  { title: 'Factura', value: 'invoice', icon: 'ri-file-text-line' },
+  { title: 'Nota de Venta', value: 'sale_note', icon: 'ri-file-list-3-line' },
+  { title: 'Comprobante Interno / Sin Doc.', value: 'internal', icon: 'ri-file-shield-2-line' },
+]
+
+const nextInternalNumber = ref('INT-0001')
 
 // Tipo general de la compra: 'products' (Productos) | 'supplies' (Insumos) | 'expenses' (Gasto General)
 const purchaseType = ref('products')
@@ -432,6 +441,7 @@ const resetPurchaseForm = () => {
     supplier_ruc: '',
     supplier_name: '',
     supplier_address: '',
+    document_type: 'invoice',
     invoice_number: '',
     issue_date: getLocalDateString(),
     access_key: '',
@@ -671,6 +681,10 @@ const loadConfig = async () => {
     suppliers.value = configResp.suppliers || []
     categories.value = configResp.categories || []
 
+    if (configResp.next_internal_number) {
+      nextInternalNumber.value = configResp.next_internal_number
+    }
+
     const rawBrands = configResp.brands || []
     const brandSet = new Set(['SM', ...rawBrands])
 
@@ -699,6 +713,9 @@ const loadConfig = async () => {
 
     // Partners returns object with data in many laravel resources
     partners.value = partnersResp.data?.data || partnersResp.data || []
+
+    // Cargar catálogo general de productos de forma independiente a los proveedores
+    await loadProducts()
 
   } catch (error) {
     console.error(error)
@@ -1097,43 +1114,61 @@ const clearXmlImport = () => {
   showNotification('Datos de XML eliminados', 'info')
 }
 
-// Watcher para buscar productos y saldo a favor cuando cambia el proveedor
-watch(() => formData.value.supplier_id, async newSupplierId => {
-  checkSupplierCredit(newSupplierId)
-
-  if (!newSupplierId) {
-    products.value = []
-
-    return
-  }
-
+// Carga del catálogo general de productos (independiente del proveedor)
+const loadProducts = async () => {
   isLoadingProducts.value = true
   try {
-    const productsResp = await $api(`products?supplier_id=${newSupplierId}&per_page=1000`, { method: 'GET' })
+    const productsResp = await $api('products?per_page=1000&state=1', { method: 'GET' })
 
     products.value = productsResp.products?.data || productsResp.products || productsResp.data?.data || productsResp.data || []
   } catch (error) {
-    console.error(error)
-    showNotification('Error cargando productos del proveedor', 'error')
-    products.value = []
+    console.error('Error cargando catálogo general de productos:', error)
   } finally {
     isLoadingProducts.value = false
   }
+}
+
+// Watcher para consultar saldo a favor cuando cambia el proveedor (sin restringir el catálogo de productos)
+watch(() => formData.value.supplier_id, async newSupplierId => {
+  checkSupplierCredit(newSupplierId)
 })
 
-// Computeds for totals
-/* const subtotal = computed(() => {
-  return items.value.reduce((sum, item) => sum + (Number(item.subtotal) || 0), 0)
+// Watcher para Tipo de Documento: comportamiento condicional de correlativo e IVA
+watch(() => formData.value.document_type, async newType => {
+  if (newType === 'internal') {
+    if (!formData.value.invoice_number || formData.value.invoice_number.startsWith('INT-') || formData.value.invoice_number === '') {
+      try {
+        const res = await $api('invoices/next-internal-number')
+        if (res.next_internal_number) {
+          nextInternalNumber.value = res.next_internal_number
+        }
+      } catch (e) {
+        console.warn('Error fetching next internal number:', e)
+      }
+      formData.value.invoice_number = nextInternalNumber.value || 'INT-0001'
+    }
+  } else if (newType === 'sale_note') {
+    if (formData.value.invoice_number?.startsWith('INT-')) {
+      formData.value.invoice_number = ''
+    }
+    // Para notas de venta (RIMPE), no hay IVA
+    items.value.forEach(item => {
+      item.is_taxable = 0
+      item.tax = 0
+      item.total = Number(Number(item.subtotal || 0).toFixed(2))
+    })
+  } else {
+    // Factura estándar
+    if (formData.value.invoice_number?.startsWith('INT-')) {
+      formData.value.invoice_number = ''
+    }
+    items.value.forEach(item => {
+      item.is_taxable = 1
+      updateItemTotals(item)
+    })
+  }
 })
 
-const totalTax = computed(() => {
-  return items.value.reduce((sum, item) => sum + (Number(item.tax) || 0), 0)
-})
-
-const grandTotal = computed(() => {
-  return subtotal.value + totalTax.value
-})
- */
 const customProductFilter = (value, query, item) => {
   if (!query) return true
   const q = query.toString().toLowerCase().trim()
@@ -1158,12 +1193,13 @@ const addProductToItems = product => {
     return
   }
 
-  const isTaxable = (product.is_taxable === 0 || product.is_taxable === '0' || product.is_taxable === false) ? 0 : 1
+  const isSaleNote = formData.value.document_type === 'sale_note'
+  const isTaxable = isSaleNote ? 0 : ((product.is_taxable === 0 || product.is_taxable === '0' || product.is_taxable === false) ? 0 : 1)
   const qty = 1
   const unitPrice = Number(product.purchase_price) || 0
   const discount = Number(product.discount) || 0
   const sub = Number(((qty * unitPrice) - discount).toFixed(2))
-  const tax = calculateTax(sub, isTaxable === 1)
+  const tax = isSaleNote ? 0 : calculateTax(sub, isTaxable === 1)
   const total = Number((sub + tax).toFixed(2))
 
   // Auto-recordar item_type y usage_type si ya está catalogado
@@ -1172,6 +1208,7 @@ const addProductToItems = product => {
 
   items.value.push({
     id: Date.now(),
+    product_id: product.id,
     code: product.sku,
     description: product.description,
     brand: product.brand || 'SM',
@@ -1198,11 +1235,17 @@ const updateItemTotals = item => {
 
   item.subtotal = Number(((qty * price) - disc).toFixed(2))
 
-  const isTaxable = (item.is_taxable === 0 || item.is_taxable === '0' || item.is_taxable === false) ? 0 : 1
+  if (formData.value.document_type === 'sale_note') {
+    item.is_taxable = 0
+    item.tax = 0
+    item.total = Number(item.subtotal.toFixed(2))
+  } else {
+    const isTaxable = (item.is_taxable === 0 || item.is_taxable === '0' || item.is_taxable === false) ? 0 : 1
 
-  item.is_taxable = isTaxable
-  item.tax = calculateTax(item.subtotal, isTaxable === 1)
-  item.total = Number((item.subtotal + item.tax).toFixed(2))
+    item.is_taxable = isTaxable
+    item.tax = calculateTax(item.subtotal, isTaxable === 1)
+    item.total = Number((item.subtotal + item.tax).toFixed(2))
+  }
 
   if (isSharedInvoice.value) {
     calculateTercerosFromUnchecked()
@@ -1210,6 +1253,7 @@ const updateItemTotals = item => {
 }
 
 const toggleItemTax = item => {
+  if (formData.value.document_type === 'sale_note') return
   item.is_taxable = (item.is_taxable === 1 || item.is_taxable === true) ? 0 : 1
   updateItemTotals(item)
 }
@@ -1222,8 +1266,19 @@ const removeItem = index => {
 }
 
 const submitPurchase = async () => {
-  if (!formData.value.supplier_id || !formData.value.invoice_number) {
-    return showNotification('Debe llenar los campos de proveedor y número de factura', 'warning')
+  if (!formData.value.supplier_id) {
+    return showNotification('Debe seleccionar o registrar el proveedor', 'warning')
+  }
+
+  // Si es factura o nota de venta, requerir número de comprobante
+  if (formData.value.document_type !== 'internal' && !formData.value.invoice_number?.trim()) {
+    const docLabel = formData.value.document_type === 'sale_note' ? 'la nota de venta' : 'la factura'
+    return showNotification(`Debe ingresar el número de ${docLabel}`, 'warning')
+  }
+
+  // Si es comprobante interno y no tiene número, asignar el correlativo
+  if (formData.value.document_type === 'internal' && !formData.value.invoice_number?.trim()) {
+    formData.value.invoice_number = nextInternalNumber.value || 'INT-0001'
   }
 
   if (items.value.length === 0) {
@@ -1272,11 +1327,12 @@ const submitPurchase = async () => {
 
   const payload = {
     ...formData.value,
+    document_type: formData.value.document_type || 'invoice',
     purchase_type: purchaseType.value,
     is_expense: !hasAnyProduct,
     access_key: formData.value.access_key ? String(formData.value.access_key).trim() : null,
     subtotal: Number(subtotal.value.toFixed(2)),
-    tax: Number(totalTax.value.toFixed(2)),
+    tax: formData.value.document_type === 'sale_note' ? 0 : Number(totalTax.value.toFixed(2)),
     total: Number(grandTotal.value.toFixed(2)),
     is_shared: isSharedInvoice.value,
     terceros_total: isSharedInvoice.value ? tercerosMath.value.total : 0,
@@ -1290,6 +1346,7 @@ const submitPurchase = async () => {
 
       return {
         id: item.id,
+        product_id: item.product_id || null,
         code: item.code,
         code_aux: item.code_aux,
         description: item.description,
@@ -1297,7 +1354,7 @@ const submitPurchase = async () => {
         unit_price: Number(item.unit_price) || 0,
         discount: Number(item.discount) || 0,
         subtotal: Number(item.subtotal) || 0,
-        tax: Number(item.tax) || 0,
+        tax: formData.value.document_type === 'sale_note' ? 0 : (Number(item.tax) || 0),
         total: Number(item.total) || 0,
         selected_for_inventory: isWorkshop,
         item_type: isWorkshop ? rawType : 2,
@@ -1645,7 +1702,7 @@ onMounted(() => {
               </div>
 
               <VRow>
-                <VCol cols="12" md="6">
+                <VCol cols="12" md="4">
                   <VAutocomplete v-model="formData.supplier_id" :items="suppliers" item-title="name" item-value="id"
                     label="Proveedor *" placeholder="Selecciona o busca proveedor" variant="outlined"
                     density="comfortable" prepend-inner-icon="ri-store-2-line" :loading="isLoadingConfig"
@@ -1666,12 +1723,25 @@ onMounted(() => {
                     </div>
                   </VAlert>
                 </VCol>
-                <VCol cols="12" md="3">
-                  <VTextField v-model="formData.invoice_number" label="N° Factura *" placeholder="000223753"
-                    variant="outlined" density="comfortable" prepend-inner-icon="ri-hashtag"
-                    :disabled="isDuplicateInvoice" />
+                <VCol cols="12" sm="6" md="3">
+                  <VSelect v-model="formData.document_type" :items="documentTypeOptions" item-title="title"
+                    item-value="value" label="Tipo de Documento *" variant="outlined" density="comfortable"
+                    prepend-inner-icon="ri-file-list-3-line" :disabled="isDuplicateInvoice">
+                    <template #item="{ props, item }">
+                      <VListItem v-bind="props" :prepend-icon="item.raw.icon" />
+                    </template>
+                  </VSelect>
                 </VCol>
-                <VCol cols="12" md="3">
+                <VCol cols="12" sm="6" md="3">
+                  <VTextField v-model="formData.invoice_number"
+                    :label="formData.document_type === 'internal' ? 'N° Comprobante (Interno)' : (formData.document_type === 'sale_note' ? 'N° Nota de Venta *' : 'N° Factura *')"
+                    :placeholder="formData.document_type === 'internal' ? (nextInternalNumber || 'INT-0001') : '001-001-0000001'"
+                    variant="outlined" density="comfortable" prepend-inner-icon="ri-hashtag"
+                    :disabled="isDuplicateInvoice || formData.document_type === 'internal'"
+                    :hint="formData.document_type === 'internal' ? 'Correlativo autogenerado por el sistema' : ''"
+                    :persistent-hint="formData.document_type === 'internal'" />
+                </VCol>
+                <VCol cols="12" md="2">
                   <VTextField v-model="formData.issue_date" type="date" label="Fecha de Emisión *" variant="outlined"
                     density="comfortable" :disabled="isDuplicateInvoice" />
                 </VCol>
@@ -1784,23 +1854,20 @@ onMounted(() => {
                 :custom-filter="customProductFilter" label="Buscar Producto en catálogo por Nombre o SKU para añadir..."
                 placeholder="Escribe el nombre o SKU (ej: 03-005...)" variant="outlined"
                 prepend-inner-icon="ri-search-line" return-object clearable class="mb-4" :menu-props="{ maxWidth: 0 }"
-                :loading="isLoadingProducts" :disabled="!formData.supplier_id" @update:model-value="addProductToItems">
+                :loading="isLoadingProducts" @update:model-value="addProductToItems">
                 <template #no-data>
                   <div class="pa-4 text-center">
                     <p class="text-medium-emphasis mb-2">
-                      {{
-                        formData.supplier_id ? '¿No encuentras el producto en el catálogo?'
-                          : 'Seleccione un proveedor primero'
-                      }}
+                      ¿No encuentras el producto en el catálogo?
                     </p>
                     <div class="d-flex justify-center gap-2 flex-wrap">
-                      <VBtn v-if="formData.supplier_id" color="secondary" variant="outlined" size="small"
+                      <VBtn color="secondary" variant="outlined" size="small"
                         prepend-icon="ri-add-line" class="mt-1" :disabled="hasEmptyQuickRow"
                         :title="hasEmptyQuickRow ? 'Completa la fila vacía antes de agregar otra' : 'Agregar fila rápida'"
                         @click="addQuickItemRow">
                         Agregar Fila Rápida
                       </VBtn>
-                      <VBtn v-if="formData.supplier_id" color="primary" variant="outlined" size="small"
+                      <VBtn color="primary" variant="outlined" size="small"
                         prepend-icon="ri-edit-box-line" class="mt-1"
                         @click="openManualProductDialog(typeof searchProduct === 'string' ? searchProduct : '')">
                         Ingresar Detallado
@@ -1894,7 +1961,7 @@ onMounted(() => {
                       PRECIO
                     </th>
                     <th class="text-center font-weight-bold py-3 px-1" style="width: 52px;">
-                      IVA
+                      {{ formData.document_type === 'sale_note' ? 'IVA (0%)' : 'IVA' }}
                     </th>
                     <th class="text-right font-weight-bold py-3 pr-3 pl-1" style="width: 78px;">
                       SUBTOTAL
@@ -2049,7 +2116,12 @@ onMounted(() => {
 
                     <!-- IVA Toggle Chip -->
                     <td class="text-center py-2 px-1" style="width: 52px;">
-                      <VChip v-if="!isDuplicateInvoice" size="x-small"
+                      <VChip v-if="formData.document_type === 'sale_note'" size="x-small"
+                        color="default" variant="tonal" class="font-weight-bold px-1"
+                        style="height: 22px; font-size: 0.72rem;" title="Nota de Venta (no aplica desglose de IVA)">
+                        0%
+                      </VChip>
+                      <VChip v-else-if="!isDuplicateInvoice" size="x-small"
                         :color="item.is_taxable == 1 ? 'primary' : 'default'"
                         :variant="item.is_taxable == 1 ? 'tonal' : 'outlined'"
                         class="font-weight-bold cursor-pointer px-1" style="height: 22px; font-size: 0.72rem;"
@@ -2067,7 +2139,7 @@ onMounted(() => {
                       <div class="font-weight-bold text-body-2 text-primary">
                         ${{ Number(item.subtotal || 0).toFixed(2) }}
                       </div>
-                      <div v-if="item.is_taxable == 1" class="text-caption text-medium-emphasis"
+                      <div v-if="item.is_taxable == 1 && formData.document_type !== 'sale_note'" class="text-caption text-medium-emphasis"
                         style="font-size: 0.68rem; line-height: 1.1;">
                         +IVA ${{ Number(item.tax || 0).toFixed(2) }}
                       </div>
@@ -2106,7 +2178,7 @@ onMounted(() => {
                   <span>Subtotal: <strong class="text-high-emphasis">${{ subtotal.toFixed(2) }}</strong></span>
                   <span v-if="totalDiscount > 0" class="text-error">Dcto: <strong>-${{ totalDiscount.toFixed(2)
                   }}</strong></span>
-                  <span>IVA: <strong class="text-high-emphasis">${{ totalTax.toFixed(2) }}</strong></span>
+                  <span v-if="formData.document_type !== 'sale_note'">IVA: <strong class="text-high-emphasis">${{ totalTax.toFixed(2) }}</strong></span>
                   <span>Total: <strong class="text-primary text-body-2">${{ grandTotal.toFixed(2) }}</strong></span>
                 </div>
               </div>
@@ -2235,9 +2307,13 @@ onMounted(() => {
                 <span class="font-weight-bold">-${{ totalDiscount.toFixed(2) }}</span>
               </div>
 
-              <div class="d-flex justify-space-between mb-2">
+              <div v-if="formData.document_type !== 'sale_note'" class="d-flex justify-space-between mb-2">
                 <span class="text-medium-emphasis">Impuestos (IVA {{ taxPercent }}%)</span>
                 <span class="font-weight-bold">${{ totalTax.toFixed(2) }}</span>
+              </div>
+              <div v-else class="d-flex justify-space-between mb-2">
+                <span class="text-medium-emphasis">Impuestos (Nota de Venta RIMPE)</span>
+                <span class="font-weight-bold text-medium-emphasis">$0.00</span>
               </div>
 
               <div class="d-flex justify-space-between mb-3">

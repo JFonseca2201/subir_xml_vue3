@@ -422,12 +422,20 @@ onActivated(() => {
             class="mobile-invoice-card elevation-0">
             <!-- Cabecera Móvil: N° Factura + Fecha + Acciones Rápidas -->
             <div class="d-flex align-center justify-space-between gap-2 mb-2 pb-2 border-b">
-              <div class="d-flex align-center gap-2 min-w-0">
+              <div class="d-flex align-center gap-1.5 min-w-0 flex-wrap">
                 <span
                   class="font-mono font-weight-bold text-primary cursor-pointer hover-underline text-body-1 text-truncate"
                   @click="showItem(invoice)">
                   {{ invoice.invoice_number || 'S/N' }}
                 </span>
+                <VChip v-if="invoice.document_type === 'sale_note'" size="x-small" color="info" variant="tonal"
+                  class="font-weight-bold px-1" style="height: 18px; font-size: 0.65rem;">
+                  Nota Venta
+                </VChip>
+                <VChip v-else-if="invoice.document_type === 'internal'" size="x-small" color="secondary" variant="tonal"
+                  class="font-weight-bold px-1" style="height: 18px; font-size: 0.65rem;">
+                  Interno
+                </VChip>
                 <span class="text-caption text-disabled">•</span>
                 <span class="text-caption text-medium-emphasis text-no-wrap">
                   {{ formatDate(invoice.issue_date) }}
@@ -606,17 +614,27 @@ onActivated(() => {
                   </div>
                 </td>
 
-                <!-- Factura -->
+                <!-- Factura / Documento -->
                 <td class="py-3">
                   <div class="d-flex flex-column align-start gap-1">
                     <span class="font-mono font-weight-bold text-primary cursor-pointer hover-underline text-body-2"
                       @click="showItem(invoice)">
                       {{ invoice.invoice_number || 'S/N' }}
                     </span>
-                    <VChip v-if="invoice.is_expense" size="x-small" color="warning" variant="tonal"
-                      class="font-weight-bold" style="height: 18px; font-size: 0.65rem;">
-                      Gasto General
-                    </VChip>
+                    <div class="d-flex align-center gap-1 flex-wrap">
+                      <VChip v-if="invoice.document_type === 'sale_note'" size="x-small" color="info" variant="tonal"
+                        class="font-weight-bold" style="height: 18px; font-size: 0.65rem;">
+                        Nota de Venta
+                      </VChip>
+                      <VChip v-else-if="invoice.document_type === 'internal'" size="x-small" color="secondary" variant="tonal"
+                        class="font-weight-bold" style="height: 18px; font-size: 0.65rem;">
+                        Interno
+                      </VChip>
+                      <VChip v-if="invoice.is_expense" size="x-small" color="warning" variant="tonal"
+                        class="font-weight-bold" style="height: 18px; font-size: 0.65rem;">
+                        Gasto General
+                      </VChip>
+                    </div>
                   </div>
                 </td>
 

@@ -287,8 +287,16 @@ onMounted(() => {
             <div class="min-w-0">
               <div class="d-flex align-center gap-2 flex-wrap">
                 <h3 class="text-h6 font-weight-bold text-white mb-0 leading-tight">
-                  Detalle de Factura
+                  Detalle de Compra
                 </h3>
+                <VChip v-if="invoice?.document_type === 'sale_note'" size="x-small" color="info" variant="flat"
+                  class="font-weight-bold px-2 text-white">
+                  Nota de Venta
+                </VChip>
+                <VChip v-else-if="invoice?.document_type === 'internal'" size="x-small" color="secondary" variant="flat"
+                  class="font-weight-bold px-2 text-white">
+                  Comprobante Interno
+                </VChip>
                 <VChip v-if="invoice?.is_expense" size="x-small" color="warning" variant="flat"
                   class="font-weight-bold px-2 text-white">
                   <VIcon icon="ri-receipt-line" size="12" class="me-1" />
@@ -315,7 +323,7 @@ onMounted(() => {
 
           <div class="glass-header-pill">
             <VIcon icon="ri-hashtag" size="14" class="text-white-70 me-1" />
-            <span><strong class="text-white font-weight-medium">N° Factura:</strong> {{ invoice?.invoice_number || '-'
+            <span><strong class="text-white font-weight-medium">{{ invoice?.document_type === 'sale_note' ? 'N° Nota Venta:' : (invoice?.document_type === 'internal' ? 'N° Interno:' : 'N° Factura:') }}</strong> {{ invoice?.invoice_number || '-'
             }}</span>
           </div>
 

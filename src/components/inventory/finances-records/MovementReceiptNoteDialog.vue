@@ -19,7 +19,7 @@ const props = defineProps({
   },
 })
 
-const emit = defineEmits(['update:modelValue', 'updated'])
+const emit = defineEmits(['update:modelValue', 'updated', 'view-sale', 'view-invoice', 'view-work-order'])
 
 const { showNotification } = useGlobalToast()
 
@@ -30,6 +30,63 @@ const showUploader = ref(false)
 const newReceiptFiles = ref([])
 const isUploading = ref(false)
 const isDownloadingPdf = ref(false)
+
+// Estados de carga de ítems y detalle completo del movimiento
+const isLoadingDetail = ref(false)
+const detailData = ref(null)
+
+const items = computed(() => detailData.value?.items || [])
+const party = computed(() => detailData.value?.party || null)
+const vehicle = computed(() => detailData.value?.vehicle || null)
+const transferInfo = computed(() => detailData.value?.transfer_info || null)
+const totals = computed(() => detailData.value?.totals || null)
+const sourceType = computed(() => detailData.value?.source_type || null)
+const sourceId = computed(() => detailData.value?.source_id || null)
+const sourceData = computed(() => detailData.value?.source_data || null)
+
+const loadDetail = async () => {
+  if (!props.movement?.id) {
+    detailData.value = null
+    return
+  }
+  isLoadingDetail.value = true
+  try {
+    const res = await $api(`financial-movements/${props.movement.id}`)
+    if (res && res.status === 'success') {
+      detailData.value = res
+    }
+  } catch (e) {
+    console.error('Error al cargar detalle del movimiento:', e)
+  } finally {
+    isLoadingDetail.value = false
+  }
+}
+
+const openFullSource = () => {
+  if (sourceType.value === 'sale') {
+    emit('view-sale', sourceData.value || { id: sourceId.value })
+    closeDialog()
+  } else if (sourceType.value === 'invoice') {
+    emit('view-invoice', sourceData.value || { id: sourceId.value })
+    closeDialog()
+  } else if (sourceType.value === 'work_order') {
+    emit('view-work-order', sourceId.value)
+    closeDialog()
+  }
+}
+
+const getItemTypeBadge = item => {
+  if (item.is_service || Number(item.item_type) === 2) {
+    return { label: 'Servicio', color: 'primary', icon: 'ri-customer-service-2-line' }
+  }
+  if (item.usage_type === 'workshop_consumable') {
+    return { label: 'Gasto Taller', color: 'warning', icon: 'ri-tools-line' }
+  }
+  if (item.usage_type === 'workshop_stock_unit') {
+    return { label: 'Insumo Envase', color: 'info', icon: 'ri-box-3-line' }
+  }
+  return { label: 'Producto', color: 'success', icon: 'ri-shopping-cart-2-line' }
+}
 
 // Visor de foto en grande
 const isLightboxOpen = ref(false)
@@ -567,6 +624,7 @@ const closeDialog = () => {
   emit('update:modelValue', false)
   showUploader.value = false
   newReceiptFiles.value = []
+  detailData.value = null
 }
 
 watch(
@@ -577,6 +635,7 @@ watch(
       showUploader.value = false
       loadAccounts()
       loadAttachments()
+      loadDetail()
     }
   },
   { immediate: true },
@@ -584,7 +643,7 @@ watch(
 </script>
 
 <template>
-  <VDialog :model-value="props.modelValue" max-width="600" scrollable persistent @update:model-value="closeDialog">
+  <VDialog :model-value="props.modelValue" max-width="850" scrollable persistent @update:model-value="closeDialog">
     <VCard class="rounded-xl overflow-hidden elevation-12 d-flex flex-column" style="max-height: 90vh;">
       <!-- Header Banner Primary -->
       <VCardTitle class="pa-3 pa-sm-4 bg-primary text-white d-flex align-center justify-space-between flex-none gap-2">
@@ -660,6 +719,34 @@ watch(
               </div>
             </VCol>
 
+            <!-- Cliente o Proveedor (si existe) -->
+            <VCol v-if="party" cols="12" sm="6" class="mb-2">
+              <div class="text-caption text-medium-emphasis font-weight-medium">
+                {{ party.type === 'supplier' ? 'Proveedor' : (party.type === 'partner' ? 'Socio' : 'Cliente') }}
+              </div>
+              <div class="text-body-2 font-weight-bold text-high-emphasis d-flex align-center gap-1">
+                <VIcon :icon="party.type === 'supplier' ? 'ri-truck-line' : (party.type === 'partner' ? 'ri-hand-coin-line' : 'ri-user-line')" size="16" color="primary" />
+                <span class="text-truncate">{{ party.name }}</span>
+              </div>
+              <div v-if="party.document" class="text-caption text-slate-500 font-mono">
+                Doc: {{ party.document }} <span v-if="party.phone">• Tel: {{ party.phone }}</span>
+              </div>
+            </VCol>
+
+            <!-- Vehículo si existe -->
+            <VCol v-if="vehicle" cols="12" sm="6" class="mb-2">
+              <div class="text-caption text-medium-emphasis font-weight-medium">
+                Vehículo Asociado
+              </div>
+              <div class="text-body-2 font-weight-bold text-high-emphasis d-flex align-center gap-1">
+                <VIcon icon="ri-car-line" size="16" color="indigo" />
+                <span class="font-mono text-uppercase">{{ vehicle.license_plate }}</span>
+                <span v-if="vehicle.brand || vehicle.model" class="text-caption text-slate-500 font-weight-normal">
+                  ({{ [vehicle.brand, vehicle.model].filter(Boolean).join(' ') }})
+                </span>
+              </div>
+            </VCol>
+
             <!-- Cuentas -->
             <VCol cols="12" sm="6" class="mb-2">
               <div class="text-caption text-medium-emphasis font-weight-medium">
@@ -705,7 +792,166 @@ watch(
           </VRow>
         </VCard>
 
-        <!-- 3. Sección de Comprobantes de Respaldo -->
+        <!-- 3. Sección de Productos / Ítems de la Operación -->
+        <VCard variant="flat" class="rounded-xl border pa-4 mb-5 bg-white">
+          <div class="d-flex align-center justify-space-between flex-wrap gap-2 mb-3">
+            <div class="d-flex align-center gap-2">
+              <VAvatar size="30" color="primary" variant="tonal" rounded="lg">
+                <VIcon icon="ri-shopping-bag-3-line" size="18" />
+              </VAvatar>
+              <div class="d-flex align-center gap-2">
+                <span class="text-subtitle-2 font-weight-bold text-high-emphasis">
+                  {{ sourceType === 'sale' ? 'Productos y Servicios Vendidos' : (sourceType === 'invoice' ? 'Productos e Insumos Comprados' : (sourceType === 'work_order' ? 'Servicios y Repuestos Asignados' : (sourceType === 'internal_transfer' ? 'Detalle de Transferencia Bancaria' : 'Ítems y Conceptos de la Operación'))) }}
+                </span>
+                <VChip v-if="items.length > 0" size="x-small" color="primary" variant="tonal" class="font-weight-bold">
+                  {{ items.length }} ítem(s)
+                </VChip>
+              </div>
+            </div>
+
+            <!-- Botones de Acción para Ver Detalle Completo en Dialog Especializado -->
+            <div v-if="sourceType === 'sale' || sourceType === 'invoice' || sourceType === 'work_order'">
+              <VBtn
+                size="small"
+                variant="tonal"
+                color="primary"
+                prepend-icon="ri-external-link-line"
+                class="font-weight-semibold text-none"
+                @click="openFullSource"
+              >
+                <span v-if="sourceType === 'sale'">Ver Venta Completa</span>
+                <span v-else-if="sourceType === 'invoice'">Ver Factura Proveedor</span>
+                <span v-else-if="sourceType === 'work_order'">Ver Orden de Trabajo</span>
+              </VBtn>
+            </div>
+          </div>
+
+          <!-- Loading Skeleton -->
+          <div v-if="isLoadingDetail" class="py-4 text-center">
+            <VProgressCircular indeterminate size="28" width="3" color="primary" class="mb-2" />
+            <div class="text-caption text-medium-emphasis">Cargando productos de la operación...</div>
+          </div>
+
+          <!-- Tabla de Productos / Ítems -->
+          <div v-else-if="items.length > 0" class="border rounded-lg overflow-hidden">
+            <VTable density="compact" class="movement-items-table">
+              <thead>
+                <tr class="bg-slate-50">
+                  <th class="text-left font-weight-bold text-caption text-uppercase" style="width: 130px;">Código / SKU</th>
+                  <th class="text-left font-weight-bold text-caption text-uppercase">Descripción</th>
+                  <th class="text-center font-weight-bold text-caption text-uppercase" style="width: 120px;">Tipo</th>
+                  <th class="text-center font-weight-bold text-caption text-uppercase" style="width: 70px;">Cant.</th>
+                  <th class="text-right font-weight-bold text-caption text-uppercase" style="width: 95px;">P. Unit</th>
+                  <th class="text-right font-weight-bold text-caption text-uppercase" style="width: 105px;">Total</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr v-for="(item, idx) in items" :key="item.id || idx" class="item-row">
+                  <td class="font-mono text-caption text-slate-600 font-weight-medium">
+                    {{ item.code || '-' }}
+                  </td>
+                  <td>
+                    <div class="font-weight-semibold text-body-2 text-slate-800">
+                      {{ item.description }}
+                    </div>
+                  </td>
+                  <td class="text-center">
+                    <VChip
+                      size="x-small"
+                      :color="getItemTypeBadge(item).color"
+                      variant="tonal"
+                      class="font-weight-bold"
+                    >
+                      <VIcon :icon="getItemTypeBadge(item).icon" size="11" class="me-1" />
+                      {{ getItemTypeBadge(item).label }}
+                    </VChip>
+                  </td>
+                  <td class="text-center font-weight-bold text-slate-700">
+                    {{ item.quantity }}
+                  </td>
+                  <td class="text-right text-slate-600 text-body-2">
+                    {{ formatCurrency(item.unit_price) }}
+                  </td>
+                  <td class="text-right font-weight-bold text-slate-900 text-body-2">
+                    {{ formatCurrency(item.total) }}
+                  </td>
+                </tr>
+              </tbody>
+              <!-- Totales -->
+              <tfoot v-if="totals">
+                <tr v-if="totals.subtotal > 0 && (totals.tax > 0 || totals.discount > 0)" class="bg-slate-50">
+                  <td colspan="4" class="border-0" />
+                  <td class="text-right text-caption font-weight-medium text-slate-500">Subtotal:</td>
+                  <td class="text-right text-caption font-weight-bold text-slate-700">{{ formatCurrency(totals.subtotal) }}</td>
+                </tr>
+                <tr v-if="totals.discount > 0" class="bg-slate-50">
+                  <td colspan="4" class="border-0" />
+                  <td class="text-right text-caption font-weight-medium text-error">Descuento:</td>
+                  <td class="text-right text-caption font-weight-bold text-error">-{{ formatCurrency(totals.discount) }}</td>
+                </tr>
+                <tr v-if="totals.tax > 0" class="bg-slate-50">
+                  <td colspan="4" class="border-0" />
+                  <td class="text-right text-caption font-weight-medium text-slate-500">IVA:</td>
+                  <td class="text-right text-caption font-weight-bold text-slate-700">{{ formatCurrency(totals.tax) }}</td>
+                </tr>
+                <tr class="bg-slate-100 font-weight-bold">
+                  <td colspan="4" class="border-0 text-caption font-weight-bold text-slate-600 text-uppercase">
+                    Total {{ sourceType === 'sale' ? 'Venta' : (sourceType === 'invoice' ? 'Compra' : '') }}
+                  </td>
+                  <td class="text-right text-caption font-weight-bold text-slate-800">TOTAL:</td>
+                  <td class="text-right text-subtitle-2 font-weight-black text-primary">{{ formatCurrency(totals.total || props.movement?.amount) }}</td>
+                </tr>
+              </tfoot>
+            </VTable>
+          </div>
+
+          <!-- Si es Transferencia Interna -->
+          <div v-else-if="transferInfo || movementType === 'transfer'" class="pa-4 bg-slate-50 rounded-xl border">
+            <div class="d-flex align-center justify-space-between flex-wrap gap-3">
+              <div class="d-flex align-center gap-3 flex-grow-1">
+                <div class="account-card-box pa-2.5 rounded-lg bg-white border text-center flex-grow-1" style="min-width: 140px;">
+                  <div class="text-caption text-medium-emphasis font-weight-medium">Cuenta Origen (Salida)</div>
+                  <div class="font-weight-bold text-slate-800 text-body-2 mt-0.5">
+                    <VIcon icon="ri-bank-line" size="14" color="error" class="me-1" />
+                    {{ transferInfo?.from_account || accountInfo.from || 'Cuenta Origen' }}
+                  </div>
+                </div>
+                <VAvatar size="32" color="primary" variant="tonal" rounded="circle" class="shrink-0">
+                  <VIcon icon="ri-arrow-right-line" size="18" />
+                </VAvatar>
+                <div class="account-card-box pa-2.5 rounded-lg bg-white border text-center flex-grow-1" style="min-width: 140px;">
+                  <div class="text-caption text-medium-emphasis font-weight-medium">Cuenta Destino (Entrada)</div>
+                  <div class="font-weight-bold text-slate-800 text-body-2 mt-0.5">
+                    <VIcon icon="ri-bank-line" size="14" color="success" class="me-1" />
+                    {{ transferInfo?.to_account || accountInfo.to || 'Cuenta Destino' }}
+                  </div>
+                </div>
+              </div>
+              <div class="text-right ms-auto shrink-0 ps-3">
+                <div class="text-caption text-medium-emphasis font-weight-medium">Monto Transferido</div>
+                <div class="text-h6 font-weight-black text-info">{{ formatCurrency(transferInfo?.amount || props.movement?.amount) }}</div>
+              </div>
+            </div>
+            <div v-if="transferInfo?.reference_number" class="mt-3 text-caption text-slate-600">
+              <VIcon icon="ri-hashtag" size="14" class="me-1 text-slate-400" />
+              <strong>N° de Referencia:</strong> <span class="font-mono font-weight-semibold">{{ transferInfo.reference_number }}</span>
+            </div>
+            <div v-if="transferInfo?.user_name" class="mt-1 text-caption text-slate-600">
+              <VIcon icon="ri-user-line" size="14" class="me-1 text-slate-400" />
+              <strong>Registrado por:</strong> {{ transferInfo.user_name }}
+            </div>
+          </div>
+
+          <!-- Sin productos comerciales asociados -->
+          <div v-else class="pa-4 text-center text-slate-500 bg-slate-50 rounded-xl border border-dashed">
+            <VIcon icon="ri-information-line" size="22" class="mb-1 text-slate-400" />
+            <div class="text-caption font-weight-medium">
+              Movimiento financiero directo sin lista de productos comerciales asociada.
+            </div>
+          </div>
+        </VCard>
+
+        <!-- 4. Sección de Comprobantes de Respaldo -->
         <div class="mb-2">
           <div class="d-flex align-center justify-space-between mb-3">
             <div class="d-flex align-center gap-2">
@@ -1047,5 +1293,27 @@ watch(
   .status-dot {
     background-color: #3b82f6 !important;
   }
+}
+
+.movement-items-table {
+  th {
+    background-color: #f8fafc !important;
+    color: #475569 !important;
+    font-size: 0.72rem !important;
+    letter-spacing: 0.05em !important;
+    border-bottom: 1px solid #e2e8f0 !important;
+  }
+
+  td {
+    border-bottom: 1px solid #f1f5f9 !important;
+  }
+
+  tr.item-row:hover {
+    background-color: #f8fafc !important;
+  }
+}
+
+.account-card-box {
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
 }
 </style>
