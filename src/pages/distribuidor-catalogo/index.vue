@@ -86,7 +86,7 @@ const supplierOptions = computed(() => {
       ruc: null,
     },
     ...list.map(s => ({
-      title: `${s.name}${s.ruc ? ` (${s.ruc})` : ''} — ${s.catalog_count} PDF${s.catalog_count > 1 ? 's' : ''}`,
+      title: `${s.name}`,
       value: s.id,
       name: s.name,
       ruc: s.ruc,
@@ -962,13 +962,7 @@ onUnmounted(() => {
           <!-- Listado de Coincidencias Encontradas -->
           <div v-else-if="pdfResults.length > 0">
             <!-- Barra de progreso lineal durante cambio de página (evita desmontar la tabla y el paginador) -->
-            <VProgressLinear
-              v-if="isPdfSearching"
-              indeterminate
-              height="3"
-              color="primary"
-              class="mb-3 rounded"
-            />
+            <VProgressLinear v-if="isPdfSearching" indeterminate height="3" color="primary" class="mb-3 rounded" />
             <!-- VISTA ESCRITORIO: TABLA DETALLADA (d-none d-md-table) -->
             <VTable hover class="d-none d-md-table border rounded-xl overflow-hidden mb-3 w-100">
               <thead>
@@ -984,13 +978,11 @@ onUnmounted(() => {
                   <!-- Distribuidor y Catálogo (Espacio compacto y reducido) -->
                   <td class="py-3 px-3 text-start" style="width: 135px;">
                     <div class="font-weight-bold text-high-emphasis text-caption text-truncate"
-                      style="max-width: 125px; font-size: 0.8rem;"
-                      :title="res.supplier_name">
+                      style="max-width: 125px; font-size: 0.8rem;" :title="res.supplier_name">
                       {{ formatSupplierName(res.supplier_name) }}
                     </div>
                     <div class="text-caption text-medium-emphasis text-truncate d-flex align-center gap-1 mt-0.5"
-                      style="font-size: 0.68rem; max-width: 125px;"
-                      :title="res.catalog_title">
+                      style="font-size: 0.68rem; max-width: 125px;" :title="res.catalog_title">
                       <VIcon icon="ri-file-pdf-2-line" size="11" class="text-primary flex-shrink-0" />
                       <span class="text-truncate">{{ res.catalog_title }}</span>
                     </div>
@@ -1002,7 +994,9 @@ onUnmounted(() => {
 
                     <!-- Código / Referencia debajo en letras pequeñas -->
                     <div v-if="res.code" class="d-flex align-center gap-1.5 mt-1.5">
-                      <span class="d-inline-flex align-center gap-1 px-2 py-0.5 rounded border font-mono text-caption bg-surface" style="font-size: 0.74rem;">
+                      <span
+                        class="d-inline-flex align-center gap-1 px-2 py-0.5 rounded border font-mono text-caption bg-surface"
+                        style="font-size: 0.74rem;">
                         <VIcon icon="ri-barcode-line" size="12" class="text-primary" />
                         <span class="text-medium-emphasis">Cód:</span>
                         <strong class="text-high-emphasis font-weight-bold">{{ res.code }}</strong>
@@ -1036,14 +1030,16 @@ onUnmounted(() => {
               <VCard v-for="res in pdfResults" :key="`mob-res-${res.id}`" class="rounded-xl border pa-3 bg-surface">
                 <div class="d-flex align-center justify-space-between mb-2 pb-1.5 border-b">
                   <div class="min-w-0">
-                    <div class="font-weight-bold text-caption text-high-emphasis text-truncate" :title="res.supplier_name">
+                    <div class="font-weight-bold text-caption text-high-emphasis text-truncate"
+                      :title="res.supplier_name">
                       {{ formatSupplierName(res.supplier_name) }}
                     </div>
                     <div class="text-caption text-medium-emphasis text-truncate" style="font-size: 0.72rem;">
                       {{ res.catalog_title }}
                     </div>
                   </div>
-                  <VChip v-if="res.code" size="x-small" color="secondary" variant="tonal" class="font-weight-bold font-mono flex-shrink-0">
+                  <VChip v-if="res.code" size="x-small" color="secondary" variant="tonal"
+                    class="font-weight-bold font-mono flex-shrink-0">
                     <VIcon icon="ri-barcode-line" size="11" class="me-0.5" />
                     {{ res.code }}
                   </VChip>
@@ -1076,18 +1072,10 @@ onUnmounted(() => {
                 Página {{ pdfCurrentPage }} de {{ totalPdfPages }} ({{ totalPdfResults }} coincidencias)
               </span>
               <div style="min-width: 260px; flex-shrink: 0;" class="d-flex justify-end">
-                <VPagination
-                  v-model="pdfCurrentPage"
-                  :length="totalPdfPages"
-                  :total-visible="$vuetify.display.xs ? 4 : 5"
-                  :disabled="isPdfSearching"
-                  rounded="circle"
-                  density="comfortable"
-                  size="small"
-                  color="primary"
-                  class="my-0"
-                  @update:model-value="onPdfPageChange"
-                />
+                <VPagination v-model="pdfCurrentPage" :length="totalPdfPages"
+                  :total-visible="$vuetify.display.xs ? 4 : 5" :disabled="isPdfSearching" rounded="circle"
+                  density="comfortable" size="small" color="primary" class="my-0"
+                  @update:model-value="onPdfPageChange" />
               </div>
             </div>
           </div>
