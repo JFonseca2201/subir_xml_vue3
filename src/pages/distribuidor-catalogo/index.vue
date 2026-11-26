@@ -172,6 +172,30 @@ const parsePriceNumber = raw => {
 }
 
 /**
+ * Limpia y acorta el nombre de la importadora o proveedor para evitar textos excesivamente largos
+ */
+const formatSupplierName = name => {
+  if (!name) return ''
+  let cleaned = name.trim()
+
+  // Eliminar prefijos numéricos típicos (ej: "05 ", "01 - ")
+  cleaned = cleaned.replace(/^[0-9]{1,3}\s*[-–]?\s*/, '')
+
+  // Eliminar razones sociales y sufijos empresariales redundantes
+  cleaned = cleaned.replace(/\b(CIA\.?\s*LTDA\.?|COMPAÑIA\s+LIMITADA|S\.?A\.?S?|S\s*C\s*C|S\.?C\.?|SOCIEDAD\s+ANONIMA|CORP\.?)\b/gi, '')
+
+  // Normalizar espacios
+  cleaned = cleaned.replace(/\s+/g, ' ').trim()
+
+  // Si aún excede 24 caracteres, recortar limpiamente
+  if (cleaned.length > 25) {
+    cleaned = cleaned.substring(0, 23).trim() + '…'
+  }
+
+  return cleaned || name
+}
+
+/**
  * REQUERIMIENTO 1: Extracción flexible de precios
  * Detecta precios con $ o USD o patrones numéricos decimales en cualquier posición
  */
@@ -201,14 +225,14 @@ const getItemPrice = item => {
         if (idx !== -1) {
           // Evaluar texto posterior (derecha)
           const afterSnippet = rawText.substring(idx)
-          const matchAfter = afterSnippet.match(/(?:^|[\s\(\[\:\;\-])([0-9]{1,3}(?:[,.][0-9]{3})*(?:[.,][0-9]{2})|[0-9]{1,5}[.,][0-9]{2})(?=$|[\s\)\]\,\;\.\-])/)
+          const matchAfter = afterSnippet.match(/(?:^|[\s\(\[\:\;\-])([0-9]{1,3}(?:[,.][0-9]{3})*(?:[.,][0-9]{2})|[0-9]{1,5}[.,][0-9]{2})(?=$|[\s\)\]\,\;\.\-]|[A-Za-z])/)
           if (matchAfter && matchAfter[1]) {
             const p = parsePriceNumber(matchAfter[1])
             if (p) return p
           }
           // Evaluar texto anterior (izquierda: por si el precio precede a la descripción)
           const beforeSnippet = rawText.substring(Math.max(0, idx - 80), idx)
-          const matchBefore = beforeSnippet.match(/(?:^|[\s\(\[\:\;\-])([0-9]{1,3}(?:[,.][0-9]{3})*(?:[.,][0-9]{2})|[0-9]{1,5}[.,][0-9]{2})(?=$|[\s\)\]\,\;\.\-])[^\d]*$/)
+          const matchBefore = beforeSnippet.match(/(?:^|[\s\(\[\:\;\-])([0-9]{1,3}(?:[,.][0-9]{3})*(?:[.,][0-9]{2})|[0-9]{1,5}[.,][0-9]{2})(?=$|[\s\)\]\,\;\.\-]|[A-Za-z])[^\d]*$/)
           if (matchBefore && matchBefore[1]) {
             const p = parsePriceNumber(matchBefore[1])
             if (p) return p
@@ -218,7 +242,7 @@ const getItemPrice = item => {
     }
 
     // 3. Fallback general: cualquier número con formato de precio
-    const matches = rawText.match(/(?:^|[\s\(\[\:\;\-])([0-9]{1,3}(?:[,.][0-9]{3})*(?:[.,][0-9]{2})|[0-9]{1,5}[.,][0-9]{2})(?=$|[\s\)\]\,\;\.\-])/g)
+    const matches = rawText.match(/(?:^|[\s\(\[\:\;\-])([0-9]{1,3}(?:[,.][0-9]{3})*(?:[.,][0-9]{2})|[0-9]{1,5}[.,][0-9]{2})(?=$|[\s\)\]\,\;\.\-]|[A-Za-z])/g)
     if (matches && matches.length > 0) {
       for (const m of matches) {
         const p = parsePriceNumber(m)
@@ -949,55 +973,58 @@ onUnmounted(() => {
             <VTable hover class="d-none d-md-table border rounded-xl overflow-hidden mb-3 w-100">
               <thead>
                 <tr class="text-caption font-weight-bold text-uppercase bg-background dialog-table-header">
-                  <th class="text-left py-3 px-3" style="width: 210px;">Distribuidor / Catálogo</th>
-                  <th class="text-left py-3 px-3">Fragmento del Texto en PDF</th>
-                  <th class="text-center py-3 px-2" style="width: 125px;">Precio Ref.</th>
-                  <th class="text-center py-3 px-2" style="width: 85px;">Página</th>
-                  <th class="text-center py-3 px-2" style="width: 130px;">Acción</th>
+                  <th class="text-left py-3 px-3" style="width: 135px;">Distribuidor</th>
+                  <th class="text-left py-3 px-3">Repuesto / Producto</th>
+                  <th class="text-center py-3 px-2" style="width: 105px;">Precio Ref.</th>
+                  <th class="text-center py-3 px-2" style="width: 110px;">Acción</th>
                 </tr>
               </thead>
               <tbody>
                 <tr v-for="res in pdfResults" :key="res.id" class="pdf-result-row">
-                  <!-- Distribuidor y Catálogo -->
-                  <td class="py-3 px-3" style="width: 210px;">
-                    <div class="font-weight-bold text-high-emphasis text-uppercase text-caption text-truncate"
+                  <!-- Distribuidor y Catálogo (Espacio compacto y reducido) -->
+                  <td class="py-3 px-3 text-start" style="width: 135px;">
+                    <div class="font-weight-bold text-high-emphasis text-caption text-truncate"
+                      style="max-width: 125px; font-size: 0.8rem;"
                       :title="res.supplier_name">
-                      {{ res.supplier_name }}
+                      {{ formatSupplierName(res.supplier_name) }}
                     </div>
                     <div class="text-caption text-medium-emphasis text-truncate d-flex align-center gap-1 mt-0.5"
+                      style="font-size: 0.68rem; max-width: 125px;"
                       :title="res.catalog_title">
-                      <VIcon icon="ri-file-pdf-2-line" size="13" class="text-primary flex-shrink-0" />
-                      <span class="text-truncate" style="font-size: 0.73rem;">{{ res.catalog_title }}</span>
+                      <VIcon icon="ri-file-pdf-2-line" size="11" class="text-primary flex-shrink-0" />
+                      <span class="text-truncate">{{ res.catalog_title }}</span>
                     </div>
                   </td>
 
-                  <!-- Fragmento Coincidente con Resaltado -->
+                  <!-- Repuesto / Producto con Código debajo en letras más pequeñas -->
                   <td class="py-3 px-3 text-wrap-break" style="white-space: normal;">
                     <div class="pdf-snippet-quote" v-html="res.snippet" />
+
+                    <!-- Código / Referencia debajo en letras pequeñas -->
+                    <div v-if="res.code" class="d-flex align-center gap-1.5 mt-1.5">
+                      <span class="d-inline-flex align-center gap-1 px-2 py-0.5 rounded border font-mono text-caption bg-surface" style="font-size: 0.74rem;">
+                        <VIcon icon="ri-barcode-line" size="12" class="text-primary" />
+                        <span class="text-medium-emphasis">Cód:</span>
+                        <strong class="text-high-emphasis font-weight-bold">{{ res.code }}</strong>
+                      </span>
+                    </div>
                   </td>
 
                   <!-- Precio Asociado (Backend + Fallback Snippet con soporte coma decimal) -->
-                  <td class="text-center py-3 px-2" style="width: 125px;">
+                  <td class="text-center py-3 px-2" style="width: 105px;">
                     <VChip v-if="getItemPrice(res)" size="small" color="success" variant="tonal"
-                      class="font-weight-bold font-mono px-2.5">
-                      <VIcon icon="ri-money-dollar-circle-line" size="14" class="me-1" />
+                      class="font-weight-bold font-mono px-2">
+                      <VIcon icon="ri-money-dollar-circle-line" size="13" class="me-0.5" />
                       ${{ getItemPrice(res) }}
                     </VChip>
                     <span v-else class="text-caption text-disabled font-mono">—</span>
                   </td>
 
-                  <!-- Número de Página Exacto -->
-                  <td class="text-center py-3 px-2" style="width: 85px;">
-                    <VChip size="small" color="primary" variant="tonal" class="font-weight-bold font-mono px-2">
-                      Pág. {{ res.page_number }}
-                    </VChip>
-                  </td>
-
-                  <!-- Botón de Apertura Directa -->
-                  <td class="text-center py-3 px-2" style="width: 130px;">
+                  <!-- Botón de Apertura Directa Unificado: Pág. X -->
+                  <td class="text-center py-3 px-2" style="width: 110px;">
                     <VBtn size="small" color="primary" variant="tonal" prepend-icon="ri-external-link-line"
                       class="font-weight-bold rounded-lg text-none px-2.5" :href="res.pdf_url" target="_blank">
-                      Abrir Pág. {{ res.page_number }}
+                      Pág. {{ res.page_number }}
                     </VBtn>
                   </td>
                 </tr>
@@ -1009,15 +1036,16 @@ onUnmounted(() => {
               <VCard v-for="res in pdfResults" :key="`mob-res-${res.id}`" class="rounded-xl border pa-3 bg-surface">
                 <div class="d-flex align-center justify-space-between mb-2 pb-1.5 border-b">
                   <div class="min-w-0">
-                    <div class="font-weight-bold text-caption text-high-emphasis text-uppercase text-truncate">
-                      {{ res.supplier_name }}
+                    <div class="font-weight-bold text-caption text-high-emphasis text-truncate" :title="res.supplier_name">
+                      {{ formatSupplierName(res.supplier_name) }}
                     </div>
                     <div class="text-caption text-medium-emphasis text-truncate" style="font-size: 0.72rem;">
                       {{ res.catalog_title }}
                     </div>
                   </div>
-                  <VChip size="x-small" color="primary" variant="tonal" class="font-weight-bold font-mono">
-                    Pág. {{ res.page_number }}
+                  <VChip v-if="res.code" size="x-small" color="secondary" variant="tonal" class="font-weight-bold font-mono flex-shrink-0">
+                    <VIcon icon="ri-barcode-line" size="11" class="me-0.5" />
+                    {{ res.code }}
                   </VChip>
                 </div>
 
@@ -1035,7 +1063,7 @@ onUnmounted(() => {
 
                   <VBtn size="small" color="primary" variant="tonal" prepend-icon="ri-external-link-line"
                     class="font-weight-bold rounded-lg text-none" :href="res.pdf_url" target="_blank">
-                    Abrir Pág. {{ res.page_number }}
+                    Pág. {{ res.page_number }}
                   </VBtn>
                 </div>
               </VCard>
@@ -1178,25 +1206,48 @@ onUnmounted(() => {
 
 /* Resaltado de coincidencias integrado orgánicamente con el color primario del tema */
 :deep(.catalog-highlight) {
-  background-color: rgba(var(--v-theme-primary), 0.16) !important;
+  background-color: rgba(var(--v-theme-primary), 0.22) !important;
   color: rgb(var(--v-theme-primary)) !important;
-  font-weight: 700;
-  padding: 1px 5px;
+  font-weight: 800;
+  font-size: 0.9375rem;
+  padding: 2px 7px;
   border-radius: 4px;
 }
 
 /* Extracto de texto del PDF con barra de acento primario y fondo sutil adaptativo */
 .pdf-snippet-quote {
-  font-size: 0.8125rem;
-  line-height: 1.5;
-  color: rgba(var(--v-theme-on-surface), 0.88);
-  border-inline-start: 3px solid rgb(var(--v-theme-primary));
-  padding-inline-start: 10px;
-  padding-block: 4px;
+  font-size: 0.9375rem;
+  line-height: 1.6;
+  color: rgba(var(--v-theme-on-surface), 0.95);
+  border-inline-start: 4px solid rgb(var(--v-theme-primary));
+  padding-inline-start: 14px;
+  padding-block: 6px;
   background-color: rgba(var(--v-theme-on-surface), 0.025);
-  border-radius: 0 6px 6px 0;
+  border-radius: 0 8px 8px 0;
   word-break: break-word;
   white-space: normal;
+}
+
+:deep(.pdf-snippet-line) {
+  display: block;
+  padding: 4px 0;
+  line-height: 1.55;
+  font-weight: 600;
+  font-size: 0.9375rem;
+  letter-spacing: 0.01em;
+}
+
+:deep(.pdf-snippet-line:not(:last-child)) {
+  border-bottom: 1px dashed rgba(var(--v-theme-on-surface), 0.12);
+  margin-bottom: 4px;
+}
+
+:deep(.pdf-snippet-more) {
+  display: block;
+  font-size: 0.75rem;
+  color: rgba(var(--v-theme-on-surface), 0.55);
+  font-style: italic;
+  margin-top: 5px;
 }
 
 /* Animación de rotación para cuando está procesando */
