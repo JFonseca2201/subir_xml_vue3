@@ -744,6 +744,8 @@ const hasServices = computed(() => {
   return (sale.value.items || []).some(item => isServiceItem(item))
 })
 
+const isVehicleRequired = computed(() => hasServices.value)
+
 const isAssigningDefaultVehicle = ref(false)
 
 const assignDefaultVehicle = async () => {
@@ -1036,11 +1038,11 @@ const submitForm = async () => {
     return
   }
 
-  // Validar vehículo SOLO si proviene de una Orden de Trabajo
-  if (isLinkedToWorkOrder.value && !sale.value.vehicle_id) {
+  // Validar vehículo SOLO si la venta contiene servicios
+  if (isVehicleRequired.value && (!sale.value.vehicle_id || !selectedVehicle.value)) {
     await assignDefaultVehicle()
-    if (!sale.value.vehicle_id) {
-      triggerValidationError('Esta venta proviene de una Orden de Trabajo y requiere asociar un vehículo obligatorio.')
+    if (!sale.value.vehicle_id || !selectedVehicle.value) {
+      triggerValidationError('Esta venta contiene servicios y requiere asociar un vehículo obligatorio.')
 
       return
     }
@@ -1657,11 +1659,11 @@ onMounted(() => {
                     <div style="text-transform: capitalize;">
                       <VSearch v-model="selectedVehicle" :disabled="sale.status === 'canceled'" :return-object="true"
                         endpoint="vehicles/search" item-title="license_plate"
-                        :label="isLinkedToWorkOrder ? 'Vehículo * (Obligatorio para Orden de Trabajo)' : 'Vehículo (Opcional)'"
+                        :label="isVehicleRequired ? 'Vehículo * (Obligatorio para servicios)' : 'Vehículo (Opcional)'"
                         icon="ri-car-line" :initial-item="selectedVehicle"
-                        :rules="[v => (!isLinkedToWorkOrder || !!v || !!sale.vehicle_id) || 'Debe asociar un vehículo obligatorio para órdenes de trabajo']"
-                        :error="showValidationError && isLinkedToWorkOrder && (!selectedVehicle || !sale.vehicle_id)"
-                        :error-messages="showValidationError && isLinkedToWorkOrder && (!selectedVehicle || !sale.vehicle_id) ? ['Debe asociar un vehículo obligatorio para órdenes de trabajo'] : []">
+                        :rules="[v => (!isVehicleRequired || !!v || !!sale.vehicle_id) || 'Debe asociar un vehículo obligatorio cuando la venta incluye servicios']"
+                        :error="showValidationError && isVehicleRequired && (!selectedVehicle || !sale.vehicle_id)"
+                        :error-messages="showValidationError && isVehicleRequired && (!selectedVehicle || !sale.vehicle_id) ? ['Debe asociar un vehículo obligatorio cuando la venta incluye servicios'] : []">
                         <template #item="{ props, item }">
                           <VListItem v-bind="props" :title="item.raw.license_plate">
                             <VListItemSubtitle class="mt-1 text-grey">
