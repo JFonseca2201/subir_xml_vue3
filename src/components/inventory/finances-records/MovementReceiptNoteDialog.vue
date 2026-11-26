@@ -725,7 +725,9 @@ watch(
                 {{ party.type === 'supplier' ? 'Proveedor' : (party.type === 'partner' ? 'Socio' : 'Cliente') }}
               </div>
               <div class="text-body-2 font-weight-bold text-high-emphasis d-flex align-center gap-1">
-                <VIcon :icon="party.type === 'supplier' ? 'ri-truck-line' : (party.type === 'partner' ? 'ri-hand-coin-line' : 'ri-user-line')" size="16" color="primary" />
+                <VIcon
+                  :icon="party.type === 'supplier' ? 'ri-truck-line' : (party.type === 'partner' ? 'ri-hand-coin-line' : 'ri-user-line')"
+                  size="16" color="primary" />
                 <span class="text-truncate">{{ party.name }}</span>
               </div>
               <div v-if="party.document" class="text-caption text-slate-500 font-mono">
@@ -801,7 +803,10 @@ watch(
               </VAvatar>
               <div class="d-flex align-center gap-2">
                 <span class="text-subtitle-2 font-weight-bold text-high-emphasis">
-                  {{ sourceType === 'sale' ? 'Productos y Servicios Vendidos' : (sourceType === 'invoice' ? 'Productos e Insumos Comprados' : (sourceType === 'work_order' ? 'Servicios y Repuestos Asignados' : (sourceType === 'internal_transfer' ? 'Detalle de Transferencia Bancaria' : 'Ítems y Conceptos de la Operación'))) }}
+                  {{ sourceType === 'sale' ? 'Productos y Servicios Vendidos' : (sourceType === 'invoice' ? 'Productos e
+                  Insumos Comprados' : (sourceType === 'work_order' ? 'Servicios y Repuestos Asignados' : (sourceType
+                    === 'internal_transfer' ? 'Detalle de Transferencia Bancaria' : 'Ítems y Conceptos de la Operación')))
+                  }}
                 </span>
                 <VChip v-if="items.length > 0" size="x-small" color="primary" variant="tonal" class="font-weight-bold">
                   {{ items.length }} ítem(s)
@@ -811,14 +816,8 @@ watch(
 
             <!-- Botones de Acción para Ver Detalle Completo en Dialog Especializado -->
             <div v-if="sourceType === 'sale' || sourceType === 'invoice' || sourceType === 'work_order'">
-              <VBtn
-                size="small"
-                variant="tonal"
-                color="primary"
-                prepend-icon="ri-external-link-line"
-                class="font-weight-semibold text-none"
-                @click="openFullSource"
-              >
+              <VBtn size="small" variant="flat" color="primary" prepend-icon="ri-external-link-line"
+                class="font-weight-semibold text-none" @click="openFullSource">
                 <span v-if="sourceType === 'sale'">Ver Venta Completa</span>
                 <span v-else-if="sourceType === 'invoice'">Ver Factura Proveedor</span>
                 <span v-else-if="sourceType === 'work_order'">Ver Orden de Trabajo</span>
@@ -837,7 +836,8 @@ watch(
             <VTable density="compact" class="movement-items-table">
               <thead>
                 <tr class="bg-slate-50">
-                  <th class="text-left font-weight-bold text-caption text-uppercase" style="width: 130px;">Código / SKU</th>
+                  <th class="text-left font-weight-bold text-caption text-uppercase" style="width: 130px;">Código / SKU
+                  </th>
                   <th class="text-left font-weight-bold text-caption text-uppercase">Descripción</th>
                   <th class="text-center font-weight-bold text-caption text-uppercase" style="width: 120px;">Tipo</th>
                   <th class="text-center font-weight-bold text-caption text-uppercase" style="width: 70px;">Cant.</th>
@@ -856,12 +856,8 @@ watch(
                     </div>
                   </td>
                   <td class="text-center">
-                    <VChip
-                      size="x-small"
-                      :color="getItemTypeBadge(item).color"
-                      variant="tonal"
-                      class="font-weight-bold"
-                    >
+                    <VChip size="x-small" :color="getItemTypeBadge(item).color" variant="tonal"
+                      class="font-weight-bold">
                       <VIcon :icon="getItemTypeBadge(item).icon" size="11" class="me-1" />
                       {{ getItemTypeBadge(item).label }}
                     </VChip>
@@ -882,24 +878,28 @@ watch(
                 <tr v-if="totals.subtotal > 0 && (totals.tax > 0 || totals.discount > 0)" class="bg-slate-50">
                   <td colspan="4" class="border-0" />
                   <td class="text-right text-caption font-weight-medium text-slate-500">Subtotal:</td>
-                  <td class="text-right text-caption font-weight-bold text-slate-700">{{ formatCurrency(totals.subtotal) }}</td>
+                  <td class="text-right text-caption font-weight-bold text-slate-700">{{ formatCurrency(totals.subtotal)
+                    }}</td>
                 </tr>
                 <tr v-if="totals.discount > 0" class="bg-slate-50">
                   <td colspan="4" class="border-0" />
                   <td class="text-right text-caption font-weight-medium text-error">Descuento:</td>
-                  <td class="text-right text-caption font-weight-bold text-error">-{{ formatCurrency(totals.discount) }}</td>
+                  <td class="text-right text-caption font-weight-bold text-error">-{{ formatCurrency(totals.discount) }}
+                  </td>
                 </tr>
                 <tr v-if="totals.tax > 0" class="bg-slate-50">
                   <td colspan="4" class="border-0" />
                   <td class="text-right text-caption font-weight-medium text-slate-500">IVA:</td>
-                  <td class="text-right text-caption font-weight-bold text-slate-700">{{ formatCurrency(totals.tax) }}</td>
+                  <td class="text-right text-caption font-weight-bold text-slate-700">{{ formatCurrency(totals.tax) }}
+                  </td>
                 </tr>
                 <tr class="bg-slate-100 font-weight-bold">
                   <td colspan="4" class="border-0 text-caption font-weight-bold text-slate-600 text-uppercase">
                     Total {{ sourceType === 'sale' ? 'Venta' : (sourceType === 'invoice' ? 'Compra' : '') }}
                   </td>
                   <td class="text-right text-caption font-weight-bold text-slate-800">TOTAL:</td>
-                  <td class="text-right text-subtitle-2 font-weight-black text-primary">{{ formatCurrency(totals.total || props.movement?.amount) }}</td>
+                  <td class="text-right text-subtitle-2 font-weight-black text-primary">{{ formatCurrency(totals.total
+                    || props.movement?.amount) }}</td>
                 </tr>
               </tfoot>
             </VTable>
@@ -909,7 +909,8 @@ watch(
           <div v-else-if="transferInfo || movementType === 'transfer'" class="pa-4 bg-slate-50 rounded-xl border">
             <div class="d-flex align-center justify-space-between flex-wrap gap-3">
               <div class="d-flex align-center gap-3 flex-grow-1">
-                <div class="account-card-box pa-2.5 rounded-lg bg-white border text-center flex-grow-1" style="min-width: 140px;">
+                <div class="account-card-box pa-2.5 rounded-lg bg-white border text-center flex-grow-1"
+                  style="min-width: 140px;">
                   <div class="text-caption text-medium-emphasis font-weight-medium">Cuenta Origen (Salida)</div>
                   <div class="font-weight-bold text-slate-800 text-body-2 mt-0.5">
                     <VIcon icon="ri-bank-line" size="14" color="error" class="me-1" />
@@ -919,7 +920,8 @@ watch(
                 <VAvatar size="32" color="primary" variant="tonal" rounded="circle" class="shrink-0">
                   <VIcon icon="ri-arrow-right-line" size="18" />
                 </VAvatar>
-                <div class="account-card-box pa-2.5 rounded-lg bg-white border text-center flex-grow-1" style="min-width: 140px;">
+                <div class="account-card-box pa-2.5 rounded-lg bg-white border text-center flex-grow-1"
+                  style="min-width: 140px;">
                   <div class="text-caption text-medium-emphasis font-weight-medium">Cuenta Destino (Entrada)</div>
                   <div class="font-weight-bold text-slate-800 text-body-2 mt-0.5">
                     <VIcon icon="ri-bank-line" size="14" color="success" class="me-1" />
@@ -929,12 +931,14 @@ watch(
               </div>
               <div class="text-right ms-auto shrink-0 ps-3">
                 <div class="text-caption text-medium-emphasis font-weight-medium">Monto Transferido</div>
-                <div class="text-h6 font-weight-black text-info">{{ formatCurrency(transferInfo?.amount || props.movement?.amount) }}</div>
+                <div class="text-h6 font-weight-black text-info">{{ formatCurrency(transferInfo?.amount ||
+                  props.movement?.amount) }}</div>
               </div>
             </div>
             <div v-if="transferInfo?.reference_number" class="mt-3 text-caption text-slate-600">
               <VIcon icon="ri-hashtag" size="14" class="me-1 text-slate-400" />
-              <strong>N° de Referencia:</strong> <span class="font-mono font-weight-semibold">{{ transferInfo.reference_number }}</span>
+              <strong>N° de Referencia:</strong> <span class="font-mono font-weight-semibold">{{
+                transferInfo.reference_number }}</span>
             </div>
             <div v-if="transferInfo?.user_name" class="mt-1 text-caption text-slate-600">
               <VIcon icon="ri-user-line" size="14" class="me-1 text-slate-400" />
