@@ -39,20 +39,30 @@ let statusPollingTimer = null
 
 // Opciones de proveedores normalizadas
 const supplierOptions = computed(() => {
-  return props.suppliers.filter(s => s && s.id !== 'all').map(s => ({
-    title: s.name,
-    value: s.id,
-    ruc: s.ruc,
-  }))
+  return props.suppliers
+    .filter(s => s && s.id !== 'all')
+    .map(s => ({
+      title: s.name,
+      value: s.id,
+      ruc: s.ruc,
+    }))
+    .sort((a, b) => (a.title || '').localeCompare(b.title || '', 'es', { sensitivity: 'base' }))
 })
+
+// Filtro tolerante a tildes y mayúsculas/minúsculas para buscar por nombre o RUC
+const filterSupplier = (value, query, item) => {
+  if (!query) return true
+  const q = String(query).toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').trim()
+  const title = String(item?.raw?.title || value || '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '')
+  const ruc = String(item?.raw?.ruc || '').toLowerCase()
+
+  return title.includes(q) || ruc.includes(q)
+}
 
 watch(() => props.isDialogVisible, isOpen => {
   if (isOpen) {
-    // Si viene un proveedor seleccionado válido, usarlo; sino el primero
     if (props.selectedSupplierId && props.selectedSupplierId !== 'all') {
       selectedSupplier.value = props.selectedSupplierId
-    } else if (supplierOptions.value.length > 0) {
-      selectedSupplier.value = supplierOptions.value[0].value
     } else {
       selectedSupplier.value = null
     }
@@ -259,12 +269,14 @@ const closeDialog = () => {
             :items="supplierOptions"
             item-title="title"
             item-value="value"
-            placeholder="Seleccionar distribuidor..."
+            :custom-filter="filterSupplier"
+            placeholder="Escribe para buscar distribuidor por nombre o RUC (ej. Surtillantas)..."
             density="compact"
             variant="outlined"
             prepend-inner-icon="ri-truck-line"
+            clearable
             :disabled="isUploading || isProcessing"
-            no-data-text="No hay distribuidores registrados"
+            no-data-text="No se encontraron distribuidores con ese término"
           >
             <template #item="{ props: itemProps, item }">
               <VListItem v-bind="itemProps">

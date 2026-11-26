@@ -34,26 +34,78 @@ const isSubmitting = ref(false)
 const uploadProgress = ref(0)
 const uploadStatusText = ref('')
 
-// Opciones de proveedores normalizadas
+const localSuppliers = ref([])
+
+const loadSuppliersIfEmpty = async () => {
+  if (props.suppliers && props.suppliers.length > 0) {
+    localSuppliers.value = props.suppliers
+    return
+  }
+  try {
+    const res = await $api('suppliers', { params: { per_page: -1 } })
+    if (res?.suppliers) {
+      localSuppliers.value = res.suppliers
+    } else if (res?.data) {
+      localSuppliers.value = res.data
+    } else if (Array.isArray(res)) {
+      localSuppliers.value = res
+    }
+  } catch (e) {
+    try {
+      const fallback = await $api('distributor-catalog/suppliers')
+      localSuppliers.value = fallback?.data || []
+    } catch (err) {
+      console.error('Error cargando distribuidores en modal:', err)
+    }
+  }
+}
+
+// Sincronizar proveedores si cambian las props
+watch(
+  () => props.suppliers,
+  newSuppliers => {
+    if (newSuppliers && newSuppliers.length > 0) {
+      localSuppliers.value = newSuppliers
+    }
+  },
+  { immediate: true },
+)
+
+// Opciones de proveedores normalizadas y ordenadas alfabéticamente
 const supplierOptions = computed(() => {
-  return props.suppliers
+  const source = (localSuppliers.value && localSuppliers.value.length > 0)
+    ? localSuppliers.value
+    : (props.suppliers || [])
+
+  return source
     .filter(s => s && s.id !== 'all')
     .map(s => ({
       title: s.name,
       value: s.id,
       ruc: s.ruc,
     }))
+    .sort((a, b) => (a.title || '').localeCompare(b.title || '', 'es', { sensitivity: 'base' }))
 })
+
+// Filtro tolerante a tildes y mayúsculas/minúsculas para buscar por nombre o RUC
+const filterSupplier = (value, query, item) => {
+  if (!query) return true
+  const q = String(query).toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').trim()
+  const title = String(item?.raw?.title || value || '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '')
+  const ruc = String(item?.raw?.ruc || '').toLowerCase()
+
+  return title.includes(q) || ruc.includes(q)
+}
 
 // Al abrir el modal, inicializar campos
 watch(
   () => props.isDialogVisible,
-  isOpen => {
+  async isOpen => {
     if (isOpen) {
+      await loadSuppliersIfEmpty()
+
       if (props.selectedSupplierId && props.selectedSupplierId !== 'all') {
         selectedSupplier.value = props.selectedSupplierId
-      } else if (supplierOptions.value.length > 0) {
-        selectedSupplier.value = supplierOptions.value[0].value
       } else {
         selectedSupplier.value = null
       }
@@ -233,9 +285,22 @@ const submitPdfCatalog = async () => {
           <label class="text-caption font-weight-bold text-medium-emphasis mb-1.5 d-block">
             Distribuidor / Proveedor <span class="text-error">*</span>
           </label>
-          <VSelect v-model="selectedSupplier" :items="supplierOptions" item-title="title" item-value="value"
-            placeholder="Selecciona el distribuidor del catálogo" prepend-inner-icon="ri-truck-line" variant="outlined"
-            density="comfortable" hide-details="auto" color="primary" :disabled="isSubmitting">
+          <VAutocomplete
+            v-model="selectedSupplier"
+            :items="supplierOptions"
+            item-title="title"
+            item-value="value"
+            :custom-filter="filterSupplier"
+            placeholder="Escribe para buscar distribuidor por nombre o RUC (ej. Surtillantas)..."
+            prepend-inner-icon="ri-truck-line"
+            variant="outlined"
+            density="comfortable"
+            hide-details="auto"
+            color="primary"
+            clearable
+            :disabled="isSubmitting"
+            no-data-text="No se encontraron distribuidores con ese término"
+          >
             <template #item="{ props: itemProps, item }">
               <VListItem v-bind="itemProps">
                 <template #title>
@@ -246,7 +311,7 @@ const submitPdfCatalog = async () => {
                 </template>
               </VListItem>
             </template>
-          </VSelect>
+          </VAutocomplete>
         </div>
 
         <!-- 2. Título / Nombre Descriptivo del Catálogo -->
