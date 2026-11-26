@@ -803,9 +803,10 @@ watch(
               </VAvatar>
               <div class="d-flex align-center gap-2">
                 <span class="text-subtitle-2 font-weight-bold text-high-emphasis">
-                  {{ sourceType === 'sale' ? 'Productos y Servicios Vendidos' : (sourceType === 'invoice' ? 'Productos e
-                  Insumos Comprados' : (sourceType === 'work_order' ? 'Servicios y Repuestos Asignados' : (sourceType
-                    === 'internal_transfer' ? 'Detalle de Transferencia Bancaria' : 'Ítems y Conceptos de la Operación')))
+                  {{ sourceType === 'sale' ? 'Productos y Servicios Vendidos' : (sourceType === 'invoice'
+                    ? 'Productos e Insumos Comprados' : (sourceType === 'work_order'
+                      ? 'Servicios y Repuestos Asignados' : (sourceType
+                        === 'internal_transfer' ? 'Detalle de Transferencia Bancaria' : 'Ítems y Conceptos de la Operación')))
                   }}
                 </span>
                 <VChip v-if="items.length > 0" size="x-small" color="primary" variant="tonal" class="font-weight-bold">
@@ -879,7 +880,7 @@ watch(
                   <td colspan="4" class="border-0" />
                   <td class="text-right text-caption font-weight-medium text-slate-500">Subtotal:</td>
                   <td class="text-right text-caption font-weight-bold text-slate-700">{{ formatCurrency(totals.subtotal)
-                    }}</td>
+                  }}</td>
                 </tr>
                 <tr v-if="totals.discount > 0" class="bg-slate-50">
                   <td colspan="4" class="border-0" />
