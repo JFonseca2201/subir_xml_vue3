@@ -5188,12 +5188,34 @@ html.dark {
     padding-left: 2px !important;
   }
 
+  // Contenedor de acciones (Botón Comprobante)
+  .movement-actions-container {
+    display: inline-flex !important;
+    align-items: center !important;
+    flex-shrink: 0 !important;
+  }
+
+  // Columna de Monto: ancho mínimo constante para alineación vertical perfecta entre filas
+  .movement-amount-column,
+  .movement-amount-container {
+    min-width: 110px !important;
+    width: 110px !important;
+    text-align: right !important;
+    flex-shrink: 0 !important;
+    display: inline-flex !important;
+    justify-content: flex-end !important;
+    align-items: center !important;
+  }
+
   // Visualización del Monto
   .amount-display {
     font-size: 0.99rem !important;
     font-weight: 700 !important;
     letter-spacing: -0.00em !important;
     white-space: nowrap !important;
+    text-align: right !important;
+    display: inline-block !important;
+    width: 100% !important;
   }
 }
 
