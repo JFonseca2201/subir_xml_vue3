@@ -5190,16 +5190,15 @@ html.dark {
 
   // Contenedor de acciones (Botón Comprobante)
   .movement-actions-container {
-    display: inline-flex !important;
-    align-items: center !important;
-    flex-shrink: 0 !important;
+    display: inline-flex;
+    align-items: center;
+    flex-shrink: 0;
   }
 
   // Columna de Monto: ancho mínimo constante para alineación vertical perfecta entre filas
   .movement-amount-column,
   .movement-amount-container {
-    min-width: 110px !important;
-    width: 110px !important;
+    min-width: 100px !important;
     text-align: right !important;
     flex-shrink: 0 !important;
     display: inline-flex !important;
@@ -5214,8 +5213,6 @@ html.dark {
     letter-spacing: -0.00em !important;
     white-space: nowrap !important;
     text-align: right !important;
-    display: inline-block !important;
-    width: 100% !important;
   }
 }
 

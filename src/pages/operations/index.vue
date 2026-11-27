@@ -967,8 +967,8 @@ onUnmounted(() => {
       <VRow>
         <VCol cols="12">
           <VCard elevation="0" class="border rounded-2xl h-100 position-relative overflow-hidden bg-white">
-            <VProgressLinear v-if="loading || movementsLoading" indeterminate color="primary" height="3" class="position-absolute"
-              style="top: 0; left: 0; right: 0; z-index: 10;" />
+            <VProgressLinear v-if="loading || movementsLoading" indeterminate color="primary" height="3"
+              class="position-absolute" style="top: 0; left: 0; right: 0; z-index: 10;" />
 
             <!-- Encabezado de la Tarjeta de Movimientos -->
             <div class="pa-3 pa-sm-4 border-b">
@@ -1152,18 +1152,11 @@ onUnmounted(() => {
                           </div>
 
                           <div class="d-flex flex-column text-left min-w-0 flex-grow-1">
-                            <!-- Línea 1: Título claro + Monto en Móvil -->
-                            <div class="d-flex align-center justify-space-between gap-2">
+                            <!-- Línea 1: Título claro -->
+                            <div class="d-flex align-center gap-2">
                               <span class="text-body-2 font-weight-bold text-slate-900 text-truncate cursor-pointer"
-                                title="Ver comprobante o comprobantes adjuntos"
-                                @click="openMovementReceipt(movement)">
+                                title="Ver comprobante o comprobantes adjuntos" @click="openMovementReceipt(movement)">
                                 {{ movement.displayTitle }}
-                              </span>
-                              <!-- Monto en móvil arriba a la derecha -->
-                              <span class="text-body-2 font-weight-bold amount-display d-sm-none shrink-0"
-                                :class="movement.type === 'transfer' ? 'text-info' : (movement.type === 'income' ? 'text-emerald' : 'text-rose')">
-                                {{ movement.type === 'transfer' ? '' : (movement.type === 'income' ? '+' : '-') }}
-                                {{ formatCurrency(movement.amount) }}
                               </span>
                             </div>
 
@@ -1188,16 +1181,12 @@ onUnmounted(() => {
                               </VChip>
 
                               <!-- Indicador de Saldo tras Anticipo -->
-                              <VChip
-                                v-if="movement.isAdvanceBalance"
-                                size="x-small"
-                                color="info"
-                                variant="tonal"
+                              <VChip v-if="movement.isAdvanceBalance" size="x-small" color="info" variant="tonal"
                                 class="font-weight-semibold"
-                                :title="`Total Factura: $${movement.totalSaleAmount.toFixed(2)} | Anticipo previo: $${movement.totalAdvancesAmount.toFixed(2)} | Saldo cobrado: $${movement.amount.toFixed(2)}`"
-                              >
+                                :title="`Total Factura: $${movement.totalSaleAmount.toFixed(2)} | Anticipo previo: $${movement.totalAdvancesAmount.toFixed(2)} | Saldo cobrado: $${movement.amount.toFixed(2)}`">
                                 <VIcon icon="ri-hand-coin-line" size="11" class="me-1" />
-                                Saldo (Anticipo: ${{ movement.totalAdvancesAmount.toFixed(2) }} | Total: ${{ movement.totalSaleAmount.toFixed(2) }})
+                                Saldo (Anticipo: ${{ movement.totalAdvancesAmount.toFixed(2) }} | Total: ${{
+                                  movement.totalSaleAmount.toFixed(2) }})
                               </VChip>
 
                               <!-- Badge de Orden de Trabajo si existe -->
@@ -1230,9 +1219,9 @@ onUnmounted(() => {
                           </div>
                         </div>
 
-                        <!-- Derecha: Botón de Comprobante(s) + Monto en Desktop perfectamente alineados -->
-                        <div class="d-none d-sm-flex align-center gap-3 shrink-0 ms-auto">
-                          <!-- Botón Desktop -->
+                        <!-- Derecha: Botón Comprobante + Monto al final (único monto) -->
+                        <div class="d-flex align-center gap-2 gap-sm-3 shrink-0 ms-auto">
+                          <!-- Botón Comprobante -->
                           <div class="movement-actions-container shrink-0">
                             <VBtn size="small" variant="flat" color="primary"
                               class="rounded-lg text-none font-weight-medium px-2.5"
@@ -1243,20 +1232,14 @@ onUnmounted(() => {
                           </div>
 
                           <!-- Monto con ancho fijo y alineado a la derecha en columna perfecta -->
-                          <div class="movement-amount-container text-right shrink-0" style="min-width: 105px; width: 110px;">
+                          <div class="movement-amount-container text-right shrink-0"
+                            style="min-width: 95px; width: 110px;">
                             <span class="text-body-1 font-weight-bold amount-display"
                               :class="movement.type === 'transfer' ? 'text-info' : (movement.type === 'income' ? 'text-emerald' : 'text-rose')">
                               {{ movement.type === 'transfer' ? '' : (movement.type === 'income' ? '+' : '-') }}
                               {{ formatCurrency(movement.amount) }}
                             </span>
                           </div>
-                        </div>
-
-                        <!-- Botón Móvil -->
-                        <div class="movement-actions-container d-sm-none shrink-0">
-                          <VBtn icon="ri-file-text-line" size="x-small" variant="tonal" color="primary"
-                            class="rounded-lg" title="Ver comprobante o comprobantes adjuntos"
-                            @click.stop="openMovementReceipt(movement)" />
                         </div>
 
                       </div>
@@ -1271,7 +1254,8 @@ onUnmounted(() => {
               <!-- Centinela y Loader de Scroll Infinito -->
               <div ref="infiniteScrollSentinel" class="py-4 text-center">
                 <!-- Spinner cargando más en scroll infinito -->
-                <div v-if="loadingMore" class="d-flex align-center justify-center gap-2 py-3 text-caption text-primary font-weight-semibold">
+                <div v-if="loadingMore"
+                  class="d-flex align-center justify-center gap-2 py-3 text-caption text-primary font-weight-semibold">
                   <VProgressCircular indeterminate size="22" width="2" color="primary" />
                   <span>Cargando más operaciones...</span>
                 </div>
@@ -1289,35 +1273,19 @@ onUnmounted(() => {
       <!-- Diálogos Globales -->
       <TransferDialog v-model="isTransferDialogVisible" @transferred="dashboardOptions" />
       <AporteCreateDialog v-model="isAporteDialogVisible" @created="dashboardOptions" />
-      <MovementReceiptNoteDialog
-        v-if="selectedMovementForReceipt"
-        v-model="isReceiptNoteDialogVisible"
-        :movement="selectedMovementForReceipt"
-        :accounts="accounts"
-        @updated="dashboardOptions"
-        @view-sale="openSaleView"
-        @view-invoice="openInvoiceView"
-        @view-work-order="openWorkOrderView"
-      />
+      <MovementReceiptNoteDialog v-if="selectedMovementForReceipt" v-model="isReceiptNoteDialogVisible"
+        :movement="selectedMovementForReceipt" :accounts="accounts" @updated="dashboardOptions"
+        @view-sale="openSaleView" @view-invoice="openInvoiceView" @view-work-order="openWorkOrderView" />
 
       <!-- Diálogos Especializados de Detalle Completo -->
-      <SaleViewDialog
-        v-if="isSaleViewDialogVisible"
-        v-model:is-dialog-visible="isSaleViewDialogVisible"
-        :sale-data="selectedSaleData"
-      />
+      <SaleViewDialog v-if="isSaleViewDialogVisible" v-model:is-dialog-visible="isSaleViewDialogVisible"
+        :sale-data="selectedSaleData" />
 
-      <InvoiceShowDialog
-        v-if="isInvoiceShowDialogVisible"
-        v-model:is-dialog-visible="isInvoiceShowDialogVisible"
-        :invoice-selected="selectedInvoice"
-      />
+      <InvoiceShowDialog v-if="isInvoiceShowDialogVisible" v-model:is-dialog-visible="isInvoiceShowDialogVisible"
+        :invoice-selected="selectedInvoice" />
 
-      <WorkOrderViewDialog
-        v-if="isWorkOrderDialogVisible"
-        v-model:is-dialog-visible="isWorkOrderDialogVisible"
-        :work-order-id="selectedWorkOrderId"
-      />
+      <WorkOrderViewDialog v-if="isWorkOrderDialogVisible" v-model:is-dialog-visible="isWorkOrderDialogVisible"
+        :work-order-id="selectedWorkOrderId" />
     </div>
   </div>
 </template>
